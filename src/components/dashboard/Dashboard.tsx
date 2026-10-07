@@ -56,19 +56,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-amber-500/20 via-gym-card to-gym-surface p-6 rounded-2xl border border-amber-500/30 shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-xs uppercase font-extrabold tracking-wider text-amber-400">
-                SISTEMA OPERATIVO EN VIVO
-              </span>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-black border border-amber-500/40 p-1 shrink-0 hidden sm:flex items-center justify-center shadow-glow-gold">
+              <img src="/logo.png" alt="Logo LEYENDS GYM" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-2xl font-black text-white mt-1">
-              Panel de Control Central • LEGENDS PRO GYM
-            </h1>
-            <p className="text-xs text-gym-muted mt-1 max-w-xl">
-              Monitoreo en tiempo real de torniquetes biométricos, cartera de clientes y ventas de la tienda de suplementos.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs uppercase font-extrabold tracking-wider text-amber-400">
+                  SISTEMA OPERATIVO EN VIVO
+                </span>
+              </div>
+              <h1 className="text-2xl font-black text-white mt-1">
+                Panel de Control Central • LEYENDS FITNESS GYM
+              </h1>
+              <p className="text-xs text-gym-muted mt-1 max-w-xl">
+                Monitoreo en tiempo real de torniquetes biométricos, cartera de clientes y ventas de la tienda de suplementos.
+              </p>
+            </div>
           </div>
 
           {/* Quick Action Buttons */}
@@ -90,8 +95,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
         </div>
 
-        {/* Decorative corner icon */}
-        <Dumbbell className="absolute -right-4 -bottom-6 w-36 h-36 text-white/5 pointer-events-none stroke-[1]" />
+        {/* Decorative corner watermark */}
+        <img 
+          src="/logo.png" 
+          alt="Watermark" 
+          className="absolute -right-6 -bottom-10 w-48 h-48 opacity-15 pointer-events-none object-contain" 
+        />
       </div>
 
       {/* Multi-Branch & Net Profit Ribbon */}

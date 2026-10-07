@@ -82,18 +82,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div 
             onClick={handleLogoClick}
             className="flex items-center gap-3 cursor-pointer group select-none"
-            title="LEGENDS PRO GYM • Clic para girar"
+            title="LEYENDS GYM • Clic para girar"
           >
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-glow-gold transition-all duration-700 ${
-              isLogoSpinning ? 'rotate-[360deg] scale-110' : 'group-hover:scale-105'
+            <div className={`w-11 h-11 rounded-xl bg-black border border-amber-500/40 p-0.5 flex items-center justify-center shadow-glow-gold transition-all duration-700 overflow-hidden ${
+              isLogoSpinning ? 'rotate-[360deg] scale-110 border-amber-400 ring-2 ring-amber-400/50' : 'group-hover:scale-105 group-hover:border-amber-400'
             }`}>
-              <Dumbbell className="w-6 h-6 text-black stroke-[2.5]" />
+              <img 
+                src="/logo.png" 
+                alt="LEYENDS GYM Logo" 
+                className="w-full h-full object-contain filter drop-shadow" 
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-xl tracking-wider text-white">LEGENDS</span>
+                <span className="font-black text-xl tracking-wider text-white">LEYENDS</span>
                 <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  PRO GYM
+                  FITNESS GYM
                 </span>
               </div>
               <p className="text-[10px] text-gym-muted font-medium tracking-wide hidden sm:block">

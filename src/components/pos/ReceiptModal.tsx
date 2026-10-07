@@ -35,13 +35,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           
           {/* Header */}
           <div className="text-center pb-4 border-b-2 border-dashed border-gray-400">
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <Dumbbell className="w-5 h-5 text-black stroke-[3]" />
-              <h2 className="text-base font-black tracking-wider">LEGENDS PRO GYM</h2>
+            <div className="flex flex-col items-center justify-center gap-1 mb-1.5">
+              <div className="w-14 h-14 bg-black rounded-full p-1 flex items-center justify-center">
+                <img src="/logo.png" alt="Logo LEYENDS" className="w-full h-full object-contain" />
+              </div>
+              <h2 className="text-base font-black tracking-wider">LEYENDS FITNESS GYM</h2>
             </div>
             <p className="text-[11px] font-bold text-gray-700">SUCURSAL CENTRAL FITNESS</p>
             <p className="text-[10px] text-gray-600">Blvd. de los Campeones #500</p>
-            <p className="text-[10px] text-gray-600">RFC: LEG-920311-GYM • Tel: (55) 1234-5678</p>
+            <p className="text-[10px] text-gray-600">RFC: LEY-920311-GYM • Tel: (55) 1234-5678</p>
           </div>
 
           {/* Folio & Metadata */}
