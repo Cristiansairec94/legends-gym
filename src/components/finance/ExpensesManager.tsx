@@ -26,7 +26,6 @@ export const ExpensesManager: React.FC = () => {
     deleteExpense, 
     todayExpensesTotal, 
     monthExpensesTotal, 
-    activeBranch,
     cashSession,
     currentRole 
   } = useGym();
@@ -68,7 +67,7 @@ export const ExpensesManager: React.FC = () => {
       paidFromCashRegister,
       registeredBy: currentRole === 'admin' ? 'Administrador' : 'Recepcionista en turno',
       receiptNumber: receiptNumber.trim() || undefined,
-      branchId: activeBranch.id,
+      branchId: 'main-gym',
       notes: notes.trim() || undefined
     });
 
@@ -162,7 +161,7 @@ export const ExpensesManager: React.FC = () => {
               ${cashSession.expectedCash.toLocaleString('es-MX')}
             </span>
           </div>
-          <p className="text-[11px] text-gym-muted mt-1">Sede: {activeBranch.name}</p>
+          <p className="text-[11px] text-gym-muted mt-1">Caja Principal • Turno en curso</p>
         </div>
 
       </div>

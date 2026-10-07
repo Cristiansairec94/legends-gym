@@ -13,7 +13,6 @@ import { EmployeesManager } from './components/config/EmployeesManager';
 import { RolesManager } from './components/config/RolesManager';
 import { SystemCatalogs } from './components/config/SystemCatalogs';
 import { ProductsCatalog } from './components/products/ProductsCatalog';
-import { BranchesManager } from './components/branches/BranchesManager';
 import { ExpensesManager } from './components/finance/ExpensesManager';
 import { IncomeHistoryView } from './components/finance/IncomeHistoryView';
 import { NotificationsDrawer } from './components/layout/NotificationsDrawer';
@@ -61,7 +60,6 @@ const MainLayout: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-gym-bg to-[#07080c]">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
-            {activeTab === 'branches' && <BranchesManager />}
             {activeTab === 'access' && <TurnstileTerminal />}
             {activeTab === 'pos' && (
               <PosTerminal 

@@ -9,8 +9,7 @@ import {
   Fingerprint, 
   AlertTriangle, 
   ArrowUpRight,
-  Dumbbell,
-  Building2
+  Dumbbell
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -103,17 +102,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         />
       </div>
 
-      {/* Multi-Branch & Net Profit Ribbon */}
+      {/* Live Occupancy & Net Profit Ribbon */}
       <div className="bg-gym-card rounded-2xl border border-gym-border p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         
-        {/* Branch quick info */}
+        {/* Gym live occupancy */}
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-amber-400" />
+            <Users className="w-5 h-5 text-amber-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-200">{activeBranch.name}</span>
+              <span className="text-xs font-bold text-gray-200">Aforo en Sala de Entrenamiento</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-extrabold">
                 {activeBranch.currentOccupancy} atletas en sala
               </span>
@@ -143,10 +142,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
 
           <button
-            onClick={() => setActiveTab('branches')}
-            className="px-3 py-1.5 rounded-xl bg-gym-surface hover:bg-amber-500 hover:text-black text-white text-xs font-bold transition-colors border border-gym-border"
+            onClick={() => setActiveTab('expenses')}
+            className="px-3 py-1.5 rounded-xl bg-gym-surface hover:bg-red-500 hover:text-white text-gray-200 text-xs font-bold transition-colors border border-gym-border"
           >
-            Ver Sedes
+            Ver Gastos
           </button>
         </div>
 

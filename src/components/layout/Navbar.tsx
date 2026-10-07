@@ -9,12 +9,10 @@ import {
   ShoppingCart, 
   Flame, 
   Clock, 
-  Building2, 
   Bell, 
   Cloud, 
   CloudOff, 
-  RefreshCw,
-  ChevronDown
+  RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -39,16 +37,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     cartItemsCount, 
     todayCheckInsCount, 
     cashSession,
-    activeBranch,
-    branches,
-    setActiveBranchId,
     unreadNotificationsCount,
     syncState
   } = useGym();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLogoSpinning, setIsLogoSpinning] = useState(false);
-  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -77,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="bg-gym-card/95 backdrop-blur-md border-b border-gym-border sticky top-0 z-40 px-3 sm:px-5 py-2.5">
       <div className="flex items-center justify-between gap-3">
         
-        {/* Left: Brand Logo (Interactive 3D Spin matching Panadería Brito) */}
+        {/* Left: Brand Logo (Interactive 3D Spin) */}
         <div className="flex items-center gap-4">
           <div 
             onClick={handleLogoClick}
@@ -104,63 +98,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Sistema ERP & Control en Vivo
               </p>
             </div>
-          </div>
-
-          {/* Sede / Sucursal Selector (Like Panadería Brito Branch Selector) */}
-          <div className="relative">
-            <button
-              onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gym-surface/90 hover:bg-gym-surface border border-gym-border text-xs text-white transition-colors"
-              title="Sucursal asignada a tu turno • Clic para cambiar"
-            >
-              <Building2 className="w-4 h-4 text-amber-400" />
-              <div className="text-left hidden md:block">
-                <span className="text-[10px] text-gym-muted font-bold block uppercase leading-none">
-                  Sucursal:
-                </span>
-                <span className="font-bold text-gray-200 truncate max-w-[140px] block leading-tight">
-                  {activeBranch.name.split('-')[0].trim()}
-                </span>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-gym-muted" />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isBranchDropdownOpen && (
-              <div className="absolute left-0 mt-2 w-64 bg-gym-card border border-gym-border rounded-xl shadow-2xl z-50 p-2 space-y-1 animate-in fade-in zoom-in-95">
-                <div className="px-2 py-1 text-[10px] font-bold text-gym-muted uppercase">
-                  Cambiar Sede Activa
-                </div>
-                {branches.map(b => (
-                  <button
-                    key={b.id}
-                    onClick={() => {
-                      setActiveBranchId(b.id);
-                      setIsBranchDropdownOpen(false);
-                    }}
-                    className={`w-full text-left p-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
-                      b.id === activeBranch.id
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'text-gray-300 hover:bg-gym-surface hover:text-white'
-                    }`}
-                  >
-                    <span className="truncate">{b.name}</span>
-                    <span className="text-[10px] text-gym-muted font-mono">{b.code}</span>
-                  </button>
-                ))}
-                <div className="border-t border-gym-border pt-1 mt-1">
-                  <button
-                    onClick={() => {
-                      setActiveTab('branches');
-                      setIsBranchDropdownOpen(false);
-                    }}
-                    className="w-full text-center py-1.5 text-xs text-amber-400 font-bold hover:underline"
-                  >
-                    Ver todas las sedes
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

@@ -22,7 +22,7 @@ import {
 import { ReceiptModal } from '../pos/ReceiptModal';
 
 export const IncomeHistoryView: React.FC = () => {
-  const { sales, todaySalesTotal, cashSession, activeBranch } = useGym();
+  const { sales, todaySalesTotal, cashSession } = useGym();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
@@ -71,8 +71,8 @@ export const IncomeHistoryView: React.FC = () => {
           </div>
 
           <div className="text-right bg-gym-surface/80 px-4 py-2 rounded-xl border border-gym-border">
-            <span className="text-[11px] text-gym-muted uppercase font-bold block">Sede Activa</span>
-            <span className="text-sm font-black text-emerald-400">{activeBranch.name}</span>
+            <span className="text-[11px] text-gym-muted uppercase font-bold block">Gimnasio</span>
+            <span className="text-sm font-black text-emerald-400">LEYENDS FITNESS</span>
           </div>
         </div>
       </div>

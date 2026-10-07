@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   UserCheck,
   Layers,
-  Building2,
   Receipt,
   TrendingUp,
   Cloud
@@ -27,7 +26,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { currentRole, lowStockProductsCount, activeBranch } = useGym();
+  const { currentRole, lowStockProductsCount } = useGym();
   const [isConfigOpen, setIsConfigOpen] = useState(true);
 
   const menuItems = [
@@ -37,13 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       icon: <LayoutDashboard className="w-5 h-5" />,
       badge: null,
       roles: ['admin', 'trainer', 'receptionist'],
-    },
-    {
-      id: 'branches',
-      label: 'Control de Sucursales',
-      icon: <Building2 className="w-5 h-5" />,
-      badge: 'Sedes',
-      roles: ['admin', 'receptionist', 'trainer'],
     },
     {
       id: 'access',
@@ -111,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       <div className="p-3 space-y-1 overflow-y-auto">
         <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gym-muted flex items-center justify-between">
           <span>Módulos del Sistema</span>
-          <span className="text-[9px] text-amber-400 font-mono">{activeBranch.code}</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400" title="Sistema en línea" />
         </div>
 
         {menuItems.map((item) => {
@@ -274,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
           </div>
           <p className="text-[11px] text-gym-muted leading-tight">
-            Sede: <strong className="text-white">{activeBranch.name.split('-')[0].trim()}</strong>
+            Club: <strong className="text-white">LEYENDS FITNESS GYM</strong>
           </p>
           <p className="text-[10px] text-gym-muted mt-0.5">
             Rol: <strong className="text-amber-400 capitalize">{currentRole}</strong>
