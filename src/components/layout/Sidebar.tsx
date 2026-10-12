@@ -17,7 +17,8 @@ import {
   Layers,
   Receipt,
   TrendingUp,
-  Cloud
+  Cloud,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,7 +27,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { currentRole, lowStockProductsCount } = useGym();
+  const { currentRole, lowStockProductsCount, currentUser, logout } = useGym();
   const [isConfigOpen, setIsConfigOpen] = useState(true);
 
   const menuItems = [
@@ -39,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     },
     {
       id: 'access',
-      label: 'Acceso Torniquete (Huella)',
+      label: 'Control de Acceso',
       icon: <Fingerprint className="w-5 h-5" />,
       badge: 'Biométrico',
       roles: ['admin', 'receptionist', 'trainer'],
@@ -54,14 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     },
     {
       id: 'clients',
-      label: 'Socios & Atletas',
+      label: 'Clientes / Membresías',
       icon: <Users className="w-5 h-5" />,
       badge: null,
       roles: ['admin', 'receptionist', 'trainer'],
     },
     {
       id: 'catalog',
-      label: 'Catálogo de Suplementos',
+      label: 'Catálogo de Productos',
       icon: <Layers className="w-5 h-5" />,
       badge: null,
       roles: ['admin', 'receptionist'],
@@ -117,14 +118,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
               disabled={!isAllowed}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs transition-all text-left ${
                 !isAllowed
-                  ? 'opacity-35 cursor-not-allowed text-gym-muted hover:bg-transparent'
+                  ? 'opacity-35 cursor-not-allowed text-zinc-500 hover:bg-transparent'
                   : isActive
-                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm font-bold'
-                  : 'text-gray-300 hover:bg-gym-surface hover:text-white border border-transparent'
+                  ? 'bg-gradient-to-r from-white/[0.12] via-white/[0.06] to-transparent text-white border-l-4 border-l-white border-y border-r border-white/15 shadow-sm font-black'
+                  : 'text-zinc-400 hover:bg-white/[0.05] hover:text-white border border-transparent'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <span className={isActive ? 'text-amber-400' : 'text-gym-muted'}>
+                <span className={isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-zinc-400'}>
                   {item.icon}
                 </span>
                 <span className="truncate">{item.label}</span>
@@ -132,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
               {item.badge && isAllowed && (
                 <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold ${
-                  item.badgeColor || (item.highlight ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-gym-surface text-gym-muted border border-gym-border')
+                  item.badgeColor || (item.highlight ? 'bg-white/15 text-white border border-white/20' : 'bg-white/[0.05] text-zinc-400 border border-white/10')
                 }`}>
                   {item.badge}
                 </span>
@@ -184,12 +185,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   onClick={() => setActiveTab('config_catalogs')}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
                     activeTab === 'config_catalogs'
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                      : 'text-gray-300 hover:text-white hover:bg-gym-surface'
+                      ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-gym-muted" />
+                    <SlidersHorizontal className={`w-3.5 h-3.5 ${activeTab === 'config_catalogs' ? 'text-white' : 'text-zinc-400'}`} />
                     <span>Catálogos de sistema</span>
                   </div>
                 </button>
@@ -199,15 +200,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   onClick={() => setActiveTab('config_roles')}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
                     activeTab === 'config_roles'
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                      : 'text-gray-300 hover:text-white hover:bg-gym-surface'
+                      ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-3.5 h-3.5 text-gym-muted" />
+                    <ShieldCheck className={`w-3.5 h-3.5 ${activeTab === 'config_roles' ? 'text-white' : 'text-zinc-400'}`} />
                     <span>Roles & Permisos</span>
                   </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-[#1B2030] text-gray-300 border border-gym-border">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
                     Roles
                   </span>
                 </button>
@@ -217,15 +218,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   onClick={() => setActiveTab('config_employees')}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-left ${
                     activeTab === 'config_employees'
-                      ? 'bg-gradient-to-r from-amber-950/70 to-gym-surface border border-amber-600/80 text-white shadow-glow-gold/20'
-                      : 'text-gray-300 hover:text-white hover:bg-gym-surface'
+                      ? 'bg-white/10 text-white border border-white/20 shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <UserCheck className={`w-3.5 h-3.5 ${activeTab === 'config_employees' ? 'text-amber-400' : 'text-gym-muted'}`} />
+                    <UserCheck className={`w-3.5 h-3.5 ${activeTab === 'config_employees' ? 'text-white' : 'text-zinc-400'}`} />
                     <span>Empleados</span>
                   </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-[#4a1827] text-rose-200 border border-rose-500/30">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
                     Personal
                   </span>
                 </button>
@@ -235,15 +236,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   onClick={() => setActiveTab('config_sync')}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
                     activeTab === 'config_sync'
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                      : 'text-gray-300 hover:text-white hover:bg-gym-surface'
+                      ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Cloud className="w-3.5 h-3.5 text-gym-muted" />
+                    <Cloud className={`w-3.5 h-3.5 ${activeTab === 'config_sync' ? 'text-white' : 'text-zinc-400'}`} />
                     <span>Sincronización & Datos</span>
                   </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
                     Offline
                   </span>
                 </button>
@@ -258,19 +259,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       {/* Bottom Profile / Terminal Active Info */}
       <div className="p-3 border-t border-gym-border bg-gym-surface/30">
         <div className="p-2.5 rounded-xl bg-gym-surface/60 border border-gym-border">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-bold text-gray-200">Terminal Activa</span>
+              <span className="text-xs font-bold text-gray-200">Personal en Turno</span>
             </div>
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <button
+              onClick={logout}
+              title="Cerrar sesión"
+              className="p-1 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <p className="text-[11px] text-gym-muted leading-tight">
-            Club: <strong className="text-white">LEYENDS FITNESS GYM</strong>
-          </p>
-          <p className="text-[10px] text-gym-muted mt-0.5">
-            Rol: <strong className="text-amber-400 capitalize">{currentRole}</strong>
-          </p>
+
+          {currentUser ? (
+            <div className="flex items-center gap-2.5">
+              <img 
+                src={currentUser.avatarUrl} 
+                alt={currentUser.fullName}
+                className="w-8 h-8 rounded-lg object-cover border border-amber-500/40 shrink-0" 
+              />
+              <div className="overflow-hidden leading-tight">
+                <p className="text-xs font-bold text-white truncate">
+                  {currentUser.fullName}
+                </p>
+                <p className="text-[10px] text-amber-400 font-semibold truncate capitalize">
+                  {currentUser.jobTitle || currentRole}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[11px] text-gym-muted leading-tight">
+                Club: <strong className="text-white">LEYENDS FITNESS GYM</strong>
+              </p>
+              <p className="text-[10px] text-gym-muted mt-0.5">
+                Rol: <strong className="text-amber-400 capitalize">{currentRole}</strong>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </aside>

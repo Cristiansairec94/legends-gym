@@ -15,6 +15,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: '24g de proteína de suero por porción con aislado de suero primario y 5.5g de BCAAs.',
     flavor: 'Doble Chocolate',
     servingSize: '74 servicios (2.27 kg)',
+    soldByScoop: true,
+    scoopPrice: 35,
+    scoopsPerContainer: 74,
   },
   {
     id: 'PROD-002',
@@ -30,6 +33,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: 'Proteína 100% hidrolizada y aislada de absorción ultrarrápida, cero grasa y menos de 1g de azúcar.',
     flavor: 'Vainilla Gourmet',
     servingSize: '71 servicios',
+    soldByScoop: true,
+    scoopPrice: 40,
+    scoopsPerContainer: 71,
   },
   {
     id: 'PROD-003',
@@ -45,6 +51,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: 'Monohidrato de creatina de alta pureza. Aumenta potencia muscular y fuerza explosiva.',
     flavor: 'Sin Sabor (Unflavored)',
     servingSize: '120 servicios (5g c/u)',
+    soldByScoop: true,
+    scoopPrice: 20,
+    scoopsPerContainer: 120,
   },
   {
     id: 'PROD-004',

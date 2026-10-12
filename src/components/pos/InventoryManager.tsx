@@ -9,7 +9,8 @@ import {
   AlertTriangle, 
   PackagePlus, 
   X,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 
 export const InventoryManager: React.FC = () => {
@@ -27,9 +28,11 @@ export const InventoryManager: React.FC = () => {
   const [costPrice, setCostPrice] = useState(350);
   const [stock, setStock] = useState(10);
   const [minStock, setMinStock] = useState(4);
-  const [image, setImage] = useState('https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=400&q=80');
   const [flavor, setFlavor] = useState('');
   const [description, setDescription] = useState('');
+  const [soldByScoop, setSoldByScoop] = useState(false);
+  const [scoopPrice, setScoopPrice] = useState(35);
+  const [scoopsPerContainer, setScoopsPerContainer] = useState(30);
 
   // Calculations
   const totalStockUnits = products.reduce((acc, p) => acc + p.stock, 0);
@@ -55,16 +58,23 @@ export const InventoryManager: React.FC = () => {
       costPrice: Number(costPrice),
       stock: Number(stock),
       minStock: Number(minStock),
-      image: image.trim() || 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=400&q=80',
+      image: 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=400&q=80',
       barcode: `${Math.floor(100000000000 + Math.random() * 900000000000)}`,
       description: description.trim() || 'Suplemento nutricional de alto rendimiento para deportistas.',
       flavor: flavor.trim() || undefined,
+      soldByScoop,
+      scoopPrice: soldByScoop ? Number(scoopPrice) : undefined,
+      scoopsPerContainer: soldByScoop ? Number(scoopsPerContainer) : undefined,
     });
 
     setShowAddModal(false);
     setName('');
     setBrand('');
     setDescription('');
+    setFlavor('');
+    setSoldByScoop(false);
+    setScoopPrice(35);
+    setScoopsPerContainer(30);
   };
 
   return (
@@ -191,7 +201,14 @@ export const InventoryManager: React.FC = () => {
                           className="w-10 h-10 rounded-xl object-cover border border-gym-border shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-white text-xs">{p.name}</div>
+                          <div className="font-bold text-white text-xs flex items-center gap-1.5 flex-wrap">
+                            <span>{p.name}</span>
+                            {p.soldByScoop && (
+                              <span className="inline-flex items-center gap-1 text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-md font-semibold">
+                                <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Scoop
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[11px] text-gym-muted font-mono">{p.brand} • {p.flavor || 'Original'}</div>
                         </div>
                       </div>
@@ -206,6 +223,11 @@ export const InventoryManager: React.FC = () => {
                     <td className="p-4 font-mono text-xs">
                       <span className="text-gym-muted line-through block text-[10px]">Costo: ${p.costPrice}</span>
                       <span className="text-amber-400 font-bold text-sm block">Venta: ${p.price} MXN</span>
+                      {p.soldByScoop && p.scoopPrice && (
+                        <span className="text-emerald-400 text-[11px] font-bold block">
+                          Scoop: ${p.scoopPrice} MXN
+                        </span>
+                      )}
                     </td>
 
                     <td className="p-4">
@@ -277,8 +299,8 @@ export const InventoryManager: React.FC = () => {
       {/* Add Product Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-lg overflow-hidden shadow-2xl relative my-6">
-            <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40">
+          <div className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-lg shadow-2xl relative my-6 max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
               <div className="flex items-center gap-2">
                 <PackagePlus className="w-5 h-5 text-amber-400" />
                 <h3 className="font-bold text-base text-white">Agregar Suplemento al Catálogo</h3>
@@ -288,7 +310,7 @@ export const InventoryManager: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
+            <form onSubmit={handleCreateProduct} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="text-xs font-semibold text-gym-muted block mb-1">Nombre del Suplemento *</label>
                 <input
@@ -373,17 +395,6 @@ export const InventoryManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gym-muted block mb-1">URL de Imagen del Producto</label>
-                <input
-                  type="url"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
                 <label className="text-xs font-semibold text-gym-muted block mb-1">Sabor / Presentación</label>
                 <input
                   type="text"
@@ -394,7 +405,83 @@ export const InventoryManager: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-gym-border">
+              {/* Apartado: Venta por Scoop */}
+              <div className="p-3.5 rounded-xl bg-gym-surface/80 border border-gym-border space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                      soldByScoop 
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' 
+                        : 'bg-gym-card text-gym-muted border border-gym-border'
+                    }`}>
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <label 
+                        onClick={() => setSoldByScoop(!soldByScoop)}
+                        className="text-xs font-bold text-white cursor-pointer select-none block"
+                      >
+                        ¿Se venderá por Scoop / Porción?
+                      </label>
+                      <p className="text-[11px] text-gym-muted">
+                        Habilita la venta de este suplemento en tomas o batidos individuales
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Switch Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setSoldByScoop(!soldByScoop)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      soldByScoop ? 'bg-amber-500' : 'bg-gym-border'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${
+                        soldByScoop ? 'translate-x-5 bg-black' : 'translate-x-0 bg-gray-400'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {soldByScoop && (
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gym-border/60">
+                    <div>
+                      <label className="text-xs font-semibold text-gym-muted block mb-1">
+                        Precio por Scoop ($) *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2 text-gym-muted text-sm font-bold">$</span>
+                        <input
+                          type="number"
+                          value={scoopPrice}
+                          onChange={(e) => setScoopPrice(Number(e.target.value))}
+                          placeholder="35"
+                          min="1"
+                          required={soldByScoop}
+                          className="w-full pl-7 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gym-muted block mb-1">
+                        Scoops por Bote / Envase
+                      </label>
+                      <input
+                        type="number"
+                        value={scoopsPerContainer}
+                        onChange={(e) => setScoopsPerContainer(Number(e.target.value))}
+                        placeholder="30"
+                        min="1"
+                        className="w-full px-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-gym-border shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}

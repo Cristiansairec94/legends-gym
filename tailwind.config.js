@@ -8,14 +8,15 @@ export default {
     extend: {
       colors: {
         gym: {
-          bg: '#0B0D13',
-          card: '#131722',
-          surface: '#1B2030',
-          border: '#272E44',
-          accent: '#FFB800',
-          accentHover: '#E5A500',
-          text: '#F3F4F6',
-          muted: '#9CA3AF',
+          bg: '#09090B',
+          card: '#121215',
+          surface: '#18181D',
+          border: '#272730',
+          accent: '#FFFFFF',
+          accentHover: '#E4E4E7',
+          gold: '#FFB800',
+          text: '#F4F4F6',
+          muted: '#A1A1AA',
           danger: '#EF4444',
           success: '#10B981',
           warning: '#F59E0B',
@@ -23,10 +24,11 @@ export default {
         }
       },
       boxShadow: {
-        'glow-gold': '0 0 25px -5px rgba(255, 184, 0, 0.4)',
+        'glow-white': '0 0 25px -4px rgba(255, 255, 255, 0.35)',
+        'glow-gold': '0 0 25px -4px rgba(245, 158, 11, 0.45)',
         'glow-green': '0 0 30px -5px rgba(16, 185, 129, 0.5)',
         'glow-red': '0 0 30px -5px rgba(239, 68, 68, 0.5)',
-        'scanner': '0 0 20px 2px rgba(255, 184, 0, 0.6)',
+        'scanner': '0 0 22px 3px rgba(255, 255, 255, 0.65)',
       },
       animation: {
         'scan-line': 'scan 2s ease-in-out infinite alternate',

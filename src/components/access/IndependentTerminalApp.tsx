@@ -1,0 +1,569 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useGym } from '../../context/GymContext';
+import { FingerprintScanner } from './FingerprintScanner';
+import { AccessHistory } from './AccessHistory';
+import { TerminalSyncModal, getTerminalConfig, saveTerminalConfig, TerminalConfig } from './TerminalSyncModal';
+import { getRandomMotivationalQuote } from '../../data/motivationalQuotes';
+import { sounds } from '../../services/audio';
+import confetti from 'canvas-confetti';
+import { 
+  Zap, 
+  Maximize2, 
+  Minimize2, 
+  Search, 
+  Clock, 
+  Settings, 
+  Volume2, 
+  VolumeX, 
+  CheckCircle2, 
+  XCircle, 
+  Wifi, 
+  WifiOff, 
+  ShieldCheck, 
+  ShieldAlert,
+  Flame,
+  Sparkles,
+  ArrowRight
+} from 'lucide-react';
+import { getGymAvatar } from '../../utils/genderAvatar';
+
+export const IndependentTerminalApp: React.FC = () => {
+  const { verifyBiometricAccess, members, accessLogs, forceSync } = useGym();
+
+  const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'granted' | 'denied'>('idle');
+  const [currentQuote, setCurrentQuote] = useState<string>('');
+  const [lastVerifiedClient, setLastVerifiedClient] = useState<{
+    name: string;
+    plan: string;
+    daysRemaining?: number;
+    reason: string;
+    avatarUrl?: string;
+    status: 'granted' | 'denied';
+  } | null>(null);
+
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+
+  // Standalone terminal configuration
+  const [config, setConfig] = useState<TerminalConfig>(() => getTerminalConfig());
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(new Date());
+  const [serverStatus, setServerStatus] = useState<'connected' | 'disconnected' | 'checking'>('disconnected');
+
+  // Turnstile relay pulse countdown state
+  const [relayRemainingSeconds, setRelayRemainingSeconds] = useState<number>(0);
+  const relayTimerRef = useRef<number | null>(null);
+
+  // Barcode / RFID Keyboard Wedge scanner buffer
+  const keyBufferRef = useRef<string>('');
+  const lastKeyTimeRef = useRef<number>(0);
+
+  // Check connection to server URL on mount and periodically
+  const checkServerConnection = useCallback(async () => {
+    if (!config.serverUrl) {
+      setServerStatus('disconnected');
+      return false;
+    }
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+      await fetch(config.serverUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+      clearTimeout(timeout);
+      setServerStatus('connected');
+      return true;
+    } catch {
+      setServerStatus('disconnected');
+      return false;
+    }
+  }, [config.serverUrl]);
+
+  useEffect(() => {
+    checkServerConnection();
+    if (config.autoSync) {
+      const interval = setInterval(() => {
+        checkServerConnection();
+      }, config.syncIntervalSeconds * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [checkServerConnection, config.autoSync, config.syncIntervalSeconds]);
+
+  // Speech synthesis announcement
+  const announceAccess = (clientName: string, granted: boolean) => {
+    if (!config.voiceEnabled || isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      const text = granted 
+        ? `Bienvenido ${clientName}, acceso concedido` 
+        : `Acceso restringido para ${clientName}`;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-MX';
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      utterance.volume = config.soundVolume ?? 0.9;
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Turnstile relay pulse simulator
+  const triggerTurnstileRelay = (seconds: number) => {
+    if (relayTimerRef.current) {
+      clearInterval(relayTimerRef.current);
+    }
+    setRelayRemainingSeconds(seconds);
+    relayTimerRef.current = window.setInterval(() => {
+      setRelayRemainingSeconds(prev => {
+        if (prev <= 1) {
+          if (relayTimerRef.current) clearInterval(relayTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Main scan execution
+  const executeScan = (identifier: string) => {
+    if (scanStatus === 'scanning') return;
+    
+    if (!isMuted) {
+      sounds.unlock();
+      sounds.playScanBlip();
+    }
+    setScanStatus('scanning');
+    setLastVerifiedClient(null);
+
+    setTimeout(() => {
+      const result = verifyBiometricAccess(identifier);
+      
+      if (result.granted) {
+        if (!isMuted) sounds.playAccessGranted();
+        const quote = getRandomMotivationalQuote(currentQuote);
+        setCurrentQuote(quote);
+        
+        triggerTurnstileRelay(config.relayPulseDurationSeconds || 4);
+
+        if (result.client) {
+          announceAccess(result.client.fullName, true);
+          setLastVerifiedClient({
+            name: result.client.fullName,
+            plan: result.client.membership.planName,
+            daysRemaining: result.client.membership.daysRemaining,
+            reason: result.reason,
+            avatarUrl: getGymAvatar(result.client.fullName, result.client.avatarUrl),
+            status: 'granted',
+          });
+        }
+
+        try {
+          confetti({
+            particleCount: 45,
+            spread: 70,
+            origin: { y: 0.5, x: 0.5 },
+            colors: ['#FFFFFF', '#E4E4E7', '#A1A1AA', '#F4F4F6'],
+          });
+        } catch {
+          // ignore
+        }
+      } else {
+        if (!isMuted) sounds.playAccessDenied();
+        if (result.client) {
+          announceAccess(result.client.fullName, false);
+          setLastVerifiedClient({
+            name: result.client.fullName,
+            plan: result.client.membership.planName,
+            daysRemaining: result.client.membership.daysRemaining,
+            reason: result.reason,
+            avatarUrl: getGymAvatar(result.client.fullName, result.client.avatarUrl),
+            status: 'denied',
+          });
+        } else {
+          announceAccess('Socio no encontrado', false);
+          setLastVerifiedClient({
+            name: 'Huella / Credencial Desconocida',
+            plan: 'Sin Membresía',
+            reason: result.reason || 'No registrado en la base de datos',
+            status: 'denied',
+          });
+        }
+      }
+
+      setScanStatus(result.granted ? 'granted' : 'denied');
+
+      // Return to idle
+      setTimeout(() => {
+        setScanStatus('idle');
+        setLastVerifiedClient(null);
+      }, 4500);
+    }, 950);
+  };
+
+  // Direct sensor pad click (quick scan Carlos Mendoza MEM-001 or current search query)
+  const handleDirectPadClick = () => {
+    if (searchQuery.trim()) {
+      executeScan(searchQuery.trim());
+      setSearchQuery('');
+    } else {
+      executeScan('MEM-001');
+    }
+  };
+
+  // Global Keyboard listener for USB Barcode / RFID scanner guns
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is actively typing in a standard input or textarea
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return;
+      }
+
+      const now = Date.now();
+      // Hardware barcode scanners send keystrokes extremely rapidly (< 50ms between keys)
+      if (now - lastKeyTimeRef.current > 300) {
+        keyBufferRef.current = '';
+      }
+      lastKeyTimeRef.current = now;
+
+      if (e.key === 'Enter') {
+        const scannedCode = keyBufferRef.current.trim();
+        if (scannedCode.length >= 2) {
+          executeScan(scannedCode);
+        }
+        keyBufferRef.current = '';
+      } else if (e.key.length === 1) {
+        keyBufferRef.current += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [scanStatus]);
+
+  // Fullscreen / Kiosk toggle
+  const toggleFullScreen = () => {
+    // Check if electronAPI exists
+    if ((window as any).electronAPI?.toggleFullScreen) {
+      (window as any).electronAPI.toggleFullScreen();
+      setIsFullScreen(!isFullScreen);
+      return;
+    }
+
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      setIsFullScreen(true);
+    } else {
+      document.exitFullscreen().catch(() => {});
+      setIsFullScreen(false);
+    }
+  };
+
+  // Manual sync trigger
+  const handleManualSync = async (): Promise<boolean> => {
+    setIsSyncing(true);
+    try {
+      await forceSync();
+      const connected = await checkServerConnection();
+      setLastSyncTime(new Date());
+      setIsSyncing(false);
+      return connected;
+    } catch {
+      setIsSyncing(false);
+      return false;
+    }
+  };
+
+  const handleSaveConfig = (newConfig: TerminalConfig) => {
+    setConfig(newConfig);
+    saveTerminalConfig(newConfig);
+    checkServerConnection();
+  };
+
+  return (
+    <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none p-3 sm:p-6 lg:p-8">
+      
+      {/* Top Application Bar / Brand & Terminal Header */}
+      <div className="max-w-4xl mx-auto w-full mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-xl relative overflow-hidden">
+          
+          {/* Subtle glow accent */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Left Title matching user screenshot */}
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <h1 className="text-xl font-black text-white tracking-wide uppercase">
+                CONTROL DE ACCESO
+              </h1>
+              <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-md font-bold">
+                Lector Activo
+              </span>
+            </div>
+            <p className="text-sm text-gym-muted mt-1">
+              Validación instantánea de huella digital y vigencia de cuota en torniquete principal.
+            </p>
+          </div>
+
+          {/* Right Action Buttons */}
+          <div className="flex items-center flex-wrap gap-2.5">
+            {/* View Access History matching user screenshot button */}
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
+              title="Ver desglose detallado de accesos registrados"
+            >
+              <Clock className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+              <span>Ver Registro de Accesos</span>
+              <span className="bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border border-amber-500/40">
+                {accessLogs.length}
+              </span>
+            </button>
+
+            {/* Mute audio toggle */}
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              className="p-2 rounded-xl bg-gym-surface hover:bg-gym-border text-gym-muted hover:text-white transition-colors border border-gym-border"
+              title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            </button>
+
+            {/* Network / Terminal Settings */}
+            <button
+              onClick={() => setIsConfigModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border text-xs font-semibold text-gray-200 transition-colors border border-gym-border"
+              title="Configuración de red y sincronización"
+            >
+              <Settings className="w-4 h-4 text-gym-muted hover:text-amber-400" />
+              {serverStatus === 'connected' ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" title="Enlazado al Servidor Central" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400" title="Modo Autónomo Local" />
+              )}
+            </button>
+
+            {/* Kiosk / Fullscreen toggle */}
+            <button
+              onClick={toggleFullScreen}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gym-surface hover:bg-gym-border text-xs font-semibold text-gray-200 transition-colors border border-gym-border"
+              title="Modo pantalla completa para kiosco de recepción (F11)"
+            >
+              {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <span className="hidden md:inline">{isFullScreen ? 'Salir' : 'Pantalla Completa'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Container: Biometric Terminal Card matching user screenshot */}
+      <div className="max-w-2xl mx-auto w-full space-y-5">
+        
+        {/* Hardware Sensor Simulator Box */}
+        <div className="bg-gym-card rounded-2xl border border-gym-border p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+          
+          {/* Top sensor status bar */}
+          <div className="flex items-center justify-between border-b border-gym-border pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-200">
+                SENSOR BIOMÉTRICO ÓPTICO USB
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {serverStatus === 'connected' ? (
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                  <Wifi className="w-3 h-3" />
+                  LAN Activa
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                  <WifiOff className="w-3 h-3" />
+                  Caché Local
+                </span>
+              )}
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">
+                500 DPI • Online
+              </span>
+            </div>
+          </div>
+
+          {/* Turnstile Relay Active Banner when open */}
+          {relayRemainingSeconds > 0 && (
+            <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-sm uppercase tracking-wider">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-spin" />
+                <span>TORNIQUETE LIBERADO (PASO LIBRE)</span>
+                <span className="bg-emerald-400 text-black px-2 py-0.2 rounded-full font-mono text-xs font-black">
+                  {relayRemainingSeconds}s
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Central Animated Scanner Pad */}
+          <FingerprintScanner
+            status={scanStatus}
+            onScanClick={handleDirectPadClick}
+            disabled={scanStatus === 'scanning'}
+            motivationalQuote={currentQuote}
+            clientPhoto={lastVerifiedClient?.avatarUrl}
+            clientName={lastVerifiedClient?.name}
+            planName={lastVerifiedClient?.plan}
+          />
+
+          {/* Verified Client Card (when granted or denied) */}
+          {lastVerifiedClient && scanStatus !== 'idle' && (
+            <div className={`mt-4 p-3.5 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 ${
+              lastVerifiedClient.status === 'granted'
+                ? 'bg-emerald-950/20 border-emerald-500/40'
+                : 'bg-red-950/20 border-red-500/40'
+            }`}>
+              <div className="flex items-center gap-3">
+                <img 
+                  src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
+                  alt={lastVerifiedClient.name} 
+                  loading="eager"
+                  className="w-12 h-12 rounded-xl object-cover border border-gym-border shadow-md"
+                />
+                <div>
+                  <h4 className="text-sm font-black text-white">{lastVerifiedClient.name}</h4>
+                  <p className="text-xs text-gray-300 mt-0.5">{lastVerifiedClient.reason}</p>
+                  {lastVerifiedClient.plan && (
+                    <span className="text-[11px] font-mono text-amber-400">
+                      Plan: {lastVerifiedClient.plan}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {typeof lastVerifiedClient.daysRemaining === 'number' && (
+                <div className="text-right shrink-0">
+                  <span className={`text-xs font-bold px-2 py-1 rounded-md block ${
+                    lastVerifiedClient.daysRemaining >= 0
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                  }`}>
+                    {lastVerifiedClient.daysRemaining >= 0 
+                      ? `${lastVerifiedClient.daysRemaining} días vigentes` 
+                      : `Vencida`}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Manual Search or Barcode Input matching user screenshot */}
+          <div className="mt-5 pt-4 border-t border-gym-border/80">
+            <label className="text-xs font-semibold text-gym-muted block mb-1.5">
+              O buscar socio por nombre, cédula o ID:
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      executeScan(searchQuery.trim());
+                      setSearchQuery('');
+                    }
+                  }}
+                  placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
+                  className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    executeScan(searchQuery.trim());
+                    setSearchQuery('');
+                  }
+                }}
+                disabled={!searchQuery.trim() || scanStatus === 'scanning'}
+                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all shrink-0"
+              >
+                Verificar
+              </button>
+            </div>
+            <p className="text-[11px] text-gym-muted mt-1.5">
+              💡 <span className="font-semibold text-gray-300">Escáner USB / RFID automático:</span> Puedes pasar cualquier tarjeta, código o huella directamente en este equipo en cualquier momento.
+            </p>
+          </div>
+
+          {/* Quick Access Today Counter matching user screenshot */}
+          <div className="mt-5 pt-3.5 border-t border-gym-border/80 flex items-center justify-between">
+            <span className="text-xs text-gym-muted flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
+            </span>
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Ver desglose completo &rarr;</span>
+            </button>
+          </div>
+
+        </div>
+
+        {/* Quick Testing Bar for Operator convenience */}
+        <div className="p-3 bg-gym-card/60 rounded-xl border border-gym-border flex items-center justify-between text-xs text-gym-muted">
+          <span>Pruebas rápidas:</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => executeScan('MEM-001')}
+              disabled={scanStatus === 'scanning'}
+              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-emerald-400 font-medium transition-colors"
+            >
+              ✓ Carlos Mendoza (Activo)
+            </button>
+            <button
+              onClick={() => executeScan('MEM-003')}
+              disabled={scanStatus === 'scanning'}
+              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-amber-400 font-medium transition-colors"
+            >
+              ⚠ Juan Pérez (Vencido)
+            </button>
+            <button
+              onClick={() => executeScan('DESCONOCIDO')}
+              disabled={scanStatus === 'scanning'}
+              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-red-400 font-medium transition-colors"
+            >
+              ✗ No Registrado
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Access History Breakdown Modal */}
+      <AccessHistory 
+        isOpen={isHistoryModalOpen} 
+        onClose={() => setIsHistoryModalOpen(false)} 
+      />
+
+      {/* Independent Terminal & Network Configuration Modal */}
+      <TerminalSyncModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        config={config}
+        onSaveConfig={handleSaveConfig}
+        onManualSync={handleManualSync}
+        isSyncing={isSyncing}
+        lastSyncTime={lastSyncTime}
+        serverStatus={serverStatus}
+      />
+
+    </div>
+  );
+};

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gym-bg text-gym-text antialiased selection:bg-amber-500 selection:text-black;
+    @apply bg-gym-bg text-gym-text antialiased selection:bg-white selection:text-black;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 }
@@ -16,30 +16,30 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0d13;
+  background: #09090b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #272e44;
+  background: #272730;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ffb800;
+  background: #ffffff;
 }
 
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 184, 0, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 15px rgba(255, 184, 0, 0);
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 184, 0, 0);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
 
@@ -48,20 +48,146 @@
 }
 
 @media print {
+  @page {
+    size: auto;
+    margin: 6mm 6mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When printing barcodes: HIDE #root completely from layout so it takes 0 space */
+  body.is-printing-barcodes #root {
+    display: none !important;
+  }
+
+  /* Hide screen elements when printing */
   body * {
     visibility: hidden;
   }
-  #printable-receipt, #printable-receipt * {
+
+  .print\:hidden,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  /* Make target printable elements visible */
+  #printable-receipt, #printable-receipt *,
+  #printable-barcodes, #printable-barcodes * {
     visibility: visible;
   }
+
+  /* Reset any modal wrappers so they NEVER displace content down */
+  .print-modal-overlay,
+  .print-modal-container,
+  .print-modal-scroll {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    transform: none !important;
+    inset: auto !important;
+  }
+
+  /* POS Thermal Receipt */
   #printable-receipt {
     position: absolute;
     left: 0;
     top: 0;
     width: 80mm;
     margin: 0;
-    padding: 10px;
-    color: #000;
-    background: #fff;
+    padding: 8px;
+    color: #000000;
+    background: #ffffff;
+  }
+
+  /* Barcodes Print Container: Full width, starts at top of page 1 */
+  #printable-barcodes {
+    position: static !important;
+    display: grid !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  /* Barcode Cards: Strict page-break avoidance so rows are NEVER sliced in half */
+  .barcode-label-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Print Grid Layouts */
+  .print-cols-4 {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 2.5mm !important;
+  }
+
+  .print-cols-3 {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 3mm !important;
+  }
+
+  .print-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 2mm !important;
+  }
+
+  .print-cols-1 {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4mm !important;
+    width: 100% !important;
+  }
+
+  /* Fixed physical label heights in print */
+  .print-h-42 {
+    height: 42mm !important;
+    min-height: 42mm !important;
+    max-height: 42mm !important;
+  }
+
+  .print-h-44 {
+    height: 44mm !important;
+    min-height: 44mm !important;
+    max-height: 44mm !important;
+  }
+
+  .print-h-56 {
+    height: 56mm !important;
+    min-height: 56mm !important;
+    max-height: 56mm !important;
   }
 }
+

@@ -17,6 +17,18 @@ import { ExpensesManager } from './components/finance/ExpensesManager';
 import { IncomeHistoryView } from './components/finance/IncomeHistoryView';
 import { NotificationsDrawer } from './components/layout/NotificationsDrawer';
 import { DataSyncModal } from './components/config/DataSyncModal';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { IndependentTerminalApp } from './components/access/IndependentTerminalApp';
+
+export const isTerminalMode = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.get('mode') === 'terminal' || searchParams.get('terminal') === 'true') return true;
+  if (window.location.hash.includes('terminal')) return true;
+  if ((window as any).electronAPI?.appMode === 'terminal') return true;
+  if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
+  return false;
+};
 
 const MainLayout: React.FC = () => {
   const { currentRole } = useGym();
@@ -121,10 +133,26 @@ const MainLayout: React.FC = () => {
   );
 };
 
+const AppContent: React.FC = () => {
+  const { isAuthenticated } = useGym();
+  const [terminalMode] = useState<boolean>(() => isTerminalMode());
+
+  // Independent Turnstile terminal mode for separate computer
+  if (terminalMode) {
+    return <IndependentTerminalApp />;
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
+
+  return <MainLayout />;
+};
+
 export default function App() {
   return (
     <GymProvider>
-      <MainLayout />
+      <AppContent />
     </GymProvider>
   );
 }

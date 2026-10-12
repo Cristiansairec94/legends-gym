@@ -15,18 +15,33 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { renewMembership } = useGym();
+  const { renewMembership, catalogPlans } = useGym();
 
   const [selectedPlan, setSelectedPlan] = useState<MembershipPlanType>('monthly');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [amountGiven, setAmountGiven] = useState<string>('');
 
-  const plans: { type: MembershipPlanType; name: string; months: number; price: number }[] = [
+  const DEFAULT_PLANS: { type: MembershipPlanType; name: string; months: number; price: number }[] = [
     { type: 'daily', name: 'Pase por Día (Day Pass)', months: 0, price: 150 },
     { type: 'monthly', name: 'Mensualidad Estándar (30 Días)', months: 1, price: 850 },
     { type: 'quarterly', name: 'Plan Trimestral Fuerza (90 Días)', months: 3, price: 2300 },
     { type: 'vip', name: 'Membresía Black VIP Anual (365 Días)', months: 12, price: 9500 },
   ];
+
+  const plans = catalogPlans && catalogPlans.length > 0
+    ? catalogPlans.map(p => {
+        let months = 1;
+        if (p.durationDays === 1) months = 0;
+        else if (p.durationDays === 90) months = 3;
+        else if (p.durationDays >= 360) months = 12;
+        return {
+          type: p.type,
+          name: `${p.name} (${p.durationDays === 1 ? '1 Día' : `${p.durationDays} Días`})`,
+          months,
+          price: p.price,
+        };
+      })
+    : DEFAULT_PLANS;
 
   const currentPlan = plans.find(p => p.type === selectedPlan) || plans[1];
   const cashNum = parseFloat(amountGiven) || 0;

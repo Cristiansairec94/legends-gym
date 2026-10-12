@@ -36,6 +36,7 @@ export const RolesManager: React.FC = () => {
   ];
 
   const handleTogglePermission = (key: keyof RolePermissions) => {
+    if (selectedRole === 'admin') return;
     const currentVal = activeRoleDef.permissions[key];
     updateRolePermissions(selectedRole, { [key]: !currentVal });
     setSaveToast(true);
@@ -108,9 +109,9 @@ export const RolesManager: React.FC = () => {
 
               <div className="mt-4 pt-3 border-t border-gym-border/60 flex items-center justify-between text-xs">
                 <span className="text-gym-muted">
-                  {Object.values(r.permissions).filter(Boolean).length} permisos activos
+                  {r.id === 'admin' ? 'Acceso Total (Permanente)' : `${Object.values(r.permissions).filter(Boolean).length} permisos activos`}
                 </span>
-                {currentRole !== r.id && (
+                {currentRole !== r.id ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -120,6 +121,10 @@ export const RolesManager: React.FC = () => {
                   >
                     Activar este rol
                   </button>
+                ) : (
+                  <span className="text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                    <Check className="w-3 h-3" /> En uso
+                  </span>
                 )}
               </div>
             </div>
@@ -129,21 +134,43 @@ export const RolesManager: React.FC = () => {
 
       {/* Permission Matrix */}
       <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg p-6">
-        <div className="flex items-center justify-between border-b border-gym-border pb-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gym-border pb-4 mb-4">
           <div>
-            <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <span>Matriz de Permisos para:</span>
-              <span className="text-amber-400">{activeRoleDef.name}</span>
-            </h3>
-            <p className="text-xs text-gym-muted mt-0.5">
-              Haz clic en cualquier interruptor para habilitar o denegar el acceso al módulo correspondiente.
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h3 className="font-bold text-base text-white flex items-center gap-2">
+                <span>Matriz de Permisos para:</span>
+                <span className="text-amber-400">{activeRoleDef.name}</span>
+              </h3>
+              {activeRoleDef.id === 'admin' && (
+                <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                  <Lock className="w-3 h-3" /> Protegido / No modificable
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gym-muted mt-1">
+              {activeRoleDef.id === 'admin' 
+                ? 'El Administrador General cuenta con todos los accesos habilitados de manera fija y permanente para asegurar el control total del club.' 
+                : 'Haz clic en cualquier interruptor para habilitar o denegar el acceso al módulo correspondiente.'}
             </p>
           </div>
 
-          <span className="text-xs font-mono text-gym-muted bg-gym-surface px-2.5 py-1 rounded-lg border border-gym-border">
+          <span className="text-xs font-mono text-gym-muted bg-gym-surface px-2.5 py-1 rounded-lg border border-gym-border shrink-0 self-start sm:self-auto">
             ID: {activeRoleDef.id}
           </span>
         </div>
+
+        {/* Admin Security Information Banner */}
+        {activeRoleDef.id === 'admin' && (
+          <div className="mb-5 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start sm:items-center gap-3 text-xs text-amber-300">
+            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div className="leading-relaxed">
+              <span className="font-bold text-white block">Permisos de Administrador Bloqueados contra Modificación</span>
+              Por políticas de seguridad, este perfil posee todas las facultades activas de forma invariable. Si necesitas un perfil con restricciones para mostrador o entrenamiento, selecciona y configura <strong>Recepción</strong> o <strong>Coach</strong>.
+            </div>
+          </div>
+        )}
 
         <div className="divide-y divide-gym-border/40">
           {permissionLabels.map((perm) => {
@@ -165,27 +192,42 @@ export const RolesManager: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => !isAdminRole && handleTogglePermission(perm.key)}
-                  disabled={isAdminRole}
-                  className={`w-12 h-6 rounded-full transition-colors p-1 relative flex items-center shrink-0 ${
-                    hasPermission ? 'bg-amber-500' : 'bg-gym-surface border border-gym-border'
-                  } ${isAdminRole ? 'opacity-80 cursor-not-allowed' : 'cursor-pointer'}`}
-                  title={isAdminRole ? 'El administrador siempre tiene todos los permisos activos' : 'Alternar permiso'}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-black shadow-md transition-transform ${
-                    hasPermission ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
+                {isAdminRole ? (
+                  <div 
+                    className="flex items-center gap-2 select-none cursor-not-allowed shrink-0"
+                    title="Permiso permanente e inmodificable para el Administrador General"
+                  >
+                    <span className="text-[11px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                      <Lock className="w-3 h-3 text-amber-400" />
+                      <span>Fijo / Total</span>
+                    </span>
+                    <div className="w-11 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 p-0.5 relative flex items-center opacity-60">
+                      <div className="w-4 h-4 rounded-full bg-amber-400/90 shadow-sm translate-x-5" />
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleTogglePermission(perm.key)}
+                    className={`w-12 h-6 rounded-full transition-colors p-1 relative flex items-center shrink-0 cursor-pointer ${
+                      hasPermission ? 'bg-amber-500' : 'bg-gym-surface border border-gym-border'
+                    }`}
+                    title="Alternar permiso"
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-black shadow-md transition-transform ${
+                      hasPermission ? 'translate-x-6' : 'translate-x-0'
+                    }`} />
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
 
         {activeRoleDef.id === 'admin' && (
-          <p className="text-xs text-amber-400/80 mt-4 pt-3 border-t border-gym-border/60">
-            * El perfil de Administrador cuenta con todos los permisos habilitados por diseño para garantizar la supervisión total del gimnasio.
-          </p>
+          <div className="mt-4 pt-3 border-t border-gym-border/60 flex items-center gap-2 text-xs text-amber-400/80">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            <span>El Administrador General cuenta con todos los permisos habilitados por diseño para garantizar la supervisión total del gimnasio.</span>
+          </div>
         )}
       </div>
 

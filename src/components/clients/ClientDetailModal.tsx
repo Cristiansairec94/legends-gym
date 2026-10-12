@@ -1,5 +1,6 @@
 import React from 'react';
-import { Client } from '../../types';
+import { Client, DEFAULT_CLIENT_AVATAR } from '../../types';
+import { getGymAvatar, getOfflineGymSvgAvatar, detectGender } from '../../utils/genderAvatar';
 import { 
   X, 
   Fingerprint, 
@@ -12,7 +13,8 @@ import {
   Clock, 
   AlertTriangle,
   RefreshCw,
-  Award
+  Award,
+  Pencil
 } from 'lucide-react';
 
 interface ClientDetailModalProps {
@@ -20,6 +22,7 @@ interface ClientDetailModalProps {
   onClose: () => void;
   onEnrollBiometric: () => void;
   onRenewMembership: () => void;
+  onEdit?: () => void;
 }
 
 export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
@@ -27,6 +30,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
   onClose,
   onEnrollBiometric,
   onRenewMembership,
+  onEdit,
 }) => {
   const isExpired = client.membership.status === 'expired' || client.membership.daysRemaining < 0;
   const isExpiringSoon = client.membership.status === 'expiring_soon' || (client.membership.daysRemaining <= 5 && !isExpired);
@@ -59,8 +63,11 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-6">
             <div className="flex items-end gap-4">
               <img 
-                src={client.avatarUrl} 
+                src={getGymAvatar(client.fullName, client.avatarUrl)} 
                 alt={client.fullName} 
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(client.fullName));
+                }}
                 className="w-24 h-24 rounded-2xl object-cover border-4 border-gym-card shadow-xl"
               />
               <div>
@@ -74,7 +81,17 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <button
+                  onClick={onEdit}
+                  className="px-3.5 py-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 font-bold text-xs flex items-center gap-1.5 transition-all"
+                  title="Editar datos del socio"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Editar Datos</span>
+                </button>
+              )}
               <button
                 onClick={onRenewMembership}
                 className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 shadow-glow-gold transition-all"

@@ -23,6 +23,7 @@ import {
 } from '../data/initialEmployees';
 import { INITIAL_BRANCHES } from '../data/initialBranches';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
+import { getGymAvatar } from '../utils/genderAvatar';
 
 const KEYS = {
   MEMBERS: 'legends_members_v1',
@@ -39,7 +40,8 @@ const KEYS = {
   ACTIVE_BRANCH_ID: 'legends_active_branch_id_v1',
   EXPENSES: 'legends_expenses_v1',
   NOTIFICATIONS: 'legends_notifications_v1',
-  LAST_SYNC: 'legends_last_sync_v1'
+  LAST_SYNC: 'legends_last_sync_v1',
+  CURRENT_USER: 'legends_current_user_v1'
 };
 
 
@@ -47,9 +49,16 @@ export const storage = {
   getMembers(): Client[] {
     try {
       const data = localStorage.getItem(KEYS.MEMBERS);
-      return data ? JSON.parse(data) : INITIAL_MEMBERS;
+      const list: Client[] = data ? JSON.parse(data) : INITIAL_MEMBERS;
+      return list.map(m => ({
+        ...m,
+        avatarUrl: getGymAvatar(m.fullName, m.avatarUrl)
+      }));
     } catch {
-      return INITIAL_MEMBERS;
+      return INITIAL_MEMBERS.map(m => ({
+        ...m,
+        avatarUrl: getGymAvatar(m.fullName, m.avatarUrl)
+      }));
     }
   },
 
@@ -211,11 +220,45 @@ export const storage = {
     }
   },
 
+  // Current User / Session
+  getCurrentUser(): Employee | null {
+    try {
+      const data = localStorage.getItem(KEYS.CURRENT_USER);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  saveCurrentUser(user: Employee | null): void {
+    try {
+      if (user) {
+        localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(KEYS.CURRENT_USER);
+      }
+    } catch (e) {
+      console.error('Error saving current user:', e);
+    }
+  },
+
   // Employees
   getEmployees(): Employee[] {
     try {
       const data = localStorage.getItem(KEYS.EMPLOYEES);
-      return data ? JSON.parse(data) : INITIAL_EMPLOYEES;
+      if (!data) return INITIAL_EMPLOYEES;
+      const parsed: Employee[] = JSON.parse(data);
+      return parsed.map((emp) => {
+        const initial = INITIAL_EMPLOYEES.find(
+          (ie) => ie.id === emp.id || ie.email.toLowerCase() === emp.email.toLowerCase()
+        );
+        return {
+          ...emp,
+          password: emp.password || initial?.password || '1234',
+          pin: emp.pin || initial?.pin || '1234',
+          username: emp.username || initial?.username || emp.email.split('@')[0],
+        };
+      });
     } catch {
       return INITIAL_EMPLOYEES;
     }

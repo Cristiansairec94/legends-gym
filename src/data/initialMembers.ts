@@ -1,4 +1,10 @@
 import { Client } from '../types';
+import { 
+  gymDumbbellsBase64,
+  gymRackBase64,
+  gymCableBase64,
+  gymCardioBase64
+} from '../assets/avatars/avatarBase64';
 
 export const INITIAL_MEMBERS: Client[] = [
   {
@@ -7,7 +13,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '45892011',
     email: 'carlos.mendoza@email.com',
     phone: '+52 55 1234 5678',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymRackBase64,
     birthDate: '1992-05-14',
     emergencyContact: {
       name: 'María Mendoza',
@@ -38,7 +44,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '78291034',
     email: 'valeria.rios@email.com',
     phone: '+52 55 4433 2211',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymCableBase64,
     birthDate: '1998-11-20',
     emergencyContact: {
       name: 'Roberto Ríos',
@@ -69,7 +75,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '63901245',
     email: 'alejandro.soto@email.com',
     phone: '+52 55 7788 9900',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymDumbbellsBase64,
     birthDate: '1989-03-30',
     emergencyContact: {
       name: 'Lorena Vega',
@@ -100,7 +106,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '89104523',
     email: 'sofia.dominguez@email.com',
     phone: '+52 55 6655 4433',
-    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymCardioBase64,
     birthDate: '1995-08-12',
     emergencyContact: {
       name: 'Andrés Domínguez',
@@ -131,7 +137,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '32091487',
     email: 'mateo.guerrero@email.com',
     phone: '+52 55 9900 1122',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymRackBase64,
     birthDate: '2004-02-18',
     emergencyContact: {
       name: 'Patricia Guerrero',
@@ -162,7 +168,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '54019283',
     email: 'laura.paredes@email.com',
     phone: '+52 55 3322 1100',
-    avatarUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymCableBase64,
     birthDate: '1997-07-04',
     emergencyContact: {
       name: 'Carmen Ruiz',
@@ -190,7 +196,7 @@ export const INITIAL_MEMBERS: Client[] = [
     documentId: '90812345',
     email: 'diego.alarcon@email.com',
     phone: '+52 55 8765 4321',
-    avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80',
+    avatarUrl: gymDumbbellsBase64,
     birthDate: '1991-09-17',
     emergencyContact: {
       name: 'Gabriel Alarcón',

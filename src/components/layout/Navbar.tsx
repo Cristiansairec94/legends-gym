@@ -12,7 +12,8 @@ import {
   Bell, 
   Cloud, 
   CloudOff, 
-  RefreshCw
+  RefreshCw,
+  LogOut
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -32,6 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab 
 }) => {
   const { 
+    currentUser,
+    logout,
     currentRole, 
     setCurrentRole, 
     cartItemsCount, 
@@ -55,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       particleCount: 35,
       spread: 60,
       origin: { y: 0.1, x: 0.1 },
-      colors: ['#FFB800', '#FF8A00', '#FFFFFF']
+      colors: ['#FFFFFF', '#E4E4E7', '#A1A1AA', '#F4F4F6']
     });
     setTimeout(() => setIsLogoSpinning(false), 900);
     setActiveTab('dashboard');
@@ -68,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="bg-gym-card/95 backdrop-blur-md border-b border-gym-border sticky top-0 z-40 px-3 sm:px-5 py-2.5">
+    <header className="bg-[#09090b]/90 backdrop-blur-xl border-b border-white/[0.08] sticky top-0 z-40 px-3 sm:px-5 py-2.5 shadow-md">
       <div className="flex items-center justify-between gap-3">
         
         {/* Left: Brand Logo (Interactive 3D Spin) */}
@@ -78,8 +81,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-3 cursor-pointer group select-none"
             title="LEYENDS GYM • Clic para girar"
           >
-            <div className={`w-11 h-11 rounded-xl bg-black border border-amber-500/40 p-0.5 flex items-center justify-center shadow-glow-gold transition-all duration-700 overflow-hidden ${
-              isLogoSpinning ? 'rotate-[360deg] scale-110 border-amber-400 ring-2 ring-amber-400/50' : 'group-hover:scale-105 group-hover:border-amber-400'
+            <div className={`w-11 h-11 rounded-xl bg-black border border-white/25 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.15)] ring-1 ring-white/10 transition-all duration-700 overflow-hidden ${
+              isLogoSpinning ? 'rotate-[360deg] scale-110 border-white ring-2 ring-white/40' : 'group-hover:scale-105 group-hover:border-white/50'
             }`}>
               <img 
                 src="/logo.png" 
@@ -90,11 +93,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-xl tracking-wider text-white">LEYENDS</span>
-                <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-md bg-white/10 text-white border border-white/20 tracking-wider shadow-sm">
                   FITNESS GYM
                 </span>
               </div>
-              <p className="text-[10px] text-gym-muted font-medium tracking-wide hidden sm:block">
+              <p className="text-[10px] text-zinc-400 font-medium tracking-wide hidden sm:block">
                 Sistema ERP & Control en Vivo
               </p>
             </div>
@@ -102,12 +105,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Center / Middle: Real-time Stats & Badges */}
-        <div className="hidden lg:flex items-center gap-4 text-xs">
+        <div className="hidden lg:flex items-center gap-3 text-xs">
           
           {/* Real-time Clock */}
-          <div className="flex items-center gap-2 text-gym-muted bg-gym-surface/60 px-3 py-1.5 rounded-lg border border-gym-border/60">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="font-mono text-gray-200">
+          <div className="flex items-center gap-2 text-zinc-400 bg-white/[0.04] px-3 py-1.5 rounded-xl border border-white/[0.08]">
+            <Clock className="w-3.5 h-3.5 text-zinc-300" />
+            <span className="font-mono text-zinc-200 font-medium">
               {currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
@@ -115,22 +118,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Today Check-Ins */}
           <div 
             onClick={() => setActiveTab('access')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gym-surface/60 border border-gym-border/60 cursor-pointer hover:border-emerald-500/40 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 cursor-pointer hover:border-emerald-500/50 transition-colors shadow-sm"
             title="Socios ingresados hoy"
           >
             <Flame className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span className="text-gym-muted">Accesos hoy:</span>
-            <span className="font-bold text-emerald-400">{todayCheckInsCount}</span>
+            <span className="text-zinc-400">Accesos hoy:</span>
+            <span className="font-bold text-emerald-400 font-mono">{todayCheckInsCount}</span>
           </div>
 
           {/* Cash Status */}
           <div 
             onClick={() => setActiveTab('cash')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gym-surface/60 border border-gym-border/60 cursor-pointer hover:border-amber-500/40 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-pointer hover:border-white/30 transition-colors"
           >
-            <span className={`w-2 h-2 rounded-full ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-red-500'}`} />
-            <span className="text-gym-muted">Caja:</span>
-            <span className="font-semibold text-gray-200">
+            <span className={`w-2 h-2 rounded-full ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-rose-500'}`} />
+            <span className="text-zinc-400">Caja:</span>
+            <span className="font-semibold text-zinc-200">
               {cashSession.status === 'open' ? 'Abierta' : 'Cerrada'}
             </span>
           </div>
@@ -188,10 +191,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Interactive Role Switcher Selector */}
-          <div className="flex items-center bg-gym-surface rounded-xl p-1 border border-gym-border">
-            <span className="text-[10px] font-semibold text-gym-muted px-1.5 hidden md:inline">
-              Rol:
+          {/* Interactive Role Switcher Selector (for admin testing/simulation) */}
+          <div className="hidden lg:flex items-center bg-gym-surface rounded-xl p-1 border border-gym-border">
+            <span className="text-[10px] font-semibold text-gym-muted px-1.5">
+              Simular Rol:
             </span>
             <div className="flex gap-1">
               {roles.map((r) => {
@@ -205,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         ? `${r.color} shadow-sm border` 
                         : 'text-gym-muted hover:text-gray-200 hover:bg-gym-card/60 border border-transparent'
                     }`}
-                    title={`Cambiar a rol ${r.label}`}
+                    title={`Cambiar vista a rol ${r.label}`}
                   >
                     {r.icon}
                     <span className="hidden 2xl:inline">{r.label}</span>
@@ -214,6 +217,35 @@ export const Navbar: React.FC<NavbarProps> = ({
               })}
             </div>
           </div>
+
+          {/* Current Logged-in User Profile Card */}
+          {currentUser && (
+            <div className="flex items-center gap-2 pl-2 border-l border-gym-border/70">
+              <img 
+                src={currentUser.avatarUrl} 
+                alt={currentUser.fullName}
+                className="w-8 h-8 rounded-xl object-cover border border-amber-500/40 shadow-sm"
+              />
+              <div className="hidden sm:block text-left leading-tight">
+                <p className="text-xs font-bold text-white max-w-[130px] truncate">
+                  {currentUser.fullName}
+                </p>
+                <p className="text-[10px] text-amber-400 capitalize font-medium">
+                  {currentUser.role === 'admin' ? 'Administrador' : currentUser.role === 'trainer' ? 'Coach' : 'Recepción'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all group"
+            title="Cerrar sesión del sistema"
+          >
+            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Cerrar Sesión</span>
+          </button>
 
         </div>
 

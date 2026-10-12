@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
-import { Client } from '../../types';
+import { Client, DEFAULT_CLIENT_AVATAR } from '../../types';
+import { getGymAvatar, getOfflineGymSvgAvatar, detectGender } from '../../utils/genderAvatar';
 import { ClientFormModal } from './ClientFormModal';
+import { ClientEditModal } from './ClientEditModal';
 import { ClientDetailModal } from './ClientDetailModal';
 import { BiometricEnrollModal } from './BiometricEnrollModal';
 import { RenewMembershipModal } from './RenewMembershipModal';
@@ -14,7 +16,8 @@ import {
   Eye, 
   Trash2, 
   Phone,
-  Mail
+  Mail,
+  Pencil
 } from 'lucide-react';
 
 export const ClientList: React.FC = () => {
@@ -26,6 +29,7 @@ export const ClientList: React.FC = () => {
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedClientForDetail, setSelectedClientForDetail] = useState<Client | null>(null);
+  const [selectedClientForEdit, setSelectedClientForEdit] = useState<Client | null>(null);
   const [selectedClientForEnroll, setSelectedClientForEnroll] = useState<Client | null>(null);
   const [selectedClientForRenew, setSelectedClientForRenew] = useState<Client | null>(null);
 
@@ -79,7 +83,7 @@ export const ClientList: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
           >
             <UserPlus className="w-4 h-4 stroke-[2.5]" />
-            <span>Nuevo Socio</span>
+            <span>Nuevo Cliente</span>
           </button>
         )}
       </div>
@@ -208,8 +212,11 @@ export const ClientList: React.FC = () => {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={member.avatarUrl}
+                            src={getGymAvatar(member.fullName, member.avatarUrl)}
                             alt={member.fullName}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
+                            }}
                             className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0"
                           />
                           <div>
@@ -299,6 +306,17 @@ export const ClientList: React.FC = () => {
 
                           {currentRole !== 'trainer' && (
                             <button
+                              onClick={() => setSelectedClientForEdit(member)}
+                              className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
+                              title="Editar datos del cliente"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Editar</span>
+                            </button>
+                          )}
+
+                          {currentRole !== 'trainer' && (
+                            <button
                               onClick={() => setSelectedClientForRenew(member)}
                               className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
                               title="Renovar membresía"
@@ -345,11 +363,27 @@ export const ClientList: React.FC = () => {
         />
       )}
 
+      {/* Edit Client Modal */}
+      {selectedClientForEdit && (
+        <ClientEditModal
+          client={selectedClientForEdit}
+          onClose={() => setSelectedClientForEdit(null)}
+          onClientUpdated={(updatedClient) => {
+            setSelectedClientForEdit(null);
+          }}
+        />
+      )}
+
       {/* Detail Modal */}
       {selectedClientForDetail && (
         <ClientDetailModal
           client={selectedClientForDetail}
           onClose={() => setSelectedClientForDetail(null)}
+          onEdit={() => {
+            const client = selectedClientForDetail;
+            setSelectedClientForDetail(null);
+            setSelectedClientForEdit(client);
+          }}
           onEnrollBiometric={() => {
             const client = selectedClientForDetail;
             setSelectedClientForDetail(null);

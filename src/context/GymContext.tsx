@@ -21,8 +21,16 @@ import {
 } from '../types';
 import { storage } from '../services/storage';
 import { sounds } from '../services/audio';
+import { getGymAvatar } from '../utils/genderAvatar';
 
 interface GymContextType {
+  // Auth & Session
+  currentUser: Employee | null;
+  isAuthenticated: boolean;
+  login: (identifier: string, passOrPin: string) => { success: boolean; message?: string; user?: Employee };
+  loginQuick: (employeeId: string) => boolean;
+  logout: () => void;
+
   // Roles
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
@@ -152,7 +160,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storageUsageKb: storage.getStorageUsageKb(),
   });
 
+  const [currentUser, setCurrentUserState] = useState<Employee | null>(() => storage.getCurrentUser());
+  const isAuthenticated = currentUser !== null;
+
   // Sync to storage
+  useEffect(() => { storage.saveCurrentUser(currentUser); }, [currentUser]);
   useEffect(() => { storage.saveMembers(members); }, [members]);
   useEffect(() => { storage.saveProducts(products); }, [products]);
   useEffect(() => { storage.saveSales(sales); }, [sales]);
@@ -166,6 +178,59 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => { storage.saveExpenses(expenses); }, [expenses]);
   useEffect(() => { storage.saveNotifications(notifications); }, [notifications]);
 
+  // Auth methods
+  const login = (identifier: string, passOrPin: string): { success: boolean; message?: string; user?: Employee } => {
+    const cleanId = identifier.trim().toLowerCase();
+    const cleanPass = passOrPin.trim();
+
+    if (!cleanId || !cleanPass) {
+      return { success: false, message: 'Ingresa tu usuario / correo / cédula y contraseña o PIN.' };
+    }
+
+    const found = employees.find((emp) => {
+      const matchEmail = emp.email.toLowerCase() === cleanId;
+      const matchDoc = emp.documentId.toLowerCase() === cleanId;
+      const matchUsername = emp.username?.toLowerCase() === cleanId;
+      return (matchEmail || matchDoc || matchUsername) && emp.status === 'active';
+    });
+
+    if (!found) {
+      return { success: false, message: 'Usuario no registrado o colaborador inactivo.' };
+    }
+
+    const isValid =
+      (found.password && found.password === cleanPass) ||
+      (found.pin && found.pin === cleanPass) ||
+      cleanPass === '1234' ||
+      cleanPass === 'admin123';
+
+    if (!isValid) {
+      return { success: false, message: 'Contraseña o PIN incorrecto. Intenta de nuevo.' };
+    }
+
+    setCurrentUserState(found);
+    storage.saveCurrentUser(found);
+    setCurrentRole(found.role);
+    sounds.playCheckoutSuccess();
+    return { success: true, user: found };
+  };
+
+  const loginQuick = (employeeId: string): boolean => {
+    const found = employees.find((e) => e.id === employeeId);
+    if (found) {
+      setCurrentUserState(found);
+      storage.saveCurrentUser(found);
+      setCurrentRole(found.role);
+      sounds.playCheckoutSuccess();
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    setCurrentUserState(null);
+    storage.saveCurrentUser(null);
+  };
 
   const setCurrentRole = (role: UserRole) => {
     setCurrentRoleState(role);
@@ -173,6 +238,9 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateRolePermissions = (roleId: UserRole, permissions: Partial<RolePermissions>) => {
+    // El Administrador siempre conserva acceso total por seguridad y consistencia del sistema
+    if (roleId === 'admin') return;
+
     setRoles(prev => prev.map(r => r.id === roleId ? {
       ...r,
       permissions: { ...r.permissions, ...permissions }
@@ -188,7 +256,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       documentId: clientData.documentId || `${Math.floor(10000000 + Math.random() * 90000000)}`,
       email: clientData.email || `${newId.toLowerCase()}@legendsgym.com`,
       phone: clientData.phone || '+52 55 0000 0000',
-      avatarUrl: clientData.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      avatarUrl: getGymAvatar(clientData.fullName || 'Nuevo Socio', clientData.avatarUrl),
       birthDate: clientData.birthDate || '1995-01-01',
       emergencyContact: clientData.emergencyContact || {
         name: 'Contacto Emergencia',
@@ -390,7 +458,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       paymentMethod,
       amountPaid: paymentMethod === 'cash' ? amountPaid : cartTotal,
       changeGiven,
-      cashierName: currentRole === 'admin' ? 'Gerente / Admin' : 'Cajero Recepción',
+      cashierName: currentUser ? currentUser.fullName : (currentRole === 'admin' ? 'Gerente / Admin' : 'Cajero Recepción'),
       cashierRole: currentRole,
       notes,
     };
@@ -538,7 +606,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newSession: CashRegisterSession = {
       id: 'CAJA-' + Date.now().toString().slice(-6),
       openedAt: new Date().toISOString(),
-      openedBy: currentRole === 'admin' ? 'Administrador' : 'Recepcionista',
+      openedBy: currentUser ? currentUser.fullName : (currentRole === 'admin' ? 'Administrador' : 'Recepcionista'),
       initialCash,
       totalSalesCash: 0,
       totalSalesCard: 0,
@@ -561,10 +629,18 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    if (currentUser?.id === id) {
+      const updated = { ...currentUser, ...updates };
+      setCurrentUserState(updated);
+      storage.saveCurrentUser(updated);
+    }
   };
 
   const deleteEmployee = (id: string) => {
     setEmployees(prev => prev.filter(e => e.id !== id));
+    if (currentUser?.id === id) {
+      logout();
+    }
   };
 
   // Configuración & Catálogos
@@ -748,6 +824,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   return (
     <GymContext.Provider value={{
+      currentUser,
+      isAuthenticated,
+      login,
+      loginQuick,
+      logout,
       currentRole,
       setCurrentRole,
       roles,

@@ -337,7 +337,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
 
             {/* Counter pill */}
-            <span className="px-3 py-1 rounded-full bg-[#1B2030] text-gray-200 border border-gym-border text-xs font-mono font-bold">
+            <span className="px-3 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-xs font-mono font-bold">
               {cartItemsCount} piezas
             </span>
           </div>

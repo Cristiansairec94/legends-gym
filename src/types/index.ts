@@ -6,6 +6,10 @@ export type MembershipStatus = 'active' | 'expiring_soon' | 'expired' | 'frozen'
 
 export type PaymentMethod = 'cash' | 'card' | 'transfer';
 
+export const DEFAULT_CLIENT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><rect width='128' height='128' fill='%2318181D'/><circle cx='64' cy='48' r='24' fill='%236B7280'/><path d='M28 112c0-19.882 16.118-36 36-36s36 16.118 36 36H28z' fill='%236B7280'/></svg>";
+
+export const DEFAULT_EMPLOYEE_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><rect width='128' height='128' fill='%2318181D'/><circle cx='64' cy='48' r='24' fill='%23FFFFFF'/><path d='M28 112c0-19.882 16.118-36 36-36s36 16.118 36 36H28z' fill='%23FFFFFF'/></svg>";
+
 export interface MembershipDetails {
   planType: MembershipPlanType;
   planName: string;
@@ -66,6 +70,9 @@ export interface Product {
   servingSize?: string;
   sku?: string;
   taxRate?: 'IVA 16%' | 'Tasa 0%' | 'IEPS 8%' | 'Exento';
+  soldByScoop?: boolean;
+  scoopPrice?: number;
+  scoopsPerContainer?: number;
 }
 
 export interface CartItem {
@@ -133,6 +140,9 @@ export interface Employee {
   phone: string;
   avatarUrl: string;
   role: UserRole;
+  username?: string;
+  password?: string;
+  pin?: string;
   jobTitle: string;
   shift: 'Matutino (06:00 - 14:00)' | 'Vespertino (14:00 - 22:00)' | 'Turno Completo' | 'Fines de Semana';
   status: 'active' | 'inactive';

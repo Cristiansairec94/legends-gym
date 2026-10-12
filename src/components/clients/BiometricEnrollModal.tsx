@@ -175,7 +175,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
                     <div className="absolute inset-0 rounded-full border border-amber-400/40 scanner-ring" />
                   )}
                   {isReading && (
-                    <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_10px_#F59E0B] animate-scan-line z-20" />
+                    <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_10px_#FFFFFF] animate-scan-line z-20" />
                   )}
                   <Fingerprint className={`w-16 h-16 ${isReading ? 'text-amber-400 animate-pulse' : 'text-gym-muted hover:text-amber-400'}`} />
                 </div>

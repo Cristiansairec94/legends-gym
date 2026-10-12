@@ -78,12 +78,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Footer row as in screenshot: Price on left, Barcode pill on right */}
         <div className="mt-3 pt-2.5 border-t border-gym-border/70 flex items-center justify-between gap-1">
-          <span className="font-bold text-sm font-mono text-white">
-            ${product.price.toFixed(2)} <span className="text-[10px] text-gym-muted font-normal">/pz</span>
-          </span>
+          <div>
+            <span className="font-bold text-sm font-mono text-white block">
+              ${product.price.toFixed(2)} <span className="text-[10px] text-gym-muted font-normal">/pz</span>
+            </span>
+            {product.soldByScoop && product.scoopPrice && (
+              <span className="text-[10px] text-amber-400 font-bold font-mono block">
+                🥄 Scoop: ${product.scoopPrice.toFixed(2)}
+              </span>
+            )}
+          </div>
 
           {/* Barcode pill matching the image */}
-          <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md text-[10px] font-mono text-amber-300">
+          <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md text-[10px] font-mono text-amber-300 shrink-0">
             <Barcode className="w-3.5 h-3.5 text-amber-400" />
             <span className="tracking-tighter truncate max-w-[85px]">{product.barcode}</span>
           </div>
