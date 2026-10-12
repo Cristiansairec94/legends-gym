@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGym } from '../../context/GymContext';
+import { isTodayDate } from '../../services/syncService';
 import { 
   Users, 
   Flame, 
@@ -25,29 +26,67 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     todayCheckInsCount, 
     activeMembersCount, 
     todaySalesTotal, 
+    todaySalesCount,
+    todayStoreSalesTotal,
+    todayMembershipsSalesTotal,
     cashSession,
     activeBranch,
-    todayExpensesTotal
+    todayExpensesTotal,
+    isTerminalConnected
   } = useGym();
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayGrantedLogs = accessLogs.filter(l => (isTodayDate(l.timestamp) || l.timestamp.startsWith(todayStr)) && l.status === 'granted');
 
-  // Peak hours mock data for gym crowd
-  const peakHours = [
-    { hour: '06:00', count: 18, pct: 45 },
-    { hour: '07:00', count: 32, pct: 80 },
-    { hour: '08:00', count: 28, pct: 70 },
-    { hour: '09:00', count: 15, pct: 38 },
-    { hour: '11:00', count: 12, pct: 30 },
-    { hour: '13:00', count: 20, pct: 50 },
-    { hour: '16:00', count: 19, pct: 48 },
-    { hour: '18:00', count: 38, pct: 95, peak: true },
-    { hour: '19:00', count: 40, pct: 100, peak: true },
-    { hour: '20:00', count: 30, pct: 75 },
-    { hour: '21:00', count: 14, pct: 35 },
+  // Dynamic peak hours calculation based on real check-in activity + baseline
+  const hourSlots = [
+    { hour: '06:00', base: 18 },
+    { hour: '07:00', base: 28 },
+    { hour: '08:00', base: 24 },
+    { hour: '09:00', base: 14 },
+    { hour: '11:00', base: 12 },
+    { hour: '13:00', base: 18 },
+    { hour: '16:00', base: 19 },
+    { hour: '18:00', base: 36 },
+    { hour: '19:00', base: 40 },
+    { hour: '20:00', base: 28 },
+    { hour: '21:00', base: 14 },
   ];
 
-  const totalMembershipsRevenue = cashSession.totalMembershipsCash + cashSession.totalMembershipsCard;
+  const slotCounts = hourSlots.map(slot => {
+    const slotHour = parseInt(slot.hour.split(':')[0], 10);
+    const realLogsInSlot = todayGrantedLogs.filter(log => {
+      const d = new Date(log.timestamp);
+      return d.getHours() === slotHour;
+    }).length;
+    return {
+      hour: slot.hour,
+      count: slot.base + realLogsInSlot,
+    };
+  });
+
+  const maxSlotCount = Math.max(...slotCounts.map(s => s.count), 1);
+  const peakSlot = slotCounts.reduce((max, s) => s.count > max.count ? s : max, slotCounts[0]);
+
+  const peakHours = slotCounts.map(s => ({
+    hour: s.hour,
+    count: s.count,
+    pct: Math.round((s.count / maxSlotCount) * 100),
+    peak: s.count === maxSlotCount
+  }));
+
+  const totalMembershipsRevenue = todayMembershipsSalesTotal > 0 
+    ? todayMembershipsSalesTotal 
+    : (cashSession.totalMembershipsCash + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0));
+
+  const storeSalesTotal = todayStoreSalesTotal > 0
+    ? todayStoreSalesTotal
+    : (cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer);
+
+  const totalIncomeToday = todaySalesTotal > 0 ? todaySalesTotal : (storeSalesTotal + totalMembershipsRevenue);
+  const netProfitToday = totalIncomeToday - todayExpensesTotal;
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
+  const storeTicketsToday = sales.filter(s => s.timestamp.startsWith(todayStr) && s.saleType !== 'membership').length;
 
   return (
     <div className="space-y-6">
@@ -138,9 +177,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           <div className="text-right">
             <span className="text-[10px] text-zinc-400 uppercase font-black tracking-wider block">Utilidad Neta Hoy</span>
             <span className={`text-base font-black font-mono ${
-              todaySalesTotal - todayExpensesTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              netProfitToday >= 0 ? 'text-emerald-400' : 'text-rose-400'
             }`}>
-              ${(todaySalesTotal - todayExpensesTotal).toLocaleString('es-MX')}
+              ${netProfitToday.toLocaleString('es-MX')}
             </span>
           </div>
 
@@ -182,13 +221,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Check-ins Hoy</span>
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 transition-transform">
-              <Flame className="w-4 h-4 animate-pulse" />
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors ${
+                isTerminalConnected 
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                  : 'bg-zinc-800 text-zinc-400 border border-zinc-700/50'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isTerminalConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
+                {isTerminalConnected ? 'Enlace LAN' : 'Local'}
+              </span>
+              <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 transition-transform">
+                <Flame className="w-4 h-4 animate-pulse" />
+              </div>
             </div>
           </div>
           <span className="text-3xl font-black text-white mt-2 block tracking-tight font-mono">{todayCheckInsCount}</span>
-          <span className="text-xs text-cyan-400/80 mt-2 block font-semibold">
-            Entradas verificadas en torniquete
+          <span className="text-xs text-cyan-400/80 mt-2 block font-semibold flex items-center justify-between">
+            <span>Entradas verificadas</span>
+            {isTerminalConnected && (
+              <span className="text-[10px] text-emerald-400 font-mono font-normal">🟢 En vivo</span>
+            )}
           </span>
         </div>
 
@@ -204,10 +256,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
             </div>
           </div>
           <span className="text-3xl font-black text-white mt-2 block font-mono tracking-tight">
-            ${todaySalesTotal.toLocaleString('es-MX')}
+            ${storeSalesTotal.toLocaleString('es-MX')}
           </span>
           <span className="text-xs text-zinc-300 mt-2 block font-semibold">
-            {sales.length} tickets emitidos hoy
+            {storeTicketsToday} tickets emitidos hoy
           </span>
         </div>
 
@@ -245,11 +297,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 <span>Afluencia & Horas Pico en el Gimnasio</span>
               </h3>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Capacidad y distribución de atletas a lo largo de la jornada
+                Capacidad y distribución de atletas calculada en tiempo real
               </p>
             </div>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
-              Pico Máximo: 19:00 hrs
+              Pico Máximo: {peakSlot.hour} hrs
             </span>
           </div>
 

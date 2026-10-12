@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Client, MembershipPlanType, DEFAULT_CLIENT_AVATAR } from '../../types';
+import { Client, MembershipPlanType, PaymentMethod, DEFAULT_CLIENT_AVATAR } from '../../types';
 import { useGym } from '../../context/GymContext';
-import { X, UserPlus, Image, ShieldAlert, Sparkles, Upload, Trash2, Camera, Dumbbell } from 'lucide-react';
+import { X, UserPlus, Image, ShieldAlert, Sparkles, Upload, Trash2, Camera, Dumbbell, Banknote, CreditCard, ArrowRightLeft } from 'lucide-react';
 import { 
   getGymAvatar, 
   detectGender, 
@@ -31,6 +31,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [hasManuallySelectedPhoto, setHasManuallySelectedPhoto] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('CAT-PLAN-002');
   const [planType, setPlanType] = useState<MembershipPlanType>('monthly');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
   const [emergencyRel, setEmergencyRel] = useState('');
@@ -146,7 +147,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
         status: 'active',
         daysRemaining,
       },
-    });
+    }, paymentMethod);
 
     onClientCreated(created, enrollNow);
   };
@@ -371,6 +372,51 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Payment Method Selector */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-bold text-white block">
+                Método de Cobro de la Inscripción:
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cash')}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'cash'
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 shadow-sm'
+                      : 'bg-gym-surface/60 border-gym-border text-gym-muted hover:text-white'
+                  }`}
+                >
+                  <Banknote className="w-3.5 h-3.5" />
+                  <span>Efectivo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'card'
+                      ? 'bg-blue-500/20 border-blue-400 text-blue-400 shadow-sm'
+                      : 'bg-gym-surface/60 border-gym-border text-gym-muted hover:text-white'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Tarjeta</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('transfer')}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'transfer'
+                      ? 'bg-purple-500/20 border-purple-400 text-purple-400 shadow-sm'
+                      : 'bg-gym-surface/60 border-gym-border text-gym-muted hover:text-white'
+                  }`}
+                >
+                  <ArrowRightLeft className="w-3.5 h-3.5" />
+                  <span>Transfer</span>
+                </button>
               </div>
             </div>
 

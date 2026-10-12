@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { 
   Client, 
   Product, 
@@ -22,6 +22,18 @@ import {
 import { storage } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
+import { 
+  broadcastLocalSync, 
+  subscribeToLocalSync, 
+  subscribeToRemoteSync,
+  pushMemberActionToServer, 
+  pushMembersToServer,
+  pushAccessLogToServer,
+  fetchMembersFromServer,
+  fetchAccessLogsFromServer,
+  checkServerHealth,
+  isTodayDate
+} from '../services/syncService';
 
 interface GymContextType {
   // Auth & Session
@@ -46,12 +58,14 @@ interface GymContextType {
 
   // Members
   members: Client[];
-  addMember: (clientData: Partial<Client>) => Client;
+  addMember: (clientData: Partial<Client>, initialPaymentMethod?: PaymentMethod) => Client;
   updateMember: (id: string, updates: Partial<Client>) => void;
   deleteMember: (id: string) => void;
   renewMembership: (id: string, planType: MembershipPlanType, months: number, price: number, paymentMethod: PaymentMethod) => void;
   enrollFingerprint: (id: string, templateCode: string) => boolean;
   getMemberById: (id: string) => Client | undefined;
+  replaceMembers: (newMembers: Client[]) => void;
+  syncMembersWithServer: (customServerUrl?: string) => Promise<boolean>;
 
   // Products & Inventory
   products: Product[];
@@ -76,6 +90,8 @@ interface GymContextType {
   sales: Sale[];
   todaySalesTotal: number;
   todaySalesCount: number;
+  todayStoreSalesTotal: number;
+  todayMembershipsSalesTotal: number;
 
   // Gastos (Expenses)
   expenses: Expense[];
@@ -104,6 +120,7 @@ interface GymContextType {
   // Biometric & Access Control
   accessLogs: AccessLog[];
   verifyBiometricAccess: (biometricQuery: string) => { granted: boolean; client?: Client; reason: string; log: AccessLog };
+  registerExit: (clientId?: string) => void;
   clearAccessLogs: () => void;
 
   // Cash Session
@@ -130,6 +147,7 @@ interface GymContextType {
   activeMembersCount: number;
   todayCheckInsCount: number;
   lowStockProductsCount: number;
+  isTerminalConnected: boolean;
 }
 
 const GymContext = createContext<GymContextType | undefined>(undefined);
@@ -162,6 +180,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [currentUser, setCurrentUserState] = useState<Employee | null>(() => storage.getCurrentUser());
   const isAuthenticated = currentUser !== null;
+  const [isTerminalConnected, setIsTerminalConnected] = useState<boolean>(false);
 
   // Sync to storage
   useEffect(() => { storage.saveCurrentUser(currentUser); }, [currentUser]);
@@ -177,6 +196,158 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => { storage.saveBranches(branches); }, [branches]);
   useEffect(() => { storage.saveExpenses(expenses); }, [expenses]);
   useEffect(() => { storage.saveNotifications(notifications); }, [notifications]);
+
+  // Helper to process any incoming access log from Desktop Terminal or Remote Server
+  const ingestIncomingAccessLog = useCallback((incomingLog: AccessLog) => {
+    if (!incomingLog || !incomingLog.id) return;
+
+    setAccessLogs(prev => {
+      if (prev.some(l => l.id === incomingLog.id)) {
+        return prev;
+      }
+
+      // If access was granted, also update member check-in count and branch occupancy
+      if (incomingLog.status === 'granted') {
+        if (incomingLog.clientId) {
+          setMembers(prevMembers => prevMembers.map(m => {
+            if (m.id === incomingLog.clientId) {
+              return {
+                ...m,
+                checkInsCount: (m.checkInsCount || 0) + 1,
+                lastCheckIn: incomingLog.timestamp || new Date().toISOString()
+              };
+            }
+            return m;
+          }));
+        }
+
+        setBranches(prevBranches => prevBranches.map(b => {
+          if (b.id === activeBranchId) {
+            return {
+              ...b,
+              currentOccupancy: Math.min(b.maxCapacity, b.currentOccupancy + 1)
+            };
+          }
+          return b;
+        }));
+      }
+
+      // Re-broadcast locally so all open browser tabs/windows update in unison
+      broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: incomingLog });
+
+      return [incomingLog, ...prev];
+    });
+  }, [activeBranchId]);
+
+  // Real-time synchronization bus listener across tabs/windows/instances & remote terminal
+  useEffect(() => {
+    // 1. Local BroadcastChannel listener (inter-tab communication)
+    const unsubscribeLocal = subscribeToLocalSync((msg) => {
+      if (msg.type === 'MEMBER_ADDED' && msg.member) {
+        setMembers(prev => {
+          if (prev.some(m => m.id === msg.member!.id)) return prev;
+          return [msg.member!, ...prev];
+        });
+      } else if (msg.type === 'MEMBER_UPDATED' && msg.member) {
+        setMembers(prev => prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m));
+      } else if (msg.type === 'MEMBER_DELETED' && msg.memberId) {
+        setMembers(prev => prev.filter(m => m.id !== msg.memberId));
+      } else if (msg.type === 'MEMBERS_REPLACED' && Array.isArray(msg.members)) {
+        setMembers(msg.members);
+      } else if (msg.type === 'ACCESS_LOG_ADDED' && msg.log) {
+        setAccessLogs(prev => {
+          if (prev.some(l => l.id === msg.log!.id)) return prev;
+          return [msg.log!, ...prev];
+        });
+      } else if (msg.type === 'SALE_ADDED' && msg.sale) {
+        setSales(prev => {
+          if (prev.some(s => s.id === msg.sale!.id)) return prev;
+          return [msg.sale!, ...prev];
+        });
+      } else if (msg.type === 'EXPENSE_ADDED' && msg.expense) {
+        setExpenses(prev => {
+          if (prev.some(e => e.id === msg.expense!.id)) return prev;
+          return [msg.expense!, ...prev];
+        });
+      } else if (msg.type === 'PRODUCT_UPDATED' && msg.product) {
+        setProducts(prev => prev.map(p => p.id === msg.product!.id ? msg.product! : p));
+      } else if (msg.type === 'CASH_SESSION_UPDATED' && msg.cashSession) {
+        setCashSession(msg.cashSession);
+      } else if (msg.type === 'BRANCH_UPDATED' && msg.branch) {
+        setBranches(prev => prev.map(b => b.id === msg.branch!.id ? msg.branch! : b));
+      } else if (msg.type === 'NOTIFICATION_ADDED' && msg.notification) {
+        setNotifications(prev => {
+          if (prev.some(n => n.id === msg.notification!.id)) return prev;
+          return [msg.notification!, ...prev];
+        });
+      }
+    });
+
+    // 2. Remote Server-Sent Events (SSE) listener for instantaneous push from Desktop Terminal
+    const unsubscribeRemote = subscribeToRemoteSync((msg) => {
+      setIsTerminalConnected(true);
+      if (msg.type === 'ACCESS_LOG_ADDED' && msg.log) {
+        ingestIncomingAccessLog(msg.log);
+      } else if (msg.type === 'MEMBER_ADDED' && msg.member) {
+        setMembers(prev => {
+          if (prev.some(m => m.id === msg.member!.id)) return prev;
+          return [msg.member!, ...prev];
+        });
+      } else if (msg.type === 'MEMBER_UPDATED' && msg.member) {
+        setMembers(prev => prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m));
+      } else if (msg.type === 'MEMBER_DELETED' && msg.memberId) {
+        setMembers(prev => prev.filter(m => m.id !== msg.memberId));
+      } else if (msg.type === 'MEMBERS_REPLACED' && Array.isArray(msg.members)) {
+        setMembers(msg.members);
+      }
+    });
+
+    // 3. Initial server connection & healthcheck + load historical access logs
+    const syncServerData = async () => {
+      try {
+        const status = await checkServerHealth();
+        setIsTerminalConnected(status.online);
+        if (status.online) {
+          if (status.membersCount === 0 && members.length > 0) {
+            pushMembersToServer(members).catch(() => {});
+          } else if (status.membersCount && status.membersCount > 0) {
+            const data = await fetchMembersFromServer();
+            if (data.success && data.members.length > 0) {
+              setMembers(data.members);
+            }
+          }
+
+          // Fetch previous access logs from server so historical check-ins are not lost
+          const serverLogs = await fetchAccessLogsFromServer();
+          if (serverLogs && serverLogs.length > 0) {
+            serverLogs.forEach(l => ingestIncomingAccessLog(l));
+          }
+        }
+      } catch {
+        setIsTerminalConnected(false);
+      }
+    };
+
+    syncServerData();
+
+    // 4. Background safety polling (every 2.5 seconds) to guarantee check-ins are ingested even if SSE has a microcut
+    const pollInterval = setInterval(() => {
+      fetchAccessLogsFromServer().then(logs => {
+        setIsTerminalConnected(true);
+        if (logs && logs.length > 0) {
+          logs.forEach(l => ingestIncomingAccessLog(l));
+        }
+      }).catch(() => {
+        // Silent error
+      });
+    }, 2500);
+
+    return () => {
+      unsubscribeLocal();
+      unsubscribeRemote();
+      clearInterval(pollInterval);
+    };
+  }, [ingestIncomingAccessLog, members]);
 
   // Auth methods
   const login = (identifier: string, passOrPin: string): { success: boolean; message?: string; user?: Employee } => {
@@ -248,8 +419,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // Member Management
-  const addMember = (clientData: Partial<Client>): Client => {
-    const newId = `MEM-${String(members.length + 1).padStart(3, '0')}`;
+  const addMember = (clientData: Partial<Client>, initialPaymentMethod: PaymentMethod = 'cash'): Client => {
+    const newId = clientData.id || `MEM-${String(members.length + 1).padStart(3, '0')}`;
     const newMember: Client = {
       id: newId,
       fullName: clientData.fullName || 'Nuevo Socio',
@@ -281,16 +452,120 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       createdAt: new Date().toISOString().slice(0, 10),
     };
 
+    const planPrice = newMember.membership.price;
+
+    // Generate initial membership sale if price > 0
+    if (planPrice > 0 && newMember.membership.status === 'active') {
+      const folio = `FOL-${Date.now().toString().slice(-6)}`;
+      const memberSale: Sale = {
+        id: `SALE-${Date.now()}`,
+        folio,
+        timestamp: new Date().toISOString(),
+        clientId: newId,
+        clientName: newMember.fullName,
+        items: [{
+          product: {
+            id: `PLAN-${newMember.membership.planType}`,
+            name: `Inscripción: ${newMember.membership.planName}`,
+            brand: 'LEGENDS GYM',
+            category: 'gear',
+            price: planPrice,
+            costPrice: 0,
+            stock: 999,
+            minStock: 0,
+            image: '/logo.png',
+            barcode: `PLAN-${newMember.membership.planType.toUpperCase()}`,
+            description: `Alta de socio y cuota de acceso - ${newMember.membership.planName}`
+          },
+          quantity: 1,
+          unitPrice: planPrice,
+          subtotal: planPrice
+        }],
+        subtotal: Math.round((planPrice / 1.16) * 100) / 100,
+        tax: Math.round((planPrice - (planPrice / 1.16)) * 100) / 100,
+        total: planPrice,
+        paymentMethod: initialPaymentMethod,
+        amountPaid: planPrice,
+        changeGiven: 0,
+        cashierName: currentUser ? currentUser.fullName : (currentRole === 'admin' ? 'Gerente / Admin' : 'Recepción'),
+        cashierRole: currentRole,
+        notes: `Inscripción inicial: ${newMember.membership.planName}`,
+        saleType: 'membership',
+        planName: newMember.membership.planName,
+        planType: newMember.membership.planType,
+      };
+
+      setSales(prev => [memberSale, ...prev]);
+      broadcastLocalSync({ type: 'SALE_ADDED', sale: memberSale });
+
+      setCashSession(prev => {
+        const next = {
+          ...prev,
+          totalMembershipsCash: initialPaymentMethod === 'cash' ? prev.totalMembershipsCash + planPrice : prev.totalMembershipsCash,
+          totalMembershipsCard: initialPaymentMethod === 'card' ? prev.totalMembershipsCard + planPrice : prev.totalMembershipsCard,
+          totalMembershipsTransfer: initialPaymentMethod === 'transfer' ? (prev.totalMembershipsTransfer || 0) + planPrice : (prev.totalMembershipsTransfer || 0),
+          expectedCash: initialPaymentMethod === 'cash' ? prev.expectedCash + planPrice : prev.expectedCash,
+        };
+        broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+        return next;
+      });
+
+      newMember.totalSpentInStore += planPrice;
+    }
+
     setMembers(prev => [newMember, ...prev]);
+    // Instant sync: Local Broadcast & LAN HTTP Server
+    broadcastLocalSync({ type: 'MEMBER_ADDED', member: newMember });
+    pushMemberActionToServer('add', { member: newMember }).catch(() => {});
+
+    // Notification
+    addNotification({
+      title: 'Nuevo Socio Registrado',
+      message: `${newMember.fullName} fue dado de alta con ${newMember.membership.planName} ($${planPrice.toLocaleString('es-MX')}).`,
+      type: 'success',
+      targetTab: 'clients',
+      actionLabel: 'Ver socio'
+    });
+
     return newMember;
   };
 
   const updateMember = (id: string, updates: Partial<Client>) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    setMembers(prev => {
+      const updated = prev.map(m => m.id === id ? { ...m, ...updates } : m);
+      const target = updated.find(m => m.id === id);
+      if (target) {
+        broadcastLocalSync({ type: 'MEMBER_UPDATED', member: target });
+        pushMemberActionToServer('update', { member: target }).catch(() => {});
+      }
+      return updated;
+    });
   };
 
   const deleteMember = (id: string) => {
     setMembers(prev => prev.filter(m => m.id !== id));
+    broadcastLocalSync({ type: 'MEMBER_DELETED', memberId: id });
+    pushMemberActionToServer('delete', { memberId: id }).catch(() => {});
+  };
+
+  const replaceMembers = (newMembers: Client[]) => {
+    setMembers(newMembers);
+    broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: newMembers });
+  };
+
+  const syncMembersWithServer = async (customServerUrl?: string): Promise<boolean> => {
+    try {
+      const res = await fetchMembersFromServer(customServerUrl);
+      if (res.success && Array.isArray(res.members) && res.members.length > 0) {
+        setMembers(res.members);
+        storage.saveMembers(res.members);
+        broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: res.members, version: res.version });
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   };
 
   const renewMembership = (
@@ -328,14 +603,73 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       daysRemaining,
     };
 
-    updateMember(id, { membership: updatedMembership });
+    updateMember(id, { 
+      membership: updatedMembership,
+      totalSpentInStore: (target.totalSpentInStore || 0) + price
+    });
 
-    setCashSession(prev => ({
-      ...prev,
-      totalMembershipsCash: paymentMethod === 'cash' ? prev.totalMembershipsCash + price : prev.totalMembershipsCash,
-      totalMembershipsCard: paymentMethod === 'card' ? prev.totalMembershipsCard + price : prev.totalMembershipsCard,
-      expectedCash: paymentMethod === 'cash' ? prev.expectedCash + price : prev.expectedCash,
-    }));
+    // Generate unified sale record for renewal
+    const folio = `FOL-${Date.now().toString().slice(-6)}`;
+    const renewalSale: Sale = {
+      id: `SALE-${Date.now()}`,
+      folio,
+      timestamp: new Date().toISOString(),
+      clientId: id,
+      clientName: target.fullName,
+      items: [{
+        product: {
+          id: `PLAN-${planType}`,
+          name: `Renovación: ${planName}`,
+          brand: 'LEGENDS GYM',
+          category: 'gear',
+          price,
+          costPrice: 0,
+          stock: 999,
+          minStock: 0,
+          image: '/logo.png',
+          barcode: `PLAN-${planType.toUpperCase()}`,
+          description: `Renovación de cuota deportiva - ${planName}`
+        },
+        quantity: 1,
+        unitPrice: price,
+        subtotal: price
+      }],
+      subtotal: Math.round((price / 1.16) * 100) / 100,
+      tax: Math.round((price - (price / 1.16)) * 100) / 100,
+      total: price,
+      paymentMethod,
+      amountPaid: price,
+      changeGiven: 0,
+      cashierName: currentUser ? currentUser.fullName : (currentRole === 'admin' ? 'Gerente / Admin' : 'Recepción'),
+      cashierRole: currentRole,
+      notes: `Renovación de membresía ${planName}`,
+      saleType: 'membership',
+      planName,
+      planType
+    };
+
+    setSales(prev => [renewalSale, ...prev]);
+    broadcastLocalSync({ type: 'SALE_ADDED', sale: renewalSale });
+
+    setCashSession(prev => {
+      const next = {
+        ...prev,
+        totalMembershipsCash: paymentMethod === 'cash' ? prev.totalMembershipsCash + price : prev.totalMembershipsCash,
+        totalMembershipsCard: paymentMethod === 'card' ? prev.totalMembershipsCard + price : prev.totalMembershipsCard,
+        totalMembershipsTransfer: paymentMethod === 'transfer' ? (prev.totalMembershipsTransfer || 0) + price : (prev.totalMembershipsTransfer || 0),
+        expectedCash: paymentMethod === 'cash' ? prev.expectedCash + price : prev.expectedCash,
+      };
+      broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+      return next;
+    });
+
+    addNotification({
+      title: 'Membresía Renovada',
+      message: `${target.fullName} renovó ${planName} ($${price.toLocaleString('es-MX')}) pagado con ${paymentMethod.toUpperCase()}.`,
+      type: 'success',
+      targetTab: 'incomes',
+      actionLabel: 'Ver comprobante'
+    });
 
     sounds.playCheckoutSuccess();
   };
@@ -372,13 +706,18 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const adjustStock = (id: string, amount: number) => {
-    setProducts(prev => prev.map(p => {
-      if (p.id === id) {
-        const nextStock = Math.max(0, p.stock + amount);
-        return { ...p, stock: nextStock };
-      }
-      return p;
-    }));
+    setProducts(prev => {
+      const updated = prev.map(p => {
+        if (p.id === id) {
+          const nextStock = Math.max(0, p.stock + amount);
+          return { ...p, stock: nextStock };
+        }
+        return p;
+      });
+      const targetP = updated.find(p => p.id === id);
+      if (targetP) broadcastLocalSync({ type: 'PRODUCT_UPDATED', product: targetP });
+      return updated;
+    });
   };
 
   // Cart & POS
@@ -461,10 +800,21 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       cashierName: currentUser ? currentUser.fullName : (currentRole === 'admin' ? 'Gerente / Admin' : 'Cajero Recepción'),
       cashierRole: currentRole,
       notes,
+      saleType: 'store',
     };
 
     cart.forEach(item => {
       adjustStock(item.product.id, -item.quantity);
+      const remaining = item.product.stock - item.quantity;
+      if (remaining <= item.product.minStock) {
+        addNotification({
+          title: 'Stock Crítico en Tienda',
+          message: `El suplemento "${item.product.name}" quedó en ${remaining} unidades (mínimo de seguridad: ${item.product.minStock}).`,
+          type: 'danger',
+          targetTab: 'inventory',
+          actionLabel: 'Reabastecer'
+        });
+      }
     });
 
     if (clientId) {
@@ -476,14 +826,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     setSales(prev => [newSale, ...prev]);
+    broadcastLocalSync({ type: 'SALE_ADDED', sale: newSale });
 
-    setCashSession(prev => ({
-      ...prev,
-      totalSalesCash: paymentMethod === 'cash' ? prev.totalSalesCash + cartTotal : prev.totalSalesCash,
-      totalSalesCard: paymentMethod === 'card' ? prev.totalSalesCard + cartTotal : prev.totalSalesCard,
-      totalSalesTransfer: paymentMethod === 'transfer' ? prev.totalSalesTransfer + cartTotal : prev.totalSalesTransfer,
-      expectedCash: paymentMethod === 'cash' ? prev.expectedCash + cartTotal : prev.expectedCash,
-    }));
+    setCashSession(prev => {
+      const next = {
+        ...prev,
+        totalSalesCash: paymentMethod === 'cash' ? prev.totalSalesCash + cartTotal : prev.totalSalesCash,
+        totalSalesCard: paymentMethod === 'card' ? prev.totalSalesCard + cartTotal : prev.totalSalesCard,
+        totalSalesTransfer: paymentMethod === 'transfer' ? prev.totalSalesTransfer + cartTotal : prev.totalSalesTransfer,
+        expectedCash: paymentMethod === 'cash' ? prev.expectedCash + cartTotal : prev.expectedCash,
+      };
+      broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+      return next;
+    });
 
     clearCart();
     sounds.playCheckoutSuccess();
@@ -519,6 +874,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         method: 'fingerprint',
       };
       setAccessLogs(prev => [failLog, ...prev]);
+      broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: failLog });
+      pushAccessLogToServer(failLog).catch(() => {});
       return { granted: false, reason: failLog.reason, log: failLog };
     }
 
@@ -537,6 +894,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         method: 'fingerprint',
       };
       setAccessLogs(prev => [failLog, ...prev]);
+      broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: failLog });
+      pushAccessLogToServer(failLog).catch(() => {});
       return { granted: false, client: matched, reason: failLog.reason, log: failLog };
     }
 
@@ -556,6 +915,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         method: 'fingerprint',
       };
       setAccessLogs(prev => [failLog, ...prev]);
+      broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: failLog });
+      pushAccessLogToServer(failLog).catch(() => {});
       return { granted: false, client: matched, reason: failLog.reason, log: failLog };
     }
 
@@ -578,8 +939,51 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       lastCheckIn: now,
     });
 
+    // Update active branch occupancy in real time
+    setBranches(prev => {
+      const updated = prev.map(b => b.id === activeBranchId ? {
+        ...b,
+        currentOccupancy: Math.min(b.maxCapacity, b.currentOccupancy + 1)
+      } : b);
+      const targetB = updated.find(b => b.id === activeBranchId);
+      if (targetB) broadcastLocalSync({ type: 'BRANCH_UPDATED', branch: targetB });
+      return updated;
+    });
+
     setAccessLogs(prev => [successLog, ...prev]);
+    broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: successLog });
+    pushAccessLogToServer(successLog).catch(() => {});
     return { granted: true, client: matched, reason: successLog.reason, log: successLog };
+  };
+
+  const registerExit = (clientId?: string) => {
+    const client = clientId ? members.find(m => m.id === clientId) : undefined;
+    const now = new Date().toISOString();
+
+    setBranches(prev => {
+      const updated = prev.map(b => b.id === activeBranchId ? {
+        ...b,
+        currentOccupancy: Math.max(0, b.currentOccupancy - 1)
+      } : b);
+      const targetB = updated.find(b => b.id === activeBranchId);
+      if (targetB) broadcastLocalSync({ type: 'BRANCH_UPDATED', branch: targetB });
+      return updated;
+    });
+
+    sounds.playScanBlip();
+
+    const exitLog: AccessLog = {
+      id: `LOG-${Date.now()}`,
+      timestamp: now,
+      clientId: client?.id,
+      clientName: client ? `${client.fullName} (Salida)` : 'Atleta en Salida',
+      avatarUrl: client?.avatarUrl,
+      status: 'granted',
+      reason: 'Salida de sala registrada en torniquete',
+      method: 'manual',
+    };
+    setAccessLogs(prev => [exitLog, ...prev]);
+    broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: exitLog });
   };
 
   const clearAccessLogs = () => setAccessLogs([]);
@@ -587,6 +991,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Cash Management
   const updateCashSession = (session: CashRegisterSession) => {
     setCashSession(session);
+    broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: session });
   };
 
   const closeCashSession = (countedCash: number, notes?: string) => {
@@ -600,6 +1005,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       notes,
     };
     setCashSession(closed);
+    broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: closed });
   };
 
   const openCashSession = (initialCash: number) => {
@@ -613,10 +1019,12 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       totalSalesTransfer: 0,
       totalMembershipsCash: 0,
       totalMembershipsCard: 0,
+      totalMembershipsTransfer: 0,
       expectedCash: initialCash,
       status: 'open',
     };
     setCashSession(newSession);
+    broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: newSession });
   };
 
   // Empleados (Staff)
@@ -684,20 +1092,44 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       branchId: data.branchId || activeBranchId,
     };
     setExpenses(prev => [newExpense, ...prev]);
+    broadcastLocalSync({ type: 'EXPENSE_ADDED', expense: newExpense });
 
     // Si se pagó en efectivo de caja, se descuenta del efectivo esperado
     if (data.paidFromCashRegister && cashSession.status === 'open') {
-      setCashSession(prev => ({
-        ...prev,
-        expectedCash: Math.max(0, prev.expectedCash - data.amount),
-        notes: (prev.notes ? prev.notes + ' | ' : '') + `Gasto en caja: -$${data.amount} (${data.description.slice(0, 30)})`
-      }));
+      setCashSession(prev => {
+        const next = {
+          ...prev,
+          expectedCash: Math.max(0, prev.expectedCash - data.amount),
+          notes: (prev.notes ? prev.notes + ' | ' : '') + `Gasto en caja: -$${data.amount} (${data.description.slice(0, 30)})`
+        };
+        broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+        return next;
+      });
     }
+
+    addNotification({
+      title: 'Egreso Registrado',
+      message: `Gasto de $${data.amount.toLocaleString('es-MX')} registrado para "${data.description}".`,
+      type: 'warning',
+      targetTab: 'expenses',
+      actionLabel: 'Ver egresos'
+    });
 
     return newExpense;
   };
 
   const deleteExpense = (id: string) => {
+    const target = expenses.find(e => e.id === id);
+    if (target && target.paidFromCashRegister && cashSession.status === 'open') {
+      setCashSession(prev => {
+        const next = {
+          ...prev,
+          expectedCash: prev.expectedCash + target.amount
+        };
+        broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+        return next;
+      });
+    }
     setExpenses(prev => prev.filter(e => e.id !== id));
   };
 
@@ -727,6 +1159,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       read: false
     };
     setNotifications(prev => [newNotif, ...prev]);
+    broadcastLocalSync({ type: 'NOTIFICATION_ADDED', notification: newNotif });
   };
   const deleteNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -787,7 +1220,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const forceSync = async () => {
     setSyncState(prev => ({ ...prev, isSyncing: true }));
-    await new Promise(r => setTimeout(r, 1000));
+    try {
+      const res = await fetchMembersFromServer();
+      if (res.success && res.members.length > 0) {
+        setMembers(res.members);
+        storage.saveMembers(res.members);
+        broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: res.members, version: res.version });
+      } else {
+        // If server is empty, seed it with our local members
+        await pushMembersToServer(members);
+      }
+    } catch {
+      // Offline fallback
+    }
     const now = new Date().toISOString();
     storage.saveLastSyncDate(now);
     setSyncState(prev => ({
@@ -814,13 +1259,21 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Metrics
   const activeMembersCount = members.filter(m => m.membership.status === 'active' || m.membership.status === 'expiring_soon').length;
-  const todayAccess = accessLogs.filter(l => l.timestamp.startsWith(todayStr) && l.status === 'granted');
+  const todayAccess = accessLogs.filter(l => (isTodayDate(l.timestamp) || l.timestamp.startsWith(todayStr)) && l.status === 'granted');
   const todayCheckInsCount = todayAccess.length;
   const lowStockProductsCount = products.filter(p => p.stock <= p.minStock).length;
   
   const todaySales = sales.filter(s => s.timestamp.startsWith(todayStr));
   const todaySalesTotal = todaySales.reduce((acc, s) => acc + s.total, 0);
   const todaySalesCount = todaySales.length;
+
+  const todayStoreSalesTotal = todaySales
+    .filter(s => s.saleType !== 'membership')
+    .reduce((acc, s) => acc + s.total, 0);
+
+  const todayMembershipsSalesTotal = todaySales
+    .filter(s => s.saleType === 'membership')
+    .reduce((acc, s) => acc + s.total, 0);
 
   return (
     <GymContext.Provider value={{
@@ -845,6 +1298,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       renewMembership,
       enrollFingerprint,
       getMemberById,
+      replaceMembers,
+      syncMembersWithServer,
       products,
       addProduct,
       updateProduct,
@@ -863,6 +1318,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       sales,
       todaySalesTotal,
       todaySalesCount,
+      todayStoreSalesTotal,
+      todayMembershipsSalesTotal,
       expenses,
       addExpense,
       deleteExpense,
@@ -883,6 +1340,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       resetDatabase,
       accessLogs,
       verifyBiometricAccess,
+      registerExit,
       clearAccessLogs,
       cashSession,
       updateCashSession,
@@ -901,6 +1359,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       activeMembersCount,
       todayCheckInsCount,
       lowStockProductsCount,
+      isTerminalConnected,
     }}>
       {children}
     </GymContext.Provider>

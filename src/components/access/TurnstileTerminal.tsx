@@ -12,11 +12,13 @@ import {
   Minimize2,
   Search,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Users,
+  LogOut
 } from 'lucide-react';
 
 export const TurnstileTerminal: React.FC = () => {
-  const { verifyBiometricAccess, members, accessLogs } = useGym();
+  const { verifyBiometricAccess, registerExit, members, accessLogs, activeBranch } = useGym();
 
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'granted' | 'denied'>('idle');
   const [currentQuote, setCurrentQuote] = useState<string>('');
@@ -119,14 +121,34 @@ export const TurnstileTerminal: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Live Occupancy Pill */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gym-surface border border-gym-border text-xs">
+            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-gym-muted">Aforo Sala:</span>
+            <span className="font-bold text-white font-mono">{activeBranch.currentOccupancy} / {activeBranch.maxCapacity}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold">
+              {Math.round((activeBranch.currentOccupancy / activeBranch.maxCapacity) * 100)}%
+            </span>
+          </div>
+
+          {/* Quick Exit Button */}
+          <button
+            onClick={() => registerExit()}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-400 hover:text-rose-300 transition-all shadow-sm"
+            title="Registrar salida de un atleta y liberar aforo de sala"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Registrar Salida</span>
+          </button>
+
           <button
             onClick={() => setIsHistoryModalOpen(true)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
             title="Ver desglose detallado de accesos registrados"
           >
             <Clock className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-            <span>Ver Registro de Accesos</span>
+            <span>Accesos</span>
             <span className="bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border border-amber-500/40">
               {accessLogs.length}
             </span>
@@ -138,7 +160,7 @@ export const TurnstileTerminal: React.FC = () => {
             title="Abrir vista dedicada de Control de Acceso para equipo independiente de torniquete"
           >
             <ExternalLink className="w-4 h-4 text-amber-400" />
-            <span>App Equipo Independiente</span>
+            <span>Equipo Independiente</span>
           </button>
 
           <button
@@ -147,7 +169,7 @@ export const TurnstileTerminal: React.FC = () => {
             title="Modo pantalla completa para recepción o kiosco"
           >
             {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            <span>{isFullScreen ? 'Salir de Pantalla Completa' : 'Modo Kiosco / Pantalla Completa'}</span>
+            <span>{isFullScreen ? 'Salir' : 'Kiosco'}</span>
           </button>
         </div>
       </div>
@@ -202,7 +224,23 @@ export const TurnstileTerminal: React.FC = () => {
                   disabled={!searchQuery || scanStatus === 'scanning'}
                   className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all"
                 >
-                  Verificar
+                  Entrada
+                </button>
+                <button
+                  onClick={() => {
+                    const found = members.find(m => 
+                      m.id.toLowerCase() === searchQuery.toLowerCase().trim() ||
+                      m.documentId.toLowerCase() === searchQuery.toLowerCase().trim() ||
+                      m.fullName.toLowerCase().includes(searchQuery.toLowerCase().trim())
+                    );
+                    registerExit(found?.id);
+                    setSearchQuery('');
+                  }}
+                  disabled={!searchQuery}
+                  className="px-3.5 py-2 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 disabled:opacity-40 text-rose-400 font-bold text-xs rounded-xl transition-all"
+                  title="Registrar salida para este socio"
+                >
+                  Salida
                 </button>
               </div>
             </div>

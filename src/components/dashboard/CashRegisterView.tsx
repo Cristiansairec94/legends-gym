@@ -11,18 +11,25 @@ import {
 } from 'lucide-react';
 
 export const CashRegisterView: React.FC = () => {
-  const { cashSession, closeCashSession, openCashSession } = useGym();
+  const { cashSession, closeCashSession, openCashSession, expenses } = useGym();
 
   const [countedCashStr, setCountedCashStr] = useState('');
   const [closingNotes, setClosingNotes] = useState('');
   const [initialCashStr, setInitialCashStr] = useState('1500');
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayCashExpenses = expenses
+    .filter(e => e.date.startsWith(todayStr) && e.paidFromCashRegister)
+    .reduce((sum, e) => sum + e.amount, 0);
+
   const totalStoreSales = cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer;
-  const totalMemberships = cashSession.totalMembershipsCash + cashSession.totalMembershipsCard;
+  const totalMemberships = cashSession.totalMembershipsCash + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0);
   const grandTotalShift = totalStoreSales + totalMemberships;
 
   const totalCashCollected = cashSession.totalSalesCash + cashSession.totalMembershipsCash;
-  const expectedCashInDrawer = cashSession.initialCash + totalCashCollected;
+  const expectedCashInDrawer = cashSession.expectedCash;
+
+  const totalTransfers = cashSession.totalSalesTransfer + (cashSession.totalMembershipsTransfer || 0);
 
   const countedCash = parseFloat(countedCashStr) || 0;
   const cashDifference = countedCash - expectedCashInDrawer;
@@ -124,7 +131,7 @@ export const CashRegisterView: React.FC = () => {
             <ArrowRightLeft className="w-4 h-4 text-purple-400" />
           </div>
           <span className="text-3xl font-black text-purple-400 font-mono mt-1 block">
-            ${cashSession.totalSalesTransfer.toLocaleString()} MXN
+            ${totalTransfers.toLocaleString()} MXN
           </span>
           <span className="text-xs text-gym-muted mt-2 block">
             Depósitos directos a cuenta
@@ -168,6 +175,12 @@ export const CashRegisterView: React.FC = () => {
                 <span>( + ) Membresías y Cuotas (Efectivo):</span>
                 <span className="text-white font-bold">${cashSession.totalMembershipsCash.toFixed(2)}</span>
               </div>
+              {todayCashExpenses > 0 && (
+                <div className="py-2.5 flex justify-between text-rose-400">
+                  <span>( - ) Gastos Pagados de Caja (Efectivo):</span>
+                  <span className="font-bold">-${todayCashExpenses.toFixed(2)}</span>
+                </div>
+              )}
               <div className="py-2.5 flex justify-between text-emerald-400 font-bold bg-emerald-500/5 px-2 rounded-lg">
                 <span>( = ) Total Efectivo Físico que debe haber:</span>
                 <span className="text-sm font-black">${expectedCashInDrawer.toFixed(2)} MXN</span>
@@ -187,6 +200,10 @@ export const CashRegisterView: React.FC = () => {
                 <div className="flex justify-between">
                   <span>Suplementos (Tarjeta):</span>
                   <span className="text-white">${cashSession.totalSalesCard.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Membresías (Transferencia):</span>
+                  <span className="text-white">${(cashSession.totalMembershipsTransfer || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Suplementos (Transferencia):</span>

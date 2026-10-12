@@ -140,20 +140,13 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
           {status === 'idle' && 'Coloque su dedo sobre el sensor'}
         </p>
 
-        {planName && (status === 'granted' || status === 'denied') && (
-          <div className="mt-1">
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 inline-block">
-              {planName}
-            </span>
-          </div>
+        {(status === 'idle' || status === 'scanning' || status === 'denied') && (
+          <p className="text-xs text-gym-muted mt-1.5">
+            {status === 'idle' && 'Haz clic en el sensor o usa los accesos rápidos abajo'}
+            {status === 'scanning' && 'Leyendo minucias biométricas...'}
+            {status === 'denied' && 'Consulte el estado de su membresía en recepción'}
+          </p>
         )}
-
-        <p className="text-xs text-gym-muted mt-1.5">
-          {status === 'idle' && 'Haz clic en el sensor o usa los accesos rápidos abajo'}
-          {status === 'scanning' && 'Leyendo minucias biométricas...'}
-          {status === 'granted' && 'Torniquete liberado (Paso libre)'}
-          {status === 'denied' && 'Consulte el estado de su membresía en recepción'}
-        </p>
 
         {/* Motivational Gym Quote Card */}
         {status === 'granted' && motivationalQuote && (

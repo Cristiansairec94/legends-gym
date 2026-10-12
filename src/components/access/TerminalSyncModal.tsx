@@ -17,6 +17,7 @@ import {
   Save
 } from 'lucide-react';
 import { useGym } from '../../context/GymContext';
+import { checkServerHealth, getResolvedServerUrl } from '../../services/syncService';
 
 export interface TerminalConfig {
   serverUrl: string;
@@ -39,9 +40,9 @@ export const getTerminalConfig = (): TerminalConfig => {
     // fallback
   }
   return {
-    serverUrl: 'http://192.168.1.100:5173',
+    serverUrl: getResolvedServerUrl(),
     autoSync: true,
-    syncIntervalSeconds: 30,
+    syncIntervalSeconds: 3,
     voiceEnabled: true,
     soundVolume: 0.9,
     relayPulseDurationSeconds: 4,
@@ -91,24 +92,22 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
     setIsTesting(true);
     setTestResult(null);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-      
-      const res = await fetch(`${formData.serverUrl}`, {
-        method: 'HEAD',
-        mode: 'no-cors',
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      
-      setTestResult({
-        success: true,
-        message: `¡Conexión establecida con el Servidor Central (${formData.serverUrl})!`,
-      });
+      const health = await checkServerHealth(formData.serverUrl);
+      if (health.online) {
+        setTestResult({
+          success: true,
+          message: `¡Conexión establecida con éxito! Servidor activo con ${health.membersCount ?? 0} socios registrados (v${health.version ?? 1}).`,
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: `No se pudo conectar al servidor en ${formData.serverUrl} (${health.error || 'Sin respuesta'}). Verifique la IP o active el modo autónomo.`,
+        });
+      }
     } catch {
       setTestResult({
         success: false,
-        message: `No se pudo alcanzar el Servidor Central en ${formData.serverUrl}. Verifique la IP o active el modo autónomo.`,
+        message: `Error al probar conexión en ${formData.serverUrl}. Verifique que el servidor central esté encendido.`,
       });
     } finally {
       setIsTesting(false);

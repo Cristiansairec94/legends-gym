@@ -26,6 +26,7 @@ export const IncomeHistoryView: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
 
   // Totales
@@ -43,9 +44,13 @@ export const IncomeHistoryView: React.FC = () => {
   const filteredSales = sales.filter(s => {
     const matchesSearch = s.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           s.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.cashierName.toLowerCase().includes(searchTerm.toLowerCase());
+                          s.cashierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (s.planName && s.planName.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesMethod = methodFilter === 'all' || s.paymentMethod === methodFilter;
-    return matchesSearch && matchesMethod;
+    const matchesType = typeFilter === 'all' || 
+                        (typeFilter === 'membership' && s.saleType === 'membership') ||
+                        (typeFilter === 'store' && s.saleType !== 'membership');
+    return matchesSearch && matchesMethod && matchesType;
   });
 
   return (
@@ -153,48 +158,87 @@ export const IncomeHistoryView: React.FC = () => {
           />
         </div>
 
-        {/* Method Filter */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          <button
-            onClick={() => setMethodFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              methodFilter === 'all'
-                ? 'bg-emerald-500 text-black'
-                : 'bg-gym-surface text-gym-muted hover:text-white'
-            }`}
-          >
-            Todos ({sales.length})
-          </button>
-          <button
-            onClick={() => setMethodFilter('cash')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              methodFilter === 'cash'
-                ? 'bg-emerald-500 text-black'
-                : 'bg-gym-surface text-gym-muted hover:text-white'
-            }`}
-          >
-            Efectivo
-          </button>
-          <button
-            onClick={() => setMethodFilter('card')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              methodFilter === 'card'
-                ? 'bg-emerald-500 text-black'
-                : 'bg-gym-surface text-gym-muted hover:text-white'
-            }`}
-          >
-            Tarjeta
-          </button>
-          <button
-            onClick={() => setMethodFilter('transfer')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              methodFilter === 'transfer'
-                ? 'bg-emerald-500 text-black'
-                : 'bg-gym-surface text-gym-muted hover:text-white'
-            }`}
-          >
-            Transferencia
-          </button>
+        {/* Type & Method Filters */}
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Source Filter */}
+          <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
+            <button
+              onClick={() => setTypeFilter('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                typeFilter === 'all'
+                  ? 'bg-emerald-500 text-black'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Todos
+            </button>
+            <button
+              onClick={() => setTypeFilter('membership')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                typeFilter === 'membership'
+                  ? 'bg-purple-500 text-white'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              <Dumbbell className="w-3 h-3" />
+              <span>Membresías</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter('store')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                typeFilter === 'store'
+                  ? 'bg-amber-500 text-black'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              <ShoppingBag className="w-3 h-3" />
+              <span>Tienda</span>
+            </button>
+          </div>
+
+          {/* Payment Method Filter */}
+          <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
+            <button
+              onClick={() => setMethodFilter('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                methodFilter === 'all'
+                  ? 'bg-emerald-500 text-black'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Métodos ({sales.length})
+            </button>
+            <button
+              onClick={() => setMethodFilter('cash')}
+              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+                methodFilter === 'cash'
+                  ? 'bg-emerald-500 text-black'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Efectivo
+            </button>
+            <button
+              onClick={() => setMethodFilter('card')}
+              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+                methodFilter === 'card'
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Tarjeta
+            </button>
+            <button
+              onClick={() => setMethodFilter('transfer')}
+              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+                methodFilter === 'transfer'
+                  ? 'bg-purple-500 text-white'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Transfer
+            </button>
+          </div>
         </div>
 
       </div>
@@ -206,8 +250,9 @@ export const IncomeHistoryView: React.FC = () => {
             <thead className="bg-gym-surface/80 border-b border-gym-border text-gym-muted uppercase font-bold text-[10px] tracking-wider">
               <tr>
                 <th className="py-3 px-4">Folio / Fecha</th>
+                <th className="py-3 px-4">Tipo</th>
                 <th className="py-3 px-4">Cliente / Socio</th>
-                <th className="py-3 px-4">Artículos / Detalle</th>
+                <th className="py-3 px-4">Detalle de Cobro</th>
                 <th className="py-3 px-4">Método de Pago</th>
                 <th className="py-3 px-4">Cajero</th>
                 <th className="py-3 px-4 text-right">Total Cobrado</th>
@@ -217,7 +262,7 @@ export const IncomeHistoryView: React.FC = () => {
             <tbody className="divide-y divide-gym-border/40">
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gym-muted">
+                  <td colSpan={8} className="py-8 text-center text-gym-muted">
                     No se han registrado cobros o ventas en este periodo.
                   </td>
                 </tr>
@@ -225,6 +270,7 @@ export const IncomeHistoryView: React.FC = () => {
                 filteredSales.map((sale) => {
                   const dateObj = new Date(sale.timestamp);
                   const itemsCount = sale.items.reduce((acc, i) => acc + i.quantity, 0);
+                  const isMembership = sale.saleType === 'membership';
 
                   return (
                     <tr key={sale.id} className="hover:bg-gym-surface/40 transition-colors">
@@ -235,6 +281,20 @@ export const IncomeHistoryView: React.FC = () => {
                         <span className="text-[11px] text-gym-muted">
                           {dateObj.toLocaleDateString('es-MX')} {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        {isMembership ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                            <Dumbbell className="w-3 h-3" />
+                            Membresía
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                            <ShoppingBag className="w-3 h-3" />
+                            Tienda POS
+                          </span>
+                        )}
                       </td>
 
                       <td className="py-3 px-4">

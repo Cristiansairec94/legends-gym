@@ -98,6 +98,9 @@ export interface Sale {
   cashierName: string;
   cashierRole: UserRole;
   notes?: string;
+  saleType?: 'store' | 'membership';
+  planName?: string;
+  planType?: MembershipPlanType;
 }
 
 export interface AccessLog {
@@ -124,6 +127,7 @@ export interface CashRegisterSession {
   totalSalesTransfer: number;
   totalMembershipsCash: number;
   totalMembershipsCard: number;
+  totalMembershipsTransfer: number;
   expectedCash: number;
   actualCash?: number;
   cashDifference?: number;

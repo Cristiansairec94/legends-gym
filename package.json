@@ -1,8 +1,9 @@
 {
   "name": "legends",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -10,7 +11,9 @@
     "preview": "vite preview",
     "desktop:terminal": "vite build && electron electron/main.cjs",
     "desktop:dev": "electron electron/main.cjs --dev",
-    "desktop:main": "vite build && electron electron/main.cjs --main"
+    "desktop:main": "vite build && electron electron/main.cjs --main",
+    "sync-server": "node server/syncServer.cjs",
+    "package": "node scripts/package-app.cjs"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -28,6 +31,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "electron": "^44.7.0",
+    "electron-packager": "^17.1.2",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"

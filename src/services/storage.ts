@@ -163,7 +163,13 @@ export const storage = {
   getCashSession(): CashRegisterSession {
     try {
       const data = localStorage.getItem(KEYS.CASH_SESSION);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed: CashRegisterSession = JSON.parse(data);
+        return {
+          ...parsed,
+          totalMembershipsTransfer: parsed.totalMembershipsTransfer || 0
+        };
+      }
 
       return {
         id: 'CAJA-' + new Date().toISOString().slice(0, 10),
@@ -175,6 +181,7 @@ export const storage = {
         totalSalesTransfer: 680,
         totalMembershipsCash: 1700,
         totalMembershipsCard: 9500,
+        totalMembershipsTransfer: 0,
         expectedCash: 4050,
         status: 'open',
       };
@@ -189,6 +196,7 @@ export const storage = {
         totalSalesTransfer: 0,
         totalMembershipsCash: 0,
         totalMembershipsCard: 0,
+        totalMembershipsTransfer: 0,
         expectedCash: 1000,
         status: 'open',
       };

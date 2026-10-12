@@ -87,6 +87,16 @@ ipcMain.on('window:close', () => {
 });
 
 app.whenReady().then(() => {
+  // Ensure sync server is active on port 3001
+  try {
+    const syncServer = require('../server/syncServer.cjs');
+    if (syncServer && typeof syncServer.startServer === 'function') {
+      syncServer.startServer(3001);
+    }
+  } catch (err) {
+    console.log('[MAIN] Servidor de sincronización embebido omitido o activo:', err.message);
+  }
+
   createWindow();
 
   app.on('activate', () => {

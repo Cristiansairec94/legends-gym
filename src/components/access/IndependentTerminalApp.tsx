@@ -26,9 +26,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { getGymAvatar } from '../../utils/genderAvatar';
+import { checkServerHealth, fetchMembersFromServer } from '../../services/syncService';
 
 export const IndependentTerminalApp: React.FC = () => {
-  const { verifyBiometricAccess, members, accessLogs, forceSync } = useGym();
+  const { verifyBiometricAccess, members, accessLogs, forceSync, replaceMembers, syncMembersWithServer } = useGym();
 
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'granted' | 'denied'>('idle');
   const [currentQuote, setCurrentQuote] = useState<string>('');
@@ -61,34 +62,48 @@ export const IndependentTerminalApp: React.FC = () => {
   const keyBufferRef = useRef<string>('');
   const lastKeyTimeRef = useRef<number>(0);
 
-  // Check connection to server URL on mount and periodically
-  const checkServerConnection = useCallback(async () => {
+  const serverVersionRef = useRef<number>(0);
+
+  // Sync members from server
+  const syncWithServer = useCallback(async (): Promise<boolean> => {
     if (!config.serverUrl) {
       setServerStatus('disconnected');
       return false;
     }
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
-      await fetch(config.serverUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
-      clearTimeout(timeout);
-      setServerStatus('connected');
-      return true;
+      const res = await fetchMembersFromServer(config.serverUrl, serverVersionRef.current);
+      if (res.success) {
+        setServerStatus('connected');
+        if (res.hasChanges || (res.members && res.members.length > 0 && serverVersionRef.current === 0)) {
+          if (res.members && res.members.length > 0) {
+            replaceMembers(res.members);
+            serverVersionRef.current = res.version;
+            setLastSyncTime(new Date());
+          }
+        }
+        return true;
+      } else {
+        const health = await checkServerHealth(config.serverUrl);
+        setServerStatus(health.online ? 'connected' : 'disconnected');
+        return health.online;
+      }
     } catch {
       setServerStatus('disconnected');
       return false;
     }
-  }, [config.serverUrl]);
+  }, [config.serverUrl, replaceMembers]);
 
+  // Periodic polling for new/deleted/updated members
   useEffect(() => {
-    checkServerConnection();
+    syncWithServer();
     if (config.autoSync) {
+      const intervalSec = Math.max(2, config.syncIntervalSeconds || 3);
       const interval = setInterval(() => {
-        checkServerConnection();
-      }, config.syncIntervalSeconds * 1000);
+        syncWithServer();
+      }, intervalSec * 1000);
       return () => clearInterval(interval);
     }
-  }, [checkServerConnection, config.autoSync, config.syncIntervalSeconds]);
+  }, [syncWithServer, config.autoSync, config.syncIntervalSeconds]);
 
   // Speech synthesis announcement
   const announceAccess = (clientName: string, granted: boolean) => {
@@ -267,8 +282,8 @@ export const IndependentTerminalApp: React.FC = () => {
   const handleManualSync = async (): Promise<boolean> => {
     setIsSyncing(true);
     try {
-      await forceSync();
-      const connected = await checkServerConnection();
+      serverVersionRef.current = 0; // Force full check on manual request
+      const connected = await syncWithServer();
       setLastSyncTime(new Date());
       setIsSyncing(false);
       return connected;
@@ -281,7 +296,8 @@ export const IndependentTerminalApp: React.FC = () => {
   const handleSaveConfig = (newConfig: TerminalConfig) => {
     setConfig(newConfig);
     saveTerminalConfig(newConfig);
-    checkServerConnection();
+    serverVersionRef.current = 0;
+    syncWithServer();
   };
 
   return (
