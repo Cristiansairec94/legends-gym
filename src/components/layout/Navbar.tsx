@@ -161,6 +161,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
+          {/* Interactive Role Switcher Selector */}
+          <div className="hidden xl:flex items-center h-9 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08] whitespace-nowrap shrink-0">
+            <span className="text-[11px] font-semibold text-zinc-400 px-2">
+              Rol:
+            </span>
+            <div className="flex items-center gap-1">
+              {roles.map((r) => {
+                const isActive = currentRole === r.id;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => setCurrentRole(r.id)}
+                    className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                      isActive 
+                        ? `${r.color} shadow-sm border` 
+                        : 'text-zinc-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
+                    }`}
+                    title={`Cambiar vista a rol ${r.fullLabel}`}
+                  >
+                    {r.icon}
+                    <span>{r.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Notifications Bell Button */}
           <button
             onClick={onOpenNotifications}
@@ -188,33 +215,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             )}
           </button>
-
-          {/* Interactive Role Switcher Selector */}
-          <div className="hidden xl:flex items-center h-9 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08] whitespace-nowrap shrink-0">
-            <span className="text-[11px] font-semibold text-zinc-400 px-2">
-              Rol:
-            </span>
-            <div className="flex items-center gap-1">
-              {roles.map((r) => {
-                const isActive = currentRole === r.id;
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => setCurrentRole(r.id)}
-                    className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
-                      isActive 
-                        ? `${r.color} shadow-sm border` 
-                        : 'text-zinc-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
-                    }`}
-                    title={`Cambiar vista a rol ${r.fullLabel}`}
-                  >
-                    {r.icon}
-                    <span>{r.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Current Logged-in User Profile Card */}
           {currentUser && (
