@@ -193,7 +193,7 @@ export const EmployeesManager: React.FC = () => {
       updateEmployee(editingEmployee.id, {
         fullName: fullName.trim(),
         documentId: documentId.trim() || editingEmployee.documentId,
-        email: email.trim() || editingEmployee.email,
+        email: editingEmployee.email || `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || editingEmployee.phone,
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
@@ -202,13 +202,13 @@ export const EmployeesManager: React.FC = () => {
         pin: pin.trim() || editingEmployee.pin || '1234',
         jobTitle: jobTitle.trim() || editingEmployee.jobTitle,
         shift,
-        salaryMonthly: Number(salaryMonthly) || editingEmployee.salaryMonthly,
+        salaryMonthly: editingEmployee.salaryMonthly ?? 12000,
       });
     } else {
       addEmployee({
         fullName: fullName.trim(),
         documentId: documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`,
-        email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, '.')}@legendsgym.com`,
+        email: `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || '+52 55 0000 0000',
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
@@ -219,7 +219,7 @@ export const EmployeesManager: React.FC = () => {
         shift,
         status: 'active',
         hireDate: new Date().toISOString().slice(0, 10),
-        salaryMonthly: Number(salaryMonthly) || 12000,
+        salaryMonthly: 12000,
       });
     }
 
@@ -757,8 +757,8 @@ export const EmployeesManager: React.FC = () => {
                 />
               </div>
 
-              {/* Turno y Sueldo */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Turno y Teléfono */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gym-muted block mb-1">Turno</label>
                   <select
@@ -774,36 +774,12 @@ export const EmployeesManager: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gym-muted block mb-1">Sueldo Mensual ($)</label>
-                  <input
-                    type="number"
-                    value={salaryMonthly}
-                    onChange={(e) => setSalaryMonthly(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-              </div>
-
-              {/* Teléfono y Correo */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
                   <label className="text-xs font-semibold text-gym-muted block mb-1">Teléfono</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+52 55..."
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gym-muted block mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="correo@legendsgym.com"
                     className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
