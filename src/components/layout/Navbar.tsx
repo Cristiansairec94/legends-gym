@@ -108,9 +108,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 xl:gap-2.5">
           
           {/* Real-time Clock */}
-          <div className="hidden md:flex items-center gap-2 h-9 px-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs whitespace-nowrap shrink-0">
-            <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-            <span className="font-mono text-zinc-200 font-semibold tracking-tight">
+          <div 
+            className="hidden md:flex items-center gap-2.5 h-10 px-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-white/[0.06] to-white/[0.04] border border-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.12)] whitespace-nowrap shrink-0"
+            title="Hora actual del sistema en vivo"
+          >
+            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-mono text-sm sm:text-base font-black text-white tracking-wider">
               {currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
