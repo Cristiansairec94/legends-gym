@@ -4,6 +4,10 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 
 async function main() {
+  try {
+    execSync('taskkill /F /IM ControlDeAccesoLegends.exe /T', { stdio: 'ignore' });
+  } catch {}
+
   console.log('\n======================================================');
   console.log('1. Compilando aplicación web (TypeScript + Vite)...');
   console.log('======================================================');
@@ -78,7 +82,15 @@ echo ============================================================
 start "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe"
 `;
   fs.writeFileSync(rootBat, batContent);
-  console.log('   Acceso directo raíz creado en: ' + rootBat);
+  console.log('   Acceso directo raíz (.bat) creado en: ' + rootBat);
+
+  // Create native Windows .lnk shortcut in root folder
+  try {
+    const lnkPath = path.resolve(__dirname, '../ControlDeAccesoLegends.lnk');
+    const psCmd = `$s=(New-Object -COM WScript.Shell).CreateShortcut('${lnkPath}');$s.TargetPath='${exePath}';$s.WorkingDirectory='${outDir}';$s.Description='FITNESS LEGENDS - Control de Acceso';$s.Save()`;
+    execSync(`powershell -NoProfile -Command "${psCmd}"`, { stdio: 'ignore' });
+    console.log('   Acceso directo Windows (.lnk) creado en: ' + lnkPath);
+  } catch {}
 
   console.log('\n¡Proceso de empaquetado finalizado con éxito!\n');
 }

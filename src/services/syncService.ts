@@ -8,6 +8,7 @@ import {
   Branch, 
   SystemNotification 
 } from '../types';
+import { serializeGymAvatar } from '../utils/genderAvatar';
 
 export interface SyncMessage {
   type: 
@@ -263,6 +264,10 @@ export async function pushMembersToServer(
   serverUrl?: string
 ): Promise<{ success: boolean; version?: number }> {
   const targets = getSyncTargets(serverUrl);
+  const compactMembers = members.map((m) => ({
+    ...m,
+    avatarUrl: serializeGymAvatar(m.avatarUrl),
+  }));
   const results = await Promise.all(
     targets.map(async (base) => {
       try {
@@ -271,7 +276,7 @@ export async function pushMembersToServer(
         const res = await fetch(`${base}/api/sync/members`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ members }),
+          body: JSON.stringify({ members: compactMembers }),
           signal: controller.signal,
         });
         clearTimeout(timer);
@@ -297,6 +302,9 @@ export async function pushMemberActionToServer(
   serverUrl?: string
 ): Promise<{ success: boolean; version?: number }> {
   const targets = getSyncTargets(serverUrl);
+  const compactData = data.member
+    ? { ...data, member: { ...data.member, avatarUrl: serializeGymAvatar(data.member.avatarUrl) } }
+    : data;
   const results = await Promise.all(
     targets.map(async (base) => {
       try {
@@ -305,7 +313,7 @@ export async function pushMemberActionToServer(
         const res = await fetch(`${base}/api/sync/members`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, ...data }),
+          body: JSON.stringify({ action, ...compactData }),
           signal: controller.signal,
         });
         clearTimeout(timer);
@@ -330,6 +338,10 @@ export async function pushAccessLogToServer(
   serverUrl?: string
 ): Promise<boolean> {
   const targets = getSyncTargets(serverUrl);
+  const compactLog = {
+    ...log,
+    avatarUrl: serializeGymAvatar(log.avatarUrl),
+  };
   const results = await Promise.all(
     targets.map(async (base) => {
       try {
@@ -338,7 +350,7 @@ export async function pushAccessLogToServer(
         const res = await fetch(`${base}/api/sync/access-log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ log }),
+          body: JSON.stringify({ log: compactLog }),
           signal: controller.signal,
         });
         clearTimeout(timer);

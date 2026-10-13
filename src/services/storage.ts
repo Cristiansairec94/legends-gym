@@ -23,7 +23,7 @@ import {
 } from '../data/initialEmployees';
 import { INITIAL_BRANCHES } from '../data/initialBranches';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
-import { getGymAvatar } from '../utils/genderAvatar';
+import { getGymAvatar, serializeGymAvatar } from '../utils/genderAvatar';
 
 const KEYS = {
   MEMBERS: 'legends_members_v1',
@@ -104,7 +104,11 @@ export const storage = {
 
   saveMembers(members: Client[]): void {
     try {
-      localStorage.setItem(KEYS.MEMBERS, JSON.stringify(members));
+      const compact = members.map(m => ({
+        ...m,
+        avatarUrl: serializeGymAvatar(m.avatarUrl)
+      }));
+      localStorage.setItem(KEYS.MEMBERS, JSON.stringify(compact));
     } catch (e) {
       console.error('Error saving members:', e);
     }

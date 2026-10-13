@@ -301,6 +301,24 @@ saveDbToDisk();
 
 function saveDbToDisk() {
   try {
+    if (Array.isArray(db.members)) {
+      db.members = db.members.map(m => {
+        if (m && typeof m.avatarUrl === 'string' && m.avatarUrl.length > 150000) {
+          const { avatarUrl, ...rest } = m;
+          return rest;
+        }
+        return m;
+      });
+    }
+    if (Array.isArray(db.accessLogs)) {
+      db.accessLogs = db.accessLogs.map(l => {
+        if (l && typeof l.avatarUrl === 'string' && l.avatarUrl.length > 150000) {
+          const { avatarUrl, ...rest } = l;
+          return rest;
+        }
+        return l;
+      });
+    }
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
   } catch (e) {
     console.error('[DB] Error guardando en disco:', e);

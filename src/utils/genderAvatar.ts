@@ -100,10 +100,34 @@ export function detectGender(fullName: string): 'male' | 'female' {
 }
 
 /**
+ * Converts a built-in 1MB base64 gym photo into a lightweight preset token ('preset:0'..'preset:3')
+ * for fast storage in localStorage (avoiding 5MB QuotaExceededError) and fast HTTP sync with Vercel/localhost.
+ */
+export function serializeGymAvatar(avatarUrl?: string): string | undefined {
+  if (!avatarUrl) return undefined;
+  const idx = GYM_AREAS_PHOTOS.indexOf(avatarUrl);
+  if (idx !== -1) {
+    return `preset:${idx}`;
+  }
+  // If it's another huge base64 string (>150KB), omit it so getGymAvatar assigns deterministic gym photo
+  if (avatarUrl.length > 150000) {
+    return undefined;
+  }
+  return avatarUrl;
+}
+
+/**
  * Returns an appropriate gym avatar based on name and gym facility/area images.
- * Replaces any missing, relative, old unsplash, or placeholder avatars with an embedded Base64 gym area portrait.
+ * Replaces any missing, relative, old unsplash, preset token, or placeholder avatars with an embedded Base64 gym area portrait.
  */
 export function getGymAvatar(fullName: string, currentAvatarUrl?: string): string {
+  if (currentAvatarUrl && currentAvatarUrl.startsWith('preset:')) {
+    const idx = parseInt(currentAvatarUrl.split(':')[1], 10);
+    if (!isNaN(idx) && GYM_AREAS_PHOTOS[idx]) {
+      return GYM_AREAS_PHOTOS[idx];
+    }
+  }
+
   // If currentAvatarUrl is missing, an old unsplash URL, a relative path, or a placeholder SVG
   const needsGymAvatar = 
     !currentAvatarUrl ||
