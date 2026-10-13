@@ -1,14 +1,35 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, Menu, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const url = require('url');
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.fitnesslegends.controlacceso.v2');
+}
 
 let mainWindow = null;
 const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
 const appMode = process.env.APP_MODE || (process.argv.includes('--main') ? 'main' : 'terminal');
 const startUrlArg = process.env.START_URL;
 
+function resolveAppIcon() {
+  const candidates = [
+    path.join(__dirname, '../build/icon.ico'),
+    path.join(__dirname, '../public/favicon.ico'),
+    path.join(__dirname, '../public/logo.png'),
+    path.join(__dirname, '../dist/logo.png'),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      const img = nativeImage.createFromPath(p);
+      if (!img.isEmpty()) return img;
+    }
+  }
+  return path.join(__dirname, '../public/logo.png');
+}
+
 function createWindow() {
-  const iconPath = path.join(__dirname, '../public/logo.png');
+  const appIcon = resolveAppIcon();
 
   mainWindow = new BrowserWindow({
     width: appMode === 'terminal' ? 1180 : 1366,
@@ -19,7 +40,7 @@ function createWindow() {
       ? 'FITNESS LEGENDS - Terminal de Control de Acceso' 
       : 'FITNESS LEGENDS GYM - Sistema de Gestión',
     backgroundColor: '#09090b',
-    icon: iconPath,
+    icon: appIcon,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -28,6 +49,12 @@ function createWindow() {
       webSecurity: true,
     },
   });
+
+  try {
+    if (appIcon && typeof mainWindow.setIcon === 'function') {
+      mainWindow.setIcon(appIcon);
+    }
+  } catch {}
 
   Menu.setApplicationMenu(null);
 

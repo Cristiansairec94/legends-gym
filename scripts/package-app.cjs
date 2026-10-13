@@ -84,12 +84,30 @@ start "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegen
   fs.writeFileSync(rootBat, batContent);
   console.log('   Acceso directo raíz (.bat) creado en: ' + rootBat);
 
-  // Create native Windows .lnk shortcut in root folder
+  // Create native Windows .lnk shortcut in root folder and Desktop
   try {
+    const outIcoPath = path.join(outDir, 'resources', 'app', 'build', 'icon.ico');
+    const finalIco = fs.existsSync(outIcoPath) ? outIcoPath : iconPath;
     const lnkPath = path.resolve(__dirname, '../ControlDeAccesoLegends.lnk');
-    const psCmd = `$s=(New-Object -COM WScript.Shell).CreateShortcut('${lnkPath}');$s.TargetPath='${exePath}';$s.WorkingDirectory='${outDir}';$s.Description='FITNESS LEGENDS - Control de Acceso';$s.Save()`;
+    const desktopLnk = path.resolve(process.env.USERPROFILE || 'C:\\Users\\HP', 'Desktop', 'Control de Acceso Legends.lnk');
+    const psCmd = `
+      $wsh = New-Object -COM WScript.Shell;
+      $s = $wsh.CreateShortcut('${lnkPath}');
+      $s.TargetPath = '${exePath}';
+      $s.WorkingDirectory = '${outDir}';
+      $s.IconLocation = '${finalIco},0';
+      $s.Description = 'FITNESS LEGENDS - Control de Acceso';
+      $s.Save();
+      $s2 = $wsh.CreateShortcut('${desktopLnk}');
+      $s2.TargetPath = '${exePath}';
+      $s2.WorkingDirectory = '${outDir}';
+      $s2.IconLocation = '${finalIco},0';
+      $s2.Description = 'FITNESS LEGENDS - Control de Acceso';
+      $s2.Save();
+    `.replace(/\r?\n/g, ' ');
     execSync(`powershell -NoProfile -Command "${psCmd}"`, { stdio: 'ignore' });
-    console.log('   Acceso directo Windows (.lnk) creado en: ' + lnkPath);
+    console.log('   Acceso directo Windows (.lnk) con icono creado en: ' + lnkPath);
+    console.log('   Acceso directo en Escritorio creado en: ' + desktopLnk);
   } catch {}
 
   console.log('\n¡Proceso de empaquetado finalizado con éxito!\n');
