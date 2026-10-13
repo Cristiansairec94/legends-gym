@@ -25,13 +25,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     accessLogs, 
     todayCheckInsCount, 
     activeMembersCount, 
-    todaySalesTotal, 
-    todaySalesCount,
     todayStoreSalesTotal,
     todayMembershipsSalesTotal,
     cashSession,
     activeBranch,
-    todayExpensesTotal,
     isTerminalConnected
   } = useGym();
 
@@ -83,8 +80,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     ? todayStoreSalesTotal
     : (cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer);
 
-  const totalIncomeToday = todaySalesTotal > 0 ? todaySalesTotal : (storeSalesTotal + totalMembershipsRevenue);
-  const netProfitToday = totalIncomeToday - todayExpensesTotal;
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
   const storeTicketsToday = sales.filter(s => s.timestamp.startsWith(todayStr) && s.saleType !== 'membership').length;
 
@@ -144,7 +139,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         />
       </div>
 
-      {/* Live Occupancy & Net Profit Ribbon */}
+      {/* Live Occupancy Ribbon */}
       <div className="bg-gradient-to-r from-[#141418] via-[#111114] to-[#141418] rounded-2xl border border-white/[0.08] p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg">
         
         {/* Gym live occupancy */}
@@ -163,32 +158,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               Capacidad: {Math.round((activeBranch.currentOccupancy / activeBranch.maxCapacity) * 100)}% de ocupación ({activeBranch.maxCapacity} max)
             </p>
           </div>
-        </div>
-
-        {/* Quick balance of the day */}
-        <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-white/[0.08] pt-3 md:pt-0">
-          <div className="text-right">
-            <span className="text-[10px] text-zinc-400 uppercase font-black tracking-wider block">Gastos Hoy</span>
-            <span className="text-sm font-bold text-rose-400 font-mono">
-              -${todayExpensesTotal.toLocaleString('es-MX')}
-            </span>
-          </div>
-
-          <div className="text-right">
-            <span className="text-[10px] text-zinc-400 uppercase font-black tracking-wider block">Utilidad Neta Hoy</span>
-            <span className={`text-base font-black font-mono ${
-              netProfitToday >= 0 ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
-              ${netProfitToday.toLocaleString('es-MX')}
-            </span>
-          </div>
-
-          <button
-            onClick={() => setActiveTab('expenses')}
-            className="px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-rose-500 hover:text-white text-zinc-300 text-xs font-bold transition-all border border-white/10 hover:border-rose-500 shadow-sm"
-          >
-            Ver Gastos
-          </button>
         </div>
 
       </div>
