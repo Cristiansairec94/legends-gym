@@ -14,7 +14,8 @@ import {
   Clock,
   ExternalLink,
   Users,
-  LogOut
+  LogOut,
+  Download
 } from 'lucide-react';
 
 export const TurnstileTerminal: React.FC = () => {
@@ -162,6 +163,18 @@ export const TurnstileTerminal: React.FC = () => {
             <ExternalLink className="w-4 h-4 text-amber-400" />
             <span>Equipo Independiente</span>
           </button>
+
+          {/* Download Windows Desktop App (.exe) */}
+          <a
+            href="https://github.com/Cristiansairec94/legends-gym/releases/latest/download/ControlDeAccesoLegends-Windows-x64.zip"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm"
+            title="Descargar la aplicación de escritorio nativa para Windows (ControlDeAccesoLegends.exe)"
+          >
+            <Download className="w-4 h-4 text-amber-400" />
+            <span>Descargar App Windows (.exe)</span>
+          </a>
 
           <button
             onClick={toggleFullScreen}

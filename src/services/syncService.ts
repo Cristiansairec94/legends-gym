@@ -85,11 +85,14 @@ export function subscribeToLocalSync(callback: (msg: SyncMessage) => void): () =
   };
 }
 
+export const CLOUD_SERVER_URL = 'https://legends-gym.vercel.app';
+export const LOCAL_SERVER_URL = 'http://localhost:3001';
+
 /**
- * Returns the effective server URL for LAN sync
+ * Returns the effective server URL for sync (Cloud or LAN)
  */
 export function getResolvedServerUrl(customUrl?: string): string {
-  if (customUrl && customUrl.trim() && !customUrl.includes('.vercel.app')) {
+  if (customUrl && customUrl.trim()) {
     return customUrl.trim().replace(/\/+$/, '');
   }
 
@@ -97,16 +100,13 @@ export function getResolvedServerUrl(customUrl?: string): string {
     const saved = localStorage.getItem('legends_terminal_standalone_config_v1');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (
-        parsed.serverUrl &&
-        parsed.serverUrl.trim() &&
-        !parsed.serverUrl.includes('.vercel.app')
-      ) {
+      if (parsed.serverUrl && parsed.serverUrl.trim()) {
         return parsed.serverUrl.trim().replace(/\/+$/, '');
       }
     }
   } catch {}
 
+  // If running in browser (web app)
   if (typeof window !== 'undefined' && window.location.hostname && window.location.protocol !== 'file:') {
     const host = window.location.hostname;
     const isLocalNetwork =
@@ -118,9 +118,12 @@ export function getResolvedServerUrl(customUrl?: string): string {
     if (isLocalNetwork) {
       return `http://${host}:3001`;
     }
+    // On Vercel or custom domain: use same origin
+    return window.location.origin;
   }
 
-  return 'http://localhost:3001';
+  // Default for standalone desktop app: Cloud Vercel server
+  return CLOUD_SERVER_URL;
 }
 
 /**

@@ -259,6 +259,37 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                     <span>Probar Ping</span>
                   </button>
                 </div>
+                
+                {/* Quick Server Presets */}
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <span className="text-[11px] text-gym-muted">Servidores sugeridos:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, serverUrl: 'https://legends-gym.vercel.app' });
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
+                      formData.serverUrl === 'https://legends-gym.vercel.app'
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-sm'
+                        : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30'
+                    }`}
+                  >
+                    ☁️ Servidor Nube (Vercel)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, serverUrl: 'http://localhost:3001' });
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
+                      formData.serverUrl === 'http://localhost:3001'
+                        ? 'bg-white/20 text-white border-white/40 shadow-sm'
+                        : 'bg-gym-bg hover:bg-gym-surface text-gray-300 border-gym-border'
+                    }`}
+                  >
+                    🏠 Servidor Local (PC)
+                  </button>
+                </div>
                 <p className="text-[11px] text-gym-muted mt-1.5">
                   Coloca la IP local asignada a la computadora principal donde opera la recepción o administración del gimnasio.
                 </p>
