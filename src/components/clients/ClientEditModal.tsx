@@ -467,7 +467,7 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
                         {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Silueta Predeterminada' : 'Foto Asignada'}
                       </span>
                       <span className="text-[11px] text-gym-muted block">
-                        {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y torniquete'}
+                        {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y control de acceso'}
                       </span>
                     </div>
                   </div>

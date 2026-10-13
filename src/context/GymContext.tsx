@@ -979,7 +979,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       clientName: client ? `${client.fullName} (Salida)` : 'Atleta en Salida',
       avatarUrl: client?.avatarUrl,
       status: 'granted',
-      reason: 'Salida de sala registrada en torniquete',
+      reason: 'Salida de sala registrada',
       method: 'manual',
     };
     setAccessLogs(prev => [exitLog, ...prev]);

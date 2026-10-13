@@ -133,7 +133,7 @@ export const LoginScreen: React.FC = () => {
                 Iniciar Sesión
               </h1>
               <p className="text-xs sm:text-sm text-gym-muted mt-1">
-                Ingresa tus credenciales autorizadas para desbloquear el sistema de caja, torniquete y socios.
+                Ingresa tus credenciales autorizadas para desbloquear el sistema de caja, accesos y socios.
               </p>
             </div>
 

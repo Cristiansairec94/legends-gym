@@ -47,7 +47,7 @@ export const SystemCatalogs: React.FC = () => {
   const [planType, setPlanType] = useState<MembershipPlanType>('monthly');
   const [planDays, setPlanDays] = useState(30);
   const [planPrice, setPlanPrice] = useState(850);
-  const [planBenefits, setPlanBenefits] = useState('Acceso 30 días, Torniquete biométrico');
+  const [planBenefits, setPlanBenefits] = useState('Acceso 30 días, Acceso biométrico');
 
   const handleSaveGymSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +104,7 @@ export const SystemCatalogs: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gym-muted mt-0.5">
-                Configuración de planes de membresía, precios de cuotas, datos fiscales del gimnasio y parámetros del torniquete.
+                Configuración de planes de membresía, precios de cuotas, datos fiscales del gimnasio y parámetros de acceso.
               </p>
             </div>
           </div>
@@ -157,7 +157,7 @@ export const SystemCatalogs: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-gym-muted">
-              Estos planes aparecen automáticamente en la cartera de clientes, terminal de torniquete y renovaciones.
+              Estos planes aparecen automáticamente en la cartera de clientes, terminal de acceso y renovaciones.
             </p>
             {currentRole === 'admin' && (
               <button
@@ -332,7 +332,7 @@ export const SystemCatalogs: React.FC = () => {
           <div className="border-b border-gym-border pb-3">
             <h3 className="font-bold text-base text-white flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
-              <span>Tolerancia de Membresías & Torniquete Biométrico</span>
+              <span>Tolerancia de Membresías & Control Biométrico</span>
             </h3>
             <p className="text-xs text-gym-muted mt-0.5">
               Ajustes de comportamiento del sensor de huella y reglas de acceso para socios con cuota pendiente.
@@ -342,7 +342,7 @@ export const SystemCatalogs: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="p-4 rounded-xl bg-gym-surface/60 border border-gym-border space-y-2">
               <label className="text-xs font-bold text-white block">
-                Tiempo de Desbloqueo del Torniquete (Segundos)
+                Tiempo de Confirmación de Acceso (Segundos)
               </label>
               <p className="text-xs text-gym-muted">
                 Lapso durante el cual la compuerta física permanece abierta tras una huella válida.
@@ -466,7 +466,7 @@ export const SystemCatalogs: React.FC = () => {
                   value={planBenefits}
                   onChange={(e) => setPlanBenefits(e.target.value)}
                   rows={2}
-                  placeholder="Área de pesas, Asesoría nutricional, Torniquete..."
+                  placeholder="Área de pesas, Asesoría nutricional, Acceso biométrico..."
                   className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400 resize-none"
                 />
               </div>

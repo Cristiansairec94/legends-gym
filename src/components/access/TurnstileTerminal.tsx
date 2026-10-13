@@ -117,7 +117,7 @@ export const TurnstileTerminal: React.FC = () => {
             </span>
           </div>
           <p className="text-sm text-gym-muted mt-1">
-            Validación instantánea de huella digital y vigencia de cuota en torniquete principal.
+            Validación instantánea de huella digital y vigencia de cuota en el acceso principal.
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export const TurnstileTerminal: React.FC = () => {
           <button
             onClick={() => window.open('?mode=terminal', '_blank', 'width=1180,height=840')}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border/80 border border-gym-border text-xs font-bold text-white transition-all shadow-sm"
-            title="Abrir vista dedicada de Control de Acceso para equipo independiente de torniquete"
+            title="Abrir vista dedicada de Control de Acceso para equipo independiente"
           >
             <ExternalLink className="w-4 h-4 text-amber-400" />
             <span>Equipo Independiente</span>

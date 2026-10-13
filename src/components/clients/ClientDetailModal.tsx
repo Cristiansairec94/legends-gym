@@ -155,7 +155,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                   </span>
                 </div>
                 <h4 className="font-semibold text-sm text-gray-200">
-                  {client.biometricRegistered ? 'Torniquete Habilitado' : 'Requiere Enrolamiento'}
+                  {client.biometricRegistered ? 'Acceso Biométrico Habilitado' : 'Requiere Enrolamiento'}
                 </h4>
                 <p className="text-xs text-gym-muted mt-1">
                   {client.biometricRegistered 

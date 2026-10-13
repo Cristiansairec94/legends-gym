@@ -112,7 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 Panel de Control Central • LEYENDS FITNESS GYM
               </h1>
               <p className="text-xs text-zinc-400 mt-1 max-w-xl font-medium">
-                Monitoreo en tiempo real de torniquetes biométricos, cartera de clientes y ventas de la tienda de suplementos.
+                Monitoreo en tiempo real de accesos biométricos, cartera de clientes y ventas de la tienda de suplementos.
               </p>
             </div>
           </div>
@@ -124,7 +124,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] flex items-center gap-1.5 transition-all transform hover:scale-[1.02] active:scale-[0.98] border border-white"
             >
               <Fingerprint className="w-4 h-4 stroke-[2.5]" />
-              <span>Torniquete Huella</span>
+              <span>Huella</span>
             </button>
             <button
               onClick={() => setActiveTab('pos')}

@@ -250,7 +250,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                       {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Silueta Predeterminada' : 'Foto Asignada'}
                     </span>
                     <span className="text-[10px] text-gym-muted block">
-                      {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y torniquete'}
+                      {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y control de acceso'}
                     </span>
                   </div>
                 </div>
@@ -465,7 +465,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                 <div>
                   <p className="text-xs font-bold text-white">Enrolar Huella Inmediatamente</p>
                   <p className="text-[10px] sm:text-[11px] text-gym-muted">
-                    Abrirá el asistente para capturar la huella del socio en el torniquete
+                    Abrirá el asistente para capturar la huella del socio para control de acceso
                   </p>
                 </div>
               </div>

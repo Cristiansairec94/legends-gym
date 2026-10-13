@@ -16,7 +16,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 650,
     title: appMode === 'terminal' 
-      ? 'FITNESS LEGENDS - Terminal de Control de Acceso (Torniquete)' 
+      ? 'FITNESS LEGENDS - Terminal de Control de Acceso' 
       : 'FITNESS LEGENDS GYM - Sistema de Gestión',
     backgroundColor: '#09090b',
     icon: iconPath,

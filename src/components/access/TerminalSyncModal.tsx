@@ -46,7 +46,7 @@ export const getTerminalConfig = (): TerminalConfig => {
     voiceEnabled: true,
     soundVolume: 0.9,
     relayPulseDurationSeconds: 4,
-    terminalName: 'Torniquete Principal - Entrada A',
+    terminalName: 'Terminal Principal - Entrada A',
     isOnlineMode: false,
   };
 };
@@ -146,7 +146,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(accessLogs, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `accesos_torniquete_${new Date().toISOString().slice(0, 10)}.json`);
+      downloadAnchor.setAttribute("download", `accesos_${new Date().toISOString().slice(0, 10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -175,7 +175,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                 </span>
               </h3>
               <p className="text-xs text-gym-muted mt-0.5">
-                Ajustes de red local (LAN), sincronización de socios y periféricos del torniquete
+                Ajustes de red local (LAN), sincronización de socios y periféricos de acceso
               </p>
             </div>
           </div>
@@ -325,13 +325,13 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
           <div className="space-y-3">
             <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
               <Cpu className="w-4 h-4" />
-              <span>Ajustes de Torniquete y Periféricos</span>
+              <span>Ajustes de Acceso y Periféricos</span>
             </h4>
 
             <div className="bg-gym-surface/50 p-4 rounded-xl border border-gym-border grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-gray-300 block mb-1.5">
-                  Tiempo de Liberación del Torniquete:
+                  Tiempo de Liberación de Acceso:
                 </label>
                 <select
                   value={formData.relayPulseDurationSeconds}
@@ -344,7 +344,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   <option value={5}>5 segundos (Holgado)</option>
                 </select>
                 <p className="text-[11px] text-gym-muted mt-1">
-                  Duración de la señal de paso libre y luz verde en torniquete.
+                  Duración de la señal de paso libre y luz verde de acceso.
                 </p>
               </div>
 
@@ -356,7 +356,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   type="text"
                   value={formData.terminalName}
                   onChange={(e) => setFormData({ ...formData, terminalName: e.target.value })}
-                  placeholder="Ej. Torniquete A - Entrada"
+                  placeholder="Ej. Terminal A - Entrada"
                   className="w-full px-3 py-2 bg-gym-bg rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400 transition-colors"
                 />
                 <p className="text-[11px] text-gym-muted mt-1">
@@ -377,7 +377,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   </label>
                   <div>
                     <span className="text-xs font-bold text-white block">Voz de Bienvenida Sintetizada</span>
-                    <span className="text-[11px] text-gym-muted">Anunciar "Bienvenido [Nombre]" por altavoz al abrir torniquete</span>
+                    <span className="text-[11px] text-gym-muted">Anunciar "Bienvenido [Nombre]" por altavoz al conceder acceso</span>
                   </div>
                 </div>
 

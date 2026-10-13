@@ -89,7 +89,7 @@ export function subscribeToLocalSync(callback: (msg: SyncMessage) => void): () =
  * Returns the effective server URL for LAN sync
  */
 export function getResolvedServerUrl(customUrl?: string): string {
-  if (customUrl && customUrl.trim()) {
+  if (customUrl && customUrl.trim() && !customUrl.includes('.vercel.app')) {
     return customUrl.trim().replace(/\/+$/, '');
   }
 
@@ -97,14 +97,27 @@ export function getResolvedServerUrl(customUrl?: string): string {
     const saved = localStorage.getItem('legends_terminal_standalone_config_v1');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.serverUrl && parsed.serverUrl.trim()) {
+      if (
+        parsed.serverUrl &&
+        parsed.serverUrl.trim() &&
+        !parsed.serverUrl.includes('.vercel.app')
+      ) {
         return parsed.serverUrl.trim().replace(/\/+$/, '');
       }
     }
   } catch {}
 
   if (typeof window !== 'undefined' && window.location.hostname && window.location.protocol !== 'file:') {
-    return `${window.location.protocol}//${window.location.hostname}:3001`;
+    const host = window.location.hostname;
+    const isLocalNetwork =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.startsWith('192.168.') ||
+      host.startsWith('10.') ||
+      host.startsWith('172.');
+    if (isLocalNetwork) {
+      return `http://${host}:3001`;
+    }
   }
 
   return 'http://localhost:3001';

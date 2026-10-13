@@ -76,7 +76,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
                 </span>
               </div>
               <p className="text-xs text-gym-muted mt-0.5">
-                Historial cronológico de validaciones en el torniquete biométrico
+                Historial cronológico de validaciones del control de acceso biométrico
               </p>
             </div>
           </div>
@@ -178,7 +178,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
               <p className="text-xs text-gym-muted mt-1">
                 {searchQuery || statusFilter !== 'all' 
                   ? 'Intenta ajustar los filtros de búsqueda.'
-                  : 'Las validaciones de torniquete aparecerán registradas aquí.'}
+                  : 'Las validaciones de acceso aparecerán registradas aquí.'}
               </p>
             </div>
           ) : (

@@ -322,7 +322,7 @@ export const IndependentTerminalApp: React.FC = () => {
               </span>
             </div>
             <p className="text-sm text-gym-muted mt-1">
-              Validación instantánea de huella digital y vigencia de cuota en torniquete principal.
+              Validación instantánea de huella digital y vigencia de cuota en el acceso principal.
             </p>
           </div>
 
@@ -415,7 +415,7 @@ export const IndependentTerminalApp: React.FC = () => {
             <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200">
               <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-sm uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-spin" />
-                <span>TORNIQUETE LIBERADO (PASO LIBRE)</span>
+                <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
                 <span className="bg-emerald-400 text-black px-2 py-0.2 rounded-full font-mono text-xs font-black">
                   {relayRemainingSeconds}s
                 </span>

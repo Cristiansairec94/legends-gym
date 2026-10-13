@@ -24,7 +24,7 @@ export const RolesManager: React.FC = () => {
   const activeRoleDef = roles.find(r => r.id === selectedRole) || roles[0];
 
   const permissionLabels: { key: keyof RolePermissions; label: string; desc: string; icon: React.ReactNode }[] = [
-    { key: 'accessTurnstile', label: 'Torniquete & Acceso Biométrico', desc: 'Permite operar el terminal de huella dactilar de entrada', icon: <Fingerprint className="w-4 h-4 text-amber-400" /> },
+    { key: 'accessTurnstile', label: 'Control de Acceso Biométrico', desc: 'Permite operar el terminal de huella dactilar de entrada', icon: <Fingerprint className="w-4 h-4 text-amber-400" /> },
     { key: 'manageClients', label: 'Gestión de Cartera de Clientes', desc: 'Consultar expedientes, dar de alta socios y ver fichas médicas', icon: <Users className="w-4 h-4 text-blue-400" /> },
     { key: 'enrollBiometrics', label: 'Enrolamiento de Huellas Dactilares', desc: 'Capturar y registrar muestras biométricas de socios', icon: <Fingerprint className="w-4 h-4 text-emerald-400" /> },
     { key: 'posSales', label: 'Punto de Venta (POS) Suplementos', desc: 'Vender productos, cobrar en mostrador y emitir tickets térmicos', icon: <ShoppingBag className="w-4 h-4 text-amber-400" /> },

@@ -82,7 +82,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base text-white">Enrolamiento Biométrico</h3>
-              <p className="text-xs text-gym-muted">Captura de huella dactilar para torniquete</p>
+              <p className="text-xs text-gym-muted">Captura de huella dactilar para control de acceso</p>
             </div>
           </div>
           <button 
@@ -211,7 +211,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
               <div className="bg-gym-surface/70 p-3 rounded-xl border border-gym-border text-left font-mono text-[11px] space-y-1 text-gym-muted">
                 <div>Hash ID: <span className="text-emerald-400 font-bold">BIO_HASH_{client.id}</span></div>
                 <div>Dedo: <span className="text-gray-200">{fingerSelected}</span></div>
-                <div>Estado: <span className="text-emerald-400">Torniquete Habilitado</span></div>
+                <div>Estado: <span className="text-emerald-400">Acceso Habilitado</span></div>
               </div>
 
               <div className="flex gap-2 justify-center pt-2">

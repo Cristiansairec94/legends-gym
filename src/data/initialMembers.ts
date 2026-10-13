@@ -175,7 +175,7 @@ export const INITIAL_MEMBERS: Client[] = [
       phone: '+52 55 4411 9988',
       relationship: 'Madre',
     },
-    medicalNotes: 'Inscripción reciente. Requiere captura de huella para acceso al torniquete.',
+    medicalNotes: 'Inscripción reciente. Requiere captura de huella para control de acceso.',
     biometricRegistered: false,
     membership: {
       planType: 'monthly',

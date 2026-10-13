@@ -156,7 +156,7 @@ export const INITIAL_CATALOG_PLANS: SystemCatalogPlan[] = [
     type: 'monthly',
     durationDays: 30,
     price: 850,
-    benefits: ['Acceso 30 días', 'Acceso biométrico por torniquete', 'Rutina de inducción', 'Clases grupales'],
+    benefits: ['Acceso 30 días', 'Acceso biométrico con huella', 'Rutina de inducción', 'Clases grupales'],
     active: true,
   },
   {
@@ -165,7 +165,7 @@ export const INITIAL_CATALOG_PLANS: SystemCatalogPlan[] = [
     type: 'quarterly',
     durationDays: 90,
     price: 2300,
-    benefits: ['Acceso 90 días', '10% descuento en tienda de suplementos', 'Evaluación InBody inicial', 'Torniquete rápido'],
+    benefits: ['Acceso 90 días', '10% descuento en tienda de suplementos', 'Evaluación InBody inicial', 'Acceso rápido con huella'],
     active: true,
   },
   {

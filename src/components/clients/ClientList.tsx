@@ -277,7 +277,7 @@ export const ClientList: React.FC = () => {
                       {/* Biometric Status */}
                       <td className="p-4 text-center">
                         {member.biometricRegistered ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Huella activa en torniquete">
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Huella activa para acceso">
                             <Fingerprint className="w-4 h-4" />
                             <span>Enrolada</span>
                           </div>
