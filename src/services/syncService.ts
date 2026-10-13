@@ -127,7 +127,18 @@ export function getResolvedServerUrl(customUrl?: string): string {
 }
 
 /**
- * Check if the sync server is reachable
+ * Returns all candidate sync server URLs (both Local Desktop Server and Cloud Vercel Server)
+ * so that changes made in the web ERP (Vercel or localhost) and the desktop executable
+ * are always synchronized across both environments.
+ */
+export function getSyncTargets(customUrl?: string): string[] {
+  const primary = getResolvedServerUrl(customUrl);
+  const targets = new Set<string>([primary, LOCAL_SERVER_URL, CLOUD_SERVER_URL]);
+  return Array.from(targets).filter(Boolean);
+}
+
+/**
+ * Check if any sync server is reachable (prioritizes local server, falls back to cloud)
  */
 export async function checkServerHealth(serverUrl?: string): Promise<{
   online: boolean;
@@ -136,35 +147,49 @@ export async function checkServerHealth(serverUrl?: string): Promise<{
   serverTime?: string;
   error?: string;
 }> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${base}/api/sync/status`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            online: true,
+            base,
+            version: data.version,
+            membersCount: data.membersCount,
+            serverTime: data.serverTime,
+          };
+        }
+      } catch {}
+      return null;
+    })
+  );
 
-    const res = await fetch(`${base}/api/sync/status`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        online: true,
-        version: data.version,
-        membersCount: data.membersCount,
-        serverTime: data.serverTime,
-      };
-    }
-    return { online: false, error: `HTTP ${res.status}` };
-  } catch (err: any) {
-    return { online: false, error: err.message || 'Offline' };
+  const valid = results.filter((r): r is NonNullable<typeof r> => r !== null);
+  if (valid.length > 0) {
+    // Prefer the target with the most members or local server
+    const best = valid.sort((a, b) => (b.membersCount || 0) - (a.membersCount || 0))[0];
+    return {
+      online: true,
+      version: best.version,
+      membersCount: best.membersCount,
+      serverTime: best.serverTime,
+    };
   }
+  return { online: false, error: 'Offline' };
 }
 
 /**
- * Fetch members from the sync server
+ * Fetch and merge members from all active sync servers (Local + Cloud)
  */
 export async function fetchMembersFromServer(
   serverUrl?: string,
@@ -175,143 +200,193 @@ export async function fetchMembersFromServer(
   version: number;
   hasChanges: boolean;
 }> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3500);
+  const targets = getSyncTargets(serverUrl);
+  const responses = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${base}/api/sync/members?sinceVersion=${sinceVersion}`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            success: true,
+            base,
+            members: Array.isArray(data.members) ? (data.members as Client[]) : [],
+            version: Number(data.version || 0),
+            hasChanges: Boolean(data.hasChanges),
+          };
+        }
+      } catch {}
+      return null;
+    })
+  );
 
-    const res = await fetch(`${base}/api/sync/members?sinceVersion=${sinceVersion}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        success: true,
-        members: Array.isArray(data.members) ? data.members : [],
-        version: data.version || 0,
-        hasChanges: Boolean(data.hasChanges),
-      };
-    }
-    return { success: false, members: [], version: sinceVersion, hasChanges: false };
-  } catch (err) {
+  const valid = responses.filter((r): r is NonNullable<typeof r> => r !== null && r.success);
+  if (valid.length === 0) {
     return { success: false, members: [], version: sinceVersion, hasChanges: false };
   }
+
+  // Merge members across all reachable servers (preserving newest/local additions)
+  const mergedMap = new Map<string, Client>();
+  // Process cloud first, then local server so local persistent DB state wins on conflict while keeping all unique IDs
+  const ordered = [...valid].reverse();
+  for (const resp of ordered) {
+    for (const m of resp.members) {
+      if (m && m.id) {
+        mergedMap.set(m.id, { ...(mergedMap.get(m.id) || {}), ...m });
+      }
+    }
+  }
+
+  const maxVersion = Math.max(...valid.map((v) => v.version), sinceVersion);
+  const anyChanges = valid.some((v) => v.hasChanges) || mergedMap.size > 0;
+
+  return {
+    success: true,
+    members: Array.from(mergedMap.values()),
+    version: maxVersion,
+    hasChanges: anyChanges,
+  };
 }
 
 /**
- * Push full members list to the server (e.g. initial backup or full export)
+ * Push full members list to all sync servers (Local + Cloud)
  */
 export async function pushMembersToServer(
   members: Client[],
   serverUrl?: string
 ): Promise<{ success: boolean; version?: number }> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4500);
+        const res = await fetch(`${base}/api/sync/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ members }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          return { success: true, version: data.version };
+        }
+      } catch {}
+      return { success: false };
+    })
+  );
 
-    const res = await fetch(`${base}/api/sync/members`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ members }),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = await res.json();
-      return { success: true, version: data.version };
-    }
-    return { success: false };
-  } catch {
-    return { success: false };
-  }
+  const succeeded = results.find((r) => r.success);
+  return succeeded || { success: false };
 }
 
 /**
- * Push a single member action (add, update, delete) to the server
+ * Push a single member action (add, update, delete) to all sync servers (Local + Cloud)
  */
 export async function pushMemberActionToServer(
   action: 'add' | 'update' | 'delete',
   data: { member?: Client; memberId?: string },
   serverUrl?: string
 ): Promise<{ success: boolean; version?: number }> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(`${base}/api/sync/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...data }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          return { success: true, version: json.version };
+        }
+      } catch {}
+      return { success: false };
+    })
+  );
 
-    const res = await fetch(`${base}/api/sync/members`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...data }),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const json = await res.json();
-      return { success: true, version: json.version };
-    }
-    return { success: false };
-  } catch {
-    return { success: false };
-  }
+  const succeeded = results.find((r) => r.success);
+  return succeeded || { success: false };
 }
 
 /**
- * Push an access log to the sync server
+ * Push an access log to all sync servers (Local + Cloud)
  */
 export async function pushAccessLogToServer(
   log: AccessLog,
   serverUrl?: string
 ): Promise<boolean> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-
-    const res = await fetch(`${base}/api/sync/access-log`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ log }),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    return res.ok;
-  } catch {
-    return false;
-  }
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${base}/api/sync/access-log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ log }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        return res.ok;
+      } catch {
+        return false;
+      }
+    })
+  );
+  return results.some(Boolean);
 }
 
 /**
- * Fetch recent access logs from the server
+ * Fetch recent access logs from all reachable servers
  */
 export async function fetchAccessLogsFromServer(serverUrl?: string): Promise<AccessLog[]> {
-  const base = getResolvedServerUrl(serverUrl);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
+  const targets = getSyncTargets(serverUrl);
+  const responses = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${base}/api/sync/access-logs`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          return Array.isArray(data.logs) ? (data.logs as AccessLog[]) : [];
+        }
+      } catch {}
+      return [];
+    })
+  );
 
-    const res = await fetch(`${base}/api/sync/access-logs`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = await res.json();
-      return Array.isArray(data.logs) ? data.logs : [];
+  const logMap = new Map<string, AccessLog>();
+  for (const logs of responses) {
+    for (const l of logs) {
+      if (l && l.id && !logMap.has(l.id)) {
+        logMap.set(l.id, l);
+      }
     }
-    return [];
-  } catch {
-    return [];
   }
+  return Array.from(logMap.values()).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 }
 
 /**
@@ -326,7 +401,8 @@ export function subscribeToRemoteSync(
     return () => {};
   }
 
-  const base = getResolvedServerUrl(serverUrl);
+  // Use local server for persistent SSE stream when on desktop/local, or custom URL if specified
+  const base = serverUrl && serverUrl.trim() ? getResolvedServerUrl(serverUrl) : LOCAL_SERVER_URL;
   let eventSource: EventSource | null = null;
   let isClosed = false;
   let reconnectTimer: any = null;

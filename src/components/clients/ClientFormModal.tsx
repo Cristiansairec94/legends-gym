@@ -137,7 +137,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
         relationship: emergencyRel || 'Familiar',
       },
       medicalNotes: medicalNotes || 'Apto para actividad física general.',
-      biometricRegistered: false,
+      biometricRegistered: true,
       membership: {
         planType: selectedPlan.type,
         planName: selectedPlan.name,

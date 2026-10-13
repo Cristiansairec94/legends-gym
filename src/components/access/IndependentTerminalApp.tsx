@@ -154,7 +154,14 @@ export const IndependentTerminalApp: React.FC = () => {
     setScanStatus('scanning');
     setLastVerifiedClient(null);
 
-    setTimeout(() => {
+    // Refresh member list from server in parallel during the scan animation
+    const syncPromise = syncWithServer().catch(() => {});
+
+    setTimeout(async () => {
+      await Promise.race([
+        syncPromise,
+        new Promise(resolve => setTimeout(resolve, 600))
+      ]);
       const result = verifyBiometricAccess(identifier);
       
       if (result.granted) {
@@ -216,7 +223,7 @@ export const IndependentTerminalApp: React.FC = () => {
         setScanStatus('idle');
         setLastVerifiedClient(null);
       }, 4500);
-    }, 950);
+    }, 850);
   };
 
   // Direct sensor pad click (quick scan Carlos Mendoza MEM-001 or current search query)

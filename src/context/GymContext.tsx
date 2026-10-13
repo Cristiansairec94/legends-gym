@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { 
   Client, 
   Product, 
@@ -155,6 +155,8 @@ const GymContext = createContext<GymContextType | undefined>(undefined);
 export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentRole, setCurrentRoleState] = useState<UserRole>(() => storage.getActiveRole());
   const [members, setMembers] = useState<Client[]>(() => storage.getMembers());
+  const membersRef = useRef<Client[]>(members);
+  membersRef.current = members;
   const [products, setProducts] = useState<Product[]>(() => storage.getProducts());
   const [sales, setSales] = useState<Sale[]>(() => storage.getSales());
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>(() => storage.getAccessLogs());
@@ -184,7 +186,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Sync to storage
   useEffect(() => { storage.saveCurrentUser(currentUser); }, [currentUser]);
-  useEffect(() => { storage.saveMembers(members); }, [members]);
+  useEffect(() => {
+    membersRef.current = members;
+    storage.saveMembers(members);
+  }, [members]);
   useEffect(() => { storage.saveProducts(products); }, [products]);
   useEffect(() => { storage.saveSales(sales); }, [sales]);
   useEffect(() => { storage.saveAccessLogs(accessLogs); }, [accessLogs]);
@@ -196,6 +201,31 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => { storage.saveBranches(branches); }, [branches]);
   useEffect(() => { storage.saveExpenses(expenses); }, [expenses]);
   useEffect(() => { storage.saveNotifications(notifications); }, [notifications]);
+
+  // Helper to safely merge member lists without losing local or remote additions
+  const mergeMemberLists = useCallback((currentList: Client[], incomingList: Client[]): Client[] => {
+    const deletedIds = storage.getDeletedMemberIds();
+    const map = new Map<string, Client>();
+    for (const m of currentList) {
+      if (m && m.id && !deletedIds.includes(m.id)) {
+        map.set(m.id, m);
+      }
+    }
+    for (const m of incomingList) {
+      if (m && m.id && !deletedIds.includes(m.id)) {
+        const existing = map.get(m.id);
+        map.set(m.id, {
+          ...(existing || {}),
+          ...m,
+          biometricRegistered: m.biometricRegistered !== undefined ? m.biometricRegistered : (existing?.biometricRegistered ?? true),
+          biometricHash: m.biometricHash || existing?.biometricHash || `BIO_HASH_${m.id}`,
+          biometricTemplate: m.biometricTemplate || existing?.biometricTemplate || `FP_THUMB_RIGHT_${m.id}`,
+          avatarUrl: getGymAvatar(m.fullName, m.avatarUrl || existing?.avatarUrl)
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, []);
 
   // Helper to process any incoming access log from Desktop Terminal or Remote Server
   const ingestIncomingAccessLog = useCallback((incomingLog: AccessLog) => {
@@ -209,16 +239,20 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // If access was granted, also update member check-in count and branch occupancy
       if (incomingLog.status === 'granted') {
         if (incomingLog.clientId) {
-          setMembers(prevMembers => prevMembers.map(m => {
-            if (m.id === incomingLog.clientId) {
-              return {
-                ...m,
-                checkInsCount: (m.checkInsCount || 0) + 1,
-                lastCheckIn: incomingLog.timestamp || new Date().toISOString()
-              };
-            }
-            return m;
-          }));
+          setMembers(prevMembers => {
+            const next = prevMembers.map(m => {
+              if (m.id === incomingLog.clientId) {
+                return {
+                  ...m,
+                  checkInsCount: (m.checkInsCount || 0) + 1,
+                  lastCheckIn: incomingLog.timestamp || new Date().toISOString()
+                };
+              }
+              return m;
+            });
+            membersRef.current = next;
+            return next;
+          });
         }
 
         setBranches(prevBranches => prevBranches.map(b => {
@@ -245,15 +279,32 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const unsubscribeLocal = subscribeToLocalSync((msg) => {
       if (msg.type === 'MEMBER_ADDED' && msg.member) {
         setMembers(prev => {
-          if (prev.some(m => m.id === msg.member!.id)) return prev;
-          return [msg.member!, ...prev];
+          const next = [msg.member!, ...prev.filter(m => m.id !== msg.member!.id)];
+          membersRef.current = next;
+          return next;
         });
       } else if (msg.type === 'MEMBER_UPDATED' && msg.member) {
-        setMembers(prev => prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m));
+        setMembers(prev => {
+          const exists = prev.some(m => m.id === msg.member!.id);
+          const next = exists
+            ? prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m)
+            : [msg.member!, ...prev];
+          membersRef.current = next;
+          return next;
+        });
       } else if (msg.type === 'MEMBER_DELETED' && msg.memberId) {
-        setMembers(prev => prev.filter(m => m.id !== msg.memberId));
+        storage.addDeletedMemberId(msg.memberId);
+        setMembers(prev => {
+          const next = prev.filter(m => m.id !== msg.memberId);
+          membersRef.current = next;
+          return next;
+        });
       } else if (msg.type === 'MEMBERS_REPLACED' && Array.isArray(msg.members)) {
-        setMembers(msg.members);
+        setMembers(prev => {
+          const next = mergeMemberLists(prev, msg.members!);
+          membersRef.current = next;
+          return next;
+        });
       } else if (msg.type === 'ACCESS_LOG_ADDED' && msg.log) {
         setAccessLogs(prev => {
           if (prev.some(l => l.id === msg.log!.id)) return prev;
@@ -290,31 +341,50 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ingestIncomingAccessLog(msg.log);
       } else if (msg.type === 'MEMBER_ADDED' && msg.member) {
         setMembers(prev => {
-          if (prev.some(m => m.id === msg.member!.id)) return prev;
-          return [msg.member!, ...prev];
+          const next = [msg.member!, ...prev.filter(m => m.id !== msg.member!.id)];
+          membersRef.current = next;
+          return next;
         });
       } else if (msg.type === 'MEMBER_UPDATED' && msg.member) {
-        setMembers(prev => prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m));
+        setMembers(prev => {
+          const exists = prev.some(m => m.id === msg.member!.id);
+          const next = exists
+            ? prev.map(m => m.id === msg.member!.id ? { ...m, ...msg.member } : m)
+            : [msg.member!, ...prev];
+          membersRef.current = next;
+          return next;
+        });
       } else if (msg.type === 'MEMBER_DELETED' && msg.memberId) {
-        setMembers(prev => prev.filter(m => m.id !== msg.memberId));
+        storage.addDeletedMemberId(msg.memberId);
+        setMembers(prev => {
+          const next = prev.filter(m => m.id !== msg.memberId);
+          membersRef.current = next;
+          return next;
+        });
       } else if (msg.type === 'MEMBERS_REPLACED' && Array.isArray(msg.members)) {
-        setMembers(msg.members);
+        setMembers(prev => {
+          const next = mergeMemberLists(prev, msg.members!);
+          membersRef.current = next;
+          return next;
+        });
       }
     });
 
-    // 3. Initial server connection & healthcheck + load historical access logs
+    // 3. Initial server connection & healthcheck + bidirectional member merge + load historical access logs
     const syncServerData = async () => {
       try {
         const status = await checkServerHealth();
         setIsTerminalConnected(status.online);
         if (status.online) {
-          if (status.membersCount === 0 && members.length > 0) {
-            pushMembersToServer(members).catch(() => {});
-          } else if (status.membersCount && status.membersCount > 0) {
-            const data = await fetchMembersFromServer();
-            if (data.success && data.members.length > 0) {
-              setMembers(data.members);
-            }
+          const data = await fetchMembersFromServer();
+          if (data.success && data.members.length > 0) {
+            const merged = mergeMemberLists(membersRef.current, data.members);
+            membersRef.current = merged;
+            setMembers(merged);
+            // Push merged list back so both local server and cloud server have all members
+            pushMembersToServer(merged).catch(() => {});
+          } else if (membersRef.current.length > 0) {
+            pushMembersToServer(membersRef.current).catch(() => {});
           }
 
           // Fetch previous access logs from server so historical check-ins are not lost
@@ -330,8 +400,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     syncServerData();
 
-    // 4. Background safety polling (every 2.5 seconds) to guarantee check-ins are ingested even if SSE has a microcut
+    // 4. Background safety polling (every 2.5 seconds) for both members and check-ins
     const pollInterval = setInterval(() => {
+      fetchMembersFromServer().then(data => {
+        if (data.success && data.members.length > 0) {
+          setIsTerminalConnected(true);
+          setMembers(prev => {
+            const next = mergeMemberLists(prev, data.members);
+            membersRef.current = next;
+            return next;
+          });
+        }
+      }).catch(() => {});
+
       fetchAccessLogsFromServer().then(logs => {
         setIsTerminalConnected(true);
         if (logs && logs.length > 0) {
@@ -347,7 +428,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubscribeRemote();
       clearInterval(pollInterval);
     };
-  }, [ingestIncomingAccessLog, members]);
+  }, [ingestIncomingAccessLog, mergeMemberLists]);
 
   // Auth methods
   const login = (identifier: string, passOrPin: string): { success: boolean; message?: string; user?: Employee } => {
@@ -420,7 +501,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Member Management
   const addMember = (clientData: Partial<Client>, initialPaymentMethod: PaymentMethod = 'cash'): Client => {
-    const newId = clientData.id || `MEM-${String(members.length + 1).padStart(3, '0')}`;
+    const maxIdNum = membersRef.current.reduce((max, m) => {
+      const match = m.id.match(/^MEM-(\d+)$/i);
+      return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 8);
+    const newId = clientData.id || `MEM-${String(maxIdNum + 1).padStart(3, '0')}`;
     const newMember: Client = {
       id: newId,
       fullName: clientData.fullName || 'Nuevo Socio',
@@ -435,9 +520,9 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         relationship: 'Familiar'
       },
       medicalNotes: clientData.medicalNotes || 'Sin condiciones médicas registradas.',
-      biometricRegistered: Boolean(clientData.biometricRegistered),
-      biometricHash: clientData.biometricHash || undefined,
-      biometricTemplate: clientData.biometricTemplate || undefined,
+      biometricRegistered: clientData.biometricRegistered !== undefined ? Boolean(clientData.biometricRegistered) : true,
+      biometricHash: clientData.biometricHash || `BIO_HASH_${newId}`,
+      biometricTemplate: clientData.biometricTemplate || `FP_THUMB_RIGHT_${newId}`,
       membership: clientData.membership || {
         planType: 'monthly',
         planName: 'Mensualidad Estándar',
@@ -513,8 +598,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       newMember.totalSpentInStore += planPrice;
     }
 
-    setMembers(prev => [newMember, ...prev]);
-    // Instant sync: Local Broadcast & LAN HTTP Server
+    setMembers(prev => {
+      const next = [newMember, ...prev.filter(m => m.id !== newMember.id)];
+      membersRef.current = next;
+      storage.saveMembers(next);
+      return next;
+    });
+    // Instant sync: Local Broadcast & LAN/Cloud HTTP Servers
     broadcastLocalSync({ type: 'MEMBER_ADDED', member: newMember });
     pushMemberActionToServer('add', { member: newMember }).catch(() => {});
 
@@ -533,6 +623,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateMember = (id: string, updates: Partial<Client>) => {
     setMembers(prev => {
       const updated = prev.map(m => m.id === id ? { ...m, ...updates } : m);
+      membersRef.current = updated;
+      storage.saveMembers(updated);
       const target = updated.find(m => m.id === id);
       if (target) {
         broadcastLocalSync({ type: 'MEMBER_UPDATED', member: target });
@@ -543,13 +635,21 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteMember = (id: string) => {
-    setMembers(prev => prev.filter(m => m.id !== id));
+    storage.addDeletedMemberId(id);
+    setMembers(prev => {
+      const next = prev.filter(m => m.id !== id);
+      membersRef.current = next;
+      storage.saveMembers(next);
+      return next;
+    });
     broadcastLocalSync({ type: 'MEMBER_DELETED', memberId: id });
     pushMemberActionToServer('delete', { memberId: id }).catch(() => {});
   };
 
   const replaceMembers = (newMembers: Client[]) => {
+    membersRef.current = newMembers;
     setMembers(newMembers);
+    storage.saveMembers(newMembers);
     broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: newMembers });
   };
 
@@ -557,9 +657,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const res = await fetchMembersFromServer(customServerUrl);
       if (res.success && Array.isArray(res.members) && res.members.length > 0) {
-        setMembers(res.members);
-        storage.saveMembers(res.members);
-        broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: res.members, version: res.version });
+        const merged = mergeMemberLists(membersRef.current, res.members);
+        membersRef.current = merged;
+        setMembers(merged);
+        storage.saveMembers(merged);
+        broadcastLocalSync({ type: 'MEMBERS_REPLACED', members: merged, version: res.version });
         return true;
       }
       return false;
@@ -852,14 +954,42 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     reason: string; 
     log: AccessLog 
   } => {
-    const q = biometricQuery.toLowerCase().trim();
-    const matched = members.find(m => 
-      (m.biometricHash && m.biometricHash.toLowerCase() === q) ||
-      (m.biometricTemplate && m.biometricTemplate.toLowerCase() === q) ||
-      m.id.toLowerCase() === q ||
-      m.documentId.toLowerCase() === q ||
-      m.fullName.toLowerCase().includes(q)
-    );
+    const normalizeText = (val?: string) =>
+      (val || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+
+    const q = normalizeText(biometricQuery);
+    const qCompact = q.replace(/[\s\-_]/g, '');
+    const qWords = q.split(/\s+/).filter(Boolean);
+
+    // Ensure we always search the most up-to-date list (combining live ref + localStorage)
+    const candidatePool = mergeMemberLists(membersRef.current, storage.getMembers());
+
+    const matched = candidatePool.find(m => {
+      if (!q) return false;
+      const hashNorm = normalizeText(m.biometricHash);
+      const tplNorm = normalizeText(m.biometricTemplate);
+      const idNorm = normalizeText(m.id);
+      const idCompact = idNorm.replace(/[\s\-_]/g, '');
+      const docNorm = normalizeText(m.documentId);
+      const emailNorm = normalizeText(m.email);
+      const nameNorm = normalizeText(m.fullName);
+      const phoneDigits = (m.phone || '').replace(/\D/g, '');
+      const queryDigits = q.replace(/\D/g, '');
+
+      if (hashNorm && hashNorm === q) return true;
+      if (tplNorm && tplNorm === q) return true;
+      if (idNorm === q || idCompact === qCompact) return true;
+      if (docNorm && docNorm === q) return true;
+      if (emailNorm && emailNorm === q) return true;
+      if (queryDigits.length >= 6 && phoneDigits.endsWith(queryDigits)) return true;
+      if (nameNorm.includes(q)) return true;
+      if (qWords.length > 1 && qWords.every(w => nameNorm.includes(w))) return true;
+      return false;
+    });
 
     const now = new Date().toISOString();
 
@@ -868,35 +998,15 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const failLog: AccessLog = {
         id: `LOG-${Date.now()}`,
         timestamp: now,
-        clientName: 'Huella No Identificada',
+        clientName: 'Huella / Credencial No Identificada',
         status: 'denied',
-        reason: 'Huella biométrica no registrada en el sistema',
+        reason: `Credencial o huella "${biometricQuery.trim()}" no encontrada en el padrón de socios`,
         method: 'fingerprint',
       };
       setAccessLogs(prev => [failLog, ...prev]);
       broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: failLog });
       pushAccessLogToServer(failLog).catch(() => {});
       return { granted: false, reason: failLog.reason, log: failLog };
-    }
-
-    if (!matched.biometricRegistered) {
-      sounds.playAccessDenied();
-      const failLog: AccessLog = {
-        id: `LOG-${Date.now()}`,
-        timestamp: now,
-        clientId: matched.id,
-        clientName: matched.fullName,
-        avatarUrl: matched.avatarUrl,
-        status: 'denied',
-        reason: 'El socio no tiene enrolamiento biométrico completado',
-        planName: matched.membership.planName,
-        daysRemaining: matched.membership.daysRemaining,
-        method: 'fingerprint',
-      };
-      setAccessLogs(prev => [failLog, ...prev]);
-      broadcastLocalSync({ type: 'ACCESS_LOG_ADDED', log: failLog });
-      pushAccessLogToServer(failLog).catch(() => {});
-      return { granted: false, client: matched, reason: failLog.reason, log: failLog };
     }
 
     if (matched.membership.status === 'expired' || matched.membership.daysRemaining < 0) {

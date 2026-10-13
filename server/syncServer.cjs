@@ -4,12 +4,20 @@ const path = require('path');
 const os = require('os');
 
 const PORT = process.env.PORT || 3001;
-const DATA_DIR = path.resolve(__dirname, '../data');
+const WORKSPACE_DATA_DIR = path.resolve(process.cwd(), 'data');
+const LOCAL_DATA_DIR = __dirname.includes('app.asar')
+  ? path.resolve(path.dirname(process.execPath), 'data')
+  : path.resolve(__dirname, '../data');
+const DATA_DIR = fs.existsSync(WORKSPACE_DATA_DIR) ? WORKSPACE_DATA_DIR : LOCAL_DATA_DIR;
 const DB_FILE = path.join(DATA_DIR, 'legends_database.json');
 
 // Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[DB] No se pudo crear directorio de datos:', err.message);
 }
 
 // Default initial members seed
@@ -133,6 +141,124 @@ const DEFAULT_MEMBERS = [
     lastCheckIn: new Date().toISOString(),
     totalSpentInStore: 350,
     createdAt: '2026-05-02',
+  },
+  {
+    id: 'MEM-005',
+    fullName: 'Mateo Guerrero',
+    documentId: '32091487',
+    email: 'mateo.guerrero@email.com',
+    phone: '+52 55 9900 1122',
+    birthDate: '2004-02-18',
+    emergencyContact: {
+      name: 'Patricia Guerrero',
+      phone: '+52 55 8822 3344',
+      relationship: 'Madre',
+    },
+    medicalNotes: 'Desarrollo muscular juvenil.',
+    biometricRegistered: true,
+    biometricHash: 'BIO_HASH_GUERRERO_005',
+    biometricTemplate: 'FP_THUMB_LEFT_005',
+    membership: {
+      planType: 'monthly',
+      planName: 'Plan Estudiante Gym',
+      startDate: '2026-09-29',
+      endDate: '2026-10-29',
+      price: 650,
+      status: 'active',
+      daysRemaining: 22,
+    },
+    checkInsCount: 15,
+    lastCheckIn: new Date().toISOString(),
+    totalSpentInStore: 450,
+    createdAt: '2026-08-29',
+  },
+  {
+    id: 'MEM-006',
+    fullName: 'Laura Paredes Ruiz',
+    documentId: '54019283',
+    email: 'laura.paredes@email.com',
+    phone: '+52 55 3322 1100',
+    birthDate: '1997-07-04',
+    emergencyContact: {
+      name: 'Carmen Ruiz',
+      phone: '+52 55 4411 9988',
+      relationship: 'Madre',
+    },
+    medicalNotes: 'Inscripción reciente. Apta para actividad física.',
+    biometricRegistered: true,
+    biometricHash: 'BIO_HASH_PAREDES_006',
+    biometricTemplate: 'FP_THUMB_RIGHT_006',
+    membership: {
+      planType: 'monthly',
+      planName: 'Mensualidad Estándar',
+      startDate: '2026-10-06',
+      endDate: '2026-11-06',
+      price: 850,
+      status: 'active',
+      daysRemaining: 30,
+    },
+    checkInsCount: 1,
+    totalSpentInStore: 850,
+    createdAt: '2026-10-06',
+  },
+  {
+    id: 'MEM-007',
+    fullName: 'Diego Alarcón Cruz',
+    documentId: '90812345',
+    email: 'diego.alarcon@email.com',
+    phone: '+52 55 8765 4321',
+    birthDate: '1991-09-17',
+    emergencyContact: {
+      name: 'Gabriel Alarcón',
+      phone: '+52 55 7766 5544',
+      relationship: 'Hermano',
+    },
+    medicalNotes: 'Entrenamiento funcional de alta intensidad.',
+    biometricRegistered: true,
+    biometricHash: 'BIO_HASH_ALARCON_007',
+    biometricTemplate: 'FP_INDEX_RIGHT_007',
+    membership: {
+      planType: 'daily',
+      planName: 'Pase por Día (Day Pass)',
+      startDate: '2026-10-05',
+      endDate: '2026-10-05',
+      price: 150,
+      status: 'expired',
+      daysRemaining: -2,
+    },
+    checkInsCount: 4,
+    lastCheckIn: new Date().toISOString(),
+    totalSpentInStore: 180,
+    createdAt: '2026-09-01',
+  },
+  {
+    id: 'MEM-008',
+    fullName: 'Juan Solis',
+    documentId: '55892018',
+    email: 'juan.solis@email.com',
+    phone: '+52 55 6789 1234',
+    birthDate: '1994-04-12',
+    emergencyContact: {
+      name: 'Familiar de Contacto',
+      phone: '+52 55 9999 8888',
+      relationship: 'Familiar',
+    },
+    medicalNotes: 'Apto para actividad física general.',
+    biometricRegistered: true,
+    biometricHash: 'BIO_HASH_SOLIS_008',
+    biometricTemplate: 'FP_THUMB_RIGHT_008',
+    membership: {
+      planType: 'monthly',
+      planName: 'Mensualidad Estándar',
+      startDate: '2026-10-13',
+      endDate: '2026-11-12',
+      price: 850,
+      status: 'active',
+      daysRemaining: 30,
+    },
+    checkInsCount: 0,
+    totalSpentInStore: 850,
+    createdAt: '2026-10-13',
   }
 ];
 
@@ -141,6 +267,7 @@ let db = {
   version: 1,
   updatedAt: new Date().toISOString(),
   members: [],
+  deletedMemberIds: [],
   accessLogs: []
 };
 
@@ -150,20 +277,27 @@ if (fs.existsSync(DB_FILE)) {
     const raw = fs.readFileSync(DB_FILE, 'utf8');
     const parsed = JSON.parse(raw);
     db = { ...db, ...parsed };
+    if (!Array.isArray(db.deletedMemberIds)) db.deletedMemberIds = [];
     console.log(`[DB] Base de datos cargada desde ${DB_FILE} (${db.members.length} socios, ${db.accessLogs.length} accesos)`);
   } catch (e) {
     console.warn('[DB] No se pudo leer el archivo existente, usando base de datos limpia.');
   }
 }
 
-// Seed initial members if empty
-if (!db.members || db.members.length === 0) {
-  db.members = DEFAULT_MEMBERS;
-  db.version = 1;
-  db.updatedAt = new Date().toISOString();
-  saveDbToDisk();
-  console.log(`[DB] Se cargaron ${DEFAULT_MEMBERS.length} socios iniciales por defecto.`);
+// Merge DEFAULT_MEMBERS (including MEM-008 Juan Solis) unless explicitly deleted
+const mergedStartupMap = new Map();
+for (const defM of DEFAULT_MEMBERS) {
+  if (!db.deletedMemberIds.includes(defM.id)) {
+    mergedStartupMap.set(defM.id, defM);
+  }
 }
+for (const curM of db.members || []) {
+  if (curM && curM.id && !db.deletedMemberIds.includes(curM.id)) {
+    mergedStartupMap.set(curM.id, { ...(mergedStartupMap.get(curM.id) || {}), ...curM });
+  }
+}
+db.members = Array.from(mergedStartupMap.values());
+saveDbToDisk();
 
 function saveDbToDisk() {
   try {
@@ -189,7 +323,8 @@ function getLocalIpAddresses() {
 function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
 }
 
 function sendJson(res, statusCode, data) {
@@ -305,14 +440,30 @@ const server = http.createServer(async (req, res) => {
     // 3. POST Members list (Update all or add/modify/delete)
     if ((pathname === '/api/sync/members' || pathname === '/api/members') && req.method === 'POST') {
       const body = await parseJsonBody(req);
+      if (!Array.isArray(db.deletedMemberIds)) db.deletedMemberIds = [];
 
       if (Array.isArray(body.members)) {
-        // Full members replacement / sync
-        db.members = body.members;
+        if (body.forceReplace) {
+          db.members = body.members;
+        } else {
+          // Merge incoming members with existing db.members so no newly added member is accidentally wiped out
+          const mergedMap = new Map();
+          for (const m of db.members) {
+            if (m && m.id && !db.deletedMemberIds.includes(m.id)) {
+              mergedMap.set(m.id, m);
+            }
+          }
+          for (const m of body.members) {
+            if (m && m.id && !db.deletedMemberIds.includes(m.id)) {
+              mergedMap.set(m.id, { ...(mergedMap.get(m.id) || {}), ...m });
+            }
+          }
+          db.members = Array.from(mergedMap.values());
+        }
         db.version += 1;
         db.updatedAt = new Date().toISOString();
         saveDbToDisk();
-        console.log(`[SYNC] Lista completa de socios actualizada (${db.members.length} socios, v${db.version})`);
+        console.log(`[SYNC] Lista completa de socios sincronizada (${db.members.length} socios, v${db.version})`);
         
         broadcastSseEvent({
           type: 'MEMBERS_REPLACED',
@@ -325,11 +476,13 @@ const server = http.createServer(async (req, res) => {
           success: true,
           version: db.version,
           updatedAt: db.updatedAt,
-          membersCount: db.members.length
+          membersCount: db.members.length,
+          members: db.members
         });
       }
 
       if (body.action === 'add' && body.member) {
+        db.deletedMemberIds = db.deletedMemberIds.filter(id => id !== body.member.id);
         const filtered = db.members.filter(m => m.id !== body.member.id);
         db.members = [body.member, ...filtered];
         db.version += 1;
@@ -348,7 +501,12 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (body.action === 'update' && body.member) {
-        db.members = db.members.map(m => m.id === body.member.id ? { ...m, ...body.member } : m);
+        const exists = db.members.some(m => m.id === body.member.id);
+        if (exists) {
+          db.members = db.members.map(m => m.id === body.member.id ? { ...m, ...body.member } : m);
+        } else {
+          db.members = [body.member, ...db.members];
+        }
         db.version += 1;
         db.updatedAt = new Date().toISOString();
         saveDbToDisk();
@@ -365,6 +523,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (body.action === 'delete' && body.memberId) {
+        if (!db.deletedMemberIds.includes(body.memberId)) {
+          db.deletedMemberIds.push(body.memberId);
+        }
         db.members = db.members.filter(m => m.id !== body.memberId);
         db.version += 1;
         db.updatedAt = new Date().toISOString();

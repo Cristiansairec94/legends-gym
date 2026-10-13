@@ -27,6 +27,7 @@ import { getGymAvatar } from '../utils/genderAvatar';
 
 const KEYS = {
   MEMBERS: 'legends_members_v1',
+  DELETED_MEMBER_IDS: 'legends_deleted_member_ids_v1',
   PRODUCTS: 'legends_products_v1',
   SALES: 'legends_sales_v1',
   ACCESS_LOGS: 'legends_access_logs_v1',
@@ -46,12 +47,51 @@ const KEYS = {
 
 
 export const storage = {
+  getDeletedMemberIds(): string[] {
+    try {
+      const raw = localStorage.getItem(KEYS.DELETED_MEMBER_IDS);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addDeletedMemberId(id: string): void {
+    try {
+      const current = this.getDeletedMemberIds();
+      if (!current.includes(id)) {
+        localStorage.setItem(KEYS.DELETED_MEMBER_IDS, JSON.stringify([...current, id]));
+      }
+    } catch {}
+  },
+
   getMembers(): Client[] {
     try {
+      const deletedIds = this.getDeletedMemberIds();
       const data = localStorage.getItem(KEYS.MEMBERS);
-      const list: Client[] = data ? JSON.parse(data) : INITIAL_MEMBERS;
+      const savedList: Client[] = data ? JSON.parse(data) : [];
+      const mergedMap = new Map<string, Client>();
+
+      // Ensure baseline INITIAL_MEMBERS (including Juan Solis MEM-008) are present unless explicitly deleted
+      for (const initM of INITIAL_MEMBERS) {
+        if (!deletedIds.includes(initM.id)) {
+          mergedMap.set(initM.id, initM);
+        }
+      }
+
+      // Overlay saved members (preserving any custom members or edits)
+      for (const savedM of savedList) {
+        if (savedM && savedM.id && !deletedIds.includes(savedM.id)) {
+          mergedMap.set(savedM.id, { ...(mergedMap.get(savedM.id) || {}), ...savedM });
+        }
+      }
+
+      const list = Array.from(mergedMap.values());
       return list.map(m => ({
         ...m,
+        biometricRegistered: m.biometricRegistered !== undefined ? m.biometricRegistered : true,
+        biometricHash: m.biometricHash || `BIO_HASH_${m.id}`,
+        biometricTemplate: m.biometricTemplate || `FP_THUMB_RIGHT_${m.id}`,
         avatarUrl: getGymAvatar(m.fullName, m.avatarUrl)
       }));
     } catch {

@@ -23,7 +23,7 @@ async function main() {
     arch: 'x64',
     out: path.resolve(__dirname, '../release'),
     overwrite: true,
-    asar: true,
+    asar: false,
     prune: true,
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
     appVersion: '1.0.0',
