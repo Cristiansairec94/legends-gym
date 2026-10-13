@@ -308,34 +308,42 @@ export const IndependentTerminalApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none p-3 sm:p-6 lg:p-8">
+    <div className="h-screen w-full overflow-y-auto bg-gym-bg text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
       
       {/* Top Application Bar / Brand & Terminal Header */}
-      <div className="max-w-4xl mx-auto w-full mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-xl relative overflow-hidden">
+      <div className="w-full max-w-6xl mx-auto shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gym-card px-5 py-3.5 rounded-2xl border border-gym-border shadow-xl relative overflow-hidden">
           
           {/* Subtle glow accent */}
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Left Title matching user screenshot */}
-          <div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <h1 className="text-xl font-black text-white tracking-wide uppercase">
-                CONTROL DE ACCESO
-              </h1>
-              <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-md font-bold">
-                Lector Activo
-              </span>
+          {/* Left Title with Gym Logo */}
+          <div className="flex items-center gap-3.5">
+            <img
+              src="./logo.png"
+              alt="Fitness Legends Gym"
+              className="w-11 h-11 rounded-xl object-contain bg-black border border-gym-border p-0.5 shrink-0 shadow-md"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div>
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <h1 className="text-lg sm:text-xl font-black text-white tracking-wide uppercase">
+                  CONTROL DE ACCESO
+                </h1>
+                <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-md font-bold">
+                  Lector Activo
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-gym-muted mt-0.5">
+                Validación instantánea de huella digital y vigencia de cuota en el acceso principal.
+              </p>
             </div>
-            <p className="text-sm text-gym-muted mt-1">
-              Validación instantánea de huella digital y vigencia de cuota en el acceso principal.
-            </p>
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center flex-wrap gap-2.5">
-            {/* View Access History matching user screenshot button */}
+          <div className="flex items-center flex-wrap gap-2">
+            {/* View Access History */}
             <button
               onClick={() => setIsHistoryModalOpen(true)}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
@@ -384,14 +392,14 @@ export const IndependentTerminalApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Container: Biometric Terminal Card matching user screenshot */}
-      <div className="max-w-2xl mx-auto w-full space-y-5">
+      {/* Main Container: Biometric Terminal Card adapted to window size */}
+      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between min-h-0 gap-3">
         
         {/* Hardware Sensor Simulator Box */}
-        <div className="bg-gym-card rounded-2xl border border-gym-border p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div className="bg-gym-card rounded-2xl border border-gym-border px-5 py-4 sm:px-7 sm:py-5 shadow-2xl relative overflow-hidden flex-1 flex flex-col justify-between min-h-0">
           
           {/* Top sensor status bar */}
-          <div className="flex items-center justify-between border-b border-gym-border pb-3 mb-4">
+          <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
               <span className="text-xs font-bold uppercase tracking-wider text-gray-200">
@@ -419,8 +427,8 @@ export const IndependentTerminalApp: React.FC = () => {
 
           {/* Turnstile Relay Active Banner when open */}
           {relayRemainingSeconds > 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-sm uppercase tracking-wider">
+            <div className="my-2 p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200 shrink-0">
+              <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-xs sm:text-sm uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-spin" />
                 <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
                 <span className="bg-emerald-400 text-black px-2 py-0.2 rounded-full font-mono text-xs font-black">
@@ -443,7 +451,7 @@ export const IndependentTerminalApp: React.FC = () => {
 
           {/* Verified Client Card (when granted or denied) */}
           {lastVerifiedClient && scanStatus !== 'idle' && (
-            <div className={`mt-4 p-3.5 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 ${
+            <div className={`my-2 p-3 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 shrink-0 ${
               lastVerifiedClient.status === 'granted'
                 ? 'bg-emerald-950/20 border-emerald-500/40'
                 : 'bg-red-950/20 border-red-500/40'
@@ -453,7 +461,7 @@ export const IndependentTerminalApp: React.FC = () => {
                   src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
                   alt={lastVerifiedClient.name} 
                   loading="eager"
-                  className="w-12 h-12 rounded-xl object-cover border border-gym-border shadow-md"
+                  className="w-11 h-11 rounded-xl object-cover border border-gym-border shadow-md"
                 />
                 <div>
                   <h4 className="text-sm font-black text-white">{lastVerifiedClient.name}</h4>
@@ -482,67 +490,70 @@ export const IndependentTerminalApp: React.FC = () => {
             </div>
           )}
 
-          {/* Manual Search or Barcode Input matching user screenshot */}
-          <div className="mt-5 pt-4 border-t border-gym-border/80">
-            <label className="text-xs font-semibold text-gym-muted block mb-1.5">
-              O buscar socio por nombre, cédula o ID:
-            </label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchQuery.trim()) {
+          {/* Bottom Controls Wrapper */}
+          <div className="shrink-0">
+            {/* Manual Search or Barcode Input */}
+            <div className="pt-3 border-t border-gym-border/80">
+              <label className="text-xs font-semibold text-gym-muted block mb-1.5">
+                O buscar socio por nombre, cédula o ID:
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        executeScan(searchQuery.trim());
+                        setSearchQuery('');
+                      }
+                    }}
+                    placeholder="Ej. Carlos Mendoza, Juan Solis, MEM-001 o 45892011..."
+                    className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (searchQuery.trim()) {
                       executeScan(searchQuery.trim());
                       setSearchQuery('');
                     }
                   }}
-                  placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                  className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
-                />
+                  disabled={!searchQuery.trim() || scanStatus === 'scanning'}
+                  className="px-6 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all shrink-0"
+                >
+                  Verificar
+                </button>
               </div>
+              <p className="text-[11px] text-gym-muted mt-1.5">
+                💡 <span className="font-semibold text-gray-300">Escáner USB / RFID automático:</span> Puedes pasar cualquier tarjeta, código o huella directamente en este equipo en cualquier momento.
+              </p>
+            </div>
+
+            {/* Quick Access Today Counter */}
+            <div className="mt-3 pt-2.5 border-t border-gym-border/80 flex items-center justify-between">
+              <span className="text-xs text-gym-muted flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
+              </span>
               <button
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    executeScan(searchQuery.trim());
-                    setSearchQuery('');
-                  }
-                }}
-                disabled={!searchQuery.trim() || scanStatus === 'scanning'}
-                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all shrink-0"
+                onClick={() => setIsHistoryModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all"
               >
-                Verificar
+                <Clock className="w-3.5 h-3.5" />
+                <span>Ver desglose completo &rarr;</span>
               </button>
             </div>
-            <p className="text-[11px] text-gym-muted mt-1.5">
-              💡 <span className="font-semibold text-gray-300">Escáner USB / RFID automático:</span> Puedes pasar cualquier tarjeta, código o huella directamente en este equipo en cualquier momento.
-            </p>
-          </div>
-
-          {/* Quick Access Today Counter matching user screenshot */}
-          <div className="mt-5 pt-3.5 border-t border-gym-border/80 flex items-center justify-between">
-            <span className="text-xs text-gym-muted flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
-            </span>
-            <button
-              onClick={() => setIsHistoryModalOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all"
-            >
-              <Clock className="w-3.5 h-3.5" />
-              <span>Ver desglose completo &rarr;</span>
-            </button>
           </div>
 
         </div>
 
         {/* Quick Testing Bar for Operator convenience */}
-        <div className="p-3 bg-gym-card/60 rounded-xl border border-gym-border flex items-center justify-between text-xs text-gym-muted">
+        <div className="px-4 py-2.5 bg-gym-card/60 rounded-xl border border-gym-border flex flex-wrap items-center justify-between gap-2 text-xs text-gym-muted shrink-0">
           <span>Pruebas rápidas:</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
             <button
               onClick={() => executeScan('MEM-001')}
               disabled={scanStatus === 'scanning'}
@@ -551,11 +562,18 @@ export const IndependentTerminalApp: React.FC = () => {
               ✓ Carlos Mendoza (Activo)
             </button>
             <button
-              onClick={() => executeScan('MEM-003')}
+              onClick={() => executeScan('MEM-008')}
+              disabled={scanStatus === 'scanning'}
+              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-emerald-400 font-medium transition-colors"
+            >
+              ✓ Juan Solis (Activo)
+            </button>
+            <button
+              onClick={() => executeScan('MEM-004')}
               disabled={scanStatus === 'scanning'}
               className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-amber-400 font-medium transition-colors"
             >
-              ⚠ Juan Pérez (Vencido)
+              ⚠ Membresía Vencida
             </button>
             <button
               onClick={() => executeScan('DESCONOCIDO')}

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, Menu, nativeImage, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
@@ -30,12 +30,16 @@ function resolveAppIcon() {
 
 function createWindow() {
   const appIcon = resolveAppIcon();
+  const workArea = screen.getPrimaryDisplay().workAreaSize;
+  const winWidth = Math.min(1280, Math.round(workArea.width * 0.92));
+  const winHeight = Math.min(820, Math.round(workArea.height * 0.94));
 
   mainWindow = new BrowserWindow({
-    width: appMode === 'terminal' ? 1180 : 1366,
-    height: appMode === 'terminal' ? 840 : 860,
-    minWidth: 800,
-    minHeight: 650,
+    width: winWidth,
+    height: winHeight,
+    minWidth: 760,
+    minHeight: 560,
+    center: true,
     title: appMode === 'terminal' 
       ? 'FITNESS LEGENDS - Terminal de Control de Acceso' 
       : 'FITNESS LEGENDS GYM - Sistema de Gestión',

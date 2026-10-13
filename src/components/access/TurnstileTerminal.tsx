@@ -188,7 +188,7 @@ export const TurnstileTerminal: React.FC = () => {
       </div>
 
       {/* Main Container: Biometric Terminal */}
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-5">
           
           {/* Hardware Sensor Simulator Box */}
           <div className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-xl relative overflow-hidden">

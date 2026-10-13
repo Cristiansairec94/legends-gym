@@ -41,11 +41,11 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
   const hasPhoto = !!displayPhoto && (status === 'granted' || status === 'denied');
 
   return (
-    <div className="flex flex-col items-center justify-center p-6">
+    <div className="flex flex-col items-center justify-center py-2 px-4 flex-1 min-h-0">
       {/* Scanner Pad Container */}
       <div 
         onClick={() => !disabled && onScanClick()}
-        className={`relative w-44 h-44 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none ${
+        className={`relative w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 ${
           status === 'scanning'
             ? 'bg-amber-500/10 border-2 border-amber-400 shadow-glow-gold'
             : status === 'granted'
