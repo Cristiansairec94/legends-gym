@@ -9,7 +9,6 @@ import {
   Layers,
   LayoutGrid,
   Columns,
-  FileText,
   Search,
 } from 'lucide-react';
 
@@ -20,7 +19,7 @@ interface BarcodePrintModalProps {
   categories?: CatalogCategory[];
 }
 
-type DesignMode = 'etiquetas_3col' | 'etiquetas_4col' | 'mostrador';
+type DesignMode = 'etiquetas_3col' | 'etiquetas_4col';
 
 export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
   isOpen,
@@ -150,7 +149,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-0.5">
-                Imprime hojas de códigos de barra para exhibidores, mostrador o la caja de cobro.
+                Imprime hojas de códigos de barra para exhibidores y productos del catálogo.
               </p>
             </div>
           </div>
@@ -233,20 +232,6 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 <Columns className="w-3.5 h-3.5" />
                 <span>Etiquetas (4 col)</span>
               </button>
-
-              {/* Catálogo Mostrador */}
-              <button
-                onClick={() => setDesignMode('mostrador')}
-                className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
-                  designMode === 'mostrador'
-                    ? 'bg-amber-500 text-black shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
-                }`}
-                title="Hoja compacta para mostrador / caja de cobro"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Catálogo Mostrador</span>
-              </button>
             </div>
           </div>
 
@@ -287,58 +272,6 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
               >
                 Seleccionar todos los productos
               </button>
-            </div>
-          ) : designMode === 'mostrador' ? (
-            /* CATÁLOGO MOSTRADOR VIEW (Compact 2-column desk binder sheet) */
-            <div
-              id="printable-barcodes"
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 print:grid-cols-2 print:gap-2 w-full"
-            >
-              {productsToPrint.map((product) => {
-                const info = getCategoryInfo(product.category);
-
-                return (
-                  <div
-                    key={product.id}
-                    onClick={() => toggleProduct(product.id)}
-                    className="barcode-label-card bg-white rounded-xl border border-gray-200 p-2.5 shadow-xs hover:border-amber-400 transition-all flex items-center justify-between gap-3 select-none cursor-pointer print:p-2 print:h-[22mm]"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-lg p-1 rounded-lg bg-amber-50 border border-amber-200/60 shrink-0">
-                        {info.icon}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-[9px] uppercase font-black tracking-wider text-[#b45309]">
-                          {info.name}
-                        </div>
-                        <h4 className="font-extrabold text-xs text-gray-900 leading-snug truncate" title={product.name}>
-                          {product.name}
-                        </h4>
-                        <div className="text-[9.5px] text-gray-500 font-mono">
-                          {product.sku || `#${product.id}`} {product.flavor ? `• ${product.flavor}` : ''}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-0.5 shrink-0">
-                      <span className="font-black text-xs text-amber-600">
-                        ${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                      </span>
-                      <div className="bg-gray-50 rounded-lg p-1 border border-gray-100 flex items-center justify-center">
-                        <BarcodeSVG
-                          value={product.barcode}
-                          height={22}
-                          fontSize={8}
-                          showText={true}
-                          className="w-24 max-h-7"
-                          barColor="#000000"
-                          textColor="#000000"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           ) : (
             /* ETIQUETAS GRID VIEW (Matching exact design in image) */
