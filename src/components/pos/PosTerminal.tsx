@@ -168,10 +168,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             <span>Sincronizado</span>
           </div>
 
-          {/* Matriz Dropdown Pill */}
+          {/* Matriz Indicator Pill */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-semibold">
             <span className="text-amber-400 font-bold">🏪 Matriz</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gym-muted" />
           </div>
 
           {/* Real-time Clock */}
