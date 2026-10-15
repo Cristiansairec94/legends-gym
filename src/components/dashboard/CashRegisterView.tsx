@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGym } from '../../context/GymContext';
 import { 
   Wallet, 
@@ -7,15 +7,26 @@ import {
   ArrowRightLeft, 
   Lock, 
   Unlock, 
-  Printer 
+  Printer,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 
 export const CashRegisterView: React.FC = () => {
   const { cashSession, closeCashSession, openCashSession, expenses } = useGym();
 
   const [countedCashStr, setCountedCashStr] = useState('');
+  const [leaveCashInDrawer, setLeaveCashInDrawer] = useState<boolean>(false);
+  const [remanentCashStr, setRemanentCashStr] = useState('');
+  const [confirmCloseInput, setConfirmCloseInput] = useState('');
   const [closingNotes, setClosingNotes] = useState('');
   const [initialCashStr, setInitialCashStr] = useState('1500');
+
+  useEffect(() => {
+    if (cashSession.status === 'closed' && cashSession.remanentCash && cashSession.remanentCash > 0) {
+      setInitialCashStr(cashSession.remanentCash.toString());
+    }
+  }, [cashSession.status, cashSession.remanentCash]);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayCashExpenses = expenses
@@ -34,10 +45,32 @@ export const CashRegisterView: React.FC = () => {
   const countedCash = parseFloat(countedCashStr) || 0;
   const cashDifference = countedCash - expectedCashInDrawer;
 
+  const remanentCash = leaveCashInDrawer ? (parseFloat(remanentCashStr) || 0) : 0;
+  const cashToWithdraw = Math.max(0, countedCash - remanentCash);
+
+  const isConfirmedYes = confirmCloseInput.trim().toUpperCase() === 'SI' || confirmCloseInput.trim().toUpperCase() === 'SÍ';
+  const isConfirmedNo = confirmCloseInput.trim().toUpperCase() === 'NO';
+
+  const isRemanentValid = !leaveCashInDrawer || (remanentCash >= 0 && remanentCash <= countedCash && remanentCashStr.trim() !== '');
+  const canSubmitClose = Boolean(countedCashStr) && isRemanentValid && isConfirmedYes;
+
   const handleCloseSession = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!countedCashStr) return;
-    closeCashSession(countedCash, closingNotes);
+    if (!canSubmitClose) return;
+
+    closeCashSession(
+      countedCash,
+      closingNotes,
+      leaveCashInDrawer,
+      leaveCashInDrawer ? remanentCash : 0,
+      cashToWithdraw
+    );
+
+    setCountedCashStr('');
+    setLeaveCashInDrawer(false);
+    setRemanentCashStr('');
+    setConfirmCloseInput('');
+    setClosingNotes('');
   };
 
   const handleOpenSession = (e: React.FormEvent) => {
@@ -46,6 +79,9 @@ export const CashRegisterView: React.FC = () => {
     openCashSession(init);
     setCountedCashStr('');
     setClosingNotes('');
+    setLeaveCashInDrawer(false);
+    setRemanentCashStr('');
+    setConfirmCloseInput('');
   };
 
   return (
@@ -213,14 +249,33 @@ export const CashRegisterView: React.FC = () => {
             </div>
 
             {cashSession.status === 'closed' && (
-              <div className="mt-4 p-4 rounded-xl bg-gym-surface/80 border border-gym-border space-y-2">
-                <span className="text-xs font-bold text-amber-400 block">Resultado del Cierre:</span>
+              <div className="mt-4 p-4 rounded-xl bg-gym-surface/80 border border-gym-border space-y-2.5">
+                <span className="text-xs font-bold text-amber-400 block uppercase tracking-wider">
+                  Resultado del Cierre de Turno:
+                </span>
                 <div className="flex justify-between text-xs">
-                  <span>Efectivo Contado por Cajero:</span>
+                  <span className="text-gym-muted">Efectivo Contado por Cajero:</span>
                   <span className="text-white font-bold">${cashSession.actualCash?.toFixed(2)} MXN</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span>Diferencia:</span>
+                {cashSession.leaveCashInDrawer ? (
+                  <>
+                    <div className="flex justify-between text-xs text-amber-300">
+                      <span>( - ) Fondo Dejado en Caja (Próx. Turno):</span>
+                      <span className="font-bold">${cashSession.remanentCash?.toFixed(2)} MXN</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1.5 rounded-lg border border-emerald-500/20">
+                      <span>( = ) Efectivo Retirado (Entregado a Gerencia):</span>
+                      <span>${cashSession.withdrawnCash?.toFixed(2)} MXN</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1.5 rounded-lg border border-emerald-500/20">
+                    <span>( = ) Efectivo Retirado (100% a Gerencia):</span>
+                    <span>${(cashSession.withdrawnCash ?? cashSession.actualCash)?.toFixed(2)} MXN</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-xs pt-1 border-t border-gym-border/40">
+                  <span className="text-gym-muted">Diferencia:</span>
                   <span className={`font-black ${
                     (cashSession.cashDifference || 0) === 0 
                       ? 'text-emerald-400' 
@@ -289,6 +344,101 @@ export const CashRegisterView: React.FC = () => {
                 </div>
               )}
 
+              {/* Opción de Dejar Efectivo en Caja */}
+              <div className="p-3.5 rounded-xl bg-gym-surface/80 border border-gym-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-gray-200 block">
+                      ¿Se dejará fondo en caja?
+                    </label>
+                    <span className="text-[10px] text-gym-muted block">
+                      Para el siguiente turno o cambio
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-gym-card p-1 rounded-lg border border-gym-border">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLeaveCashInDrawer(false);
+                        setRemanentCashStr('');
+                      }}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                        !leaveCashInDrawer
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+                          : 'text-gym-muted hover:text-white'
+                      }`}
+                    >
+                      NO
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLeaveCashInDrawer(true)}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                        leaveCashInDrawer
+                          ? 'bg-emerald-500 text-black border border-emerald-400 shadow-sm font-black'
+                          : 'text-gym-muted hover:text-white'
+                      }`}
+                    >
+                      SÍ
+                    </button>
+                  </div>
+                </div>
+
+                {leaveCashInDrawer && (
+                  <div className="pt-2 border-t border-gym-border/60 space-y-2">
+                    <label className="text-xs font-semibold text-amber-300 block">
+                      Monto que se queda en caja ($) *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-muted font-mono font-bold">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max={countedCash > 0 ? countedCash : undefined}
+                        value={remanentCashStr}
+                        onChange={(e) => setRemanentCashStr(e.target.value)}
+                        placeholder="Ej. 1000"
+                        className="w-full pl-8 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                    {remanentCash > countedCash && countedCash > 0 && (
+                      <p className="text-[11px] text-rose-400 font-medium">
+                        ⚠️ El monto que se queda no puede ser mayor al total contado (${countedCash.toFixed(2)}).
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Desglose visual */}
+                <div className="p-3 rounded-lg bg-black/40 border border-gym-border/60 space-y-1.5 text-xs font-mono">
+                  <span className="text-[10px] font-bold text-gym-muted uppercase tracking-wider block font-sans">
+                    Desglose de Retiro y Fondo:
+                  </span>
+                  <div className="flex justify-between text-gray-300">
+                    <span>Efectivo Total Contado:</span>
+                    <span className="font-bold">${countedCash.toFixed(2)} MXN</span>
+                  </div>
+                  {leaveCashInDrawer ? (
+                    <>
+                      <div className="flex justify-between text-amber-400">
+                        <span>( - ) Fondo que se queda en caja:</span>
+                        <span className="font-bold">-${remanentCash.toFixed(2)} MXN</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-400 font-bold pt-1.5 border-t border-gym-border/50">
+                        <span>( = ) Efectivo a Retirar (A Gerencia):</span>
+                        <span className="text-sm font-black">${cashToWithdraw.toFixed(2)} MXN</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-emerald-400 font-bold pt-1.5 border-t border-gym-border/50">
+                      <span>( = ) Efectivo a Retirar (100% a Gerencia):</span>
+                      <span className="text-sm font-black">${countedCash.toFixed(2)} MXN</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-gym-muted block mb-1">
                   Observaciones / Notas del Cajero
@@ -297,16 +447,61 @@ export const CashRegisterView: React.FC = () => {
                   value={closingNotes}
                   onChange={(e) => setClosingNotes(e.target.value)}
                   rows={2}
-                  placeholder="Ej. Billetes de $500 entregados a gerencia..."
+                  placeholder="Ej. Billetes de $500 entregados a gerencia en sobre sellado..."
                   className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 resize-none"
                 />
               </div>
 
+              {/* Confirmación explícita SI / NO */}
+              <div className="p-3.5 rounded-xl bg-gym-surface/80 border border-amber-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-gray-200">
+                    Confirmar Cierre de Turno *
+                  </label>
+                  <span className="text-[10px] text-gym-muted uppercase tracking-wider font-bold">
+                    Escribe "SI" o "NO"
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={4}
+                    value={confirmCloseInput}
+                    onChange={(e) => setConfirmCloseInput(e.target.value.toUpperCase())}
+                    placeholder="Escribe SI o NO..."
+                    className="w-full px-3 py-2 bg-gym-card rounded-xl border border-gym-border text-center font-black tracking-widest text-sm text-white uppercase placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                {isConfirmedYes && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>Confirmación aceptada. Botón de cierre habilitado.</span>
+                  </div>
+                )}
+                {isConfirmedNo && (
+                  <div className="flex items-center gap-1.5 text-xs text-rose-400 font-semibold bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Cierre cancelado ("NO"). El turno continuará abierto.</span>
+                  </div>
+                )}
+                {!isConfirmedYes && !isConfirmedNo && (
+                  <p className="text-[11px] text-gym-muted text-center font-medium">
+                    * Escribe <strong>SI</strong> para autorizar el cierre definitivo.
+                  </p>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+                disabled={!canSubmitClose}
+                className={`w-full py-3 rounded-xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 ${
+                  canSubmitClose
+                    ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-glow-gold cursor-pointer'
+                    : 'bg-gym-surface text-gym-muted/50 border border-gym-border cursor-not-allowed'
+                }`}
               >
-                Cerrar Turno y Guardar Corte
+                <Lock className="w-4 h-4" />
+                <span>Cerrar Turno y Guardar Corte</span>
               </button>
             </form>
           ) : (

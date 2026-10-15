@@ -133,6 +133,9 @@ export interface CashRegisterSession {
   cashDifference?: number;
   status: 'open' | 'closed';
   notes?: string;
+  leaveCashInDrawer?: boolean;
+  remanentCash?: number;
+  withdrawnCash?: number;
 }
 
 // Configuración & Empleados

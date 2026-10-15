@@ -146,7 +146,7 @@ interface GymContextType {
   // Cash Session
   cashSession: CashRegisterSession;
   updateCashSession: (session: CashRegisterSession) => void;
-  closeCashSession: (countedCash: number, notes?: string) => void;
+  closeCashSession: (countedCash: number, notes?: string, leaveCashInDrawer?: boolean, remanentCash?: number, withdrawnCash?: number) => void;
   openCashSession: (initialCash: number) => void;
 
   // Empleados (Staff)
@@ -1451,7 +1451,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: session });
   };
 
-  const closeCashSession = (countedCash: number, notes?: string) => {
+  const closeCashSession = (
+    countedCash: number, 
+    notes?: string, 
+    leaveCashInDrawer?: boolean, 
+    remanentCash?: number, 
+    withdrawnCash?: number
+  ) => {
     const diff = countedCash - cashSession.expectedCash;
     const closed: CashRegisterSession = {
       ...cashSession,
@@ -1460,6 +1466,9 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       closedAt: new Date().toISOString(),
       status: 'closed',
       notes,
+      leaveCashInDrawer,
+      remanentCash,
+      withdrawnCash,
     };
     setCashSession(closed);
     broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: closed });
