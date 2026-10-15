@@ -19,13 +19,24 @@ export const CashRegisterView: React.FC = () => {
   const [leaveCashInDrawer, setLeaveCashInDrawer] = useState<boolean>(false);
   const [remanentCashStr, setRemanentCashStr] = useState('');
   const [confirmCloseInput, setConfirmCloseInput] = useState('');
-  const [initialCashStr, setInitialCashStr] = useState('1500');
+  const [initialCashStr, setInitialCashStr] = useState<string>(() => {
+    if (cashSession.status === 'closed') {
+      return cashSession.leaveCashInDrawer && cashSession.remanentCash !== undefined 
+        ? cashSession.remanentCash.toString() 
+        : '0';
+    }
+    return '0';
+  });
 
   useEffect(() => {
-    if (cashSession.status === 'closed' && cashSession.remanentCash && cashSession.remanentCash > 0) {
-      setInitialCashStr(cashSession.remanentCash.toString());
+    if (cashSession.status === 'closed') {
+      if (cashSession.leaveCashInDrawer && cashSession.remanentCash !== undefined) {
+        setInitialCashStr(cashSession.remanentCash.toString());
+      } else {
+        setInitialCashStr('0');
+      }
     }
-  }, [cashSession.status, cashSession.remanentCash]);
+  }, [cashSession.status, cashSession.leaveCashInDrawer, cashSession.remanentCash]);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayCashExpenses = expenses
@@ -73,7 +84,8 @@ export const CashRegisterView: React.FC = () => {
 
   const handleOpenSession = (e: React.FormEvent) => {
     e.preventDefault();
-    const init = parseFloat(initialCashStr) || 1000;
+    const parsed = parseFloat(initialCashStr);
+    const init = isNaN(parsed) ? 0 : parsed;
     openCashSession(init);
     setCountedCashStr('');
     setLeaveCashInDrawer(false);
@@ -132,14 +144,24 @@ export const CashRegisterView: React.FC = () => {
         {/* Efectivo en Caja */}
         <div className="p-5 rounded-2xl bg-gym-card border border-gym-border shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gym-muted uppercase font-bold">Efectivo Físico Esperado</span>
+            <span className="text-xs text-gym-muted uppercase font-bold">
+              {cashSession.status === 'open' ? 'Efectivo Físico Esperado' : 'Efectivo Físico en Caja'}
+            </span>
             <Banknote className="w-4 h-4 text-emerald-400" />
           </div>
           <span className="text-3xl font-black text-emerald-400 font-mono mt-1 block">
-            ${expectedCashInDrawer.toLocaleString()} MXN
+            ${cashSession.status === 'open' 
+              ? expectedCashInDrawer.toLocaleString() 
+              : (cashSession.leaveCashInDrawer ? (cashSession.remanentCash || 0) : 0).toLocaleString()
+            } MXN
           </span>
           <span className="text-xs text-gym-muted mt-2 block">
-            Fondo inicial: ${cashSession.initialCash} + Cobros: ${totalCashCollected}
+            {cashSession.status === 'open' 
+              ? `Fondo inicial: $${cashSession.initialCash} + Cobros: $${totalCashCollected}`
+              : cashSession.leaveCashInDrawer 
+                ? `Fondo reservado para siguiente turno: $${cashSession.remanentCash || 0}`
+                : 'Turno cerrado: 100% retirado a gerencia ($0.00 en caja)'
+            }
           </span>
         </div>
 
@@ -179,7 +201,7 @@ export const CashRegisterView: React.FC = () => {
         {/* Breakdown Left Box */}
         <div className="lg:col-span-7 bg-gym-card rounded-2xl border border-gym-border p-6 shadow-md space-y-4">
           <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <span>Desglose Detallado del Turno Actual</span>
+            <span>{cashSession.status === 'closed' ? 'Desglose del Turno Cerrado' : 'Desglose Detallado del Turno Actual'}</span>
             <span className="text-xs font-mono text-gym-muted">({cashSession.id})</span>
           </h3>
 
@@ -197,7 +219,7 @@ export const CashRegisterView: React.FC = () => {
 
             <div className="divide-y divide-gym-border/40 text-xs text-gym-muted">
               <div className="py-2.5 flex justify-between">
-                <span>( + ) Fondo Inicial de Caja:</span>
+                <span>( + ) Fondo Inicial con que abrió este turno:</span>
                 <span className="text-white font-bold">${cashSession.initialCash.toFixed(2)}</span>
               </div>
               <div className="py-2.5 flex justify-between">
@@ -266,9 +288,15 @@ export const CashRegisterView: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex justify-between text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1.5 rounded-lg border border-emerald-500/20">
-                    <span>( = ) Efectivo Retirado (100% a Gerencia):</span>
-                    <span>${(cashSession.withdrawnCash ?? cashSession.actualCash)?.toFixed(2)} MXN</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1.5 rounded-lg border border-emerald-500/20">
+                      <span>( = ) Efectivo Retirado (100% a Gerencia):</span>
+                      <span>${(cashSession.withdrawnCash ?? cashSession.actualCash)?.toFixed(2)} MXN</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-300 px-1 font-mono">
+                      <span>Fondo que se quedó en caja:</span>
+                      <span className="text-white font-bold">$0.00 MXN</span>
+                    </div>
                   </div>
                 )}
                 <div className="flex justify-between text-xs pt-1 border-t border-gym-border/40">
@@ -500,20 +528,26 @@ export const CashRegisterView: React.FC = () => {
 
               <div>
                 <label className="text-xs font-semibold text-gym-muted block mb-1">
-                  Fondo Inicial de Caja ($) *
+                  Fondo Inicial para este Nuevo Turno ($) *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-muted font-mono font-bold">$</span>
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     required
                     value={initialCashStr}
                     onChange={(e) => setInitialCashStr(e.target.value)}
-                    placeholder="1500"
+                    placeholder="0"
                     className="w-full pl-8 pr-3 py-2.5 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
+                <p className="text-[11px] text-gym-muted mt-1.5 leading-relaxed">
+                  {cashSession.leaveCashInDrawer 
+                    ? `Fondo heredado del turno anterior: $${(cashSession.remanentCash || 0).toFixed(2)} MXN.`
+                    : 'En el turno anterior se retiró todo el dinero a gerencia ($0.00 en caja). Ingresa aquí el efectivo con el que inicias este turno (o déjalo en 0 si comienzas sin fondo).'}
+                </p>
               </div>
 
               <button
