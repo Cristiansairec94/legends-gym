@@ -11,7 +11,6 @@ import {
   ChevronDown, 
   Barcode, 
   Clock, 
-  Bell, 
   Edit3, 
   Trash2, 
   X, 
@@ -311,13 +310,6 @@ export const ProductsCatalog: React.FC = () => {
             <span>{currentTime.toLocaleTimeString('es-MX')}</span>
           </div>
 
-          {/* Notification bell badge */}
-          <div className="relative p-2 rounded-full bg-gym-surface border border-gym-border text-gym-muted hover:text-white cursor-pointer">
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 bg-red-600 text-white font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-              12
-            </span>
-          </div>
 
           {/* Cashier / Manager User Card */}
           <div className="flex items-center gap-2 pl-2 border-l border-gym-border">
