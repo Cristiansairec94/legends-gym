@@ -280,70 +280,70 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
-    <div className="h-full flex flex-col gap-2 min-h-0 overflow-hidden">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
       
-      {/* 1. TOP SUB-HEADER BAR */}
-      <div className="bg-gym-card rounded-xl border border-gym-border px-3.5 py-2 flex flex-wrap items-center justify-between gap-3 shadow-sm shrink-0">
-        
-        {/* Brand Logo & Subtitle */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-glow-gold border border-amber-400/50 shrink-0">
-            <ShoppingBag className="w-4.5 h-4.5 text-black stroke-[2.5]" />
-          </div>
-          <div className="leading-tight">
-            <h2 className="font-black text-base text-white tracking-wide">
-              Punto de Venta
-            </h2>
-            <p className="text-[11px] text-gym-muted font-medium hidden sm:block">
-              Caja rápida mostrador y tickets de venta
-            </p>
-          </div>
-        </div>
-
-        {/* Status Indicators Strip */}
-        <div className="flex items-center gap-2.5">
-          
-          {/* Sincronizado Pill */}
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-xs sm:text-sm shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Sincronizado</span>
-          </div>
-
-          {/* Matriz Indicator Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gym-surface text-gray-100 border border-gym-border font-bold text-xs sm:text-sm shadow-sm">
-            <span className="text-amber-400">🏪 Matriz</span>
-          </div>
-
-          {/* Real-time Clock */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-mono text-xs sm:text-sm font-semibold shadow-sm">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <span>{currentTime.toLocaleTimeString('es-MX')}</span>
-          </div>
-
-          {/* Cashier / User Card */}
-          <div className="flex items-center gap-3 pl-3 border-l border-gym-border">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-black text-amber-400 text-sm shrink-0 shadow-sm">
-              {currentRole === 'admin' ? 'RG' : 'CR'}
-            </div>
-            <div className="hidden md:block text-left leading-tight">
-              <span className="font-bold text-sm sm:text-base text-white block">
-                {currentRole === 'admin' ? 'Don Roberto Garza' : 'Camila Herrera'}
-              </span>
-              <span className="text-[10px] sm:text-xs font-extrabold uppercase text-amber-400 tracking-wider mt-0.5 block">
-                {currentRole === 'admin' ? 'DUEÑO / ADMIN' : 'RECEPCIÓN / CAJERA'}
-              </span>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* 2. MAIN TWO-COLUMN POS WORKSPACE */}
+      {/* MAIN TWO-COLUMN POS WORKSPACE */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 min-h-0 overflow-hidden items-stretch">
         
-        {/* LEFT COLUMN: Search, Action Buttons & Products Grid */}
+        {/* LEFT COLUMN: Header, Search, Action Buttons & Products Grid */}
         <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
+          
+          {/* 1. TOP SUB-HEADER BAR (Integrated in Left Workspace) */}
+          <div className="bg-gym-card rounded-xl border border-gym-border px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-sm shrink-0">
+            
+            {/* Brand Logo & Subtitle */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-glow-gold border border-amber-400/50 shrink-0">
+                <ShoppingBag className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+              <div className="leading-tight">
+                <h2 className="font-black text-sm sm:text-base text-white tracking-wide">
+                  Punto de Venta
+                </h2>
+                <p className="text-[10px] text-gym-muted font-medium hidden sm:block">
+                  Caja rápida mostrador y tickets
+                </p>
+              </div>
+            </div>
+
+            {/* Status Indicators Strip */}
+            <div className="flex items-center gap-2">
+              
+              {/* Sincronizado Pill */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-xs shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="hidden sm:inline">Sincronizado</span>
+              </div>
+
+              {/* Matriz Indicator Pill */}
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gym-surface text-gray-100 border border-gym-border font-bold text-xs shadow-sm">
+                <span className="text-amber-400">🏪 Matriz</span>
+              </div>
+
+              {/* Real-time Clock */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-mono text-xs font-semibold shadow-sm">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>{currentTime.toLocaleTimeString('es-MX')}</span>
+              </div>
+
+              {/* Cashier / User Card */}
+              <div className="flex items-center gap-2 pl-2 border-l border-gym-border">
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-black text-amber-400 text-xs shrink-0 shadow-sm">
+                  {currentRole === 'admin' ? 'RG' : 'CR'}
+                </div>
+                <div className="hidden lg:block text-left leading-tight">
+                  <span className="font-bold text-xs text-white block">
+                    {currentRole === 'admin' ? 'Don Roberto Garza' : 'Camila Herrera'}
+                  </span>
+                  <span className="text-[9px] font-extrabold uppercase text-amber-400 tracking-wider block">
+                    {currentRole === 'admin' ? 'DUEÑO / ADMIN' : 'RECEPCIÓN'}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
           
           {/* Integrated Search & Actions Toolbar */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
