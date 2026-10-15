@@ -206,7 +206,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 min-h-0 overflow-hidden items-stretch">
         
         {/* LEFT COLUMN: Search, Action Buttons & Products Grid */}
-        <div className="lg:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
+        <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
           
           {/* Integrated Search & Actions Toolbar */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -310,54 +310,54 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
         </div>
 
-        {/* RIGHT COLUMN: "Charola de Cobro" */}
-        <div className="lg:col-span-4 bg-gym-card rounded-xl border border-gym-border p-2.5 shadow-xl flex flex-col justify-between min-h-0 h-full overflow-hidden">
+        {/* RIGHT COLUMN: "Caja de Cobro" */}
+        <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 bg-gym-card rounded-xl border border-gym-border p-3 shadow-xl flex flex-col justify-between min-h-0 h-full overflow-hidden">
           
           {/* Top section: Header + Client + Barcode */}
-          <div className="space-y-2 shrink-0">
-            {/* Header: Charola de Cobro + Counter Badge */}
-            <div className="flex items-center justify-between gap-2 border-b border-gym-border pb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-sm shrink-0">
-                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+          <div className="space-y-2.5 shrink-0">
+            {/* Header: Caja de Cobro + Counter Badge */}
+            <div className="flex items-center justify-between gap-2 border-b border-gym-border pb-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-sm shrink-0">
+                  <ShoppingBag className="w-4.5 h-4.5 stroke-[2.5]" />
                 </div>
                 <div className="leading-tight">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-extrabold text-xs text-white">Caja de Cobro</h3>
+                    <h3 className="font-black text-sm text-white">Caja de Cobro</h3>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   </div>
-                  <span className="text-[10px] text-amber-400/90 font-medium">🏪 Sucursal Matriz</span>
+                  <span className="text-[11px] text-amber-400 font-semibold">🏪 Sucursal Matriz</span>
                 </div>
               </div>
 
               {/* Counter pill */}
-              <span className="px-2 py-0.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-[11px] font-mono font-bold">
+              <span className="px-2.5 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-xs font-mono font-bold">
                 {cartItemsCount} pzs
               </span>
             </div>
 
             {/* Customer Selection Row: [Público en General] [Buscar cli...] [+ Nuevo] */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                className="flex-1 flex items-center justify-between px-2.5 py-1 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
+                className="flex-1 flex items-center justify-between px-3 py-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
                 title="Asignar socio a la compra"
               >
-                <div className="flex items-center gap-1.5 truncate">
-                  <User className="w-3 h-3 text-amber-400 shrink-0" />
+                <div className="flex items-center gap-2 truncate">
+                  <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                   <span className="truncate">
                     {selectedMember ? selectedMember.fullName : 'Público en General'}
                   </span>
                 </div>
-                <ChevronDown className="w-3 h-3 text-gym-muted shrink-0" />
+                <ChevronDown className="w-3.5 h-3.5 text-gym-muted shrink-0" />
               </button>
 
               <button
                 onClick={() => setShowAddClientModal(true)}
-                className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 shrink-0 transition-all"
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 shrink-0 transition-all"
                 title="Registrar nuevo socio"
               >
-                <Plus className="w-3 h-3 stroke-[3]" />
+                <Plus className="w-3.5 h-3.5 stroke-[3]" />
                 <span>Nuevo</span>
               </button>
             </div>
@@ -402,20 +402,20 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             )}
 
             {/* Barcode scanner input bar */}
-            <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-1.5">
+            <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Barcode className="w-3.5 h-3.5 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <Barcode className="w-4 h-4 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   placeholder="Escanear código de barras..."
-                  className="w-full pl-8 pr-2 py-1 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
+                  className="w-full pl-8 pr-2.5 py-1.5 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
                 />
               </div>
               <button
                 type="submit"
-                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/30 shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/30 shrink-0"
               >
                 + Agregar
               </button>
@@ -423,15 +423,15 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </div>
 
           {/* Middle Tray Body / Items List */}
-          <div className="flex-1 min-h-[80px] overflow-y-auto divide-y divide-gym-border/40 pr-0.5 my-1.5">
+          <div className="flex-1 min-h-[90px] overflow-y-auto divide-y divide-gym-border/40 pr-0.5 my-2">
             {cart.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-2 space-y-1.5">
-                <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <ShoppingBag className="w-4 h-4 stroke-[1.8]" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-3 space-y-2">
+                <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-white">Caja vacía</h4>
-                  <p className="text-[10px] text-gym-muted leading-tight mt-0.5">
+                  <h4 className="font-bold text-sm text-white">Caja vacía</h4>
+                  <p className="text-[11px] text-gym-muted leading-tight mt-0.5">
                     Toca un producto o escanea código para cobrar.
                   </p>
                 </div>
@@ -440,54 +440,54 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     const promo = products.find(p => p.id === 'PROD-008') || products[0];
                     if (promo) addToCart(promo, 1);
                   }}
-                  className="py-1 px-3 rounded-lg bg-gradient-to-r from-red-950 via-rose-900 to-red-950 hover:from-red-900 hover:to-rose-800 text-rose-200 text-[10px] font-bold border border-rose-500/40 shadow-sm flex items-center justify-center gap-1 transition-all"
+                  className="py-1.5 px-3.5 rounded-lg bg-gradient-to-r from-red-950 via-rose-900 to-red-950 hover:from-red-900 hover:to-rose-800 text-rose-200 text-xs font-bold border border-rose-500/40 shadow-sm flex items-center justify-center gap-1.5 transition-all"
                 >
-                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>Cobro Rápido Bebida / Snack ⚡</span>
                 </button>
               </div>
             ) : (
               cart.map((item) => (
-                <div key={item.product.id} className="py-1.5 flex items-center justify-between gap-1.5">
+                <div key={item.product.id} className="py-2 flex items-center justify-between gap-2">
                   <img
                     src={item.product.image}
                     alt={item.product.name}
-                    className="w-8 h-8 rounded-lg object-cover border border-gym-border shrink-0"
+                    className="w-9 h-9 rounded-lg object-cover border border-gym-border shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-[11px] text-white truncate">{item.product.name}</h5>
-                    <span className="text-[9px] text-amber-400 font-mono font-semibold">
+                    <h5 className="font-bold text-xs text-white truncate">{item.product.name}</h5>
+                    <span className="text-[10px] text-amber-400 font-mono font-semibold">
                       ${item.unitPrice.toFixed(2)} c/u
                     </span>
                   </div>
 
                   {/* Quantity control */}
-                  <div className="flex items-center gap-0.5 bg-gym-surface p-0.5 rounded border border-gym-border shrink-0">
+                  <div className="flex items-center gap-1 bg-gym-surface p-0.5 rounded border border-gym-border shrink-0">
                     <button
                       onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                      className="p-0.5 rounded text-gym-muted hover:text-white hover:bg-gym-card"
+                      className="p-1 rounded text-gym-muted hover:text-white hover:bg-gym-card"
                     >
-                      <Minus className="w-2.5 h-2.5" />
+                      <Minus className="w-3 h-3" />
                     </button>
-                    <span className="font-mono font-bold text-[11px] px-1 text-white">{item.quantity}</span>
+                    <span className="font-mono font-bold text-xs px-1 text-white">{item.quantity}</span>
                     <button
                       onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
                       disabled={item.quantity >= item.product.stock}
-                      className="p-0.5 rounded text-gym-muted hover:text-white hover:bg-gym-card disabled:opacity-30"
+                      className="p-1 rounded text-gym-muted hover:text-white hover:bg-gym-card disabled:opacity-30"
                     >
-                      <Plus className="w-2.5 h-2.5" />
+                      <Plus className="w-3 h-3" />
                     </button>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="font-mono font-black text-[11px] text-white block">
+                    <span className="font-mono font-black text-xs text-white block">
                       ${item.subtotal.toFixed(2)}
                     </span>
                     <button
                       onClick={() => removeFromCart(item.product.id)}
-                      className="text-gym-muted hover:text-red-400 text-[9px]"
+                      className="text-gym-muted hover:text-red-400 text-[10px]"
                     >
-                      <Trash2 className="w-2.5 h-2.5" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -496,68 +496,68 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </div>
 
           {/* 3. BOTTOM CHECKOUT PANEL */}
-          <div className="bg-[#0E1119] rounded-xl border border-gym-border p-2 space-y-1.5 shrink-0">
+          <div className="bg-[#0E1119] rounded-xl border border-gym-border p-3 space-y-2.5 shrink-0">
             
             {/* Total Header */}
             <div className="flex items-baseline justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gym-muted">
+              <span className="text-[11px] font-black uppercase tracking-wider text-gym-muted">
                 TOTAL A COBRAR ({cartItemsCount} PZS)
               </span>
-              <span className="text-2xl font-black font-mono text-amber-400 tracking-tight">
+              <span className="text-3xl font-black font-mono text-amber-400 tracking-tight">
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
 
             {/* Payment Method Pills ($ Efectivo, Tarjeta, Transferencia) */}
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1.5">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cash')}
-                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'cash'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <Banknote className="w-3 h-3" />
+                <Banknote className="w-3.5 h-3.5" />
                 <span>$ Efectivo</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'card'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <CreditCard className="w-3 h-3" />
+                <CreditCard className="w-3.5 h-3.5" />
                 <span>Tarjeta</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('transfer')}
-                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'transfer'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <ArrowRightLeft className="w-3 h-3" />
+                <ArrowRightLeft className="w-3.5 h-3.5" />
                 <span>Transfer</span>
               </button>
             </div>
 
             {/* Quick Cash Bills Row */}
             {paymentMethod === 'cash' && (
-              <div className="space-y-1.5 pt-1 border-t border-gym-border/60">
-                <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+              <div className="space-y-2 pt-1 border-t border-gym-border/60">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                   <button
                     type="button"
                     onClick={() => handleQuickCash('exact')}
-                    className="px-2 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[10px] border border-amber-500/40 flex items-center gap-0.5 shrink-0"
+                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] border border-amber-500/40 flex items-center gap-0.5 shrink-0"
                   >
                     <span>⚡ Exacto</span>
                   </button>
@@ -566,7 +566,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       key={bill}
                       type="button"
                       onClick={() => handleQuickCash(bill)}
-                      className="px-1.5 py-0.5 rounded-md bg-gym-surface hover:bg-gym-surface/80 text-gray-200 font-bold text-[10px] border border-gym-border shrink-0"
+                      className="px-2 py-1 rounded-lg bg-gym-surface hover:bg-gym-surface/80 text-gray-200 font-bold text-[11px] border border-gym-border shrink-0"
                     >
                       ${bill}
                     </button>
@@ -574,21 +574,21 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 </div>
 
                 {/* Tender Input: Paga con... ($) */}
-                <div className="flex items-center justify-between gap-1.5 bg-gym-surface/80 px-2.5 py-1 rounded-lg border border-gym-border">
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <Banknote className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center justify-between gap-2 bg-gym-surface/80 px-3 py-1.5 rounded-xl border border-gym-border">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Banknote className="w-4 h-4 text-emerald-400" />
                     <input
                       type="number"
                       value={amountPaidStr}
                       onChange={(e) => setAmountPaidStr(e.target.value)}
                       placeholder="Paga con... ($)"
-                      className="w-full bg-transparent text-xs font-mono font-bold text-white placeholder-gym-muted focus:outline-none"
+                      className="w-full bg-transparent text-sm font-mono font-bold text-white placeholder-gym-muted focus:outline-none"
                     />
                   </div>
                   {cashGiven > 0 && (
                     <div className="text-right shrink-0">
-                      <span className="text-[9px] text-gym-muted mr-1">Cambio:</span>
-                      <span className="text-xs font-mono font-black text-emerald-400">
+                      <span className="text-[10px] text-gym-muted mr-1">Cambio:</span>
+                      <span className="text-sm font-mono font-black text-emerald-400">
                         ${changeDue.toFixed(2)}
                       </span>
                     </div>
@@ -598,14 +598,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             )}
 
             {/* Bottom Actions: [Cancelar Compra] [Cobrar & Ticket] */}
-            <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-gym-border/60">
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gym-border/60">
               <button
                 type="button"
                 onClick={clearCart}
                 disabled={cart.length === 0}
-                className="py-1.5 px-2 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border disabled:opacity-30 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                className="py-2.5 px-3 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border disabled:opacity-30 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5" />
                 <span>Cancelar</span>
               </button>
 
@@ -613,9 +613,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 type="button"
                 onClick={handleCheckout}
                 disabled={!canCheckout}
-                className="py-1.5 px-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-35 text-black font-black text-xs shadow-glow-gold flex items-center justify-center gap-1 transition-all"
+                className="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-35 text-black font-black text-xs shadow-glow-gold flex items-center justify-center gap-1.5 transition-all"
               >
-                <Receipt className="w-3.5 h-3.5" />
+                <Receipt className="w-4 h-4" />
                 <span>Cobrar & Ticket</span>
               </button>
             </div>
