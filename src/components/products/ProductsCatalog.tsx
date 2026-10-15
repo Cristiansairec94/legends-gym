@@ -24,8 +24,10 @@ import {
   Layers,
   Printer,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ScanLine
 } from 'lucide-react';
+import { sounds } from '../../services/audio';
 import { BarcodePrintModal } from './BarcodePrintModal';
 import { CategoryManagerModal, CatalogCategory } from './CategoryManagerModal';
 
@@ -72,6 +74,9 @@ export const ProductsCatalog: React.FC = () => {
   const [formSoldByScoop, setFormSoldByScoop] = useState(false);
   const [formScoopPrice, setFormScoopPrice] = useState(35);
   const [formScoopsPerContainer, setFormScoopsPerContainer] = useState(30);
+  const [isScanningActive, setIsScanningActive] = useState(false);
+  const [scanSuccess, setScanSuccess] = useState(false);
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   // Custom Categories list with localStorage persistence
   const [customCategories, setCustomCategories] = useState<CatalogCategory[]>(() => {
@@ -126,7 +131,7 @@ export const ProductsCatalog: React.FC = () => {
     setFormCostPrice(90);
     setFormStock(10);
     setFormMinStock(3);
-    setFormBarcode(`${Math.floor(100000000000 + Math.random() * 900000000000)}`);
+    setFormBarcode('');
     setFormSku(`#PROD-${String(products.length + 1).padStart(3, '0')}`);
     setFormTaxRate('IVA 16%');
     setFormImage('');
@@ -135,6 +140,8 @@ export const ProductsCatalog: React.FC = () => {
     setFormSoldByScoop(false);
     setFormScoopPrice(35);
     setFormScoopsPerContainer(30);
+    setIsScanningActive(false);
+    setScanSuccess(false);
     setShowAddProductModal(true);
   };
 
@@ -156,6 +163,8 @@ export const ProductsCatalog: React.FC = () => {
     setFormSoldByScoop(!!p.soldByScoop);
     setFormScoopPrice(p.scoopPrice || 35);
     setFormScoopsPerContainer(p.scoopsPerContainer || 30);
+    setIsScanningActive(false);
+    setScanSuccess(false);
     setShowAddProductModal(true);
   };
 
@@ -860,35 +869,96 @@ export const ProductsCatalog: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-gym-muted block">Código de Barras</label>
-                  <button
-                    type="button"
-                    onClick={() => setFormBarcode(`${Math.floor(100000000000 + Math.random() * 900000000000)}`)}
-                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 transition-colors"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Generar aleatorio</span>
-                  </button>
+              <div className="bg-gym-surface/30 p-3.5 rounded-xl border border-gym-border space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Barcode className="w-4 h-4 text-amber-400" />
+                    <label className="text-xs font-bold text-white">Código de Barras</label>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        barcodeInputRef.current?.focus();
+                        barcodeInputRef.current?.select();
+                        setIsScanningActive(true);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                      title="Haz clic y apunta tu lector al envase o caja del producto"
+                    >
+                      <ScanLine className="w-3.5 h-3.5" />
+                      <span>Escanear de empaque</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormBarcode(`${Math.floor(100000000000 + Math.random() * 900000000000)}`);
+                        setScanSuccess(false);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                      title="Genera un código nuevo para productos que no traen código de fábrica"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Generar código propio</span>
+                    </button>
+                  </div>
                 </div>
+
                 <div className="relative">
                   <input
+                    ref={barcodeInputRef}
                     type="text"
                     value={formBarcode}
-                    onChange={(e) => setFormBarcode(e.target.value)}
+                    onChange={(e) => {
+                      setFormBarcode(e.target.value);
+                      if (scanSuccess) setScanSuccess(false);
+                    }}
+                    onFocus={() => setIsScanningActive(true)}
+                    onBlur={() => setIsScanningActive(false)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
+                        if (formBarcode.trim()) {
+                          sounds.playBarcodeBeep();
+                          setScanSuccess(true);
+                          setTimeout(() => setScanSuccess(false), 3200);
+                        }
                       }
                     }}
-                    placeholder="748927028669 o escanea aquí..."
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-amber-400"
+                    placeholder="Dispara con tu lector al código del envase o escribe los números..."
+                    className={`w-full pl-3 pr-20 py-2 bg-gym-surface rounded-xl border text-sm text-white font-mono focus:outline-none transition-all ${
+                      scanSuccess 
+                        ? 'border-emerald-500 ring-2 ring-emerald-500/30' 
+                        : isScanningActive 
+                        ? 'border-amber-400 ring-2 ring-amber-400/20' 
+                        : 'border-gym-border focus:border-amber-400'
+                    }`}
                   />
+                  {formBarcode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormBarcode('');
+                        setScanSuccess(false);
+                        barcodeInputRef.current?.focus();
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] bg-gym-card hover:bg-gym-border text-gym-muted hover:text-white px-2 py-0.5 rounded border border-gym-border transition-colors cursor-pointer"
+                    >
+                      Limpiar
+                    </button>
+                  )}
                 </div>
-                <p className="text-[10px] text-gym-muted mt-1">
-                  Puedes escribirlo manualmente, generarlo con el botón o escanear el envase directamente con tu lector.
-                </p>
+
+                {scanSuccess ? (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold animate-fade-in">
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span>¡Código del producto capturado correctamente con el lector!</span>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-gym-muted leading-tight">
+                    💡 <strong>¿Tu producto ya tiene código de barras de fábrica?</strong> (ej. bote de proteína, lata, botella, snack): Solo haz clic en "Escanear de empaque" y dispara con tu lector al código del producto. No necesitas imprimir etiquetas para productos de marca.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
