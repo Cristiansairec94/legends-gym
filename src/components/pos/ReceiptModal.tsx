@@ -11,7 +11,6 @@ interface ReceiptModalProps {
 }
 
 export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => {
-  // Mark body for print layout so #root is cleanly suppressed and ticket prints at (0,0)
   useEffect(() => {
     document.body.classList.add('is-printing-receipt');
     return () => {
@@ -53,15 +52,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             <style>
               @page {
                 size: 80mm auto;
-                margin: 0mm;
+                margin: 0;
               }
               @media print {
                 html, body {
                   width: 78mm !important;
                   margin: 0 auto !important;
-                  padding: 3mm 2mm !important;
-                  background: #fff !important;
-                  color: #000 !important;
+                  padding: 4mm 2.5mm !important;
+                  background: #ffffff !important;
+                  color: #000000 !important;
                   -webkit-print-color-adjust: exact !important;
                   print-color-adjust: exact !important;
                 }
@@ -72,21 +71,40 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
                 padding: 0;
               }
               body {
-                font-family: 'Courier New', Courier, monospace;
+                font-family: 'Courier New', Courier, monospace, system-ui;
                 font-size: 11px;
+                line-height: 1.35;
                 color: #000000;
                 background: #ffffff;
                 width: 78mm;
                 margin: 0 auto;
-                padding: 3mm 2mm;
+                padding: 4mm 2.5mm;
               }
-              img {
-                max-width: 100%;
-                height: auto;
+              .receipt-logo {
+                width: 52px !important;
+                height: 52px !important;
+                max-width: 52px !important;
+                max-height: 52px !important;
+                object-fit: contain !important;
+                border-radius: 50% !important;
+                background: #000000 !important;
+                padding: 3px !important;
+                display: block !important;
+                margin: 0 auto 4px auto !important;
+              }
+              .receipt-divider {
+                border-bottom: 1px dashed #444444;
+                margin: 6px 0;
+              }
+              .receipt-divider-thick {
+                border-bottom: 2px dashed #000000;
+                margin: 6px 0;
               }
               svg {
-                display: block;
-                margin: 0 auto;
+                display: block !important;
+                margin: 2px auto !important;
+                max-width: 170px !important;
+                height: 32px !important;
               }
             </style>
           </head>
@@ -135,58 +153,88 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
 
         {/* Printable Thermal Receipt Wrapper */}
         <div 
-          className="p-6 bg-white text-black font-mono text-xs select-none print:p-4 print:w-[80mm] print:max-w-[80mm] print:mx-auto print:my-0 print:border print:border-dashed print:border-gray-400 print:block" 
+          className="p-5 bg-white text-black font-mono text-xs select-none print:p-3 print:w-[78mm] print:max-w-[80mm] print:mx-auto print:my-0 print:border print:border-dashed print:border-gray-400 print:block" 
           id="printable-receipt"
         >
           
           {/* Header */}
-          <div className="text-center pb-4 border-b-2 border-dashed border-gray-400">
-            <div className="flex flex-col items-center justify-center gap-1.5 mb-1.5">
-              <div className="w-14 h-14 bg-black rounded-full p-1.5 flex items-center justify-center shadow-sm">
-                <img src={logoImg} alt="Logo LEYENDS" className="w-full h-full object-contain" />
-              </div>
-              <h2 className="text-base font-black tracking-wider text-black">LEYENDS FITNESS GYM</h2>
+          <div className="text-center pb-2">
+            <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+              <img 
+                src={logoImg} 
+                alt="Logo LEYENDS" 
+                className="receipt-logo"
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  maxWidth: '52px',
+                  maxHeight: '52px',
+                  objectFit: 'contain',
+                  borderRadius: '50%',
+                  background: '#000000',
+                  padding: '3px',
+                  display: 'inline-block',
+                  margin: '0 auto 4px auto'
+                }} 
+              />
+              <h2 style={{ fontSize: '15px', fontWeight: '900', letterSpacing: '0.5px', marginTop: '2px', textTransform: 'uppercase', color: '#000000' }}>
+                LEYENDS FITNESS GYM
+              </h2>
+              <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#222222', marginTop: '1px' }}>
+                SUCURSAL CENTRAL FITNESS
+              </p>
+              <p style={{ fontSize: '9.5px', color: '#555555' }}>
+                Blvd. de los Campeones #500
+              </p>
+              <p style={{ fontSize: '9px', color: '#666666' }}>
+                RFC: LEY-920311-GYM • Tel: (55) 1234-5678
+              </p>
             </div>
-            <p className="text-[11px] font-bold text-gray-800">SUCURSAL CENTRAL FITNESS</p>
-            <p className="text-[10px] text-gray-600">Blvd. de los Campeones #500</p>
-            <p className="text-[10px] text-gray-600">RFC: LEY-920311-GYM • Tel: (55) 1234-5678</p>
           </div>
 
+          <div style={{ borderBottom: '1px dashed #444444', margin: '6px 0' }} className="receipt-divider" />
+
           {/* Folio & Metadata */}
-          <div className="py-3 border-b border-dashed border-gray-300 space-y-0.5 text-[11px] text-black">
-            <div className="flex justify-between">
-              <span className="font-bold">FOLIO:</span>
-              <span className="font-bold font-mono">{sale.folio}</span>
+          <div style={{ fontSize: '10.5px', lineHeight: '1.45', color: '#000000' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+              <span style={{ fontWeight: 'bold' }}>FOLIO:</span>
+              <span style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{sale.folio}</span>
             </div>
-            <div className="flex justify-between">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
               <span>FECHA:</span>
               <span>{new Date(sale.timestamp).toLocaleString('es-MX')}</span>
             </div>
-            <div className="flex justify-between">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
               <span>CLIENTE:</span>
-              <span className="font-bold truncate max-w-[180px]">{sale.clientName}</span>
+              <span style={{ fontWeight: 'bold' }}>{sale.clientName}</span>
             </div>
-            <div className="flex justify-between">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
               <span>ATENDIÓ:</span>
               <span>{sale.cashierName}</span>
             </div>
           </div>
 
+          <div style={{ borderBottom: '2px dashed #000000', margin: '6px 0' }} className="receipt-divider-thick" />
+
           {/* Line Items Table */}
-          <div className="py-3 border-b-2 border-dashed border-gray-400 text-black">
-            <div className="flex justify-between font-bold text-[11px] mb-2 border-b border-gray-200 pb-1">
+          <div style={{ color: '#000000' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10.5px', paddingBottom: '3px', borderBottom: '1px solid #dddddd', marginBottom: '5px' }}>
               <span>CANT. ARTÍCULO</span>
               <span>TOTAL</span>
             </div>
 
-            <div className="space-y-2 text-[11px]">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px' }}>
               {sale.items.map((item, idx) => (
-                <div key={idx}>
-                  <div className="flex justify-between">
-                    <span className="font-bold">{item.quantity}x {item.product.name}</span>
-                    <span className="font-mono font-bold">${item.subtotal.toFixed(2)}</span>
+                <div key={idx} style={{ marginBottom: '3px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontWeight: 'bold', textAlign: 'left', paddingRight: '8px' }}>
+                      {item.quantity}x {item.product.name}
+                    </span>
+                    <span style={{ fontWeight: 'bold', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                      ${item.subtotal.toFixed(2)}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-gray-600 flex justify-between">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#555555', marginTop: '1px' }}>
                     <span>{item.product.brand} - {item.product.flavor || 'Original'}</span>
                     <span>@${item.unitPrice.toFixed(2)} c/u</span>
                   </div>
@@ -195,42 +243,50 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             </div>
           </div>
 
+          <div style={{ borderBottom: '2px dashed #000000', margin: '6px 0' }} className="receipt-divider-thick" />
+
           {/* Financial Totals */}
-          <div className="py-3 border-b-2 border-dashed border-gray-400 space-y-1 text-right text-[11px] text-black">
-            <div className="flex justify-between text-gray-700">
+          <div style={{ fontSize: '11px', lineHeight: '1.45', color: '#000000' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '2px' }}>
               <span>SUBTOTAL:</span>
-              <span>${sale.subtotal.toFixed(2)}</span>
+              <span style={{ fontFamily: 'monospace' }}>${sale.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-gray-700">
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '2px' }}>
               <span>I.V.A. (16%):</span>
-              <span>${sale.tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm font-black pt-1 border-t border-gray-200 text-black">
-              <span>TOTAL A PAGAR:</span>
-              <span className="text-base font-mono">${sale.total.toFixed(2)} MXN</span>
+              <span style={{ fontFamily: 'monospace' }}>${sale.tax.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between text-gray-800 pt-1 text-[11px]">
-              <span className="capitalize">PAGO ({sale.paymentMethod}):</span>
-              <span className="font-mono">${sale.amountPaid.toFixed(2)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', fontSize: '13.5px', borderTop: '1px solid #000000', paddingTop: '4px', marginTop: '4px', color: '#000000' }}>
+              <span>TOTAL A PAGAR:</span>
+              <span style={{ fontFamily: 'monospace' }}>${sale.total.toFixed(2)} MXN</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#333333', fontSize: '10.5px', marginTop: '4px' }}>
+              <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod}):</span>
+              <span style={{ fontFamily: 'monospace' }}>${sale.amountPaid.toFixed(2)}</span>
             </div>
             {sale.paymentMethod === 'cash' && (
-              <div className="flex justify-between text-gray-900 font-bold text-[11px]">
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '11px', color: '#000000', marginTop: '2px' }}>
                 <span>CAMBIO ENTREGADO:</span>
-                <span className="font-mono">${sale.changeGiven.toFixed(2)}</span>
+                <span style={{ fontFamily: 'monospace' }}>${sale.changeGiven.toFixed(2)}</span>
               </div>
             )}
           </div>
 
+          <div style={{ borderBottom: '1px dashed #444444', margin: '6px 0' }} className="receipt-divider" />
+
           {/* Barcode & Footer */}
-          <div className="pt-4 text-center space-y-2 text-black">
-            <div className="flex justify-center my-1">
-              <BarcodeSVG value={sale.folio || 'FOLIO-000'} height={34} fontSize={10} className="w-52 max-w-full" />
+          <div style={{ textAlign: 'center', marginTop: '6px', color: '#000000' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px auto', maxWidth: '170px' }}>
+              <BarcodeSVG value={sale.folio || 'FOLIO-000'} height={32} fontSize={10} showText={false} className="w-44 max-w-full mx-auto" />
             </div>
-            <p className="text-[10px] font-bold text-gray-800">
+            <p style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'monospace', margin: '2px 0 6px 0' }}>
+              * {sale.folio} *
+            </p>
+            <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#111111', marginBottom: '2px' }}>
               ¡GRACIAS POR ENTRENAR CON LAS LEYENDAS!
             </p>
-            <p className="text-[9px] text-gray-600">
+            <p style={{ fontSize: '8.5px', color: '#666666' }}>
               Conserva este ticket para cualquier aclaración o garantía.
             </p>
           </div>
@@ -241,7 +297,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
         <div className="p-4 bg-gym-surface/80 border-t border-gym-border flex items-center justify-between gap-3 print:hidden">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 text-xs font-semibold text-gym-muted hover:text-white transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 text-xs font-semibold text-gym-muted hover:text-white transition-colors cursor-pointer"
           >
             Cerrar
           </button>
