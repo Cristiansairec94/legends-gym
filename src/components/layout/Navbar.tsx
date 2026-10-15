@@ -92,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right / Controls Bar: Unified Single-Line Layout */}
-        <div className="flex items-center gap-2 xl:gap-2.5">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           
           {/* Real-time Clock */}
           <div 
@@ -108,10 +108,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Today Check-Ins */}
           <div 
             onClick={() => setActiveTab('access')}
-            className="hidden lg:flex items-center gap-2 h-9 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 cursor-pointer hover:bg-emerald-500/15 hover:border-emerald-500/50 transition-all text-xs shadow-sm whitespace-nowrap shrink-0"
+            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 cursor-pointer hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all text-xs shadow-sm whitespace-nowrap shrink-0"
             title="Socios ingresados hoy"
           >
-            <Flame className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
+            <Flame className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
             <span className="text-zinc-300 font-medium">Accesos hoy:</span>
             <span className="font-bold text-emerald-400 font-mono text-sm">{todayCheckInsCount}</span>
           </div>
@@ -119,9 +119,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Cash Status */}
           <div 
             onClick={() => setActiveTab('cash')}
-            className="hidden lg:flex items-center gap-2 h-9 px-3 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-pointer hover:bg-white/[0.08] hover:border-white/25 transition-all text-xs whitespace-nowrap shrink-0"
+            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-pointer hover:bg-white/[0.08] hover:border-white/25 transition-all text-xs whitespace-nowrap shrink-0"
+            title="Estado de caja"
           >
-            <span className={`w-2 h-2 rounded-full shrink-0 ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-rose-500'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-rose-500'}`} />
             <span className="text-zinc-400 font-medium">Caja:</span>
             <span className="font-bold text-zinc-200">
               {cashSession.status === 'open' ? 'Abierta' : 'Cerrada'}
@@ -131,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Offline / Cloud Sync Pill Button */}
           <button
             onClick={onOpenSync}
-            className={`flex items-center gap-1.5 h-9 px-3 rounded-xl border text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+            className={`flex items-center gap-2 h-10 px-3.5 rounded-xl border text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               syncState.isOnline
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
                 : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
@@ -139,25 +140,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Estado de sincronización y base de datos"
           >
             {syncState.isOnline ? (
-              <Cloud className="w-3.5 h-3.5 shrink-0" />
+              <Cloud className="w-4 h-4 shrink-0" />
             ) : (
-              <CloudOff className="w-3.5 h-3.5 shrink-0" />
+              <CloudOff className="w-4 h-4 shrink-0" />
             )}
             <span className="hidden sm:inline">
               {syncState.isOnline ? 'En línea' : 'Local'}
             </span>
           </button>
 
-
           {/* Notifications Bell Button */}
           <button
             onClick={onOpenNotifications}
-            className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
+            className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
             title="Centro de notificaciones y avisos"
           >
-            <Bell className="w-4 h-4 text-amber-400" />
+            <Bell className="w-4.5 h-4.5 text-amber-400" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center animate-pulse">
                 {unreadNotificationsCount}
               </span>
             )}
@@ -166,12 +166,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Quick POS Cart Button */}
           <button
             onClick={onOpenCart}
-            className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
+            className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
             title="Ver carrito de venta"
           >
-            <ShoppingCart className="w-4 h-4 text-amber-400" />
+            <ShoppingCart className="w-4.5 h-4.5 text-amber-400" />
             {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-extrabold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-glow-gold animate-bounce">
+              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-extrabold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-glow-gold animate-bounce">
                 {cartItemsCount}
               </span>
             )}
@@ -179,11 +179,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Current Logged-in User Profile Card */}
           {currentUser && (
-            <div className="flex items-center gap-2.5 pl-2.5 border-l border-white/[0.1] whitespace-nowrap shrink-0">
+            <div className="flex items-center gap-2.5 pl-3 border-l border-white/[0.12] whitespace-nowrap shrink-0">
               <img 
                 src={currentUser.avatarUrl} 
                 alt={currentUser.fullName}
-                className="w-8 h-8 rounded-xl object-cover border border-amber-500/40 shadow-sm shrink-0"
+                className="w-9 h-9 rounded-xl object-cover border border-amber-500/40 shadow-sm shrink-0"
               />
               <div className="hidden sm:block text-left leading-tight">
                 <p className="text-xs font-bold text-white max-w-[140px] truncate">
@@ -199,10 +199,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logout Button */}
           <button
             onClick={logout}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all group whitespace-nowrap shrink-0"
+            className="flex items-center gap-2 h-10 px-3.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all group whitespace-nowrap shrink-0"
             title="Cerrar sesión del sistema"
           >
-            <LogOut className="w-3.5 h-3.5 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+            <LogOut className="w-4 h-4 shrink-0 group-hover:-translate-x-0.5 transition-transform" />
             <span className="hidden sm:inline">Cerrar Sesión</span>
           </button>
 
