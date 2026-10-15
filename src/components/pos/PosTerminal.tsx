@@ -150,7 +150,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="font-black text-base text-white tracking-wide">
-                Punto de Venta (POS)
+                Punto de Venta
               </h2>
             </div>
             <p className="text-[11px] text-gym-muted font-medium">
