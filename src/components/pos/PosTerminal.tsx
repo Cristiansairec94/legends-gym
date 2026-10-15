@@ -481,22 +481,22 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* Top section: Header + Client + Barcode */}
           <div className="space-y-2.5 shrink-0">
             {/* Header: Caja de Cobro + Counter Badge */}
-            <div className="flex items-center justify-between gap-2 border-b border-gym-border pb-2.5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-sm shrink-0">
-                  <ShoppingBag className="w-4.5 h-4.5 stroke-[2.5]" />
+            <div className="flex items-center justify-between gap-3 border-b border-gym-border pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-md shrink-0">
+                  <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
                 </div>
-                <div className="leading-tight">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-black text-sm text-white">Caja de Cobro</h3>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="leading-snug">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-base sm:text-lg text-white tracking-wide">Caja de Cobro</h3>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10B981]" />
                   </div>
-                  <span className="text-[11px] text-amber-400 font-semibold">🏪 Sucursal Matriz</span>
+                  <span className="text-xs text-amber-400 font-bold block">🏪 Sucursal Matriz</span>
                 </div>
               </div>
 
               {/* Counter pill */}
-              <span className="px-2.5 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-xs font-mono font-bold">
+              <span className="px-3.5 py-1.5 rounded-xl bg-gym-surface text-white border border-gym-border text-sm font-mono font-extrabold shadow-sm">
                 {cartItemsCount} pzs
               </span>
             </div>
