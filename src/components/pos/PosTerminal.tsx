@@ -504,11 +504,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               </span>
             </div>
 
-            {/* Customer Selection Row: [Público en General] [Buscar cli...] [+ Nuevo] */}
-            <div className="flex items-center gap-2">
+            {/* Customer Selection Row: [Público en General] */}
+            <div>
               <button
                 onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                className="flex-1 flex items-center justify-between px-3 py-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
+                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
                 title="Asignar socio a la compra"
               >
                 <div className="flex items-center gap-2 truncate">
@@ -518,15 +518,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   </span>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-gym-muted shrink-0" />
-              </button>
-
-              <button
-                onClick={() => setShowAddClientModal(true)}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 shrink-0 transition-all"
-                title="Registrar nuevo socio"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Nuevo</span>
               </button>
             </div>
 
@@ -570,24 +561,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             )}
 
             {/* Barcode scanner input bar */}
-            <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Barcode className="w-4 h-4 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input
-                  ref={barcodeInputRef}
-                  type="text"
-                  value={barcodeInput}
-                  onChange={(e) => setBarcodeInput(e.target.value)}
-                  placeholder="Escanear o escribir código..."
-                  className="w-full pl-8 pr-2.5 py-1.5 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/30 shrink-0"
-              >
-                + Agregar
-              </button>
+            <form onSubmit={handleBarcodeSubmit} className="relative w-full">
+              <Barcode className="w-4 h-4 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                ref={barcodeInputRef}
+                type="text"
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                placeholder="Escanear o escribir código (Enter)..."
+                className="w-full pl-8 pr-3 py-1.5 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
+              />
             </form>
           </div>
 
