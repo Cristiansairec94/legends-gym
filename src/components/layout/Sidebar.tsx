@@ -48,9 +48,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     },
     {
       id: 'pos',
-      label: 'Punto de Venta (POS)',
+      label: 'Punto de Venta',
       icon: <ShoppingBag className="w-5 h-5" />,
-      badge: 'Tienda Fit',
+      badge: null,
       roles: ['admin', 'receptionist'],
     },
     {
@@ -110,6 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         {menuItems.map((item) => {
           const isAllowed = item.roles.includes(currentRole);
           const isActive = activeTab === item.id;
+          const isPos = item.id === 'pos';
 
           return (
             <button
@@ -120,12 +121,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                 !isAllowed
                   ? 'opacity-35 cursor-not-allowed text-zinc-500 hover:bg-transparent'
                   : isActive
-                  ? 'bg-gradient-to-r from-white/[0.12] via-white/[0.06] to-transparent text-white border-l-4 border-l-white border-y border-r border-white/15 shadow-sm font-black'
+                  ? isPos
+                    ? 'bg-gradient-to-r from-amber-500/25 via-amber-500/10 to-transparent text-amber-200 border-l-4 border-l-amber-400 border-y border-r border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.25)] font-black'
+                    : 'bg-gradient-to-r from-white/[0.12] via-white/[0.06] to-transparent text-white border-l-4 border-l-white border-y border-r border-white/15 shadow-sm font-black'
+                  : isPos
+                  ? 'bg-amber-500/[0.09] text-amber-300 hover:text-amber-200 hover:bg-amber-500/[0.18] border border-amber-500/35 hover:border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.1)] font-bold'
                   : 'text-zinc-400 hover:bg-white/[0.05] hover:text-white border border-transparent'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <span className={isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-zinc-400'}>
+                <span className={
+                  isActive
+                    ? isPos 
+                      ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.7)]'
+                      : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                    : isPos
+                    ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]'
+                    : 'text-zinc-400'
+                }>
                   {item.icon}
                 </span>
                 <span className="truncate">{item.label}</span>
@@ -133,7 +146,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
               {item.badge && isAllowed && (
                 <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold ${
-                  item.badgeColor || (item.highlight ? 'bg-white/15 text-white border border-white/20' : 'bg-white/[0.05] text-zinc-400 border border-white/10')
+                  item.badgeColor || (
+                    isPos
+                      ? isActive
+                        ? 'bg-amber-400/25 text-amber-200 border border-amber-400/60'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      : item.highlight 
+                      ? 'bg-white/15 text-white border border-white/20' 
+                      : 'bg-white/[0.05] text-zinc-400 border border-white/10'
+                  )
                 }`}>
                   {item.badge}
                 </span>

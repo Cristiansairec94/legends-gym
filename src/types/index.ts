@@ -266,3 +266,25 @@ export interface SyncState {
   storageUsageKb: number;
 }
 
+// Auditoría de Seguridad de Accesos al Sistema
+export type SecurityEventType =
+  | 'LOGIN_SUCCESS'
+  | 'LOGIN_FAILED'
+  | 'BRUTE_FORCE_LOCK'
+  | 'MULTI_TAB_BREACH'
+  | 'SESSION_TAMPER'
+  | 'SHIFT_BLOCKED'
+  | 'SUPERVISOR_AUTH'
+  | 'MANUAL_LOGOUT';
+
+export interface SecurityAuditEvent {
+  id: string;
+  timestamp: string;
+  type: SecurityEventType;
+  userIdentifier?: string;
+  userName?: string;
+  role?: UserRole;
+  details: string;
+}
+
+

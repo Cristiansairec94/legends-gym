@@ -17,11 +17,13 @@ import {
   Branch,
   Expense,
   SystemNotification,
-  SyncState
+  SyncState,
+  SecurityAuditEvent
 } from '../types';
 import { storage } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
+import { verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
 import { 
   broadcastLocalSync, 
   subscribeToLocalSync, 
@@ -39,9 +41,27 @@ interface GymContextType {
   // Auth & Session
   currentUser: Employee | null;
   isAuthenticated: boolean;
-  login: (identifier: string, passOrPin: string) => { success: boolean; message?: string; user?: Employee };
+  securityAlert: string | null;
+  clearSecurityAlert: () => void;
+  securityAuditLogs: SecurityAuditEvent[];
+  login: (
+    identifier: string,
+    passOrPin: string,
+    supervisorOverridePin?: string
+  ) => {
+    success: boolean;
+    message?: string;
+    user?: Employee;
+    lockedOut?: boolean;
+    lockoutUntil?: number;
+    requiresSupervisorOverride?: boolean;
+  };
   loginQuick: (employeeId: string) => boolean;
-  logout: () => void;
+  logout: (reason?: string | unknown) => void;
+  verifySupervisorPin: (pinOrPass: string, actionLabel?: string) => boolean;
+  requestSupervisorAuth: (actionLabel: string, onAuthorized: () => void) => void;
+  pendingSupervisorAction: { actionLabel: string; onAuthorized: () => void } | null;
+  cancelSupervisorAuth: () => void;
 
   // Roles
   currentRole: UserRole;
@@ -181,11 +201,20 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [currentUser, setCurrentUserState] = useState<Employee | null>(() => storage.getCurrentUser());
+  const currentUserRef = useRef<Employee | null>(currentUser);
+  currentUserRef.current = currentUser;
+  const runtimeTabIdRef = useRef<string>(`TAB_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`);
+  const [securityAlert, setSecurityAlertState] = useState<string | null>(() => storage.getSecurityAlert());
+  const [securityAuditLogs, setSecurityAuditLogs] = useState<SecurityAuditEvent[]>(() => storage.getSecurityAuditLogs());
   const isAuthenticated = currentUser !== null;
   const [isTerminalConnected, setIsTerminalConnected] = useState<boolean>(false);
 
+  const clearSecurityAlert = useCallback(() => {
+    setSecurityAlertState(null);
+    storage.setSecurityAlert(null);
+  }, []);
+
   // Sync to storage
-  useEffect(() => { storage.saveCurrentUser(currentUser); }, [currentUser]);
   useEffect(() => {
     membersRef.current = members;
     storage.saveMembers(members);
@@ -430,13 +459,221 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   }, [ingestIncomingAccessLog, mergeMemberLists]);
 
+  // Security Guard: Single-Tab Session Binding & Anti-Copy/Paste URL Hijacking
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const isTerm =
+      searchParams.get('mode') === 'terminal' ||
+      searchParams.get('terminal') === 'true' ||
+      window.location.hash.includes('terminal') ||
+      localStorage.getItem('legends_device_mode') === 'terminal';
+
+    if (isTerm) return;
+
+    // Strip any unauthorized URL query/hash parameters on the main ERP
+    if (window.location.search || window.location.hash) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const channel =
+      typeof BroadcastChannel !== 'undefined'
+        ? new BroadcastChannel('legends_security_guard_v1')
+        : null;
+
+    // If this tab just detected a copy/paste URL breach during initialization, notify the original tab immediately
+    const initialAlert = storage.getSecurityAlert();
+    if (initialAlert && !currentUserRef.current) {
+      channel?.postMessage({
+        type: 'FORCE_SECURITY_LOGOUT',
+        tabId: runtimeTabIdRef.current,
+        reason: initialAlert
+      });
+    }
+
+    // Announce that a tab was opened/mounted
+    channel?.postMessage({
+      type: 'TAB_MOUNTED',
+      tabId: runtimeTabIdRef.current
+    });
+
+    if (channel) {
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (!data || data.tabId === runtimeTabIdRef.current) return;
+
+        if (data.type === 'TAB_MOUNTED' && currentUserRef.current) {
+          // Another tab was opened while this tab has an active session!
+          const breachMsg =
+            '⚠️ Sesión cerrada por seguridad: Se detectó que el enlace del sistema fue copiado o abierto en otra pestaña. Por protección de la terminal, la sesión ha sido cerrada.';
+          const activeUser = currentUserRef.current;
+          storage.saveCurrentUser(null);
+          storage.setSecurityAlert(breachMsg);
+          storage.addSecurityAuditLog({
+            type: 'MULTI_TAB_BREACH',
+            userName: activeUser.fullName,
+            role: activeUser.role,
+            details: 'Cierre forzoso: Se abrió una pestaña secundaria mientras la sesión estaba activa.'
+          });
+          currentUserRef.current = null;
+          setCurrentUserState(null);
+          setSecurityAlertState(breachMsg);
+          setSecurityAuditLogs(storage.getSecurityAuditLogs());
+          sounds.playAccessDenied();
+
+          channel.postMessage({
+            type: 'FORCE_SECURITY_LOGOUT',
+            tabId: runtimeTabIdRef.current,
+            reason: breachMsg
+          });
+        } else if (data.type === 'FORCE_SECURITY_LOGOUT') {
+          const reason =
+            data.reason ||
+            '⚠️ Sesión cerrada por seguridad: Se detectó actividad o apertura del enlace en otra pestaña.';
+          storage.saveCurrentUser(null);
+          currentUserRef.current = null;
+          setCurrentUserState(null);
+          setSecurityAlertState(reason);
+          setSecurityAuditLogs(storage.getSecurityAuditLogs());
+          sounds.playAccessDenied();
+        }
+      };
+    }
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'legends_active_session_lock_v1' && !e.newValue && currentUserRef.current) {
+        const alertMsg =
+          storage.getSecurityAlert() ||
+          '⚠️ Sesión finalizada: La sesión fue cerrada por seguridad desde otra pestaña.';
+        sessionStorage.removeItem('legends_tab_session_user_v1');
+        sessionStorage.removeItem('legends_tab_session_token_v1');
+        window.name = '';
+        currentUserRef.current = null;
+        setCurrentUserState(null);
+        setSecurityAlertState(alertMsg);
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playAccessDenied();
+      } else if (e.key === 'legends_security_alert_v1' && e.newValue) {
+        setSecurityAlertState(e.newValue);
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        if (currentUserRef.current) {
+          sessionStorage.removeItem('legends_tab_session_user_v1');
+          sessionStorage.removeItem('legends_tab_session_token_v1');
+          window.name = '';
+          currentUserRef.current = null;
+          setCurrentUserState(null);
+          sounds.playAccessDenied();
+        }
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      channel?.close();
+    };
+
+    window.addEventListener('storage', handleStorageEvent);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageEvent);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      channel?.close();
+    };
+  }, []);
+
+  const [pendingSupervisorAction, setPendingSupervisorAction] = useState<{
+    actionLabel: string;
+    onAuthorized: () => void;
+  } | null>(null);
+
+  // Security Guard: Continuous Session Signature & DevTools (F12) Tamper Verification
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const integrityInterval = setInterval(() => {
+      const validated = storage.validateOrKillTabSession();
+      if (!validated && currentUserRef.current) {
+        const alertMsg =
+          storage.getSecurityAlert() ||
+          '🚨 Alerta de Seguridad: Se detectó manipulación de sesión o pérdida de firma criptográfica.';
+        currentUserRef.current = null;
+        setCurrentUserState(null);
+        setSecurityAlertState(alertMsg);
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playAccessDenied();
+      }
+    }, 2500);
+
+    return () => clearInterval(integrityInterval);
+  }, [currentUser]);
+
+  const verifySupervisorPin = useCallback(
+    (pinOrPass: string, actionLabel?: string): boolean => {
+      const clean = pinOrPass.trim();
+      if (!clean) return false;
+
+      const admins = employees.filter((e) => e.role === 'admin' && e.status === 'active');
+      const matchedAdmin = admins.find(
+        (adm) => verifySecret(clean, adm.password) || verifySecret(clean, adm.pin)
+      );
+
+      if (matchedAdmin) {
+        storage.addSecurityAuditLog({
+          type: 'SUPERVISOR_AUTH',
+          userName: matchedAdmin.fullName,
+          role: 'admin',
+          details: `Autorización de Supervisor aprobada${actionLabel ? `: ${actionLabel}` : '.'}`
+        });
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playCheckoutSuccess();
+        return true;
+      }
+
+      sounds.playAccessDenied();
+      return false;
+    },
+    [employees]
+  );
+
+  const requestSupervisorAuth = useCallback((actionLabel: string, onAuthorized: () => void) => {
+    // If current user is already a verified admin, still require PIN confirmation for critical destructive actions
+    setPendingSupervisorAction({ actionLabel, onAuthorized });
+  }, []);
+
+  const cancelSupervisorAuth = useCallback(() => {
+    setPendingSupervisorAction(null);
+  }, []);
+
   // Auth methods
-  const login = (identifier: string, passOrPin: string): { success: boolean; message?: string; user?: Employee } => {
+  const login = (
+    identifier: string,
+    passOrPin: string,
+    supervisorOverridePin?: string
+  ): {
+    success: boolean;
+    message?: string;
+    user?: Employee;
+    lockedOut?: boolean;
+    lockoutUntil?: number;
+    requiresSupervisorOverride?: boolean;
+  } => {
+    const lockout = storage.getLoginLockout();
+    if (lockout.lockoutUntil && Date.now() < lockout.lockoutUntil) {
+      const remSec = Math.ceil((lockout.lockoutUntil - Date.now()) / 1000);
+      sounds.playAccessDenied();
+      return {
+        success: false,
+        lockedOut: true,
+        lockoutUntil: lockout.lockoutUntil,
+        message: `Terminal bloqueada temporalmente por seguridad. Intenta nuevamente en ${remSec} segundos.`
+      };
+    }
+
     const cleanId = identifier.trim().toLowerCase();
     const cleanPass = passOrPin.trim();
 
     if (!cleanId || !cleanPass) {
-      return { success: false, message: 'Ingresa tu usuario / correo / cédula y contraseña o PIN.' };
+      return { success: false, message: 'Ingresa tu usuario / correo / cédula y tu contraseña o PIN.' };
     }
 
     const found = employees.find((emp) => {
@@ -447,22 +684,96 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     if (!found) {
-      return { success: false, message: 'Usuario no registrado o colaborador inactivo.' };
+      const fail = storage.recordFailedLoginAttempt(cleanId);
+      setSecurityAuditLogs(storage.getSecurityAuditLogs());
+      sounds.playAccessDenied();
+      if (fail.justLocked) {
+        return {
+          success: false,
+          lockedOut: true,
+          lockoutUntil: fail.lockoutUntil,
+          message: 'Demasiados intentos fallidos (3/3). El acceso ha sido bloqueado por 30 segundos.'
+        };
+      }
+      return {
+        success: false,
+        message: `Credenciales inválidas o cuenta inactiva. Intento ${fail.attempts} de 3.`
+      };
     }
 
     const isValid =
-      (found.password && found.password === cleanPass) ||
-      (found.pin && found.pin === cleanPass) ||
-      cleanPass === '1234' ||
-      cleanPass === 'admin123';
+      verifySecret(cleanPass, found.password) ||
+      verifySecret(cleanPass, found.pin);
 
     if (!isValid) {
-      return { success: false, message: 'Contraseña o PIN incorrecto. Intenta de nuevo.' };
+      const fail = storage.recordFailedLoginAttempt(found.email);
+      setSecurityAuditLogs(storage.getSecurityAuditLogs());
+      sounds.playAccessDenied();
+      if (fail.justLocked) {
+        return {
+          success: false,
+          lockedOut: true,
+          lockoutUntil: fail.lockoutUntil,
+          message: 'Demasiados intentos fallidos (3/3). El acceso ha sido bloqueado por 30 segundos.'
+        };
+      }
+      return {
+        success: false,
+        message: `Contraseña o PIN incorrecto. Intento ${fail.attempts} de 3 antes del bloqueo.`
+      };
     }
 
-    setCurrentUserState(found);
+    // Shift-Based Access Control (Restricción por Horario de Turno)
+    const shiftCheck = checkEmployeeShiftAllowed(found);
+    if (!shiftCheck.allowed) {
+      if (!supervisorOverridePin || !supervisorOverridePin.trim()) {
+        storage.addSecurityAuditLog({
+          type: 'SHIFT_BLOCKED',
+          userName: found.fullName,
+          userIdentifier: found.email,
+          role: found.role,
+          details: `Intento de acceso fuera de turno (${found.shift}). Esperando PIN de Supervisor.`
+        });
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playAccessDenied();
+        return {
+          success: false,
+          requiresSupervisorOverride: true,
+          message: shiftCheck.message
+        };
+      }
+
+      const supervisorOk = verifySupervisorPin(
+        supervisorOverridePin,
+        `Acceso fuera de horario para ${found.fullName} (${found.shift})`
+      );
+      if (!supervisorOk) {
+        return {
+          success: false,
+          requiresSupervisorOverride: true,
+          message: 'PIN o contraseña de Supervisor incorrecto. Se requiere autorización del Administrador.'
+        };
+      }
+    }
+
+    storage.resetLoginAttempts();
+    storage.setSecurityAlert(null);
+    setSecurityAlertState(null);
     storage.saveCurrentUser(found);
-    setCurrentRole(found.role);
+    currentUserRef.current = found;
+    setCurrentUserState(found);
+    setCurrentRoleState(found.role);
+    storage.saveActiveRole(found.role);
+    storage.addSecurityAuditLog({
+      type: 'LOGIN_SUCCESS',
+      userName: found.fullName,
+      userIdentifier: found.email,
+      role: found.role,
+      details: !shiftCheck.allowed
+        ? `Acceso autorizado fuera de turno con aval de Supervisor (${found.shift}).`
+        : 'Acceso autorizado con credenciales y firma criptográfica verificadas.'
+    });
+    setSecurityAuditLogs(storage.getSecurityAuditLogs());
     sounds.playCheckoutSuccess();
     return { success: true, user: found };
   };
@@ -470,21 +781,45 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const loginQuick = (employeeId: string): boolean => {
     const found = employees.find((e) => e.id === employeeId);
     if (found) {
-      setCurrentUserState(found);
+      storage.resetLoginAttempts();
+      storage.setSecurityAlert(null);
+      setSecurityAlertState(null);
       storage.saveCurrentUser(found);
-      setCurrentRole(found.role);
+      currentUserRef.current = found;
+      setCurrentUserState(found);
+      setCurrentRoleState(found.role);
+      storage.saveActiveRole(found.role);
       sounds.playCheckoutSuccess();
       return true;
     }
     return false;
   };
 
-  const logout = () => {
-    setCurrentUserState(null);
+  const logout = (reason?: string | unknown) => {
+    const customReason = typeof reason === 'string' ? reason : undefined;
+    if (currentUserRef.current && !customReason) {
+      storage.addSecurityAuditLog({
+        type: 'MANUAL_LOGOUT',
+        userName: currentUserRef.current.fullName,
+        role: currentUserRef.current.role,
+        details: 'Cierre de sesión manual realizado por el operador.'
+      });
+    }
     storage.saveCurrentUser(null);
+    currentUserRef.current = null;
+    setCurrentUserState(null);
+    if (customReason) {
+      storage.setSecurityAlert(customReason);
+      setSecurityAlertState(customReason);
+    }
+    setSecurityAuditLogs(storage.getSecurityAuditLogs());
   };
 
   const setCurrentRole = (role: UserRole) => {
+    // Bloquear escalación de privilegios: solo un Administrador real puede simular otros roles
+    if (currentUserRef.current && currentUserRef.current.role !== 'admin' && role !== currentUserRef.current.role) {
+      return;
+    }
     setCurrentRoleState(role);
     storage.saveActiveRole(role);
   };
@@ -635,15 +970,21 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteMember = (id: string) => {
-    storage.addDeletedMemberId(id);
-    setMembers(prev => {
-      const next = prev.filter(m => m.id !== id);
-      membersRef.current = next;
-      storage.saveMembers(next);
-      return next;
-    });
-    broadcastLocalSync({ type: 'MEMBER_DELETED', memberId: id });
-    pushMemberActionToServer('delete', { memberId: id }).catch(() => {});
+    const target = members.find(m => m.id === id);
+    requestSupervisorAuth(
+      `Eliminar socio permanentemente: ${target ? `${target.fullName} (${target.id})` : id}`,
+      () => {
+        storage.addDeletedMemberId(id);
+        setMembers(prev => {
+          const next = prev.filter(m => m.id !== id);
+          membersRef.current = next;
+          storage.saveMembers(next);
+          return next;
+        });
+        broadcastLocalSync({ type: 'MEMBER_DELETED', memberId: id });
+        pushMemberActionToServer('delete', { memberId: id }).catch(() => {});
+      }
+    );
   };
 
   const replaceMembers = (newMembers: Client[]) => {
@@ -804,7 +1145,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+    const target = products.find(p => p.id === id);
+    requestSupervisorAuth(
+      `Eliminar producto de inventario: ${target ? target.name : id}`,
+      () => {
+        setProducts(prev => prev.filter(p => p.id !== id));
+      }
+    );
   };
 
   const adjustStock = (id: string, amount: number) => {
@@ -1230,17 +1577,22 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deleteExpense = (id: string) => {
     const target = expenses.find(e => e.id === id);
-    if (target && target.paidFromCashRegister && cashSession.status === 'open') {
-      setCashSession(prev => {
-        const next = {
-          ...prev,
-          expectedCash: prev.expectedCash + target.amount
-        };
-        broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
-        return next;
-      });
-    }
-    setExpenses(prev => prev.filter(e => e.id !== id));
+    requestSupervisorAuth(
+      `Anular / Eliminar egreso: ${target ? `${target.description} ($${target.amount})` : id}`,
+      () => {
+        if (target && target.paidFromCashRegister && cashSession.status === 'open') {
+          setCashSession(prev => {
+            const next = {
+              ...prev,
+              expectedCash: prev.expectedCash + target.amount
+            };
+            broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+            return next;
+          });
+        }
+        setExpenses(prev => prev.filter(e => e.id !== id));
+      }
+    );
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -1363,8 +1715,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return success;
   };
   const resetDatabase = () => {
-    storage.resetAll();
-    window.location.reload();
+    requestSupervisorAuth(
+      'Formatear y Restaurar Base de Datos de Fábrica',
+      () => {
+        storage.resetAll();
+        window.location.reload();
+      }
+    );
   };
 
   // Metrics
@@ -1389,9 +1746,16 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     <GymContext.Provider value={{
       currentUser,
       isAuthenticated,
+      securityAlert,
+      clearSecurityAlert,
+      securityAuditLogs,
       login,
       loginQuick,
       logout,
+      verifySupervisorPin,
+      requestSupervisorAuth,
+      pendingSupervisorAction,
+      cancelSupervisorAuth,
       currentRole,
       setCurrentRole,
       roles,

@@ -18,6 +18,7 @@ import { IncomeHistoryView } from './components/finance/IncomeHistoryView';
 import { NotificationsDrawer } from './components/layout/NotificationsDrawer';
 import { DataSyncModal } from './components/config/DataSyncModal';
 import { LoginScreen } from './components/auth/LoginScreen';
+import { SupervisorPinModal } from './components/auth/SupervisorPinModal';
 import { IndependentTerminalApp } from './components/access/IndependentTerminalApp';
 
 export const isTerminalMode = (): boolean => {
@@ -128,6 +129,9 @@ const MainLayout: React.FC = () => {
         isOpen={isSyncModalOpen}
         onClose={() => setIsSyncModalOpen(false)}
       />
+
+      {/* Global Supervisor PIN Authorization Modal for Critical Operations */}
+      <SupervisorPinModal />
 
     </div>
   );

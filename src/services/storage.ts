@@ -11,7 +11,8 @@ import {
   SystemCatalogPlan,
   Branch,
   Expense,
-  SystemNotification
+  SystemNotification,
+  SecurityAuditEvent
 } from '../types';
 import { INITIAL_MEMBERS } from '../data/initialMembers';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
@@ -24,6 +25,7 @@ import {
 import { INITIAL_BRANCHES } from '../data/initialBranches';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
 import { getGymAvatar, serializeGymAvatar } from '../utils/genderAvatar';
+import { hashSecret, signSessionPayload, verifySessionSignature } from '../utils/securityCrypto';
 
 const KEYS = {
   MEMBERS: 'legends_members_v1',
@@ -42,7 +44,13 @@ const KEYS = {
   EXPENSES: 'legends_expenses_v1',
   NOTIFICATIONS: 'legends_notifications_v1',
   LAST_SYNC: 'legends_last_sync_v1',
-  CURRENT_USER: 'legends_current_user_v1'
+  CURRENT_USER: 'legends_current_user_v1',
+  TAB_SESSION_USER: 'legends_tab_session_user_v1',
+  TAB_SESSION_TOKEN: 'legends_tab_session_token_v1',
+  ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v1',
+  SECURITY_ALERT: 'legends_security_alert_v1',
+  SECURITY_AUDIT: 'legends_security_audit_v1',
+  LOGIN_LOCKOUT: 'legends_login_lockout_v1'
 };
 
 
@@ -272,21 +280,138 @@ export const storage = {
     }
   },
 
-  // Current User / Session
-  getCurrentUser(): Employee | null {
+  // Current User / Single-Tab Secure Session
+  validateOrKillTabSession(): Employee | null {
     try {
-      const data = localStorage.getItem(KEYS.CURRENT_USER);
-      return data ? JSON.parse(data) : null;
+      if (typeof window === 'undefined') return null;
+      const searchParams = new URLSearchParams(window.location.search);
+      if (
+        searchParams.get('mode') === 'terminal' ||
+        searchParams.get('terminal') === 'true' ||
+        window.location.hash.includes('terminal') ||
+        localStorage.getItem('legends_device_mode') === 'terminal'
+      ) {
+        return null;
+      }
+
+      const rawLock = localStorage.getItem(KEYS.ACTIVE_SESSION_LOCK);
+      const legacyUser = localStorage.getItem(KEYS.CURRENT_USER);
+      const tabToken = sessionStorage.getItem(KEYS.TAB_SESSION_TOKEN);
+      const tabUserRaw = sessionStorage.getItem(KEYS.TAB_SESSION_USER);
+      const winName = window.name || '';
+
+      // If legacy localStorage session exists without a valid tab lock, kill it immediately
+      if (legacyUser && !rawLock) {
+        localStorage.removeItem(KEYS.CURRENT_USER);
+      }
+
+      if (rawLock) {
+        const lock = JSON.parse(rawLock);
+        const isSameTab =
+          Boolean(tabToken) &&
+          Boolean(tabUserRaw) &&
+          tabToken === lock.token &&
+          winName === lock.token;
+
+        if (!isSameTab) {
+          // Security Violation: URL was copied & pasted into a new tab or duplicated!
+          const breachMsg =
+            '⚠️ Sesión cerrada por seguridad: Se detectó el intento de copiar y abrir el enlace en otra pestaña o ventana. Por protección del sistema, debes iniciar sesión nuevamente.';
+          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
+          localStorage.removeItem(KEYS.CURRENT_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+          window.name = '';
+          this.setSecurityAlert(breachMsg);
+          this.addSecurityAuditLog({
+            type: 'MULTI_TAB_BREACH',
+            userName: lock.userName || 'Usuario Activo',
+            role: lock.role,
+            details: 'Cierre forzoso: Intento de abrir enlace copiado en nueva pestaña/ventana.'
+          });
+          return null;
+        }
+
+        const tabUser: Employee = JSON.parse(tabUserRaw!);
+        const isSignatureValid = verifySessionSignature(
+          tabUser.id,
+          tabUser.role,
+          tabUser.email,
+          lock.token,
+          lock.signature
+        );
+
+        if (!isSignatureValid || tabUser.role !== lock.role || tabUser.id !== lock.userId) {
+          const tamperMsg =
+            '🚨 Alerta Crítica: Se detectó manipulación de sesión o intento de alteración de permisos en el navegador (DevTools). La sesión ha sido revocada.';
+          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
+          localStorage.removeItem(KEYS.CURRENT_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+          window.name = '';
+          this.setSecurityAlert(tamperMsg);
+          this.addSecurityAuditLog({
+            type: 'SESSION_TAMPER',
+            userName: lock.userName || tabUser.fullName,
+            role: lock.role,
+            details: 'Firma criptográfica inválida: Intento de alterar sesión o rol desde consola F12.'
+          });
+          return null;
+        }
+
+        return tabUser;
+      }
+
+      // Clean any orphan tab storage if global lock was cleared
+      if (tabToken || tabUserRaw) {
+        sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+        sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+        window.name = '';
+      }
+      return null;
     } catch {
       return null;
     }
   },
 
+  getCurrentUser(): Employee | null {
+    return this.validateOrKillTabSession();
+  },
+
   saveCurrentUser(user: Employee | null): void {
     try {
+      if (typeof window === 'undefined') return;
       if (user) {
-        localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
+        let token = sessionStorage.getItem(KEYS.TAB_SESSION_TOKEN);
+        if (!token || window.name !== token) {
+          token = `SESS_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        }
+        const signature = signSessionPayload(user.id, user.role, user.email, token);
+        const sanitizedSessionUser: Employee = {
+          ...user,
+          password: user.password ? hashSecret(user.password) : undefined,
+          pin: user.pin ? hashSecret(user.pin) : undefined
+        };
+        sessionStorage.setItem(KEYS.TAB_SESSION_USER, JSON.stringify(sanitizedSessionUser));
+        sessionStorage.setItem(KEYS.TAB_SESSION_TOKEN, token);
+        window.name = token;
+        localStorage.setItem(
+          KEYS.ACTIVE_SESSION_LOCK,
+          JSON.stringify({
+            token,
+            signature,
+            userId: user.id,
+            userName: user.fullName,
+            role: user.role,
+            issuedAt: Date.now()
+          })
+        );
+        localStorage.removeItem(KEYS.CURRENT_USER);
       } else {
+        sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+        sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+        window.name = '';
+        localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
         localStorage.removeItem(KEYS.CURRENT_USER);
       }
     } catch (e) {
@@ -294,11 +419,120 @@ export const storage = {
     }
   },
 
-  // Employees
+  getSecurityAlert(): string | null {
+    try {
+      return localStorage.getItem(KEYS.SECURITY_ALERT);
+    } catch {
+      return null;
+    }
+  },
+
+  setSecurityAlert(message: string | null): void {
+    try {
+      if (message) {
+        localStorage.setItem(KEYS.SECURITY_ALERT, message);
+      } else {
+        localStorage.removeItem(KEYS.SECURITY_ALERT);
+      }
+    } catch {
+      // ignore
+    }
+  },
+
+  getSecurityAuditLogs(): SecurityAuditEvent[] {
+    try {
+      const raw = localStorage.getItem(KEYS.SECURITY_AUDIT);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addSecurityAuditLog(event: Omit<SecurityAuditEvent, 'id' | 'timestamp'>): void {
+    try {
+      const current = this.getSecurityAuditLogs();
+      const newEvent: SecurityAuditEvent = {
+        ...event,
+        id: `SEC-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        timestamp: new Date().toISOString()
+      };
+      const updated = [newEvent, ...current].slice(0, 25);
+      localStorage.setItem(KEYS.SECURITY_AUDIT, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  },
+
+  getLoginLockout(): { attempts: number; lockoutUntil: number } {
+    try {
+      const raw = localStorage.getItem(KEYS.LOGIN_LOCKOUT);
+      if (!raw) return { attempts: 0, lockoutUntil: 0 };
+      const parsed = JSON.parse(raw);
+      if (parsed.lockoutUntil && Date.now() >= parsed.lockoutUntil) {
+        localStorage.removeItem(KEYS.LOGIN_LOCKOUT);
+        return { attempts: 0, lockoutUntil: 0 };
+      }
+      return {
+        attempts: parsed.attempts || 0,
+        lockoutUntil: parsed.lockoutUntil || 0
+      };
+    } catch {
+      return { attempts: 0, lockoutUntil: 0 };
+    }
+  },
+
+  recordFailedLoginAttempt(identifier?: string): { attempts: number; lockoutUntil: number; justLocked: boolean } {
+    const current = this.getLoginLockout();
+    const nextAttempts = current.attempts + 1;
+    const MAX_ATTEMPTS = 3;
+    const LOCKOUT_MS = 30 * 1000; // 30 seconds lockout
+    let lockoutUntil = current.lockoutUntil;
+    let justLocked = false;
+
+    if (nextAttempts >= MAX_ATTEMPTS) {
+      lockoutUntil = Date.now() + LOCKOUT_MS;
+      justLocked = true;
+      this.addSecurityAuditLog({
+        type: 'BRUTE_FORCE_LOCK',
+        userIdentifier: identifier || 'Desconocido',
+        details: `Terminal bloqueada por 30s tras ${nextAttempts} intentos fallidos consecutivos.`
+      });
+    } else {
+      this.addSecurityAuditLog({
+        type: 'LOGIN_FAILED',
+        userIdentifier: identifier || 'Desconocido',
+        details: `Intento fallido de inicio de sesión (${nextAttempts}/${MAX_ATTEMPTS}).`
+      });
+    }
+
+    const nextState = { attempts: nextAttempts, lockoutUntil };
+    try {
+      localStorage.setItem(KEYS.LOGIN_LOCKOUT, JSON.stringify(nextState));
+    } catch {
+      // ignore
+    }
+    return { ...nextState, justLocked };
+  },
+
+  resetLoginAttempts(): void {
+    try {
+      localStorage.removeItem(KEYS.LOGIN_LOCKOUT);
+    } catch {
+      // ignore
+    }
+  },
+
+  // Employees (with cryptographic hashing for stored passwords & PINs)
   getEmployees(): Employee[] {
     try {
       const data = localStorage.getItem(KEYS.EMPLOYEES);
-      if (!data) return INITIAL_EMPLOYEES;
+      if (!data) {
+        return INITIAL_EMPLOYEES.map((emp) => ({
+          ...emp,
+          password: hashSecret(emp.password || '1234'),
+          pin: hashSecret(emp.pin || '1234')
+        }));
+      }
       const parsed: Employee[] = JSON.parse(data);
       return parsed.map((emp) => {
         const initial = INITIAL_EMPLOYEES.find(
@@ -306,8 +540,8 @@ export const storage = {
         );
         return {
           ...emp,
-          password: emp.password || initial?.password || '1234',
-          pin: emp.pin || initial?.pin || '1234',
+          password: hashSecret(emp.password || initial?.password || '1234'),
+          pin: hashSecret(emp.pin || initial?.pin || '1234'),
           username: emp.username || initial?.username || emp.email.split('@')[0],
         };
       });
@@ -318,7 +552,12 @@ export const storage = {
 
   saveEmployees(employees: Employee[]): void {
     try {
-      localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(employees));
+      const hashedEmployees = employees.map((emp) => ({
+        ...emp,
+        password: emp.password ? hashSecret(emp.password) : undefined,
+        pin: emp.pin ? hashSecret(emp.pin) : undefined
+      }));
+      localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(hashedEmployees));
     } catch (e) {
       console.error('Error saving employees:', e);
     }

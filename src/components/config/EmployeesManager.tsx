@@ -174,8 +174,8 @@ export const EmployeesManager: React.FC = () => {
     setAvatarUrl(emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR);
     setRole(emp.role);
     setUsername(emp.username || '');
-    setPassword(emp.password || '');
-    setPin(emp.pin || '1234');
+    setPassword(emp.password?.startsWith('lg_hash$') ? '' : (emp.password || ''));
+    setPin(emp.pin?.startsWith('lg_hash$') ? '' : (emp.pin || ''));
     setShowPassword(false);
     setJobTitle(emp.jobTitle);
     setShift(emp.shift);
@@ -710,10 +710,10 @@ export const EmployeesManager: React.FC = () => {
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        required
+                        required={!editingEmployee}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder={editingEmployee ? 'Vacío = mantener actual' : '••••••••'}
                         className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 font-mono"
                       />
                       <button
