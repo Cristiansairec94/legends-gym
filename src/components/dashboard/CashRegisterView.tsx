@@ -7,7 +7,6 @@ import {
   ArrowRightLeft, 
   Lock, 
   Unlock, 
-  Printer,
   CheckCircle2,
   AlertTriangle,
   FileSpreadsheet
@@ -123,25 +122,14 @@ export const CashRegisterView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={handleDownloadExcel}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-xs font-extrabold text-emerald-300 hover:text-emerald-200 transition-all shadow-sm"
-            title="Descargar reporte completo en formato Excel (.xlsx)"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Descargar Reporte en Excel</span>
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-gray-300 hover:text-white transition-colors"
-            title="Imprimir pantalla"
-          >
-            <Printer className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="hidden sm:inline">Imprimir</span>
-          </button>
-        </div>
+        <button
+          onClick={handleDownloadExcel}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-xs font-extrabold text-emerald-300 hover:text-emerald-200 transition-all shadow-sm"
+          title="Descargar reporte completo en formato Excel (.xlsx)"
+        >
+          <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>Descargar Reporte en Excel</span>
+        </button>
       </div>
 
       {/* Financial Summary Cards */}
