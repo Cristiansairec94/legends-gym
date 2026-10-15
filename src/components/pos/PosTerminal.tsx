@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGym } from '../../context/GymContext';
 import { ProductCard } from './ProductCard';
 import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
 import { Sale, PaymentMethod, Product } from '../../types';
+import { sounds } from '../../services/audio';
 import { 
   ShoppingBag, 
   Search, 
@@ -25,7 +26,11 @@ import {
   Check, 
   Sparkles, 
   Receipt,
-  UserPlus
+  UserPlus,
+  ScanLine,
+  AlertCircle,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 
 interface PosTerminalProps {
@@ -52,8 +57,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [barcodeInput, setBarcodeInput] = useState('');
-  
+
   // Tray Customer State
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [clientSearch, setClientSearch] = useState('');
@@ -70,7 +74,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
   // Live Clock
   const [currentTime, setCurrentTime] = useState(new Date());
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -97,19 +101,162 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
     return matchesCat && matchesQuery;
   });
+  // Barcode Scanner & Real-time Feedback State
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
+  const [flashScanner, setFlashScanner] = useState(false);
+  const [scanFeedback, setScanFeedback] = useState<{
+    type: 'success' | 'error' | 'warning';
+    message: string;
+    product?: Product;
+    timestamp: number;
+  } | null>(null);
 
-  // Barcode handler
+  // Auto-dismiss scan feedback after 3.2 seconds
+  useEffect(() => {
+    if (!scanFeedback) return;
+    const timer = setTimeout(() => {
+      setScanFeedback(null);
+    }, 3200);
+    return () => clearTimeout(timer);
+  }, [scanFeedback]);
+
+  // Main Barcode Matcher & Cart Insertion
+  const handleProductScanned = useCallback((rawCode: string, sourceInput?: HTMLInputElement | null) => {
+    const cleanCode = rawCode.trim().replace(/^[\r\n\t]+|[\r\n\t]+$/g, '');
+    if (!cleanCode) return;
+
+    // Search product by barcode, SKU, ID, or normalized digits
+    const matched = products.find(p => {
+      const pBarcode = (p.barcode || '').trim();
+      const pSku = (p.sku || '').trim();
+      const pId = (p.id || '').trim();
+
+      if (pBarcode && pBarcode.toLowerCase() === cleanCode.toLowerCase()) return true;
+      if (pSku && pSku.toLowerCase() === cleanCode.toLowerCase()) return true;
+      if (pId.toLowerCase() === cleanCode.toLowerCase()) return true;
+
+      // Pure digits matching (for standard 12/13-digit EAN/UPC scanners)
+      const cleanDigits = cleanCode.replace(/\D/g, '');
+      const pDigits = pBarcode.replace(/\D/g, '');
+      if (cleanDigits.length >= 6 && pDigits.length >= 6) {
+        if (cleanDigits === pDigits || cleanDigits.endsWith(pDigits) || pDigits.endsWith(cleanDigits)) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    if (matched) {
+      if (matched.stock <= 0) {
+        sounds.playBarcodeError();
+        setScanFeedback({
+          type: 'warning',
+          message: `"${matched.name}" está agotado (Stock 0 en almacén).`,
+          product: matched,
+          timestamp: Date.now()
+        });
+      } else {
+        addToCart(matched, 1);
+        sounds.playBarcodeBeep();
+        setScanFeedback({
+          type: 'success',
+          message: `+1 ${matched.name} añadido a Caja de Cobro`,
+          product: matched,
+          timestamp: Date.now()
+        });
+      }
+
+      if (sourceInput) {
+        sourceInput.value = '';
+      }
+      setBarcodeInput('');
+      setSearch('');
+      setFlashScanner(true);
+      setTimeout(() => setFlashScanner(false), 800);
+    } else {
+      sounds.playBarcodeError();
+      setScanFeedback({
+        type: 'error',
+        message: `Código "${cleanCode}" no encontrado en el Catálogo de Productos.`,
+        timestamp: Date.now()
+      });
+      if (sourceInput) {
+        sourceInput.select();
+      }
+    }
+  }, [products, addToCart]);
+
+  // Global Hardware Barcode Listener (USB / Bluetooth Keyboards & Laser Scanners)
+  useEffect(() => {
+    let buffer = '';
+    let lastKeyTime = 0;
+    let isRapidBurst = false;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if blocking modals are currently open
+      if (showMovementsModal || showAddClientModal || completedSale) {
+        return;
+      }
+
+      const activeEl = document.activeElement as HTMLElement | null;
+      const isInputFocused = activeEl && (
+        activeEl.tagName === 'INPUT' || 
+        activeEl.tagName === 'TEXTAREA' || 
+        activeEl.isContentEditable
+      );
+
+      const currentTime = performance.now();
+      const timeDiff = currentTime - lastKeyTime;
+
+      // Barcode scanners type at superhuman speeds (< 60ms between characters)
+      if (timeDiff < 60) {
+        isRapidBurst = true;
+      } else if (timeDiff > 250) {
+        // Reset if normal human typing pause
+        buffer = '';
+        isRapidBurst = false;
+      }
+
+      lastKeyTime = currentTime;
+
+      // Handle barcode termination: Enter or NumpadEnter
+      if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+        const candidate = buffer.trim();
+        // If rapid burst OR if no input was active, it's definitely a barcode scan!
+        if (candidate.length >= 3 && (isRapidBurst || !isInputFocused)) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleProductScanned(
+            candidate, 
+            isInputFocused && activeEl instanceof HTMLInputElement ? activeEl : null
+          );
+          buffer = '';
+          isRapidBurst = false;
+          return;
+        }
+        buffer = '';
+        isRapidBurst = false;
+        return;
+      }
+
+      // Buffer normal printable characters
+      if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        buffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [showMovementsModal, showAddClientModal, completedSale, handleProductScanned]);
+
+  // Barcode handler from manual input or form submit
   const handleBarcodeSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!barcodeInput.trim()) return;
-
-    const matched = products.find(p => p.barcode === barcodeInput.trim() || p.id.toLowerCase() === barcodeInput.trim().toLowerCase());
-    if (matched) {
-      addToCart(matched, 1);
-      setBarcodeInput('');
-    } else {
-      alert(`Código de barras "${barcodeInput}" no encontrado en el catálogo.`);
-    }
+    handleProductScanned(barcodeInput, barcodeInputRef.current);
   };
 
   // Calculations
@@ -217,6 +364,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (search.trim()) {
+                      handleProductScanned(search.trim());
+                    }
+                  }
+                }}
                 placeholder="Buscar suplemento, sabor o código..."
                 className="w-full pl-8 pr-12 py-1.5 bg-gym-card rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
               />
@@ -228,6 +383,19 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   ✕
                 </button>
               )}
+            </div>
+
+            {/* Barcode Scanner Active Indicator Pill */}
+            <div 
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
+                flashScanner 
+                  ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
+                  : 'bg-gym-card text-emerald-400 border-emerald-500/30'
+              }`}
+              title="Lector de código de barras USB/Bluetooth en línea. Escanea cualquier código en cualquier momento y se agregará directamente a la caja de cobro."
+            >
+              <ScanLine className={`w-3.5 h-3.5 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
+              <span className="hidden sm:inline">Lector Activo</span>
             </div>
 
             {/* Categorías Button with dropdown */}
@@ -406,10 +574,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               <div className="relative flex-1">
                 <Barcode className="w-4 h-4 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
+                  ref={barcodeInputRef}
                   type="text"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
-                  placeholder="Escanear código de barras..."
+                  placeholder="Escanear o escribir código..."
                   className="w-full pl-8 pr-2.5 py-1.5 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -648,6 +817,58 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           sale={completedSale}
           onClose={() => setCompletedSale(null)}
         />
+      )}
+
+      {/* Floating Barcode Scan Toast Feedback */}
+      {scanFeedback && (
+        <div className={`fixed top-16 right-6 z-50 animate-bounce-short shadow-2xl rounded-2xl border px-4 py-3 flex items-center gap-3 backdrop-blur-md transition-all ${
+          scanFeedback.type === 'success' 
+            ? 'bg-gym-card/95 border-emerald-500/50 text-white shadow-emerald-500/10' 
+            : scanFeedback.type === 'warning'
+            ? 'bg-gym-card/95 border-amber-500/50 text-white shadow-amber-500/10'
+            : 'bg-red-950/95 border-red-500/50 text-white shadow-red-500/20'
+        }`}>
+          {scanFeedback.type === 'success' ? (
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <ScanLine className="w-5 h-5 animate-pulse" />
+            </div>
+          ) : scanFeedback.type === 'warning' ? (
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                scanFeedback.type === 'success' 
+                  ? 'bg-emerald-500/20 text-emerald-400' 
+                  : scanFeedback.type === 'warning'
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : 'bg-red-500/20 text-red-400'
+              }`}>
+                {scanFeedback.type === 'success' ? '⚡ Código Escaneado (+1)' : scanFeedback.type === 'warning' ? '⚠️ Stock Agotado' : '❌ Error de Lectura'}
+              </span>
+              {scanFeedback.product && (
+                <span className="text-xs font-mono font-bold text-amber-400">
+                  ${scanFeedback.product.price.toFixed(2)}
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-bold text-gray-100 mt-0.5 max-w-xs truncate">
+              {scanFeedback.message}
+            </p>
+          </div>
+          <button 
+            onClick={() => setScanFeedback(null)}
+            className="text-gym-muted hover:text-white text-xs ml-2 p-1"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
     </div>

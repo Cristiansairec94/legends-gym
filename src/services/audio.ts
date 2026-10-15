@@ -192,6 +192,59 @@ class SoundEffects {
       // Audio fallback silent
     }
   }
+
+  // Classic retail POS scanner beep (1850 Hz sharp tone, 70ms)
+  playBarcodeBeep() {
+    try {
+      this.unlock();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1850, now);
+
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch {
+      // Audio fallback silent
+    }
+  }
+
+  // Low warning tone for unrecognized or out-of-stock barcode
+  playBarcodeError() {
+    try {
+      this.unlock();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.setValueAtTime(160, now + 0.12);
+
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } catch {
+      // Audio fallback silent
+    }
+  }
 }
 
 export const sounds = new SoundEffects();
