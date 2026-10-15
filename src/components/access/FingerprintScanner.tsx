@@ -41,17 +41,17 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
   const hasPhoto = !!displayPhoto && (status === 'granted' || status === 'denied');
 
   return (
-    <div className="flex flex-col items-center justify-center py-2 px-4 flex-1 min-h-0">
+    <div className="flex flex-col items-center justify-center py-2 px-4 shrink-0 my-auto relative z-10">
       {/* Scanner Pad Container */}
       <div 
         onClick={() => !disabled && onScanClick()}
-        className={`relative w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 ${
+        className={`relative ${hasPhoto ? 'w-28 h-28 sm:w-32 sm:h-32' : 'w-32 h-32 sm:w-36 sm:h-36'} rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 ${
           status === 'scanning'
             ? 'bg-amber-500/10 border-2 border-amber-400 shadow-glow-gold'
             : status === 'granted'
-            ? 'bg-emerald-500/20 border-2 border-emerald-400 shadow-glow-green scale-105'
+            ? 'bg-emerald-500/20 border-2 border-emerald-400 shadow-glow-green'
             : status === 'denied'
-            ? 'bg-red-500/20 border-2 border-red-500 shadow-glow-red scale-105'
+            ? 'bg-red-500/20 border-2 border-red-500 shadow-glow-red'
             : 'bg-gym-surface/80 border-2 border-gym-border hover:border-amber-400/60 hover:shadow-glow-gold/40'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
@@ -74,7 +74,7 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
           {hasPhoto ? (
             /* Member Photo replaces the fingerprint in the circle */
-            <div className="relative w-full h-full p-2 flex items-center justify-center">
+            <div className="relative w-full h-full p-1.5 flex items-center justify-center">
               <img 
                 src={displayPhoto} 
                 alt={clientName || 'Socio'} 
@@ -89,25 +89,25 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
               />
 
               {/* Status Badge floating at bottom-right corner of the photo */}
-              <div className={`absolute bottom-2.5 right-2.5 p-1.5 rounded-full shadow-lg border-2 border-gym-card z-20 ${
+              <div className={`absolute bottom-1.5 right-1.5 p-1 rounded-full shadow-lg border-2 border-gym-card z-20 ${
                 status === 'granted' 
                   ? 'bg-emerald-500 text-black' 
                   : 'bg-red-500 text-white'
               }`}>
                 {status === 'granted' ? (
-                  <CheckCircle2 className="w-5 h-5 stroke-[3]" />
+                  <CheckCircle2 className="w-4 h-4 stroke-[3]" />
                 ) : (
-                  <XCircle className="w-5 h-5 stroke-[3]" />
+                  <XCircle className="w-4 h-4 stroke-[3]" />
                 )}
               </div>
             </div>
           ) : status === 'granted' ? (
-            <CheckCircle2 className="w-20 h-20 text-emerald-400 animate-pulse" />
+            <CheckCircle2 className="w-16 h-16 text-emerald-400 animate-pulse" />
           ) : status === 'denied' ? (
-            <XCircle className="w-20 h-20 text-red-500 animate-pulse" />
+            <XCircle className="w-16 h-16 text-red-500 animate-pulse" />
           ) : (
             <Fingerprint 
-              className={`w-20 h-20 transition-all ${
+              className={`w-16 h-16 sm:w-20 sm:h-20 transition-all ${
                 status === 'scanning'
                   ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] scale-105'
                   : 'text-gym-muted group-hover:text-amber-400'
@@ -117,15 +117,15 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
         </div>
 
         {/* Corner alignment markers for high-tech HUD look */}
-        <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400/60 pointer-events-none" />
+        <div className="absolute top-1.5 left-1.5 w-2.5 h-2.5 border-t-2 border-l-2 border-amber-400/60 pointer-events-none" />
+        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 border-t-2 border-r-2 border-amber-400/60 pointer-events-none" />
+        <div className="absolute bottom-1.5 left-1.5 w-2.5 h-2.5 border-b-2 border-l-2 border-amber-400/60 pointer-events-none" />
+        <div className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 border-b-2 border-r-2 border-amber-400/60 pointer-events-none" />
       </div>
 
       {/* Label and instructions */}
-      <div className="mt-4 text-center w-full max-w-md px-2">
-        <p className={`text-base font-black tracking-wide uppercase transition-colors ${
+      <div className="mt-2.5 text-center w-full max-w-lg px-2">
+        <p className={`text-sm sm:text-base font-black tracking-wide uppercase transition-colors ${
           status === 'scanning'
             ? 'text-amber-400 animate-pulse'
             : status === 'granted'
@@ -141,7 +141,7 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
         </p>
 
         {(status === 'idle' || status === 'scanning' || status === 'denied') && (
-          <p className="text-xs text-gym-muted mt-1.5">
+          <p className="text-xs text-gym-muted mt-1">
             {status === 'idle' && 'Haz clic en el sensor o usa los accesos rápidos abajo'}
             {status === 'scanning' && 'Leyendo minucias biométricas...'}
             {status === 'denied' && 'Consulte el estado de su membresía en recepción'}
@@ -150,13 +150,13 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
 
         {/* Motivational Gym Quote Card */}
         {status === 'granted' && motivationalQuote && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-amber-500/15 border border-emerald-500/40 shadow-glow-green/30 animate-pulse-fast">
-            <div className="flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-400 mb-1">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+          <div className="mt-2.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-amber-500/15 border border-emerald-500/40 shadow-glow-green/30">
+            <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400 mb-0.5">
+              <Flame className="w-3 h-3 text-amber-400 fill-amber-400" />
               <span>Frase Motivacional</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3 h-3 text-amber-400" />
             </div>
-            <p className="text-xs sm:text-sm font-bold italic text-white leading-relaxed">
+            <p className="text-xs font-bold italic text-white leading-snug">
               "{motivationalQuote}"
             </p>
           </div>

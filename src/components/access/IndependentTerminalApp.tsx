@@ -393,10 +393,10 @@ export const IndependentTerminalApp: React.FC = () => {
       </div>
 
       {/* Main Container: Biometric Terminal Card adapted to window size */}
-      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between min-h-0 gap-3">
+      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3">
         
         {/* Hardware Sensor Simulator Box */}
-        <div className="bg-gym-card rounded-2xl border border-gym-border px-5 py-4 sm:px-7 sm:py-5 shadow-2xl relative overflow-hidden flex-1 flex flex-col justify-between min-h-0">
+        <div className="bg-gym-card rounded-2xl border border-gym-border px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
           
           {/* Top sensor status bar */}
           <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
@@ -427,11 +427,11 @@ export const IndependentTerminalApp: React.FC = () => {
 
           {/* Turnstile Relay Active Banner when open */}
           {relayRemainingSeconds > 0 && (
-            <div className="my-2 p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200 shrink-0">
+            <div className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200 shrink-0 relative z-20">
               <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-xs sm:text-sm uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-spin" />
                 <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
-                <span className="bg-emerald-400 text-black px-2 py-0.2 rounded-full font-mono text-xs font-black">
+                <span className="bg-emerald-400 text-black px-2 py-0.5 rounded-full font-mono text-xs font-black">
                   {relayRemainingSeconds}s
                 </span>
               </div>
@@ -451,10 +451,10 @@ export const IndependentTerminalApp: React.FC = () => {
 
           {/* Verified Client Card (when granted or denied) */}
           {lastVerifiedClient && scanStatus !== 'idle' && (
-            <div className={`my-2 p-3 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 shrink-0 ${
+            <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 shrink-0 relative z-20 ${
               lastVerifiedClient.status === 'granted'
-                ? 'bg-emerald-950/20 border-emerald-500/40'
-                : 'bg-red-950/20 border-red-500/40'
+                ? 'bg-emerald-950/30 border-emerald-500/40'
+                : 'bg-red-950/30 border-red-500/40'
             }`}>
               <div className="flex items-center gap-3">
                 <img 
