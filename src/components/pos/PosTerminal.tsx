@@ -137,65 +137,63 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col gap-2 min-h-0 overflow-hidden">
       
-      {/* 1. TOP SUB-HEADER BAR (Exactly as in screenshot) */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+      {/* 1. TOP SUB-HEADER BAR (Compact & Sleek) */}
+      <div className="bg-gym-card rounded-xl border border-gym-border px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-sm shrink-0">
         
         {/* Brand Logo & Subtitle */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-glow-gold border border-amber-400/50">
-            <ShoppingBag className="w-5 h-5 text-black stroke-[2.5]" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-glow-gold border border-amber-400/50 shrink-0">
+            <ShoppingBag className="w-4 h-4 text-black stroke-[2.5]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-black text-base text-white tracking-wide">
-                Punto de Venta
-              </h2>
-            </div>
-            <p className="text-[11px] text-gym-muted font-medium">
+          <div className="leading-tight">
+            <h2 className="font-black text-sm text-white tracking-wide">
+              Punto de Venta
+            </h2>
+            <p className="text-[10px] text-gym-muted font-medium hidden sm:block">
               Caja rápida mostrador y tickets de venta
             </p>
           </div>
         </div>
 
         {/* Status Indicators Strip */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-1.5 text-xs">
           
           {/* Sincronizado Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[11px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>Sincronizado</span>
           </div>
 
           {/* Matriz Indicator Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-semibold">
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-semibold text-[11px]">
             <span className="text-amber-400 font-bold">🏪 Matriz</span>
           </div>
 
           {/* Real-time Clock */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gym-muted border border-gym-border font-mono text-[11px]">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gym-surface text-gym-muted border border-gym-border font-mono text-[11px]">
+            <Clock className="w-3 h-3 text-amber-400" />
             <span>{currentTime.toLocaleTimeString('es-MX')}</span>
           </div>
 
           {/* Bell Notification */}
-          <div className="relative p-2 rounded-full bg-gym-surface border border-gym-border text-gym-muted hover:text-white cursor-pointer">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-amber-500" />
+          <div className="relative p-1.5 rounded-full bg-gym-surface border border-gym-border text-gym-muted hover:text-white cursor-pointer">
+            <Bell className="w-3.5 h-3.5" />
+            <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-amber-500" />
           </div>
 
           {/* Cashier / User Card */}
           <div className="flex items-center gap-2 pl-2 border-l border-gym-border">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-bold text-amber-400 text-xs">
+            <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-bold text-amber-400 text-[11px] shrink-0">
               {currentRole === 'admin' ? 'RG' : 'CR'}
             </div>
-            <div className="hidden md:block text-left leading-tight">
+            <div className="hidden md:block text-left leading-none">
               <span className="font-bold text-xs text-white block">
                 {currentRole === 'admin' ? 'Don Roberto Garza' : 'Camila Herrera'}
               </span>
-              <span className="text-[9px] font-extrabold uppercase text-amber-400">
-                {currentRole === 'admin' ? 'DUEÑO / ADMINISTRADOR' : 'RECEPCIÓN / CAJERA'}
+              <span className="text-[8px] font-extrabold uppercase text-amber-400 mt-0.5 block">
+                {currentRole === 'admin' ? 'DUEÑO / ADMIN' : 'RECEPCIÓN / CAJERA'}
               </span>
             </div>
           </div>
@@ -205,49 +203,49 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       </div>
 
       {/* 2. MAIN TWO-COLUMN POS WORKSPACE */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 min-h-0 overflow-hidden items-stretch">
         
-        {/* LEFT COLUMN: Search, Action Buttons & Products Grid (approx 65%) */}
-        <div className="lg:col-span-8 space-y-4">
+        {/* LEFT COLUMN: Search, Action Buttons & Products Grid */}
+        <div className="lg:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
           
-          {/* Search Bar matching screenshot */}
-          <div className="relative">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar proteína $1,450, creatina, pre-entreno, bebidas o escanea código..."
-              className="w-full px-5 py-3.5 bg-gym-card rounded-2xl border border-gym-border text-sm text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
-            />
-            {search && (
-              <button 
-                onClick={() => setSearch('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gym-muted hover:text-white"
-              >
-                Limpiar
-              </button>
-            )}
-          </div>
+          {/* Integrated Search & Actions Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-[180px]">
+              <Search className="w-3.5 h-3.5 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar suplemento, sabor o código..."
+                className="w-full pl-8 pr-12 py-1.5 bg-gym-card rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
+              />
+              {search && (
+                <button 
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gym-muted hover:text-white"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
 
-          {/* Action Buttons Row (Categorías ⌄, $ Movimientos, 🔒 Cerrar Turno) */}
-          <div className="flex items-center gap-3 relative">
-            
             {/* Categorías Button with dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gym-card hover:bg-gym-surface border border-gym-border text-xs font-bold text-gray-200 transition-all shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gym-card hover:bg-gym-surface border border-gym-border text-xs font-bold text-gray-200 transition-all shadow-sm shrink-0"
               >
-                <ShoppingBag className="w-4 h-4 text-amber-400" />
-                <span>
+                <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                <span className="truncate max-w-[120px]">
                   {categories.find(c => c.id === selectedCategory)?.label || 'Categorías'}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-gym-muted" />
+                <ChevronDown className="w-3 h-3 text-gym-muted" />
               </button>
 
               {/* Categorías Dropdown Menu */}
               {isCategoryOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-56 bg-gym-card border border-gym-border rounded-2xl shadow-2xl p-1.5 z-30 animate-fade-in">
+                <div className="absolute top-full left-0 mt-1 w-52 bg-gym-card border border-gym-border rounded-xl shadow-2xl p-1 z-30 animate-fade-in">
                   {categories.map(cat => (
                     <button
                       key={cat.id}
@@ -255,253 +253,241 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         setSelectedCategory(cat.id);
                         setIsCategoryOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between ${
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between ${
                         selectedCategory === cat.id
                           ? 'bg-amber-500/20 text-amber-400 font-bold'
                           : 'text-gray-300 hover:bg-gym-surface'
                       }`}
                     >
                       <span>{cat.label}</span>
-                      {selectedCategory === cat.id && <Check className="w-3.5 h-3.5" />}
+                      {selectedCategory === cat.id && <Check className="w-3 h-3" />}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* $ Movimientos Button (Warm Yellow/Gold as in screenshot) */}
+            {/* $ Movimientos Button */}
             <button
               onClick={() => setShowMovementsModal(true)}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-black transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
             >
-              <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px]">
+              <span className="w-3.5 h-3.5 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[9px]">
                 $
               </span>
               <span>Movimientos</span>
             </button>
 
-            {/* 🔒 Cerrar Turno Button (Orange/Amber gradient as in screenshot) */}
+            {/* 🔒 Cerrar Turno Button */}
             <button
               onClick={() => {
                 if (onNavigateToCash) onNavigateToCash();
                 else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
               }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-extrabold shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold shadow-sm transition-all shrink-0"
             >
-              <Lock className="w-3.5 h-3.5" />
+              <Lock className="w-3 h-3" />
               <span>Cerrar Turno</span>
             </button>
-
           </div>
 
-          {/* Product Cards Grid matching the screenshot */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 pt-1">
-            {filteredProducts.length === 0 ? (
-              <div className="col-span-full p-12 text-center bg-gym-card rounded-2xl border border-gym-border text-gym-muted">
-                <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-30 text-amber-400" />
-                <p className="text-sm font-bold text-white">No hay productos que coincidan</p>
-                <p className="text-xs mt-1">Busca otro término o selecciona "Todas las categorías".</p>
-              </div>
-            ) : (
-              filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))
-            )}
+          {/* Product Cards Grid with internal scrolling */}
+          <div className="flex-1 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-2 pb-2">
+              {filteredProducts.length === 0 ? (
+                <div className="col-span-full p-8 text-center bg-gym-card rounded-xl border border-gym-border text-gym-muted">
+                  <ShoppingBag className="w-8 h-8 mx-auto mb-2 opacity-30 text-amber-400" />
+                  <p className="text-xs font-bold text-white">No hay productos que coincidan</p>
+                  <p className="text-[11px] mt-1">Busca otro término o selecciona "Todas las categorías".</p>
+                </div>
+              ) : (
+                filteredProducts.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))
+              )}
+            </div>
           </div>
 
         </div>
 
-        {/* RIGHT COLUMN: "Charola de Cobro" (approx 35%) */}
-        <div className="lg:col-span-4 bg-gym-card rounded-2xl border border-gym-border p-4 shadow-xl space-y-4 sticky top-20">
+        {/* RIGHT COLUMN: "Charola de Cobro" */}
+        <div className="lg:col-span-4 bg-gym-card rounded-xl border border-gym-border p-2.5 shadow-xl flex flex-col justify-between min-h-0 h-full overflow-hidden">
           
-          {/* Header: Charola de Cobro + Counter Badge */}
-          <div className="flex items-start justify-between gap-2 border-b border-gym-border pb-3">
-            <div className="flex items-start gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-sm shrink-0 mt-0.5">
-                <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-black text-sm text-white">Charola de Cobro</h3>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          {/* Top section: Header + Client + Barcode */}
+          <div className="space-y-2 shrink-0">
+            {/* Header: Charola de Cobro + Counter Badge */}
+            <div className="flex items-center justify-between gap-2 border-b border-gym-border pb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-black shadow-sm shrink-0">
+                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <div className="flex items-center gap-1 text-[11px] text-amber-400/90 font-semibold mt-0.5">
-                  <span>🏪 Sucursal Matriz (Centro)</span>
-                  <ChevronDown className="w-3 h-3 text-gym-muted" />
+                <div className="leading-tight">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-extrabold text-xs text-white">Charola de Cobro</h3>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <span className="text-[10px] text-amber-400/90 font-medium">🏪 Sucursal Matriz</span>
                 </div>
-                <p className="text-[10px] text-gym-muted">
-                  {currentRole === 'admin' ? 'Roberto Garza' : 'Cajera Turno'} • Mostrador
-                </p>
               </div>
+
+              {/* Counter pill */}
+              <span className="px-2 py-0.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-[11px] font-mono font-bold">
+                {cartItemsCount} pzs
+              </span>
             </div>
 
-            {/* Counter pill */}
-            <span className="px-3 py-1 rounded-full bg-gym-surface text-gray-200 border border-gym-border text-xs font-mono font-bold">
-              {cartItemsCount} piezas
-            </span>
+            {/* Customer Selection Row: [Público en General] [Buscar cli...] [+ Nuevo] */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
+                className="flex-1 flex items-center justify-between px-2.5 py-1 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
+                title="Asignar socio a la compra"
+              >
+                <div className="flex items-center gap-1.5 truncate">
+                  <User className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span className="truncate">
+                    {selectedMember ? selectedMember.fullName : 'Público en General'}
+                  </span>
+                </div>
+                <ChevronDown className="w-3 h-3 text-gym-muted shrink-0" />
+              </button>
+
+              <button
+                onClick={() => setShowAddClientModal(true)}
+                className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 shrink-0 transition-all"
+                title="Registrar nuevo socio"
+              >
+                <Plus className="w-3 h-3 stroke-[3]" />
+                <span>Nuevo</span>
+              </button>
+            </div>
+
+            {/* Client Search dropdown if open */}
+            {isClientSearchOpen && (
+              <div className="p-2 rounded-xl bg-gym-surface border border-gym-border space-y-1.5 animate-fade-in text-xs">
+                <input
+                  type="text"
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  placeholder="Buscar socio por nombre o ID..."
+                  className="w-full px-2.5 py-1 bg-gym-card rounded-lg border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+                <div className="max-h-32 overflow-y-auto divide-y divide-gym-border/40">
+                  <div
+                    onClick={() => {
+                      setSelectedClientId('');
+                      setIsClientSearchOpen(false);
+                    }}
+                    className="p-1.5 hover:bg-gym-card cursor-pointer rounded font-bold text-gray-200"
+                  >
+                    Público en General (Sin registro)
+                  </div>
+                  {members
+                    .filter(m => m.fullName.toLowerCase().includes(clientSearch.toLowerCase()) || m.id.toLowerCase().includes(clientSearch.toLowerCase()))
+                    .map(m => (
+                      <div
+                        key={m.id}
+                        onClick={() => {
+                          setSelectedClientId(m.id);
+                          setIsClientSearchOpen(false);
+                        }}
+                        className="p-1.5 hover:bg-gym-card cursor-pointer rounded flex justify-between items-center"
+                      >
+                        <span className="font-semibold text-white truncate">{m.fullName}</span>
+                        <span className="text-[10px] text-amber-400 font-mono">{m.membership.planName}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Barcode scanner input bar */}
+            <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-1.5">
+              <div className="relative flex-1">
+                <Barcode className="w-3.5 h-3.5 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={barcodeInput}
+                  onChange={(e) => setBarcodeInput(e.target.value)}
+                  placeholder="Escanear código de barras..."
+                  className="w-full pl-8 pr-2 py-1 bg-gym-surface rounded-lg border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/30 shrink-0"
+              >
+                + Agregar
+              </button>
+            </form>
           </div>
 
-          {/* Customer Selection Row: [Público en General] [Buscar cli...] [+ Nuevo] */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-              className="flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
-              title="Asignar socio a la compra"
-            >
-              <div className="flex items-center gap-1.5 truncate">
-                <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="truncate">
-                  {selectedMember ? selectedMember.fullName : 'Público en General'}
-                </span>
-              </div>
-              <ChevronDown className="w-3 h-3 text-gym-muted shrink-0" />
-            </button>
-
-            <button
-              onClick={() => setShowAddClientModal(true)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 shrink-0 transition-all"
-              title="Registrar nuevo socio"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              <span>Nuevo</span>
-            </button>
-          </div>
-
-          {/* Client Search dropdown if open */}
-          {isClientSearchOpen && (
-            <div className="p-2 rounded-xl bg-gym-surface border border-gym-border space-y-1.5 animate-fade-in text-xs">
-              <input
-                type="text"
-                value={clientSearch}
-                onChange={(e) => setClientSearch(e.target.value)}
-                placeholder="Buscar socio por nombre o ID..."
-                className="w-full px-2.5 py-1 bg-gym-card rounded-lg border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400"
-              />
-              <div className="max-h-36 overflow-y-auto divide-y divide-gym-border/40">
-                <div
-                  onClick={() => {
-                    setSelectedClientId('');
-                    setIsClientSearchOpen(false);
-                  }}
-                  className="p-1.5 hover:bg-gym-card cursor-pointer rounded font-bold text-gray-200"
-                >
-                  Público en General (Sin registro)
-                </div>
-                {members
-                  .filter(m => m.fullName.toLowerCase().includes(clientSearch.toLowerCase()) || m.id.toLowerCase().includes(clientSearch.toLowerCase()))
-                  .map(m => (
-                    <div
-                      key={m.id}
-                      onClick={() => {
-                        setSelectedClientId(m.id);
-                        setIsClientSearchOpen(false);
-                      }}
-                      className="p-1.5 hover:bg-gym-card cursor-pointer rounded flex justify-between items-center"
-                    >
-                      <span className="font-semibold text-white truncate">{m.fullName}</span>
-                      <span className="text-[10px] text-amber-400 font-mono">{m.membership.planName}</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Barcode scanner input bar: [|||| Escanear código...] [+ Cobrar] [🟢 Lector Activo] */}
-          <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-1.5">
-            <div className="relative flex-1">
-              <Barcode className="w-4 h-4 text-gym-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                placeholder="Escanear código de barras..."
-                className="w-full pl-8 pr-2 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/30"
-            >
-              + Agregar
-            </button>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Lector Activo
-            </span>
-          </form>
-
-          {/* Tray Body / Items List */}
-          <div className="max-h-[260px] min-h-[160px] overflow-y-auto divide-y divide-gym-border/40">
+          {/* Middle Tray Body / Items List */}
+          <div className="flex-1 min-h-[80px] overflow-y-auto divide-y divide-gym-border/40 pr-0.5 my-1.5">
             {cart.length === 0 ? (
-              /* Empty Tray State exactly matching the screenshot */
-              <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-2.5">
-                <div className="w-12 h-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <ShoppingBag className="w-6 h-6 stroke-[1.8]" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-2 space-y-1.5">
+                <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <ShoppingBag className="w-4 h-4 stroke-[1.8]" />
                 </div>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                  MOSTRADOR LISTO
-                </span>
-                <h4 className="font-bold text-sm text-white">Charola vacía</h4>
-                <p className="text-[11px] text-gym-muted leading-relaxed max-w-[220px]">
-                  Escanea el código de barras o toca cualquier suplemento del mostrador para agregarlo al cobro.
-                </p>
-
-                {/* Special Action button matching screenshot */}
+                <div>
+                  <h4 className="font-bold text-xs text-white">Charola vacía</h4>
+                  <p className="text-[10px] text-gym-muted leading-tight mt-0.5">
+                    Toca un producto o escanea código para cobrar.
+                  </p>
+                </div>
                 <button
                   onClick={() => {
-                    // Quick add a shaker or energy drink
                     const promo = products.find(p => p.id === 'PROD-008') || products[0];
                     if (promo) addToCart(promo, 1);
                   }}
-                  className="w-full mt-2 py-2 rounded-xl bg-gradient-to-r from-red-950 via-rose-900 to-red-950 hover:from-red-900 hover:to-rose-800 text-rose-200 text-xs font-bold border border-rose-500/40 shadow-sm flex items-center justify-center gap-1.5 transition-all"
+                  className="py-1 px-3 rounded-lg bg-gradient-to-r from-red-950 via-rose-900 to-red-950 hover:from-red-900 hover:to-rose-800 text-rose-200 text-[10px] font-bold border border-rose-500/40 shadow-sm flex items-center justify-center gap-1 transition-all"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Cobro Rápido de Bebida / Suplemento ⚡</span>
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Cobro Rápido Bebida / Snack ⚡</span>
                 </button>
               </div>
             ) : (
-              /* Filled Tray Items */
               cart.map((item) => (
-                <div key={item.product.id} className="py-2.5 flex items-center justify-between gap-2">
+                <div key={item.product.id} className="py-1.5 flex items-center justify-between gap-1.5">
                   <img
                     src={item.product.image}
                     alt={item.product.name}
-                    className="w-10 h-10 rounded-xl object-cover border border-gym-border shrink-0"
+                    className="w-8 h-8 rounded-lg object-cover border border-gym-border shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-xs text-white truncate">{item.product.name}</h5>
-                    <span className="text-[10px] text-amber-400 font-mono font-semibold">
+                    <h5 className="font-bold text-[11px] text-white truncate">{item.product.name}</h5>
+                    <span className="text-[9px] text-amber-400 font-mono font-semibold">
                       ${item.unitPrice.toFixed(2)} c/u
                     </span>
                   </div>
 
                   {/* Quantity control */}
-                  <div className="flex items-center gap-1 bg-gym-surface p-0.5 rounded-lg border border-gym-border shrink-0">
+                  <div className="flex items-center gap-0.5 bg-gym-surface p-0.5 rounded border border-gym-border shrink-0">
                     <button
                       onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                      className="p-1 rounded text-gym-muted hover:text-white hover:bg-gym-card"
+                      className="p-0.5 rounded text-gym-muted hover:text-white hover:bg-gym-card"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-2.5 h-2.5" />
                     </button>
-                    <span className="font-mono font-bold text-xs px-1 text-white">{item.quantity}</span>
+                    <span className="font-mono font-bold text-[11px] px-1 text-white">{item.quantity}</span>
                     <button
                       onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
                       disabled={item.quantity >= item.product.stock}
-                      className="p-1 rounded text-gym-muted hover:text-white hover:bg-gym-card disabled:opacity-30"
+                      className="p-0.5 rounded text-gym-muted hover:text-white hover:bg-gym-card disabled:opacity-30"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-2.5 h-2.5" />
                     </button>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="font-mono font-black text-xs text-white block">
+                    <span className="font-mono font-black text-[11px] text-white block">
                       ${item.subtotal.toFixed(2)}
                     </span>
                     <button
                       onClick={() => removeFromCart(item.product.id)}
-                      className="text-gym-muted hover:text-red-400 text-[10px]"
+                      className="text-gym-muted hover:text-red-400 text-[9px]"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 </div>
@@ -509,78 +495,78 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             )}
           </div>
 
-          {/* 3. BOTTOM CHECKOUT PANEL (Dark box with Total, Cash denominations, and Cobrar & Ticket) */}
-          <div className="bg-[#0E1119] rounded-2xl border border-gym-border p-3.5 space-y-3">
+          {/* 3. BOTTOM CHECKOUT PANEL */}
+          <div className="bg-[#0E1119] rounded-xl border border-gym-border p-2 space-y-1.5 shrink-0">
             
             {/* Total Header */}
-            <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gym-muted block">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gym-muted">
                 TOTAL A COBRAR ({cartItemsCount} PZS)
               </span>
-              <span className="text-3xl font-black font-mono text-amber-400 tracking-tight block">
+              <span className="text-2xl font-black font-mono text-amber-400 tracking-tight">
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
 
             {/* Payment Method Pills ($ Efectivo, Tarjeta, Transferencia) */}
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cash')}
-                className={`py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
                   paymentMethod === 'cash'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <Banknote className="w-3.5 h-3.5" />
+                <Banknote className="w-3 h-3" />
                 <span>$ Efectivo</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
                   paymentMethod === 'card'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <CreditCard className="w-3.5 h-3.5" />
+                <CreditCard className="w-3 h-3" />
                 <span>Tarjeta</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('transfer')}
-                className={`py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 border transition-all ${
+                className={`py-1 px-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1 border transition-all ${
                   paymentMethod === 'transfer'
                     ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
                     : 'bg-gym-surface text-gym-muted border-gym-border hover:text-white'
                 }`}
               >
-                <ArrowRightLeft className="w-3.5 h-3.5" />
+                <ArrowRightLeft className="w-3 h-3" />
                 <span>Transfer</span>
               </button>
             </div>
 
-            {/* Quick Cash Bills Row: [Exacto] [$20] [$50] [$100] [$200] [$500] */}
+            {/* Quick Cash Bills Row */}
             {paymentMethod === 'cash' && (
-              <div className="space-y-2 pt-1 border-t border-gym-border/60">
+              <div className="space-y-1.5 pt-1 border-t border-gym-border/60">
                 <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
                   <button
                     type="button"
                     onClick={() => handleQuickCash('exact')}
-                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] border border-amber-500/40 flex items-center gap-0.5 shrink-0"
+                    className="px-2 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[10px] border border-amber-500/40 flex items-center gap-0.5 shrink-0"
                   >
                     <span>⚡ Exacto</span>
                   </button>
-                  {[50, 100, 200, 500, 1000, 2000].map(bill => (
+                  {[50, 100, 200, 500, 1000].map(bill => (
                     <button
                       key={bill}
                       type="button"
                       onClick={() => handleQuickCash(bill)}
-                      className="px-2 py-1 rounded-lg bg-gym-surface hover:bg-gym-surface/80 text-gray-200 font-bold text-[11px] border border-gym-border shrink-0"
+                      className="px-1.5 py-0.5 rounded-md bg-gym-surface hover:bg-gym-surface/80 text-gray-200 font-bold text-[10px] border border-gym-border shrink-0"
                     >
                       ${bill}
                     </button>
@@ -588,21 +574,21 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 </div>
 
                 {/* Tender Input: Paga con... ($) */}
-                <div className="flex items-center justify-between gap-2 bg-gym-surface/80 px-3 py-1.5 rounded-xl border border-gym-border">
-                  <div className="flex items-center gap-2 flex-1">
-                    <Banknote className="w-4 h-4 text-emerald-400" />
+                <div className="flex items-center justify-between gap-1.5 bg-gym-surface/80 px-2.5 py-1 rounded-lg border border-gym-border">
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <Banknote className="w-3.5 h-3.5 text-emerald-400" />
                     <input
                       type="number"
                       value={amountPaidStr}
                       onChange={(e) => setAmountPaidStr(e.target.value)}
-                      placeholder={`Paga con... ($)`}
-                      className="w-full bg-transparent text-sm font-mono font-bold text-white placeholder-gym-muted focus:outline-none"
+                      placeholder="Paga con... ($)"
+                      className="w-full bg-transparent text-xs font-mono font-bold text-white placeholder-gym-muted focus:outline-none"
                     />
                   </div>
                   {cashGiven > 0 && (
                     <div className="text-right shrink-0">
-                      <span className="text-[10px] text-gym-muted block leading-none">Cambio:</span>
-                      <span className="text-sm font-mono font-black text-emerald-400">
+                      <span className="text-[9px] text-gym-muted mr-1">Cambio:</span>
+                      <span className="text-xs font-mono font-black text-emerald-400">
                         ${changeDue.toFixed(2)}
                       </span>
                     </div>
@@ -612,24 +598,24 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             )}
 
             {/* Bottom Actions: [Cancelar Compra] [Cobrar & Ticket] */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gym-border/60">
+            <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-gym-border/60">
               <button
                 type="button"
                 onClick={clearCart}
                 disabled={cart.length === 0}
-                className="py-2.5 px-3 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border disabled:opacity-30 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                className="py-1.5 px-2 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border disabled:opacity-30 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Cancelar Compra</span>
+                <Trash2 className="w-3 h-3" />
+                <span>Cancelar</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleCheckout}
                 disabled={!canCheckout}
-                className="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-35 text-black font-black text-xs shadow-glow-gold flex items-center justify-center gap-1.5 transition-all"
+                className="py-1.5 px-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-35 text-black font-black text-xs shadow-glow-gold flex items-center justify-center gap-1 transition-all"
               >
-                <Receipt className="w-4 h-4" />
+                <Receipt className="w-3.5 h-3.5" />
                 <span>Cobrar & Ticket</span>
               </button>
             </div>

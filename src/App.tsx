@@ -70,8 +70,12 @@ const MainLayout: React.FC = () => {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* Dynamic Main Workspace View */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-gym-bg to-[#07080c]">
-          <div className="max-w-7xl mx-auto">
+        <main className={`flex-1 ${
+          activeTab === 'pos' 
+            ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col h-[calc(100vh-61px)]' 
+            : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
+        } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
+          <div className={activeTab === 'pos' ? 'w-full h-full flex flex-col max-w-[1800px] mx-auto' : 'max-w-7xl mx-auto'}>
             {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
             {activeTab === 'access' && <TurnstileTerminal />}
             {activeTab === 'pos' && (
