@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
-import { UserRole } from '../../types';
 import { 
-  Dumbbell, 
-  ShieldCheck, 
-  UserCheck, 
-  Activity, 
   ShoppingCart, 
   Flame, 
   Clock, 
   Bell, 
   Cloud, 
   CloudOff, 
-  RefreshCw,
   LogOut
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -35,8 +29,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { 
     currentUser,
     logout,
-    currentRole, 
-    setCurrentRole, 
     cartItemsCount, 
     todayCheckInsCount, 
     cashSession,
@@ -64,11 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     setActiveTab('dashboard');
   };
 
-  const roles: { id: UserRole; label: string; fullLabel: string; icon: React.ReactNode; color: string }[] = [
-    { id: 'admin', label: 'Admin', fullLabel: 'Administrador', icon: <ShieldCheck className="w-3.5 h-3.5 shrink-0" />, color: 'bg-amber-500/20 text-amber-400 border-amber-500/40' },
-    { id: 'receptionist', label: 'Recepción', fullLabel: 'Recepción / Caja', icon: <UserCheck className="w-3.5 h-3.5 shrink-0" />, color: 'bg-blue-500/20 text-blue-400 border-blue-500/40' },
-    { id: 'trainer', label: 'Coach', fullLabel: 'Coach / Entrenador', icon: <Activity className="w-3.5 h-3.5 shrink-0" />, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
-  ];
 
   return (
     <header className="bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.08] sticky top-0 z-40 px-4 sm:px-6 py-2.5 shadow-md">
@@ -161,32 +148,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Interactive Role Switcher Selector */}
-          <div className="hidden xl:flex items-center h-9 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08] whitespace-nowrap shrink-0">
-            <span className="text-[11px] font-semibold text-zinc-400 px-2">
-              Rol:
-            </span>
-            <div className="flex items-center gap-1">
-              {roles.map((r) => {
-                const isActive = currentRole === r.id;
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => setCurrentRole(r.id)}
-                    className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
-                      isActive 
-                        ? `${r.color} shadow-sm border` 
-                        : 'text-zinc-400 hover:text-gray-200 hover:bg-white/[0.05] border border-transparent'
-                    }`}
-                    title={`Cambiar vista a rol ${r.fullLabel}`}
-                  >
-                    {r.icon}
-                    <span>{r.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Notifications Bell Button */}
           <button
