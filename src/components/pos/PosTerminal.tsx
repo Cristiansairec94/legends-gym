@@ -355,8 +355,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* Integrated Search & Actions Toolbar */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {/* Search Input */}
-            <div className="relative flex-1 min-w-[180px]">
-              <Search className="w-3.5 h-3.5 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="w-4 h-4 text-gym-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
@@ -370,12 +370,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   }
                 }}
                 placeholder="Buscar suplemento, sabor o código..."
-                className="w-full pl-8 pr-12 py-1.5 bg-gym-card rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
+                className="w-full pl-10 pr-12 py-2.5 bg-gym-card rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
               />
               {search && (
                 <button 
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gym-muted hover:text-white"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gym-muted hover:text-white"
                 >
                   ✕
                 </button>
@@ -384,14 +384,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
             {/* Barcode Scanner Active Indicator Pill */}
             <div 
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
                 flashScanner 
                   ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
                   : 'bg-gym-card text-emerald-400 border-emerald-500/30'
               }`}
               title="Lector de código de barras USB/Bluetooth en línea. Escanea cualquier código en cualquier momento y se agregará directamente a la caja de cobro."
             >
-              <ScanLine className={`w-3.5 h-3.5 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
+              <ScanLine className={`w-4 h-4 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
               <span className="hidden sm:inline">Lector Activo</span>
             </div>
 
@@ -399,18 +399,18 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             <div className="relative">
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gym-card hover:bg-gym-surface border border-gym-border text-xs font-bold text-gray-200 transition-all shadow-sm shrink-0"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gym-card hover:bg-gym-surface border border-gym-border text-sm font-bold text-gray-200 transition-all shadow-sm shrink-0"
               >
-                <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
-                <span className="truncate max-w-[120px]">
+                <ShoppingBag className="w-4 h-4 text-amber-400" />
+                <span className="truncate max-w-[140px]">
                   {categories.find(c => c.id === selectedCategory)?.label || 'Categorías'}
                 </span>
-                <ChevronDown className="w-3 h-3 text-gym-muted" />
+                <ChevronDown className="w-3.5 h-3.5 text-gym-muted" />
               </button>
 
               {/* Categorías Dropdown Menu */}
               {isCategoryOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-gym-card border border-gym-border rounded-xl shadow-2xl p-1 z-30 animate-fade-in">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-gym-card border border-gym-border rounded-xl shadow-2xl p-1.5 z-30 animate-fade-in">
                   {categories.map(cat => (
                     <button
                       key={cat.id}
@@ -418,14 +418,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         setSelectedCategory(cat.id);
                         setIsCategoryOpen(false);
                       }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between ${
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-between ${
                         selectedCategory === cat.id
                           ? 'bg-amber-500/20 text-amber-400 font-bold'
                           : 'text-gray-300 hover:bg-gym-surface'
                       }`}
                     >
                       <span>{cat.label}</span>
-                      {selectedCategory === cat.id && <Check className="w-3 h-3" />}
+                      {selectedCategory === cat.id && <Check className="w-4 h-4" />}
                     </button>
                   ))}
                 </div>
@@ -435,9 +435,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             {/* $ Movimientos Button */}
             <button
               onClick={() => setShowMovementsModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-sm font-bold transition-all shadow-sm shrink-0"
             >
-              <span className="w-3.5 h-3.5 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[9px]">
+              <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px]">
                 $
               </span>
               <span>Movimientos</span>
@@ -449,9 +449,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 if (onNavigateToCash) onNavigateToCash();
                 else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold shadow-sm transition-all shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-sm font-extrabold shadow-sm transition-all shrink-0"
             >
-              <Lock className="w-3 h-3" />
+              <Lock className="w-4 h-4" />
               <span>Cerrar Turno</span>
             </button>
           </div>
