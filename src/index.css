@@ -71,22 +71,12 @@
     display: none !important;
   }
 
-  /* Hide screen elements when printing */
-  body * {
-    visibility: hidden;
-  }
-
+  /* Hide screen chrome elements when printing */
   .print\:hidden,
   nav,
   aside,
   header {
     display: none !important;
-  }
-
-  /* Make target printable elements visible */
-  #printable-receipt, #printable-receipt *,
-  #printable-barcodes, #printable-barcodes * {
-    visibility: visible !important;
   }
 
   /* Reset any modal wrappers so they NEVER displace content down */
@@ -114,13 +104,12 @@
   /* POS Thermal Receipt: Centered, clean 80mm width with dashed voucher border */
   body.is-printing-receipt #printable-receipt,
   #printable-receipt {
-    visibility: visible !important;
     display: block !important;
     position: static !important;
-    width: 80mm !important;
+    width: 78mm !important;
     max-width: 80mm !important;
     margin: 0 auto !important;
-    padding: 5mm 4mm !important;
+    padding: 4mm 3mm !important;
     color: #000000 !important;
     background: #ffffff !important;
     box-sizing: border-box !important;
@@ -131,7 +120,6 @@
 
   body.is-printing-receipt #printable-receipt *,
   #printable-receipt * {
-    visibility: visible !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;

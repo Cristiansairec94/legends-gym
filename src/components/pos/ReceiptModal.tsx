@@ -20,10 +20,97 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
   }, []);
 
   const handlePrint = () => {
-    document.body.classList.add('is-printing-receipt');
-    setTimeout(() => {
+    const receiptEl = document.getElementById('printable-receipt');
+    if (!receiptEl) {
       window.print();
-    }, 50);
+      return;
+    }
+
+    // Try isolated hidden iframe printing first (100% reliable in Chromium without blank preview)
+    let iframe = document.getElementById('receipt-print-iframe') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'receipt-print-iframe';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+          <head>
+            <meta charset="utf-8" />
+            <title>Ticket - ${sale.folio}</title>
+            <style>
+              @page {
+                size: 80mm auto;
+                margin: 0mm;
+              }
+              @media print {
+                html, body {
+                  width: 78mm !important;
+                  margin: 0 auto !important;
+                  padding: 3mm 2mm !important;
+                  background: #fff !important;
+                  color: #000 !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+              }
+              * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+              }
+              body {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 11px;
+                color: #000000;
+                background: #ffffff;
+                width: 78mm;
+                margin: 0 auto;
+                padding: 3mm 2mm;
+              }
+              img {
+                max-width: 100%;
+                height: auto;
+              }
+              svg {
+                display: block;
+                margin: 0 auto;
+              }
+            </style>
+          </head>
+          <body>
+            <div style="width: 100%;">
+              ${receiptEl.innerHTML}
+            </div>
+          </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error('Iframe print fallback:', e);
+          window.print();
+        }
+      }, 150);
+    } else {
+      window.print();
+    }
   };
 
   if (typeof document === 'undefined') return null;
