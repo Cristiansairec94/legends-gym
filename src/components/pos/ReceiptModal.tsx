@@ -134,65 +134,65 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="print-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in overflow-y-auto print:static print:inset-auto print:p-0 print:m-0 print:bg-transparent print:backdrop-blur-none print:overflow-visible print:block">
-      <div className="print-modal-card bg-gym-card rounded-2xl border border-gym-border w-full max-w-md overflow-hidden shadow-2xl relative my-6 print:static print:m-0 print:p-0 print:border-none print:shadow-none print:bg-transparent print:w-auto print:max-w-none print:overflow-visible">
+    <div className="print-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm animate-fade-in overflow-hidden print:static print:inset-auto print:p-0 print:m-0 print:bg-transparent print:backdrop-blur-none print:overflow-visible print:block">
+      <div className="print-modal-card bg-gym-card rounded-2xl border border-gym-border w-full max-w-[390px] max-h-[88vh] flex flex-col shadow-2xl relative overflow-hidden print:static print:m-0 print:p-0 print:border-none print:shadow-none print:bg-transparent print:w-auto print:max-w-none print:overflow-visible">
         
-        {/* Top Action Bar (Excluded from print) */}
-        <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 print:hidden">
+        {/* Top Action Bar (Excluded from print) - Fixed shrink-0 */}
+        <div className="px-3.5 py-2.5 border-b border-gym-border flex items-center justify-between bg-gym-surface/50 shrink-0 print:hidden">
           <div className="flex items-center gap-2 text-emerald-400">
-            <CheckCircle2 className="w-5 h-5" />
-            <span className="font-bold text-sm">Venta Procesada Exitosamente</span>
+            <CheckCircle2 className="w-4 h-4" />
+            <span className="font-bold text-xs">Venta Procesada Exitosamente</span>
           </div>
           <button 
             onClick={onClose}
-            className="p-1 rounded-lg text-gym-muted hover:text-white hover:bg-gym-surface"
+            className="p-1 rounded-lg text-gym-muted hover:text-white hover:bg-gym-surface transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Printable Thermal Receipt Wrapper */}
+        {/* Printable Thermal Receipt Wrapper - Scrollable middle body */}
         <div 
-          className="p-5 bg-white text-black font-mono text-xs select-none print:p-3 print:w-[78mm] print:max-w-[80mm] print:mx-auto print:my-0 print:border print:border-dashed print:border-gray-400 print:block" 
+          className="flex-1 overflow-y-auto p-4 bg-white text-black font-mono text-xs select-none print:p-3 print:w-[78mm] print:max-w-[80mm] print:mx-auto print:my-0 print:border print:border-dashed print:border-gray-400 print:block print:overflow-visible" 
           id="printable-receipt"
         >
           
           {/* Header */}
-          <div className="text-center pb-2">
-            <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+          <div className="text-center pb-1">
+            <div style={{ textAlign: 'center', marginBottom: '4px' }}>
               <img 
                 src={logoImg} 
                 alt="Logo LEYENDS" 
                 className="receipt-logo"
                 style={{
-                  width: '52px',
-                  height: '52px',
-                  maxWidth: '52px',
-                  maxHeight: '52px',
+                  width: '46px',
+                  height: '46px',
+                  maxWidth: '46px',
+                  maxHeight: '46px',
                   objectFit: 'contain',
                   borderRadius: '50%',
                   background: '#000000',
                   padding: '3px',
                   display: 'inline-block',
-                  margin: '0 auto 4px auto'
+                  margin: '0 auto 3px auto'
                 }} 
               />
-              <h2 style={{ fontSize: '15px', fontWeight: '900', letterSpacing: '0.5px', marginTop: '2px', textTransform: 'uppercase', color: '#000000' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: '900', letterSpacing: '0.5px', marginTop: '1px', textTransform: 'uppercase', color: '#000000' }}>
                 LEYENDS FITNESS GYM
               </h2>
-              <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#222222', marginTop: '1px' }}>
+              <p style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#222222', marginTop: '1px' }}>
                 SUCURSAL CENTRAL FITNESS
               </p>
-              <p style={{ fontSize: '9.5px', color: '#555555' }}>
+              <p style={{ fontSize: '9px', color: '#555555' }}>
                 Blvd. de los Campeones #500
               </p>
-              <p style={{ fontSize: '9px', color: '#666666' }}>
+              <p style={{ fontSize: '8.5px', color: '#666666' }}>
                 RFC: LEY-920311-GYM • Tel: (55) 1234-5678
               </p>
             </div>
           </div>
 
-          <div style={{ borderBottom: '1px dashed #444444', margin: '6px 0' }} className="receipt-divider" />
+          <div style={{ borderBottom: '1px dashed #444444', margin: '4px 0' }} className="receipt-divider" />
 
           {/* Folio & Metadata */}
           <div style={{ fontSize: '10.5px', lineHeight: '1.45', color: '#000000' }}>
@@ -273,38 +273,38 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             )}
           </div>
 
-          <div style={{ borderBottom: '1px dashed #444444', margin: '6px 0' }} className="receipt-divider" />
+          <div style={{ borderBottom: '1px dashed #444444', margin: '4px 0' }} className="receipt-divider" />
 
           {/* Barcode & Footer */}
-          <div style={{ textAlign: 'center', marginTop: '6px', color: '#000000' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px auto', maxWidth: '170px' }}>
-              <BarcodeSVG value={sale.folio || 'FOLIO-000'} height={32} fontSize={10} showText={false} className="w-44 max-w-full mx-auto" />
+          <div style={{ textAlign: 'center', marginTop: '4px', color: '#000000' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '2px auto', maxWidth: '170px' }}>
+              <BarcodeSVG value={sale.folio || 'FOLIO-000'} height={30} fontSize={10} showText={false} className="w-44 max-w-full mx-auto" />
             </div>
-            <p style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'monospace', margin: '2px 0 6px 0' }}>
+            <p style={{ fontSize: '10.5px', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'monospace', margin: '1px 0 4px 0' }}>
               * {sale.folio} *
             </p>
-            <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#111111', marginBottom: '2px' }}>
+            <p style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#111111', marginBottom: '1px' }}>
               ¡GRACIAS POR ENTRENAR CON LAS LEYENDAS!
             </p>
-            <p style={{ fontSize: '8.5px', color: '#666666' }}>
+            <p style={{ fontSize: '8px', color: '#666666' }}>
               Conserva este ticket para cualquier aclaración o garantía.
             </p>
           </div>
 
         </div>
 
-        {/* Action Buttons (Excluded from print) */}
-        <div className="p-4 bg-gym-surface/80 border-t border-gym-border flex items-center justify-between gap-3 print:hidden">
+        {/* Action Buttons (Excluded from print) - Fixed shrink-0 at bottom */}
+        <div className="p-3 bg-gym-surface/95 border-t border-gym-border flex items-center justify-between gap-3 shrink-0 print:hidden">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 text-xs font-semibold text-gym-muted hover:text-white transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gym-surface hover:bg-gym-surface/80 text-xs font-semibold text-gym-muted hover:text-white transition-colors cursor-pointer"
           >
             Cerrar
           </button>
 
           <button
             onClick={handlePrint}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-2 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-2 transition-all cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimir Ticket Térmico</span>
