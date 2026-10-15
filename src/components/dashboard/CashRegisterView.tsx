@@ -346,8 +346,9 @@ export const CashRegisterView: React.FC = () => {
                     required
                     value={countedCashStr}
                     onChange={(e) => setCountedCashStr(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder={expectedCashInDrawer.toString()}
-                    className="w-full pl-8 pr-3 py-2.5 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                    className="w-full pl-8 pr-3 py-2.5 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
@@ -423,8 +424,9 @@ export const CashRegisterView: React.FC = () => {
                         max={countedCash > 0 ? countedCash : undefined}
                         value={remanentCashStr}
                         onChange={(e) => setRemanentCashStr(e.target.value)}
+                        onWheel={(e) => e.currentTarget.blur()}
                         placeholder="Ej. 1000"
-                        className="w-full pl-8 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                        className="w-full pl-8 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                     {remanentCash > countedCash && countedCash > 0 && (
@@ -539,8 +541,9 @@ export const CashRegisterView: React.FC = () => {
                     required
                     value={initialCashStr}
                     onChange={(e) => setInitialCashStr(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="0"
-                    className="w-full pl-8 pr-3 py-2.5 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                    className="w-full pl-8 pr-3 py-2.5 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
                 <p className="text-[11px] text-gym-muted mt-1.5 leading-relaxed">
