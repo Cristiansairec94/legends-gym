@@ -22,7 +22,6 @@ import {
   CreditCard, 
   ArrowRightLeft, 
   Clock, 
-  Bell, 
   Check, 
   Receipt,
   UserPlus,
@@ -319,12 +318,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-mono text-xs sm:text-sm font-semibold shadow-sm">
             <Clock className="w-4 h-4 text-amber-400" />
             <span>{currentTime.toLocaleTimeString('es-MX')}</span>
-          </div>
-
-          {/* Bell Notification */}
-          <div className="relative p-2.5 rounded-full bg-gym-surface border border-gym-border text-gym-muted hover:text-white cursor-pointer shadow-sm">
-            <Bell className="w-4.5 h-4.5" />
-            <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-gym-card" />
           </div>
 
           {/* Cashier / User Card */}
