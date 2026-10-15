@@ -17,7 +17,7 @@ import {
   Save
 } from 'lucide-react';
 import { useGym } from '../../context/GymContext';
-import { checkServerHealth, getResolvedServerUrl } from '../../services/syncService';
+import { checkServerHealth, getResolvedServerUrl, CLOUD_SERVER_URL } from '../../services/syncService';
 
 export interface TerminalConfig {
   serverUrl: string;
@@ -266,10 +266,10 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setFormData({ ...formData, serverUrl: 'https://legends-gym.vercel.app' });
+                      setFormData({ ...formData, serverUrl: CLOUD_SERVER_URL });
                     }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
-                      formData.serverUrl === 'https://legends-gym.vercel.app'
+                      formData.serverUrl === CLOUD_SERVER_URL
                         ? 'bg-amber-500 text-black border-amber-400 shadow-sm'
                         : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30'
                     }`}
