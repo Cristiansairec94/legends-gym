@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
 import { 
-  ShoppingCart, 
   Flame, 
   Clock, 
   Bell, 
@@ -20,7 +19,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
-  onOpenCart, 
+  onOpenCart: _onOpenCart, 
   onOpenNotifications,
   onOpenSync,
   activeTab,
@@ -29,7 +28,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { 
     currentUser,
     logout,
-    cartItemsCount, 
     todayCheckInsCount, 
     cashSession,
     unreadNotificationsCount,
@@ -163,19 +161,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Quick POS Cart Button */}
-          <button
-            onClick={onOpenCart}
-            className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
-            title="Ver carrito de venta"
-          >
-            <ShoppingCart className="w-4.5 h-4.5 text-amber-400" />
-            {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-extrabold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-glow-gold animate-bounce">
-                {cartItemsCount}
-              </span>
-            )}
-          </button>
 
           {/* Current Logged-in User Profile Card */}
           {currentUser && (
