@@ -60,8 +60,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
   // Tray Customer State
   const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [clientSearch, setClientSearch] = useState('');
-  const [isClientSearchOpen, setIsClientSearchOpen] = useState(false);
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
@@ -505,60 +503,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
 
             {/* Customer Selection Row: [Público en General] */}
-            <div>
-              <button
-                onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-semibold text-white truncate"
-                title="Asignar socio a la compra"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span className="truncate">
-                    {selectedMember ? selectedMember.fullName : 'Público en General'}
-                  </span>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-gym-muted shrink-0" />
-              </button>
-            </div>
-
-            {/* Client Search dropdown if open */}
-            {isClientSearchOpen && (
-              <div className="p-2 rounded-xl bg-gym-surface border border-gym-border space-y-1.5 animate-fade-in text-xs">
-                <input
-                  type="text"
-                  value={clientSearch}
-                  onChange={(e) => setClientSearch(e.target.value)}
-                  placeholder="Buscar socio por nombre o ID..."
-                  className="w-full px-2.5 py-1 bg-gym-card rounded-lg border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400"
-                />
-                <div className="max-h-32 overflow-y-auto divide-y divide-gym-border/40">
-                  <div
-                    onClick={() => {
-                      setSelectedClientId('');
-                      setIsClientSearchOpen(false);
-                    }}
-                    className="p-1.5 hover:bg-gym-card cursor-pointer rounded font-bold text-gray-200"
-                  >
-                    Público en General (Sin registro)
-                  </div>
-                  {members
-                    .filter(m => m.fullName.toLowerCase().includes(clientSearch.toLowerCase()) || m.id.toLowerCase().includes(clientSearch.toLowerCase()))
-                    .map(m => (
-                      <div
-                        key={m.id}
-                        onClick={() => {
-                          setSelectedClientId(m.id);
-                          setIsClientSearchOpen(false);
-                        }}
-                        className="p-1.5 hover:bg-gym-card cursor-pointer rounded flex justify-between items-center"
-                      >
-                        <span className="font-semibold text-white truncate">{m.fullName}</span>
-                        <span className="text-[10px] text-amber-400 font-mono">{m.membership.planName}</span>
-                      </div>
-                    ))}
-                </div>
+            <div className="w-full flex items-center px-3 py-1.5 rounded-lg bg-gym-surface border border-gym-border text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 truncate">
+                <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate text-gray-200">Público en General</span>
               </div>
-            )}
+            </div>
 
             {/* Barcode scanner input bar */}
             <form onSubmit={handleBarcodeSubmit} className="relative w-full">
