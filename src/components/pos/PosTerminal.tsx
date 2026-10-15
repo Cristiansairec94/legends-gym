@@ -24,7 +24,6 @@ import {
   Clock, 
   Bell, 
   Check, 
-  Sparkles, 
   Receipt,
   UserPlus,
   ScanLine,
@@ -537,16 +536,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     Toca un producto o escanea código para cobrar.
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    const promo = products.find(p => p.id === 'PROD-008') || products[0];
-                    if (promo) addToCart(promo, 1);
-                  }}
-                  className="py-1.5 px-3.5 rounded-lg bg-gradient-to-r from-red-950 via-rose-900 to-red-950 hover:from-red-900 hover:to-rose-800 text-rose-200 text-xs font-bold border border-rose-500/40 shadow-sm flex items-center justify-center gap-1.5 transition-all"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Cobro Rápido Bebida / Snack ⚡</span>
-                </button>
               </div>
             ) : (
               cart.map((item) => (
