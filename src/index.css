@@ -65,8 +65,9 @@
     print-color-adjust: exact !important;
   }
 
-  /* When printing barcodes: HIDE #root completely from layout so it takes 0 space */
-  body.is-printing-barcodes #root {
+  /* When printing barcodes or receipts: HIDE #root completely from layout so it takes 0 space */
+  body.is-printing-barcodes #root,
+  body.is-printing-receipt #root {
     display: none !important;
   }
 
@@ -85,13 +86,14 @@
   /* Make target printable elements visible */
   #printable-receipt, #printable-receipt *,
   #printable-barcodes, #printable-barcodes * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
   /* Reset any modal wrappers so they NEVER displace content down */
   .print-modal-overlay,
   .print-modal-container,
-  .print-modal-scroll {
+  .print-modal-scroll,
+  .print-modal-card {
     position: static !important;
     display: block !important;
     margin: 0 !important;
@@ -109,16 +111,30 @@
     inset: auto !important;
   }
 
-  /* POS Thermal Receipt */
+  /* POS Thermal Receipt: Centered, clean 80mm width with dashed voucher border */
+  body.is-printing-receipt #printable-receipt,
   #printable-receipt {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm;
-    margin: 0;
-    padding: 8px;
-    color: #000000;
-    background: #ffffff;
+    visibility: visible !important;
+    display: block !important;
+    position: static !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 5mm 4mm !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    border: 1px dashed #777777 !important;
+    font-family: 'Courier New', Courier, monospace !important;
+  }
+
+  body.is-printing-receipt #printable-receipt *,
+  #printable-receipt * {
+    visibility: visible !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Barcodes Print Container: Full width, starts at top of page 1 */
