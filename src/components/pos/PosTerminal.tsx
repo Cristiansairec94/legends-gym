@@ -323,7 +323,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 </div>
                 <div className="leading-tight">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-extrabold text-xs text-white">Charola de Cobro</h3>
+                    <h3 className="font-extrabold text-xs text-white">Caja de Cobro</h3>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   </div>
                   <span className="text-[10px] text-amber-400/90 font-medium">🏪 Sucursal Matriz</span>
@@ -430,7 +430,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   <ShoppingBag className="w-4 h-4 stroke-[1.8]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-white">Charola vacía</h4>
+                  <h4 className="font-bold text-xs text-white">Caja vacía</h4>
                   <p className="text-[10px] text-gym-muted leading-tight mt-0.5">
                     Toca un producto o escanea código para cobrar.
                   </p>
