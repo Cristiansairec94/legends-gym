@@ -128,7 +128,7 @@ export const CashRegisterView: React.FC = () => {
           title="Descargar reporte completo en formato Excel (.xlsx)"
         >
           <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Descargar Reporte en Excel</span>
+          <span>Descargar Reporte</span>
         </button>
       </div>
 
