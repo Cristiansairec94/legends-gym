@@ -19,7 +19,6 @@ export const CashRegisterView: React.FC = () => {
   const [leaveCashInDrawer, setLeaveCashInDrawer] = useState<boolean>(false);
   const [remanentCashStr, setRemanentCashStr] = useState('');
   const [confirmCloseInput, setConfirmCloseInput] = useState('');
-  const [closingNotes, setClosingNotes] = useState('');
   const [initialCashStr, setInitialCashStr] = useState('1500');
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export const CashRegisterView: React.FC = () => {
 
     closeCashSession(
       countedCash,
-      closingNotes,
+      undefined,
       leaveCashInDrawer,
       leaveCashInDrawer ? remanentCash : 0,
       cashToWithdraw
@@ -70,7 +69,6 @@ export const CashRegisterView: React.FC = () => {
     setLeaveCashInDrawer(false);
     setRemanentCashStr('');
     setConfirmCloseInput('');
-    setClosingNotes('');
   };
 
   const handleOpenSession = (e: React.FormEvent) => {
@@ -78,7 +76,6 @@ export const CashRegisterView: React.FC = () => {
     const init = parseFloat(initialCashStr) || 1000;
     openCashSession(init);
     setCountedCashStr('');
-    setClosingNotes('');
     setLeaveCashInDrawer(false);
     setRemanentCashStr('');
     setConfirmCloseInput('');
@@ -437,19 +434,6 @@ export const CashRegisterView: React.FC = () => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gym-muted block mb-1">
-                  Observaciones / Notas del Cajero
-                </label>
-                <textarea
-                  value={closingNotes}
-                  onChange={(e) => setClosingNotes(e.target.value)}
-                  rows={2}
-                  placeholder="Ej. Billetes de $500 entregados a gerencia en sobre sellado..."
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 resize-none"
-                />
               </div>
 
               {/* Confirmación explícita SI / NO */}
