@@ -187,7 +187,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
 
             <div className="p-3 rounded-xl bg-gym-surface/40 border border-gym-border text-center">
               <ShoppingBag className="w-4 h-4 mx-auto text-amber-400 mb-1" />
-              <span className="text-xs text-gym-muted block">Gasto en Tienda</span>
+              <span className="text-xs text-gym-muted block">Gasto en Punto Venta</span>
               <span className="text-lg font-black text-amber-400">${client.totalSpentInStore}</span>
             </div>
 

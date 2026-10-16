@@ -143,7 +143,7 @@ export const CashRegisterView: React.FC = () => {
           </span>
           <div className="flex justify-between text-xs text-gym-muted mt-2 pt-2 border-t border-gym-border/60">
             <span>Membresías: ${totalMemberships.toLocaleString()}</span>
-            <span>Tienda: ${totalStoreSales.toLocaleString()}</span>
+            <span>Punto Venta: ${totalStoreSales.toLocaleString()}</span>
           </div>
         </div>
 

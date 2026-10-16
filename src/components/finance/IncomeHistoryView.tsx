@@ -8,6 +8,7 @@ import {
   CreditCard, 
   Banknote, 
   Calendar, 
+  Clock,
   Filter, 
   Download, 
   FileText, 
@@ -20,28 +21,72 @@ import {
   Printer
 } from 'lucide-react';
 import { ReceiptModal } from '../pos/ReceiptModal';
+import { exportIncomeReportToExcel } from '../../utils/excelExport';
 
 export const IncomeHistoryView: React.FC = () => {
-  const { sales, todaySalesTotal, cashSession } = useGym();
+  const { sales, todaySalesTotal, cashSession, gymSettings } = useGym();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
 
-  // Totales
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const totalSalesCount = sales.length;
-  const grandTotalSales = sales.reduce((acc, s) => acc + s.total, 0);
+  type PeriodFilterType = 'all' | 'today' | 'week' | 'month' | 'year';
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all');
 
-  // Breakdown by payment method
-  const totalCash = sales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + s.total, 0);
-  const totalCard = sales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + s.total, 0);
-  const totalTransfer = sales.filter(s => s.paymentMethod === 'transfer').reduce((acc, s) => acc + s.total, 0);
+  const isSaleInPeriod = (saleTimestamp: string, period: PeriodFilterType): boolean => {
+    if (period === 'all') return true;
+    const saleTime = new Date(saleTimestamp).getTime();
+    if (isNaN(saleTime)) return true;
+    
+    const nowTime = Date.now();
+    const diffMs = nowTime - saleTime;
 
-  const averageTicket = totalSalesCount > 0 ? Math.round(grandTotalSales / totalSalesCount) : 0;
+    if (period === 'today') {
+      const saleDate = new Date(saleTimestamp);
+      const nowDate = new Date();
+      return saleDate.getDate() === nowDate.getDate() &&
+             saleDate.getMonth() === nowDate.getMonth() &&
+             saleDate.getFullYear() === nowDate.getFullYear();
+    }
+    if (period === 'week') {
+      return diffMs >= -60000 && diffMs <= 7 * 24 * 60 * 60 * 1000;
+    }
+    if (period === 'month') {
+      const saleDate = new Date(saleTimestamp);
+      const nowDate = new Date();
+      const isCurrentMonth = saleDate.getMonth() === nowDate.getMonth() && saleDate.getFullYear() === nowDate.getFullYear();
+      return (diffMs >= -60000 && diffMs <= 30 * 24 * 60 * 60 * 1000) || isCurrentMonth;
+    }
+    if (period === 'year') {
+      const saleDate = new Date(saleTimestamp);
+      const nowDate = new Date();
+      const isCurrentYear = saleDate.getFullYear() === nowDate.getFullYear();
+      return (diffMs >= -60000 && diffMs <= 365 * 24 * 60 * 60 * 1000) || isCurrentYear;
+    }
+    return true;
+  };
+
+  // Totales del periodo seleccionado
+  const periodSales = sales.filter(s => isSaleInPeriod(s.timestamp, periodFilter));
+  const periodTotalSales = periodSales.reduce((acc, s) => acc + s.total, 0);
+  const periodCash = periodSales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + s.total, 0);
+  const periodCard = periodSales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + s.total, 0);
+  const periodTransfer = periodSales.filter(s => s.paymentMethod === 'transfer').reduce((acc, s) => acc + s.total, 0);
+  const periodAverageTicket = periodSales.length > 0 ? Math.round(periodTotalSales / periodSales.length) : 0;
+
+  const periodLabel = periodFilter === 'all' 
+    ? 'Histórico Completo' 
+    : periodFilter === 'today' 
+    ? 'Hoy' 
+    : periodFilter === 'week' 
+    ? 'Esta Semana' 
+    : periodFilter === 'month' 
+    ? 'Este Mes' 
+    : 'Este Año';
 
   const filteredSales = sales.filter(s => {
+    const matchesPeriod = isSaleInPeriod(s.timestamp, periodFilter);
     const matchesSearch = s.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           s.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           s.cashierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,8 +95,16 @@ export const IncomeHistoryView: React.FC = () => {
     const matchesType = typeFilter === 'all' || 
                         (typeFilter === 'membership' && s.saleType === 'membership') ||
                         (typeFilter === 'store' && s.saleType !== 'membership');
-    return matchesSearch && matchesMethod && matchesType;
+    return matchesPeriod && matchesSearch && matchesMethod && matchesType;
   });
+
+  const handleExportToExcel = () => {
+    if (filteredSales.length === 0) {
+      alert('No hay cobros en este periodo o filtro para generar el reporte.');
+      return;
+    }
+    exportIncomeReportToExcel(filteredSales, periodLabel, gymSettings);
+  };
 
   return (
     <div className="space-y-6">
@@ -71,7 +124,7 @@ export const IncomeHistoryView: React.FC = () => {
               Historial de Ingresos y Facturación
             </h1>
             <p className="text-xs text-gym-muted mt-1 max-w-xl">
-              Registro consolidado de cobro de membresías, pases diarios y ventas de mostrador en la tienda de suplementos.
+              Registro consolidado de cobro de membresías, pases diarios y ventas en el punto de venta.
             </p>
           </div>
 
@@ -85,43 +138,49 @@ export const IncomeHistoryView: React.FC = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Total Ingresos Hoy */}
+        {/* Total Ingresos Periodo */}
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gym-muted uppercase">Ingresos de Hoy</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-bold text-gym-muted uppercase truncate max-w-[170px]" title={periodLabel}>
+              Ingresos ({periodLabel})
+            </span>
+            <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-emerald-400">
-              ${todaySalesTotal.toLocaleString('es-MX')}
+              ${periodTotalSales.toLocaleString('es-MX')}
             </span>
           </div>
-          <p className="text-[11px] text-gym-muted mt-1">Cobros procesados durante el día</p>
+          <p className="text-[11px] text-gym-muted mt-1">{periodSales.length} cobro(s) en este periodo</p>
         </div>
 
         {/* Efectivo en Caja */}
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gym-muted uppercase">Cobrado en Efectivo</span>
-            <Banknote className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-gym-muted uppercase truncate max-w-[170px]">
+              Cobrado en Efectivo
+            </span>
+            <Banknote className="w-4 h-4 text-amber-400 shrink-0" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-white">
-              ${totalCash.toLocaleString('es-MX')}
+              ${periodCash.toLocaleString('es-MX')}
             </span>
           </div>
-          <p className="text-[11px] text-gym-muted mt-1">En resguardo de gaveta</p>
+          <p className="text-[11px] text-gym-muted mt-1">En resguardo de gaveta ({periodFilter === 'all' ? 'todo' : periodLabel})</p>
         </div>
 
         {/* Tarjeta & Bancario */}
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gym-muted uppercase">Terminal & SPEI</span>
-            <CreditCard className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-bold text-gym-muted uppercase truncate max-w-[170px]">
+              Terminal & SPEI
+            </span>
+            <CreditCard className="w-4 h-4 text-blue-400 shrink-0" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-blue-400">
-              ${(totalCard + totalTransfer).toLocaleString('es-MX')}
+              ${(periodCard + periodTransfer).toLocaleString('es-MX')}
             </span>
           </div>
           <p className="text-[11px] text-gym-muted mt-1">Abonos directos a cuenta bancaria</p>
@@ -130,12 +189,14 @@ export const IncomeHistoryView: React.FC = () => {
         {/* Ticket Promedio */}
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gym-muted uppercase">Ticket Promedio</span>
-            <ShoppingBag className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-bold text-gym-muted uppercase truncate max-w-[170px]">
+              Ticket Promedio
+            </span>
+            <ShoppingBag className="w-4 h-4 text-purple-400 shrink-0" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-white">
-              ${averageTicket.toLocaleString('es-MX')}
+              ${periodAverageTicket.toLocaleString('es-MX')}
             </span>
           </div>
           <p className="text-[11px] text-gym-muted mt-1">Monto medio por transacción</p>
@@ -144,10 +205,10 @@ export const IncomeHistoryView: React.FC = () => {
       </div>
 
       {/* Filtros & Búsqueda */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gym-card p-3 rounded-2xl border border-gym-border">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-gym-card p-3 rounded-2xl border border-gym-border shadow-sm">
         
         {/* Search Input */}
-        <div className="relative w-full sm:w-80">
+        <div className="relative w-full lg:w-72 shrink-0">
           <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text"
@@ -158,8 +219,70 @@ export const IncomeHistoryView: React.FC = () => {
           />
         </div>
 
-        {/* Type & Method Filters */}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        {/* Type, Period & Method Filters */}
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {/* Period Filter (12h, Semana, Mes, Año, Todo) */}
+          <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
+            <div className="hidden sm:flex items-center gap-1 px-2 text-gym-muted text-xs font-bold border-r border-gym-border/60 mr-0.5">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>Periodo:</span>
+            </div>
+            <button
+              onClick={() => setPeriodFilter('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                periodFilter === 'all'
+                  ? 'bg-emerald-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              Todo
+            </button>
+            <button
+              onClick={() => setPeriodFilter('today')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                periodFilter === 'today'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+              title="Cobros registrados el día de hoy"
+            >
+              Hoy
+            </button>
+            <button
+              onClick={() => setPeriodFilter('week')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                periodFilter === 'week'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+              title="Cobros de los últimos 7 días"
+            >
+              Semana
+            </button>
+            <button
+              onClick={() => setPeriodFilter('month')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                periodFilter === 'month'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+              title="Cobros de este mes / últimos 30 días"
+            >
+              Mes
+            </button>
+            <button
+              onClick={() => setPeriodFilter('year')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                periodFilter === 'year'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+              title="Cobros de este año"
+            >
+              Año
+            </button>
+          </div>
+
           {/* Source Filter */}
           <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
             <button
@@ -192,7 +315,7 @@ export const IncomeHistoryView: React.FC = () => {
               }`}
             >
               <ShoppingBag className="w-3 h-3" />
-              <span>Tienda</span>
+              <span>Punto Venta</span>
             </button>
           </div>
 
@@ -239,8 +362,38 @@ export const IncomeHistoryView: React.FC = () => {
               Transfer
             </button>
           </div>
+
+          {/* Botón Descargar Reporte Detallado */}
+          <button
+            onClick={handleExportToExcel}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-black text-xs shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all transform hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            title={`Descargar reporte detallado de ingresos (${periodLabel}) en Excel (.xlsx)`}
+          >
+            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Descargar Reporte</span>
+          </button>
         </div>
 
+      </div>
+
+      {/* Resumen del periodo activo y contador de cobros */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-bold text-white">Detalle de Cobros:</span>
+          <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold text-[11px] inline-flex items-center gap-1">
+            <Clock className="w-3 h-3 text-amber-400" />
+            {periodLabel}
+          </span>
+          <span className="text-gym-muted">
+            ({filteredSales.length} {filteredSales.length === 1 ? 'cobro encontrado' : 'cobros encontrados'})
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-gym-muted">
+          <span>Total en vista:</span>
+          <span className="text-emerald-400 font-mono font-black text-sm">
+            ${filteredSales.reduce((acc, s) => acc + s.total, 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+          </span>
+        </div>
       </div>
 
       {/* Tabla de Ingresos */}
@@ -262,8 +415,14 @@ export const IncomeHistoryView: React.FC = () => {
             <tbody className="divide-y divide-gym-border/40">
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gym-muted">
-                    No se han registrado cobros o ventas en este periodo.
+                  <td colSpan={8} className="py-12 text-center text-gym-muted">
+                    <Clock className="w-8 h-8 mx-auto text-gym-muted/40 mb-2" />
+                    <p className="font-semibold text-gray-300 text-sm">
+                      No se encontraron cobros registrados en {periodLabel.toLowerCase()}.
+                    </p>
+                    <p className="text-[11px] text-gym-muted mt-1">
+                      Puedes cambiar el filtro de tiempo a &quot;Todo&quot; o seleccionar otro periodo (Hoy, Semana, Mes, Año).
+                    </p>
                   </td>
                 </tr>
               ) : (
@@ -290,9 +449,9 @@ export const IncomeHistoryView: React.FC = () => {
                             Membresía
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
                             <ShoppingBag className="w-3 h-3" />
-                            Tienda POS
+                            Punto Venta
                           </span>
                         )}
                       </td>

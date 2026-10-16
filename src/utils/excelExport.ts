@@ -215,3 +215,145 @@ export const exportShiftReportToExcel = (
   const fileName = `Reporte_Corte_Caja_${cashSession.id}_${safeDate}.xlsx`;
   XLSX.writeFile(wb, fileName);
 };
+
+// ==========================================
+// REPORTE DETALLADO Y CONCISO DE INGRESOS
+// ==========================================
+export const exportIncomeReportToExcel = (
+  sales: Sale[],
+  periodLabel: string,
+  gymSettings?: GymSettings
+) => {
+  const wb = XLSX.utils.book_new();
+
+  const totalSalesCount = sales.length;
+  const grandTotal = sales.reduce((sum, s) => sum + s.total, 0);
+  const totalCash = sales.filter(s => s.paymentMethod === 'cash').reduce((sum, s) => sum + s.total, 0);
+  const totalCard = sales.filter(s => s.paymentMethod === 'card').reduce((sum, s) => sum + s.total, 0);
+  const totalTransfer = sales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0);
+  const avgTicket = totalSalesCount > 0 ? Math.round(grandTotal / totalSalesCount) : 0;
+
+  // Desglose por tipo de venta
+  const membershipSales = sales.filter(s => s.saleType === 'membership');
+  const storeSales = sales.filter(s => s.saleType !== 'membership');
+  const totalMemberships = membershipSales.reduce((sum, s) => sum + s.total, 0);
+  const totalStore = storeSales.reduce((sum, s) => sum + s.total, 0);
+
+  // Desglose por cajero
+  const cashierMap: Record<string, { count: number; total: number }> = {};
+  sales.forEach(s => {
+    const name = s.cashierName || 'Cajero';
+    if (!cashierMap[name]) cashierMap[name] = { count: 0, total: 0 };
+    cashierMap[name].count += 1;
+    cashierMap[name].total += s.total;
+  });
+
+  // ==========================================
+  // HOJA 1: RESUMEN EJECUTIVO DE INGRESOS
+  // ==========================================
+  const summaryRows: (string | number)[][] = [
+    ['FITNESS LEGENDS GYM - REPORTE AUDITORÍA DE INGRESOS Y FACTURACIÓN'],
+    ['Gimnasio:', gymSettings?.gymName || 'Fitness Legends Gym', 'Fecha de Emisión:', new Date().toLocaleString('es-MX')],
+    ['Filtro / Periodo:', periodLabel.toUpperCase(), 'Total de Operaciones:', totalSalesCount],
+    ['Moneda:', 'MXN (Pesos Mexicanos)', 'Estado de Datos:', 'Auditoría en tiempo real'],
+    [],
+    ['--- 1. TOTAL GENERAL DE INGRESOS ---', '', '', ''],
+    ['Concepto', 'Monto ($ MXN)', '% del Total', 'Detalle'],
+    ['TOTAL RECAUDADO EN EL PERIODO', grandTotal, '100%', 'Suma total de cobros registrados'],
+    ['Cobrado en Efectivo', totalCash, grandTotal > 0 ? `${((totalCash / grandTotal) * 100).toFixed(1)}%` : '0%', 'Dinero recibido en efectivo físico'],
+    ['Cobrado con Tarjeta Bancaria', totalCard, grandTotal > 0 ? `${((totalCard / grandTotal) * 100).toFixed(1)}%` : '0%', 'Cobros procesados por Terminal POS'],
+    ['Cobrado por Transferencia (SPEI)', totalTransfer, grandTotal > 0 ? `${((totalTransfer / grandTotal) * 100).toFixed(1)}%` : '0%', 'Abonos directos bancarios SPEI'],
+    ['Ticket Promedio por Venta', avgTicket, '-', 'Promedio facturado por transacción'],
+    [],
+    ['--- 2. INGRESOS POR TIPO DE OPERACIÓN ---', '', '', ''],
+    ['Tipo de Venta / Servicio', 'Monto ($ MXN)', 'N° Operaciones', '% del Total'],
+    ['Membresías, Planes y Accesos', totalMemberships, membershipSales.length, grandTotal > 0 ? `${((totalMemberships / grandTotal) * 100).toFixed(1)}%` : '0%'],
+    ['Punto de Venta (Suplementos y Tienda)', totalStore, storeSales.length, grandTotal > 0 ? `${((totalStore / grandTotal) * 100).toFixed(1)}%` : '0%'],
+    [],
+    ['--- 3. RECAUDACIÓN POR CAJERO / RESPONSABLE ---', '', '', ''],
+    ['Nombre del Cajero', 'Monto Recaudado ($ MXN)', 'Cobros Realizados', '% de Participación'],
+    ...Object.entries(cashierMap).map(([cashier, data]) => [
+      cashier,
+      data.total,
+      data.count,
+      grandTotal > 0 ? `${((data.total / grandTotal) * 100).toFixed(1)}%` : '0%'
+    ]),
+    [],
+    ['Certificación:', 'Reporte generado automáticamente por el sistema ERP Fitness Legends Gym'],
+  ];
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSummary['!cols'] = [
+    { wch: 45 },
+    { wch: 24 },
+    { wch: 22 },
+    { wch: 45 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen de Ingresos');
+
+  // ==========================================
+  // HOJA 2: DETALLE TRANSACCIONAL DE COBROS
+  // ==========================================
+  const detailHeaders = [
+    'Folio / Ticket',
+    'Fecha y Hora',
+    'Tipo de Cobro',
+    'Cliente / Socio',
+    'ID Socio',
+    'Detalle de Productos / Plan',
+    'Método de Pago',
+    'Cajero Responsable',
+    'Subtotal ($ MXN)',
+    'Impuestos / IVA ($)',
+    'Total Cobrado ($ MXN)'
+  ];
+
+  const detailRows = sales.map(s => {
+    const itemsDescription = s.items && s.items.length > 0
+      ? s.items.map(it => `${it.quantity}x ${it.product?.name || 'Producto'} ($${it.unitPrice})`).join(' | ')
+      : s.planName || 'Cobro membresía / pase';
+
+    const paymentLabel = s.paymentMethod === 'cash'
+      ? 'Efectivo'
+      : s.paymentMethod === 'card'
+      ? 'Tarjeta Bancaria'
+      : 'Transferencia SPEI';
+
+    const typeLabel = s.saleType === 'membership' ? 'Membresía' : 'Punto Venta';
+
+    return [
+      s.folio || s.id,
+      new Date(s.timestamp).toLocaleString('es-MX'),
+      typeLabel,
+      s.clientName || 'Público en General',
+      s.clientId || '-',
+      itemsDescription,
+      paymentLabel,
+      s.cashierName || 'Administración',
+      s.subtotal || s.total,
+      s.tax || 0,
+      s.total
+    ];
+  });
+
+  const wsDetail = XLSX.utils.aoa_to_sheet([detailHeaders, ...detailRows]);
+  wsDetail['!cols'] = [
+    { wch: 18 }, // Folio
+    { wch: 22 }, // Fecha
+    { wch: 18 }, // Tipo
+    { wch: 28 }, // Cliente
+    { wch: 15 }, // ID
+    { wch: 50 }, // Detalle
+    { wch: 20 }, // Metodo
+    { wch: 24 }, // Cajero
+    { wch: 18 }, // Subtotal
+    { wch: 18 }, // Impuestos
+    { wch: 22 }, // Total
+  ];
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'Detalle de Cobros');
+
+  const safePeriod = periodLabel.replace(/[\s\/\(\)]+/g, '_');
+  const safeDate = new Date().toISOString().slice(0, 10);
+  const fileName = `Reporte_Ingresos_${safePeriod}_${safeDate}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+};
