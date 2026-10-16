@@ -86,7 +86,7 @@ export function subscribeToLocalSync(callback: (msg: SyncMessage) => void): () =
   };
 }
 
-export const CLOUD_SERVER_URL = 'https://legends-gym-sairec.vercel.app';
+export const CLOUD_SERVER_URL = 'https://legends-gym-gold.vercel.app';
 export const LOCAL_SERVER_URL = 'http://localhost:3001';
 
 /**
