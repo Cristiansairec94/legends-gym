@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGym } from '../../context/GymContext';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../types';
 import { 
@@ -16,7 +16,16 @@ import {
   FileText,
   AlertCircle,
   X,
-  Filter
+  Filter,
+  ChevronDown,
+  Check,
+  Layers,
+  Zap,
+  Wrench,
+  Package,
+  Users,
+  Megaphone,
+  Sparkles
 } from 'lucide-react';
 
 export const ExpensesManager: React.FC = () => {
@@ -32,7 +41,34 @@ export const ExpensesManager: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Close category dropdown on click outside or escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsCategoryDropdownOpen(false);
+      }
+    };
+
+    if (isCategoryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCategoryDropdownOpen]);
 
   // Nuevo gasto form state
   const [amount, setAmount] = useState<number | ''>('');
@@ -43,15 +79,78 @@ export const ExpensesManager: React.FC = () => {
   const [receiptNumber, setReceiptNumber] = useState('');
   const [notes, setNotes] = useState('');
 
-  const categoryLabels: Record<ExpenseCategory, { label: string; color: string }> = {
-    rent: { label: 'Renta de Local', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-    utilities: { label: 'Luz & Aire Acondicionado', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-    equipment: { label: 'Mantenimiento de Equipo', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-    supplements_stock: { label: 'Compra Suplementos', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    payroll: { label: 'Nómina & Sueldos', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-    marketing: { label: 'Marketing & Redes', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
-    cleaning: { label: 'Insumos de Limpieza', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-    other: { label: 'Otros Gastos', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' }
+  const categoryLabels: Record<ExpenseCategory, { 
+    label: string; 
+    shortLabel: string;
+    color: string; 
+    icon: React.ComponentType<{ className?: string }>;
+    iconBg: string;
+    iconColor: string;
+  }> = {
+    rent: { 
+      label: 'Renta de Local', 
+      shortLabel: 'Renta',
+      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      icon: Building2,
+      iconBg: 'bg-purple-500/15 border-purple-500/30',
+      iconColor: 'text-purple-400'
+    },
+    utilities: { 
+      label: 'Luz & Aire Acondicionado', 
+      shortLabel: 'Luz & A/C',
+      color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      icon: Zap,
+      iconBg: 'bg-yellow-500/15 border-yellow-500/30',
+      iconColor: 'text-yellow-400'
+    },
+    equipment: { 
+      label: 'Mantenimiento de Equipo', 
+      shortLabel: 'Mantenimiento',
+      color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      icon: Wrench,
+      iconBg: 'bg-blue-500/15 border-blue-500/30',
+      iconColor: 'text-blue-400'
+    },
+    supplements_stock: { 
+      label: 'Compra Suplementos', 
+      shortLabel: 'Suplementos',
+      color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      icon: Package,
+      iconBg: 'bg-emerald-500/15 border-emerald-500/30',
+      iconColor: 'text-emerald-400'
+    },
+    payroll: { 
+      label: 'Nómina & Sueldos', 
+      shortLabel: 'Nómina',
+      color: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      icon: Users,
+      iconBg: 'bg-rose-500/15 border-rose-500/30',
+      iconColor: 'text-rose-400'
+    },
+    marketing: { 
+      label: 'Marketing & Redes', 
+      shortLabel: 'Marketing',
+      color: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+      icon: Megaphone,
+      iconBg: 'bg-pink-500/15 border-pink-500/30',
+      iconColor: 'text-pink-400'
+    },
+    cleaning: { 
+      label: 'Insumos de Limpieza', 
+      shortLabel: 'Limpieza',
+      color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      icon: Sparkles,
+      iconBg: 'bg-cyan-500/15 border-cyan-500/30',
+      iconColor: 'text-cyan-400'
+    },
+    other: { 
+      label: 'Otros Gastos', 
+      shortLabel: 'Otros',
+      color: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+      icon: Tag,
+      iconBg: 'bg-gray-500/15 border-gray-500/30',
+      iconColor: 'text-gray-400'
+    }
   };
 
   const handleCreateExpense = (e: React.FormEvent) => {
@@ -167,51 +266,276 @@ export const ExpensesManager: React.FC = () => {
       </div>
 
       {/* Filtros & Búsqueda */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gym-card p-3 rounded-2xl border border-gym-border">
-        
-        {/* Search Input */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <input 
-            type="text"
-            placeholder="Buscar por folio, concepto o factura..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gym-surface border border-gym-border rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gym-muted focus:outline-none focus:border-red-400"
-          />
-        </div>
+      <div className="bg-gym-card p-3 rounded-2xl border border-gym-border shadow-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          
+          {/* LADO IZQUIERDO: Category Filter Dropdown Trigger */}
+          <div className="relative shrink-0" ref={categoryDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+              className={`w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-sm ${
+                categoryFilter !== 'all'
+                  ? 'bg-red-500/15 border-red-500/40 text-white shadow-[0_0_15px_rgba(239,68,68,0.15)]'
+                  : isCategoryDropdownOpen
+                  ? 'bg-gym-surface border-zinc-500 text-white shadow-md'
+                  : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-zinc-300 hover:text-white'
+              }`}
+              title="Filtrar gastos por categoría"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                {/* Dynamic Category Icon Box */}
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                  categoryFilter === 'all'
+                    ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                    : `${categoryLabels[categoryFilter as ExpenseCategory]?.iconBg} ${categoryLabels[categoryFilter as ExpenseCategory]?.iconColor}`
+                }`}>
+                  {categoryFilter === 'all' ? (
+                    <Layers className="w-3.5 h-3.5" />
+                  ) : (
+                    (() => {
+                      const IconComp = categoryLabels[categoryFilter as ExpenseCategory]?.icon || Tag;
+                      return <IconComp className="w-3.5 h-3.5" />;
+                    })()
+                  )}
+                </div>
 
-        {/* Category Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          <button
-            onClick={() => setCategoryFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              categoryFilter === 'all'
-                ? 'bg-red-500 text-white'
-                : 'bg-gym-surface text-gym-muted hover:text-white'
-            }`}
-          >
-            Todos ({expenses.length})
-          </button>
-          {Object.entries(categoryLabels).map(([catKey, catMeta]) => {
-            const count = expenses.filter(e => e.category === catKey).length;
-            if (count === 0 && categoryFilter !== catKey) return null;
-            return (
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                    Categoría
+                  </span>
+                  <span className="text-xs font-black text-white truncate max-w-[170px]">
+                    {categoryFilter === 'all'
+                      ? 'Todas las categorías'
+                      : categoryLabels[categoryFilter as ExpenseCategory]?.label || categoryFilter}
+                  </span>
+                </div>
+
+                {/* Counter Badge */}
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
+                  categoryFilter !== 'all'
+                    ? 'bg-red-500 text-white border-red-400 shadow-sm'
+                    : 'bg-zinc-800/90 text-zinc-300 border-zinc-700/80'
+                }`}>
+                  {categoryFilter === 'all'
+                    ? expenses.length
+                    : expenses.filter(e => e.category === categoryFilter).length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                {categoryFilter !== 'all' && (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategoryFilter('all');
+                    }}
+                    className="p-1 rounded-md hover:bg-red-500/25 text-red-400 hover:text-white transition-colors cursor-pointer"
+                    title="Mostrar todas las categorías"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 shrink-0 ${isCategoryDropdownOpen ? 'rotate-180 text-white' : ''}`} />
+              </div>
+            </button>
+
+            {/* Dropdown Menu en Forma de Lista (Diseño Compacto en 2 Columnas para no deslizar la página) */}
+            {isCategoryDropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[490px] md:w-[510px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                {/* Dropdown Header */}
+                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800/80 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[11px] uppercase font-extrabold tracking-wider text-zinc-300">
+                      Filtrar por Categoría
+                    </span>
+                  </div>
+                  {categoryFilter !== 'all' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategoryFilter('all');
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      className="text-[11px] font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Restablecer</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      8 categorías
+                    </span>
+                  )}
+                </div>
+
+                {/* Opción 1: Todas las categorías (Fila destacada superior) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategoryFilter('all');
+                    setIsCategoryDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all group border mb-2 ${
+                    categoryFilter === 'all'
+                      ? 'bg-red-500/15 border-red-500/40 text-white font-bold shadow-sm'
+                      : 'border-zinc-800/60 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                      categoryFilter === 'all'
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                        : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/70 group-hover:text-red-400 group-hover:border-red-500/40'
+                    }`}>
+                      <Layers className="w-3.5 h-3.5" />
+                    </div>
+                    <span className={`font-bold ${categoryFilter === 'all' ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                      Todas las categorías
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                      categoryFilter === 'all'
+                        ? 'bg-red-500/30 text-red-200 border-red-500/40'
+                        : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/70'
+                    }`}>
+                      {expenses.length}
+                    </span>
+                    {categoryFilter === 'all' && (
+                      <Check className="w-3.5 h-3.5 text-red-400 stroke-[3]" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Grid de 2 Columnas de Categorías (Ultra compacto, sin scroll largo) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[60vh] sm:max-h-none overflow-y-auto sm:overflow-visible pr-0.5 custom-scrollbar">
+                  {Object.entries(categoryLabels).map(([catKey, catMeta]) => {
+                    const count = expenses.filter(e => e.category === catKey).length;
+                    const isSelected = categoryFilter === catKey;
+                    const IconComponent = catMeta.icon;
+
+                    return (
+                      <button
+                        key={catKey}
+                        type="button"
+                        onClick={() => {
+                          setCategoryFilter(catKey);
+                          setIsCategoryDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-2 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all group border ${
+                          isSelected
+                            ? 'bg-red-500/15 border-red-500/40 text-white font-bold shadow-sm'
+                            : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 truncate">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                            catMeta.iconBg
+                          } ${catMeta.iconColor} group-hover:scale-105`}>
+                            <IconComponent className="w-3 h-3" />
+                          </div>
+                          
+                          <span className={`font-semibold text-xs truncate ${
+                            isSelected ? 'text-white' : 'text-zinc-200 group-hover:text-white'
+                          }`}>
+                            {catMeta.label}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
+                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full font-bold border transition-colors ${
+                            isSelected
+                              ? 'bg-red-500/30 text-red-200 border-red-500/40'
+                              : count > 0
+                              ? 'bg-zinc-800 text-zinc-200 border-zinc-700'
+                              : 'bg-zinc-900/50 text-zinc-500 border-zinc-800/40'
+                          }`}>
+                            {count}
+                          </span>
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-red-400 stroke-[3]" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer with summary */}
+                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                  <span>Total en catálogo</span>
+                  <span className="font-bold text-zinc-300">{expenses.length} gastos</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* LADO DERECHO: Search Input & Restablecer */}
+          <div className="flex items-center gap-2 flex-1 sm:justify-end">
+            <div className="relative w-full sm:w-64 md:w-80">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input 
+                type="text"
+                placeholder="Buscar por folio, concepto o factura..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gym-surface border border-gym-border hover:border-zinc-600 focus:border-red-400 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors shadow-sm"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5 rounded transition-colors"
+                  title="Limpiar búsqueda"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Reset Filters button if any filter is active */}
+            {(categoryFilter !== 'all' || searchTerm) && (
               <button
-                key={catKey}
-                onClick={() => setCategoryFilter(catKey)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-                  categoryFilter === catKey
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gym-surface text-gym-muted hover:text-white'
-                }`}
+                type="button"
+                onClick={() => {
+                  setCategoryFilter('all');
+                  setSearchTerm('');
+                }}
+                className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold transition-all whitespace-nowrap shadow-sm"
+                title="Restablecer búsqueda y categoría"
               >
-                {catMeta.label} ({count})
+                Restablecer
               </button>
-            );
-          })}
+            )}
+          </div>
+
         </div>
 
+        {/* Info strip when filtering */}
+        {(categoryFilter !== 'all' || searchTerm) && (
+          <div className="mt-2.5 pt-2 border-t border-gym-border/40 flex items-center justify-between text-[11px] text-gym-muted">
+            <span>
+              Mostrando <strong className="text-white">{filteredExpenses.length}</strong> de <strong className="text-white">{expenses.length}</strong> gastos registrados
+            </span>
+            <div className="flex items-center gap-2">
+              {categoryFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20 font-bold">
+                  {categoryLabels[categoryFilter as ExpenseCategory]?.label}
+                  <button onClick={() => setCategoryFilter('all')} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 font-bold">
+                  "{searchTerm}"
+                  <button onClick={() => setSearchTerm('')} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Expenses Table */}
