@@ -267,8 +267,20 @@ let db = {
   version: 1,
   updatedAt: new Date().toISOString(),
   members: [],
+  products: [],
+  sales: [],
+  expenses: [],
+  cashSession: null,
+  employees: [],
+  roles: [],
+  settings: null,
+  catalogPlans: [],
+  branches: [],
+  accessLogs: [],
   deletedMemberIds: [],
-  accessLogs: []
+  deletedProductIds: [],
+  deletedExpenseIds: [],
+  deletedEmployeeIds: []
 };
 
 // Load existing database if available
@@ -613,6 +625,170 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         logs: db.accessLogs
       });
+    }
+
+    // 6. Full Database Sync (GET & POST)
+    if ((pathname === '/api/sync/database' || pathname === '/api/database') && req.method === 'GET') {
+      return sendJson(res, 200, {
+        success: true,
+        version: db.version,
+        updatedAt: db.updatedAt,
+        database: db
+      });
+    }
+
+    if ((pathname === '/api/sync/database' || pathname === '/api/database') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      
+      if (body.action === 'entity_change') {
+        const { entity, changeType, item, itemId } = body;
+        if (!entity) return sendJson(res, 400, { error: 'Falta campo entity' });
+
+        if (entity === 'products') {
+          if (!Array.isArray(db.products)) db.products = [];
+          if (!Array.isArray(db.deletedProductIds)) db.deletedProductIds = [];
+          if (changeType === 'delete') {
+            const id = itemId || item?.id;
+            if (id) {
+              db.deletedProductIds.push(id);
+              db.products = db.products.filter(p => p.id !== id);
+            }
+          } else if (item && item.id) {
+            db.deletedProductIds = db.deletedProductIds.filter(id => id !== item.id);
+            const exists = db.products.some(p => p.id === item.id);
+            if (exists) {
+              db.products = db.products.map(p => p.id === item.id ? { ...p, ...item } : p);
+            } else {
+              db.products = [item, ...db.products];
+            }
+          }
+        } else if (entity === 'sales') {
+          if (!Array.isArray(db.sales)) db.sales = [];
+          if (item && item.id) {
+            const exists = db.sales.some(s => s.id === item.id);
+            if (exists) {
+              db.sales = db.sales.map(s => s.id === item.id ? { ...s, ...item } : s);
+            } else {
+              db.sales = [item, ...db.sales];
+            }
+          }
+        } else if (entity === 'expenses') {
+          if (!Array.isArray(db.expenses)) db.expenses = [];
+          if (!Array.isArray(db.deletedExpenseIds)) db.deletedExpenseIds = [];
+          if (changeType === 'delete') {
+            const id = itemId || item?.id;
+            if (id) {
+              db.deletedExpenseIds.push(id);
+              db.expenses = db.expenses.filter(e => e.id !== id);
+            }
+          } else if (item && item.id) {
+            db.deletedExpenseIds = db.deletedExpenseIds.filter(id => id !== item.id);
+            const exists = db.expenses.some(e => e.id === item.id);
+            if (exists) {
+              db.expenses = db.expenses.map(e => e.id === item.id ? { ...e, ...item } : e);
+            } else {
+              db.expenses = [item, ...db.expenses];
+            }
+          }
+        } else if (entity === 'cashSession') {
+          if (item) db.cashSession = item;
+        } else if (entity === 'employees') {
+          if (!Array.isArray(db.employees)) db.employees = [];
+          if (!Array.isArray(db.deletedEmployeeIds)) db.deletedEmployeeIds = [];
+          if (changeType === 'delete') {
+            const id = itemId || item?.id;
+            if (id) {
+              db.deletedEmployeeIds.push(id);
+              db.employees = db.employees.filter(e => e.id !== id);
+            }
+          } else if (item && item.id) {
+            db.deletedEmployeeIds = db.deletedEmployeeIds.filter(id => id !== item.id);
+            const exists = db.employees.some(e => e.id === item.id);
+            if (exists) {
+              db.employees = db.employees.map(e => e.id === item.id ? { ...e, ...item } : e);
+            } else {
+              db.employees = [item, ...db.employees];
+            }
+          }
+        } else if (entity === 'settings') {
+          if (item) db.settings = { ...(db.settings || {}), ...item };
+        } else if (entity === 'catalogPlans') {
+          if (!Array.isArray(db.catalogPlans)) db.catalogPlans = [];
+          if (changeType === 'delete') {
+            const id = itemId || item?.id;
+            if (id) db.catalogPlans = db.catalogPlans.filter(p => p.id !== id);
+          } else if (item && item.id) {
+            const exists = db.catalogPlans.some(p => p.id === item.id);
+            if (exists) {
+              db.catalogPlans = db.catalogPlans.map(p => p.id === item.id ? { ...p, ...item } : p);
+            } else {
+              db.catalogPlans = [...db.catalogPlans, item];
+            }
+          }
+        }
+
+        db.version += 1;
+        db.updatedAt = new Date().toISOString();
+        saveDbToDisk();
+        broadcastSseEvent({ type: 'DATABASE_UPDATED', entity, changeType, version: db.version, timestamp: Date.now() });
+        return sendJson(res, 200, { success: true, version: db.version, updatedAt: db.updatedAt, entity, changeType });
+      }
+
+      if (body.action === 'full_sync' || body.database) {
+        const incoming = body.database || body;
+        if (Array.isArray(incoming.members)) {
+          const map = new Map();
+          for (const m of db.members || []) if (m && m.id && !db.deletedMemberIds?.includes(m.id)) map.set(m.id, m);
+          for (const m of incoming.members) if (m && m.id && !db.deletedMemberIds?.includes(m.id)) map.set(m.id, { ...(map.get(m.id) || {}), ...m });
+          db.members = Array.from(map.values());
+        }
+        if (Array.isArray(incoming.products)) {
+          const map = new Map();
+          for (const p of db.products || []) if (p && p.id && !db.deletedProductIds?.includes(p.id)) map.set(p.id, p);
+          for (const p of incoming.products) if (p && p.id && !db.deletedProductIds?.includes(p.id)) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+          db.products = Array.from(map.values());
+        }
+        if (Array.isArray(incoming.sales)) {
+          const map = new Map();
+          for (const s of db.sales || []) if (s && s.id) map.set(s.id, s);
+          for (const s of incoming.sales) if (s && s.id) map.set(s.id, { ...(map.get(s.id) || {}), ...s });
+          db.sales = Array.from(map.values());
+        }
+        if (Array.isArray(incoming.expenses)) {
+          const map = new Map();
+          for (const e of db.expenses || []) if (e && e.id && !db.deletedExpenseIds?.includes(e.id)) map.set(e.id, e);
+          for (const e of incoming.expenses) if (e && e.id && !db.deletedExpenseIds?.includes(e.id)) map.set(e.id, { ...(map.get(e.id) || {}), ...e });
+          db.expenses = Array.from(map.values());
+        }
+        if (incoming.cashSession) db.cashSession = incoming.cashSession;
+        if (Array.isArray(incoming.employees)) {
+          const map = new Map();
+          for (const emp of db.employees || []) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, emp);
+          for (const emp of incoming.employees) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, { ...(map.get(emp.id) || {}), ...emp });
+          db.employees = Array.from(map.values());
+        }
+        if (incoming.settings) db.settings = { ...(db.settings || {}), ...incoming.settings };
+        if (Array.isArray(incoming.catalogPlans)) {
+          const map = new Map();
+          for (const p of db.catalogPlans || []) if (p && p.id) map.set(p.id, p);
+          for (const p of incoming.catalogPlans) if (p && p.id) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+          db.catalogPlans = Array.from(map.values());
+        }
+        if (Array.isArray(incoming.accessLogs)) {
+          const map = new Map();
+          for (const l of db.accessLogs || []) if (l && l.id) map.set(l.id, l);
+          for (const l of incoming.accessLogs) if (l && l.id) map.set(l.id, l);
+          db.accessLogs = Array.from(map.values()).slice(0, 1000);
+        }
+
+        db.version += 1;
+        db.updatedAt = new Date().toISOString();
+        saveDbToDisk();
+        broadcastSseEvent({ type: 'DATABASE_UPDATED', version: db.version, timestamp: Date.now() });
+        return sendJson(res, 200, { success: true, version: db.version, updatedAt: db.updatedAt, database: db });
+      }
+
+      return sendJson(res, 400, { error: 'Formato no válido' });
     }
 
     // Default 404

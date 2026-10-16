@@ -34,7 +34,10 @@ import {
   fetchMembersFromServer,
   fetchAccessLogsFromServer,
   checkServerHealth,
-  isTodayDate
+  isTodayDate,
+  fetchFullDatabaseFromServer,
+  pushFullDatabaseToServer,
+  pushEntityChangeToServer
 } from '../services/syncService';
 
 interface GymContextType {
@@ -256,6 +259,25 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return Array.from(map.values());
   }, []);
 
+  // Generic helper to merge any entity list by id
+  const mergeById = useCallback(<T extends { id: string }>(currentList: T[], incomingList: T[], deletedIds: string[] = []): T[] => {
+    const map = new Map<string, T>();
+    for (const item of currentList) {
+      if (item && item.id && !deletedIds.includes(item.id)) {
+        map.set(item.id, item);
+      }
+    }
+    for (const item of incomingList) {
+      if (item && item.id && !deletedIds.includes(item.id)) {
+        const existing = map.get(item.id);
+        map.set(item.id, { ...(existing || {}), ...item });
+      }
+    }
+    return Array.from(map.values());
+  }, []);
+
+  const serverVersionRef = useRef<number>(0);
+
   // Helper to process any incoming access log from Desktop Terminal or Remote Server
   const ingestIncomingAccessLog = useCallback((incomingLog: AccessLog) => {
     if (!incomingLog || !incomingLog.id) return;
@@ -399,27 +421,101 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     });
 
-    // 3. Initial server connection & healthcheck + bidirectional member merge + load historical access logs
+    // 3. Initial server connection & healthcheck + bidirectional full database sync
     const syncServerData = async () => {
       try {
         const status = await checkServerHealth();
         setIsTerminalConnected(status.online);
         if (status.online) {
-          const data = await fetchMembersFromServer();
-          if (data.success && data.members.length > 0) {
-            const merged = mergeMemberLists(membersRef.current, data.members);
-            membersRef.current = merged;
-            setMembers(merged);
-            // Push merged list back so both local server and cloud server have all members
-            pushMembersToServer(merged).catch(() => {});
-          } else if (membersRef.current.length > 0) {
-            pushMembersToServer(membersRef.current).catch(() => {});
-          }
+          const res = await fetchFullDatabaseFromServer();
+          if (res.success && res.database) {
+            serverVersionRef.current = res.version;
+            const db = res.database;
+            if (Array.isArray(db.members) && db.members.length > 0) {
+              const merged = mergeMemberLists(membersRef.current, db.members);
+              membersRef.current = merged;
+              setMembers(merged);
+            }
+            if (Array.isArray(db.products) && db.products.length > 0) {
+              setProducts(prev => {
+                const merged = mergeById(prev, db.products!);
+                storage.saveProducts(merged);
+                return merged;
+              });
+            }
+            if (Array.isArray(db.sales) && db.sales.length > 0) {
+              setSales(prev => {
+                const merged = mergeById(prev, db.sales!);
+                storage.saveSales(merged);
+                return merged;
+              });
+            }
+            if (Array.isArray(db.expenses) && db.expenses.length > 0) {
+              setExpenses(prev => {
+                const merged = mergeById(prev, db.expenses!);
+                storage.saveExpenses(merged);
+                return merged;
+              });
+            }
+            if (db.cashSession) {
+              setCashSession(prev => {
+                const prevTime = new Date(prev.openedAt || 0).getTime();
+                const serverTime = new Date(db.cashSession!.openedAt || 0).getTime();
+                if (serverTime >= prevTime) {
+                  storage.saveCashSession(db.cashSession!);
+                  return db.cashSession!;
+                }
+                return prev;
+              });
+            }
+            if (Array.isArray(db.employees) && db.employees.length > 0) {
+              setEmployees(prev => {
+                const merged = mergeById(prev, db.employees!);
+                storage.saveEmployees(merged);
+                return merged;
+              });
+            }
+            if (db.settings) {
+              setGymSettings(prev => {
+                const merged = { ...prev, ...db.settings };
+                storage.saveSettings(merged);
+                return merged;
+              });
+            }
+            if (Array.isArray(db.catalogPlans) && db.catalogPlans.length > 0) {
+              setCatalogPlans(prev => {
+                const merged = mergeById(prev, db.catalogPlans!);
+                storage.saveCatalogPlans(merged);
+                return merged;
+              });
+            }
+            if (Array.isArray(db.accessLogs) && db.accessLogs.length > 0) {
+              db.accessLogs.forEach(l => ingestIncomingAccessLog(l));
+            }
 
-          // Fetch previous access logs from server so historical check-ins are not lost
-          const serverLogs = await fetchAccessLogsFromServer();
-          if (serverLogs && serverLogs.length > 0) {
-            serverLogs.forEach(l => ingestIncomingAccessLog(l));
+            // Sync back full local database to ensure server has any local additions
+            pushFullDatabaseToServer({
+              members: membersRef.current,
+              products: storage.getProducts(),
+              sales: storage.getSales(),
+              expenses: storage.getExpenses(),
+              cashSession: storage.getCashSession(),
+              employees: storage.getEmployees(),
+              settings: storage.getSettings(),
+              catalogPlans: storage.getCatalogPlans(),
+            }).catch(() => {});
+          } else {
+            // First time seed: populate server with complete local database
+            pushFullDatabaseToServer({
+              members: membersRef.current,
+              products: storage.getProducts(),
+              sales: storage.getSales(),
+              expenses: storage.getExpenses(),
+              cashSession: storage.getCashSession(),
+              employees: storage.getEmployees(),
+              settings: storage.getSettings(),
+              catalogPlans: storage.getCatalogPlans(),
+            }).catch(() => {});
           }
         }
       } catch {
@@ -429,35 +525,52 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     syncServerData();
 
-    // 4. Background safety polling (every 2.5 seconds) for both members and check-ins
+    // 4. Background safety polling (every 3 seconds) for all modules in real time
     const pollInterval = setInterval(() => {
-      fetchMembersFromServer().then(data => {
-        if (data.success && data.members.length > 0) {
+      fetchFullDatabaseFromServer(undefined, serverVersionRef.current).then(res => {
+        if (res.success && res.database) {
           setIsTerminalConnected(true);
-          setMembers(prev => {
-            const next = mergeMemberLists(prev, data.members);
-            membersRef.current = next;
-            return next;
-          });
+          serverVersionRef.current = res.version;
+          const db = res.database;
+          if (Array.isArray(db.members) && db.members.length > 0) {
+            setMembers(prev => {
+              const next = mergeMemberLists(prev, db.members!);
+              membersRef.current = next;
+              return next;
+            });
+          }
+          if (Array.isArray(db.products) && db.products.length > 0) {
+            setProducts(prev => mergeById(prev, db.products!));
+          }
+          if (Array.isArray(db.sales) && db.sales.length > 0) {
+            setSales(prev => mergeById(prev, db.sales!));
+          }
+          if (Array.isArray(db.expenses) && db.expenses.length > 0) {
+            setExpenses(prev => mergeById(prev, db.expenses!));
+          }
+          if (db.cashSession) {
+            setCashSession(prev => {
+              const prevTime = new Date(prev.openedAt || 0).getTime();
+              const serverTime = new Date(db.cashSession!.openedAt || 0).getTime();
+              return serverTime >= prevTime ? db.cashSession! : prev;
+            });
+          }
+          if (Array.isArray(db.employees) && db.employees.length > 0) {
+            setEmployees(prev => mergeById(prev, db.employees!));
+          }
+          if (Array.isArray(db.accessLogs) && db.accessLogs.length > 0) {
+            db.accessLogs.forEach(l => ingestIncomingAccessLog(l));
+          }
         }
       }).catch(() => {});
-
-      fetchAccessLogsFromServer().then(logs => {
-        setIsTerminalConnected(true);
-        if (logs && logs.length > 0) {
-          logs.forEach(l => ingestIncomingAccessLog(l));
-        }
-      }).catch(() => {
-        // Silent error
-      });
-    }, 2500);
+    }, 3000);
 
     return () => {
       unsubscribeLocal();
       unsubscribeRemote();
       clearInterval(pollInterval);
     };
-  }, [ingestIncomingAccessLog, mergeMemberLists]);
+  }, [ingestIncomingAccessLog, mergeMemberLists, mergeById]);
 
   // Security Guard: Single-Tab Session Binding & Anti-Copy/Paste URL Hijacking
   useEffect(() => {
@@ -917,6 +1030,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setSales(prev => [memberSale, ...prev]);
       broadcastLocalSync({ type: 'SALE_ADDED', sale: memberSale });
+      pushEntityChangeToServer('sales', 'add', memberSale).catch(() => {});
 
       setCashSession(prev => {
         const next = {
@@ -927,6 +1041,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           expectedCash: initialPaymentMethod === 'cash' ? prev.expectedCash + planPrice : prev.expectedCash,
         };
         broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+        pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
         return next;
       });
 
@@ -1093,6 +1208,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSales(prev => [renewalSale, ...prev]);
     broadcastLocalSync({ type: 'SALE_ADDED', sale: renewalSale });
+    pushEntityChangeToServer('sales', 'add', renewalSale).catch(() => {});
 
     setCashSession(prev => {
       const next = {
@@ -1103,6 +1219,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         expectedCash: paymentMethod === 'cash' ? prev.expectedCash + price : prev.expectedCash,
       };
       broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+      pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
       return next;
     });
 
@@ -1137,11 +1254,17 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newId = `PROD-${String(products.length + 1).padStart(3, '0')}`;
     const newProduct: Product = { ...productData, id: newId };
     setProducts(prev => [newProduct, ...prev]);
+    pushEntityChangeToServer('products', 'add', newProduct).catch(() => {});
     return newProduct;
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setProducts(prev => {
+      const next = prev.map(p => p.id === id ? { ...p, ...updates } : p);
+      const target = next.find(p => p.id === id);
+      if (target) pushEntityChangeToServer('products', 'update', target).catch(() => {});
+      return next;
+    });
   };
 
   const deleteProduct = (id: string) => {
@@ -1150,6 +1273,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       `Eliminar producto de inventario: ${target ? target.name : id}`,
       () => {
         setProducts(prev => prev.filter(p => p.id !== id));
+        pushEntityChangeToServer('products', 'delete', null, id).catch(() => {});
       }
     );
   };
@@ -1164,7 +1288,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return p;
       });
       const targetP = updated.find(p => p.id === id);
-      if (targetP) broadcastLocalSync({ type: 'PRODUCT_UPDATED', product: targetP });
+      if (targetP) {
+        broadcastLocalSync({ type: 'PRODUCT_UPDATED', product: targetP });
+        pushEntityChangeToServer('products', 'update', targetP).catch(() => {});
+      }
       return updated;
     });
   };
@@ -1276,6 +1403,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setSales(prev => [newSale, ...prev]);
     broadcastLocalSync({ type: 'SALE_ADDED', sale: newSale });
+    pushEntityChangeToServer('sales', 'add', newSale).catch(() => {});
 
     setCashSession(prev => {
       const next = {
@@ -1286,6 +1414,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         expectedCash: paymentMethod === 'cash' ? prev.expectedCash + cartTotal : prev.expectedCash,
       };
       broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+      pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
       return next;
     });
 
@@ -1472,6 +1601,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     setCashSession(closed);
     broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: closed });
+    pushEntityChangeToServer('cashSession', 'update', closed).catch(() => {});
   };
 
   const openCashSession = (initialCash: number) => {
@@ -1491,6 +1621,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     setCashSession(newSession);
     broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: newSession });
+    pushEntityChangeToServer('cashSession', 'update', newSession).catch(() => {});
   };
 
   // Empleados (Staff)
@@ -1498,11 +1629,17 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newId = `EMP-${String(employees.length + 1).padStart(3, '0')}`;
     const newEmp: Employee = { ...data, id: newId };
     setEmployees(prev => [newEmp, ...prev]);
+    pushEntityChangeToServer('employees', 'add', newEmp).catch(() => {});
     return newEmp;
   };
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    setEmployees(prev => {
+      const next = prev.map(e => e.id === id ? { ...e, ...updates } : e);
+      const target = next.find(e => e.id === id);
+      if (target) pushEntityChangeToServer('employees', 'update', target).catch(() => {});
+      return next;
+    });
     if (currentUser?.id === id) {
       const updated = { ...currentUser, ...updates };
       setCurrentUserState(updated);
@@ -1512,6 +1649,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deleteEmployee = (id: string) => {
     setEmployees(prev => prev.filter(e => e.id !== id));
+    pushEntityChangeToServer('employees', 'delete', null, id).catch(() => {});
     if (currentUser?.id === id) {
       logout();
     }
@@ -1519,22 +1657,33 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Configuración & Catálogos
   const updateGymSettings = (updates: Partial<GymSettings>) => {
-    setGymSettings(prev => ({ ...prev, ...updates }));
+    setGymSettings(prev => {
+      const next = { ...prev, ...updates };
+      pushEntityChangeToServer('settings', 'update', next).catch(() => {});
+      return next;
+    });
   };
 
   const addCatalogPlan = (plan: Omit<SystemCatalogPlan, 'id'>): SystemCatalogPlan => {
     const newId = `CAT-PLAN-${String(catalogPlans.length + 1).padStart(3, '0')}`;
     const newPlan: SystemCatalogPlan = { ...plan, id: newId };
     setCatalogPlans(prev => [newPlan, ...prev]);
+    pushEntityChangeToServer('catalogPlans', 'add', newPlan).catch(() => {});
     return newPlan;
   };
 
   const updateCatalogPlan = (id: string, updates: Partial<SystemCatalogPlan>) => {
-    setCatalogPlans(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setCatalogPlans(prev => {
+      const next = prev.map(p => p.id === id ? { ...p, ...updates } : p);
+      const target = next.find(p => p.id === id);
+      if (target) pushEntityChangeToServer('catalogPlans', 'update', target).catch(() => {});
+      return next;
+    });
   };
 
   const deleteCatalogPlan = (id: string) => {
     setCatalogPlans(prev => prev.filter(p => p.id !== id));
+    pushEntityChangeToServer('catalogPlans', 'delete', null, id).catch(() => {});
   };
 
   // Multi-Sucursal (Branches)
@@ -1559,6 +1708,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     setExpenses(prev => [newExpense, ...prev]);
     broadcastLocalSync({ type: 'EXPENSE_ADDED', expense: newExpense });
+    pushEntityChangeToServer('expenses', 'add', newExpense).catch(() => {});
 
     // Si se pagó en efectivo de caja, se descuenta del efectivo esperado
     if (data.paidFromCashRegister && cashSession.status === 'open') {
@@ -1569,6 +1719,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           notes: (prev.notes ? prev.notes + ' | ' : '') + `Gasto en caja: -$${data.amount} (${data.description.slice(0, 30)})`
         };
         broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+        pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
         return next;
       });
     }
@@ -1596,10 +1747,12 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               expectedCash: prev.expectedCash + target.amount
             };
             broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+            pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
             return next;
           });
         }
         setExpenses(prev => prev.filter(e => e.id !== id));
+        pushEntityChangeToServer('expenses', 'delete', null, id).catch(() => {});
       }
     );
   };

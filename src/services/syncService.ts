@@ -6,7 +6,11 @@ import {
   Product, 
   CashRegisterSession, 
   Branch, 
-  SystemNotification 
+  SystemNotification,
+  Employee,
+  RoleDefinition,
+  GymSettings,
+  SystemCatalogPlan
 } from '../types';
 import { serializeGymAvatar } from '../utils/genderAvatar';
 
@@ -487,4 +491,147 @@ export function isTodayDate(dateStr: string): boolean {
     return false;
   }
 }
+
+export interface SyncedDatabase {
+  version: number;
+  updatedAt: string;
+  members?: Client[];
+  products?: Product[];
+  sales?: Sale[];
+  expenses?: Expense[];
+  cashSession?: CashRegisterSession | null;
+  employees?: Employee[];
+  roles?: RoleDefinition[];
+  settings?: GymSettings | null;
+  catalogPlans?: SystemCatalogPlan[];
+  branches?: Branch[];
+  accessLogs?: AccessLog[];
+}
+
+/**
+ * Fetch full gym database from all available servers (Local + Cloud)
+ */
+export async function fetchFullDatabaseFromServer(
+  serverUrl?: string,
+  sinceVersion: number = 0
+): Promise<{
+  success: boolean;
+  database?: SyncedDatabase;
+  version: number;
+  hasChanges: boolean;
+}> {
+  const targets = getSyncTargets(serverUrl);
+  const responses = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(`${base}/api/sync/database?sinceVersion=${sinceVersion}`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.database) {
+            return {
+              success: true,
+              version: Number(json.version || 0),
+              database: json.database as SyncedDatabase,
+            };
+          }
+        }
+      } catch {}
+      return null;
+    })
+  );
+
+  const valid = responses.filter((r): r is NonNullable<typeof r> => r !== null && r.success);
+  if (valid.length === 0) {
+    return { success: false, version: sinceVersion, hasChanges: false };
+  }
+
+  // Pick the response with the highest version
+  valid.sort((a, b) => b.version - a.version);
+  const best = valid[0];
+
+  return {
+    success: true,
+    database: best.database,
+    version: best.version,
+    hasChanges: best.version > sinceVersion,
+  };
+}
+
+/**
+ * Push full gym database to all sync servers (Local + Cloud)
+ */
+export async function pushFullDatabaseToServer(
+  database: Partial<SyncedDatabase>,
+  serverUrl?: string
+): Promise<{ success: boolean; version?: number }> {
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`${base}/api/sync/database`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'full_sync', database }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          return { success: true, version: json.version };
+        }
+      } catch {}
+      return { success: false };
+    })
+  );
+
+  const succeeded = results.find((r) => r.success);
+  return succeeded || { success: false };
+}
+
+/**
+ * Push an atomic entity change (products, sales, expenses, cashSession, employees, settings, catalogPlans)
+ * to all sync servers so all devices update in real time
+ */
+export async function pushEntityChangeToServer(
+  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans',
+  changeType: 'add' | 'update' | 'delete',
+  item: any,
+  itemId?: string,
+  serverUrl?: string
+): Promise<{ success: boolean; version?: number }> {
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(`${base}/api/sync/database`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'entity_change', entity, changeType, item, itemId }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          return { success: true, version: json.version };
+        }
+      } catch {}
+      return { success: false };
+    })
+  );
+
+  const succeeded = results.find((r) => r.success);
+  return succeeded || { success: false };
+}
+
 
