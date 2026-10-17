@@ -362,7 +362,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     }
                   }
                 }}
-                placeholder="Buscar suplemento, sabor o código..."
+                placeholder="Buscar producto, sabor o código..."
                 className="w-full pl-10 pr-12 py-2.5 bg-gym-card rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted shadow-sm focus:outline-none focus:border-amber-400 transition-colors"
               />
               {search && (

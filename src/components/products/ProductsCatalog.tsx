@@ -339,7 +339,7 @@ export const ProductsCatalog: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar suplemento, proteína, shaker o código de barras..."
+            placeholder="Buscar producto, suplemento, shaker o código de barras..."
             className="w-full pl-10 pr-4 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
           />
         </div>
