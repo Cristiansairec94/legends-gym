@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sale } from '../../types';
 import { X, Printer, CheckCircle2 } from 'lucide-react';
-import { BarcodeSVG } from '../products/BarcodeSVG';
 import logoImg from '../../assets/logo.png';
 
 interface ReceiptModalProps {
@@ -276,18 +275,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
 
           <div style={{ borderBottom: '1px dashed #555555', margin: '3px 0' }} className="receipt-divider" />
 
-          {/* Barcode & Footer */}
-          <div style={{ textAlign: 'center', marginTop: '2px', color: '#000000' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '1px auto', maxWidth: '160px' }}>
-              <BarcodeSVG value={sale.folio || 'FOLIO-000'} height={24} fontSize={9} showText={false} className="w-40 max-w-full mx-auto" />
-            </div>
-            <p style={{ fontSize: '10px', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'monospace', margin: '1px 0 2px 0' }}>
-              * {sale.folio} *
-            </p>
-            <p style={{ fontSize: '8.5px', fontWeight: 'bold', color: '#111111', marginBottom: '1px' }}>
+          {/* Footer */}
+          <div style={{ textAlign: 'center', marginTop: '4px', color: '#000000' }}>
+            <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#111111', marginBottom: '2px' }}>
               ¡GRACIAS POR ENTRENAR CON LAS LEYENDAS!
             </p>
-            <p style={{ fontSize: '7.5px', color: '#666666' }}>
+            <p style={{ fontSize: '8px', color: '#666666' }}>
               Conserva este ticket para cualquier aclaración o garantía.
             </p>
           </div>
