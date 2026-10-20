@@ -1,3 +1,5 @@
+import gymBg from '../../assets/gym-background.jpg';
+import logoImg from '../../assets/logo.png';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGym } from '../../context/GymContext';
 import { FingerprintScanner } from './FingerprintScanner';
@@ -308,35 +310,35 @@ export const IndependentTerminalApp: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-[#07080b] text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
+    <div className="relative min-h-screen h-screen w-full overflow-y-auto text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
       
-      {/* Immersive Real Gym Background with Cinematic Dark Overlay */}
+      {/* Real Gym Background Photo */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <img
-          src="./gym-background.jpg"
-          alt="Legends Gym Background"
-          className="w-full h-full object-cover object-center filter brightness-95 contrast-[1.08] saturate-[1.15] transform scale-[1.01]"
+          src={gymBg}
+          alt="Fitness Legends Gym Background"
+          className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
         />
-        {/* Dark Vignette & Glass Blur for Optimal Text Readability & Contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#07080b]/80 via-[#07080b]/55 to-[#07080b]/90 backdrop-blur-[1.5px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#07080b]/40 to-[#07080b]/85" />
+        {/* Soft atmospheric overlay without black darkness */}
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
       </div>
 
       {/* Top Application Bar / Brand & Terminal Header */}
       <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#0d0e15]/85 backdrop-blur-xl px-5 py-3.5 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 backdrop-blur-2xl px-5 py-3.5 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden">
           
           {/* Subtle glow accent */}
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Left Title with Gym Logo */}
           <div className="flex items-center gap-3.5">
-            <img
-              src="./logo.png"
-              alt="Fitness Legends Gym"
-              className="w-11 h-11 rounded-xl object-contain bg-black border border-gym-border p-0.5 shrink-0 shadow-md"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-            />
+            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 p-1 shrink-0 shadow-lg flex items-center justify-center">
+              <img
+                src={logoImg}
+                alt="Fitness Legends Gym"
+                className="w-full h-full object-contain filter drop-shadow"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -408,7 +410,7 @@ export const IndependentTerminalApp: React.FC = () => {
       <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3 relative z-10">
         
         {/* Hardware Sensor Simulator Box */}
-        <div className="bg-[#0d0e15]/80 backdrop-blur-xl rounded-2xl border border-white/10 px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
+        <div className="bg-slate-900/55 backdrop-blur-2xl rounded-2xl border border-white/20 px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
           
           {/* Top sensor status bar */}
           <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
@@ -523,7 +525,7 @@ export const IndependentTerminalApp: React.FC = () => {
                       }
                     }}
                     placeholder="Ej. Carlos Mendoza, Juan Solis, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2.5 bg-black/50 backdrop-blur-md rounded-xl border border-white/15 text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-zinc-300 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/40 transition-all shadow-inner"
                   />
                 </div>
                 <button
@@ -563,7 +565,7 @@ export const IndependentTerminalApp: React.FC = () => {
         </div>
 
         {/* Quick Testing Bar for Operator convenience */}
-        <div className="px-4 py-2.5 bg-[#0d0e15]/80 backdrop-blur-xl rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-gym-muted shrink-0 relative z-10">
+        <div className="px-4 py-2.5 bg-slate-900/60 backdrop-blur-2xl rounded-xl border border-white/20 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-300 shrink-0 relative z-10">
           <span>Pruebas rápidas:</span>
           <div className="flex items-center flex-wrap gap-2">
             <button
