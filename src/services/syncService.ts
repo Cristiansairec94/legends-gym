@@ -323,10 +323,16 @@ export async function pushMemberActionToServer(
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`${base}/api/sync/members`, {
+        const res = await fetch(`${base}/api/sync/database`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, ...compactData }),
+          body: JSON.stringify({
+            action: 'entity_change',
+            entity: 'members',
+            changeType: action,
+            item: compactData.member,
+            itemId: compactData.memberId || compactData.member?.id
+          }),
           signal: controller.signal,
         });
         clearTimeout(timer);
@@ -570,7 +576,7 @@ export async function fetchFullDatabaseFromServer(
     success: true,
     database: best.database,
     version: best.version,
-    hasChanges: best.version > sinceVersion,
+    hasChanges: best.hasChanges !== undefined ? best.hasChanges : (best.version > sinceVersion),
   };
 }
 
@@ -612,7 +618,7 @@ export async function pushFullDatabaseToServer(
  * to all sync servers so all devices update in real time
  */
 export async function pushEntityChangeToServer(
-  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans',
+  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs',
   changeType: 'add' | 'update' | 'delete',
   item: any,
   itemId?: string,
