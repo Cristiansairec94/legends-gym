@@ -9,7 +9,8 @@ if (process.platform === 'win32') {
 
 let mainWindow = null;
 const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
-const appMode = process.env.APP_MODE || (process.argv.includes('--main') ? 'main' : 'terminal');
+const appMode = process.env.APP_MODE || (process.argv.includes('--terminal') ? 'terminal' : (process.argv.includes('--main') ? 'main' : 'main'));
+process.env.APP_MODE = appMode;
 const startUrlArg = process.env.START_URL;
 
 function resolveAppIcon() {

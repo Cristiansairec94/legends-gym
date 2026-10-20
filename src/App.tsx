@@ -24,10 +24,12 @@ import { IndependentTerminalApp } from './components/access/IndependentTerminalA
 export const isTerminalMode = (): boolean => {
   if (typeof window === 'undefined') return false;
   const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.get('mode') === 'main') return false;
   if (searchParams.get('mode') === 'terminal' || searchParams.get('terminal') === 'true') return true;
   if (window.location.hash.includes('terminal')) return true;
-  if ((window as any).electronAPI?.appMode === 'terminal') return true;
+  if (localStorage.getItem('legends_device_mode') === 'main') return false;
   if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
+  if ((window as any).electronAPI?.appMode === 'terminal') return true;
   return false;
 };
 

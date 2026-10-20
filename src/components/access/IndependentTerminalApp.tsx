@@ -308,11 +308,23 @@ export const IndependentTerminalApp: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto bg-gym-bg text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
+    <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-[#07080b] text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
       
+      {/* Immersive Real Gym Background with Cinematic Dark Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <img
+          src="./gym-background.jpg"
+          alt="Legends Gym Background"
+          className="w-full h-full object-cover object-center filter brightness-95 contrast-[1.08] saturate-[1.15] transform scale-[1.01]"
+        />
+        {/* Dark Vignette & Glass Blur for Optimal Text Readability & Contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07080b]/80 via-[#07080b]/55 to-[#07080b]/90 backdrop-blur-[1.5px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#07080b]/40 to-[#07080b]/85" />
+      </div>
+
       {/* Top Application Bar / Brand & Terminal Header */}
-      <div className="w-full max-w-6xl mx-auto shrink-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gym-card px-5 py-3.5 rounded-2xl border border-gym-border shadow-xl relative overflow-hidden">
+      <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#0d0e15]/85 backdrop-blur-xl px-5 py-3.5 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
           
           {/* Subtle glow accent */}
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -393,10 +405,10 @@ export const IndependentTerminalApp: React.FC = () => {
       </div>
 
       {/* Main Container: Biometric Terminal Card adapted to window size */}
-      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3">
+      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3 relative z-10">
         
         {/* Hardware Sensor Simulator Box */}
-        <div className="bg-gym-card rounded-2xl border border-gym-border px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
+        <div className="bg-[#0d0e15]/80 backdrop-blur-xl rounded-2xl border border-white/10 px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
           
           {/* Top sensor status bar */}
           <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
@@ -511,7 +523,7 @@ export const IndependentTerminalApp: React.FC = () => {
                       }
                     }}
                     placeholder="Ej. Carlos Mendoza, Juan Solis, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-2.5 bg-black/50 backdrop-blur-md rounded-xl border border-white/15 text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"
                   />
                 </div>
                 <button
@@ -533,7 +545,7 @@ export const IndependentTerminalApp: React.FC = () => {
             </div>
 
             {/* Quick Access Today Counter */}
-            <div className="mt-3 pt-2.5 border-t border-gym-border/80 flex items-center justify-between">
+            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-gym-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
@@ -551,34 +563,34 @@ export const IndependentTerminalApp: React.FC = () => {
         </div>
 
         {/* Quick Testing Bar for Operator convenience */}
-        <div className="px-4 py-2.5 bg-gym-card/60 rounded-xl border border-gym-border flex flex-wrap items-center justify-between gap-2 text-xs text-gym-muted shrink-0">
+        <div className="px-4 py-2.5 bg-[#0d0e15]/80 backdrop-blur-xl rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-gym-muted shrink-0 relative z-10">
           <span>Pruebas rápidas:</span>
           <div className="flex items-center flex-wrap gap-2">
             <button
               onClick={() => executeScan('MEM-001')}
               disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-emerald-400 font-medium transition-colors"
+              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-emerald-400 font-medium transition-colors"
             >
               ✓ Carlos Mendoza (Activo)
             </button>
             <button
               onClick={() => executeScan('MEM-008')}
               disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-emerald-400 font-medium transition-colors"
+              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-emerald-400 font-medium transition-colors"
             >
               ✓ Juan Solis (Activo)
             </button>
             <button
               onClick={() => executeScan('MEM-004')}
               disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-amber-400 font-medium transition-colors"
+              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-amber-400 font-medium transition-colors"
             >
               ⚠ Membresía Vencida
             </button>
             <button
               onClick={() => executeScan('DESCONOCIDO')}
               disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-gym-surface hover:bg-gym-border rounded-lg text-red-400 font-medium transition-colors"
+              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-red-400 font-medium transition-colors"
             >
               ✗ No Registrado
             </button>

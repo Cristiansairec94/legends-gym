@@ -16,11 +16,13 @@ import {
 interface ClientFormModalProps {
   onClose: () => void;
   onClientCreated: (client: Client, wantsEnrollment: boolean) => void;
+  initialPlanId?: string;
 }
 
 export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   onClose,
   onClientCreated,
+  initialPlanId,
 }) => {
   const { addMember, catalogPlans } = useGym();
 
@@ -29,7 +31,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [avatarUrl, setAvatarUrl] = useState(GYM_AREAS_PHOTOS[0]);
   const [genderFilter, setGenderFilter] = useState<'male' | 'female'>('male');
   const [hasManuallySelectedPhoto, setHasManuallySelectedPhoto] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('CAT-PLAN-002');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'CAT-PLAN-002');
   const [planType, setPlanType] = useState<MembershipPlanType>('monthly');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [emergencyName, setEmergencyName] = useState('');

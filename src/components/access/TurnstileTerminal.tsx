@@ -103,10 +103,21 @@ export const TurnstileTerminal: React.FC = () => {
   };
 
   return (
-    <div className={`space-y-6 ${isFullScreen ? 'p-6 bg-gym-bg min-h-screen' : ''}`}>
+    <div className={`space-y-6 relative rounded-3xl overflow-hidden p-3 sm:p-5 ${isFullScreen ? 'p-6 bg-[#07080b] min-h-screen' : ''}`}>
       
+      {/* Immersive Real Gym Background with Cinematic Dark Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
+        <img
+          src="./gym-background.jpg"
+          alt="Legends Gym Background"
+          className="w-full h-full object-cover object-center filter brightness-95 contrast-[1.08] saturate-[1.15]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07080b]/85 via-[#07080b]/60 to-[#07080b]/90 backdrop-blur-[1.5px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#07080b]/40 to-[#07080b]/85" />
+      </div>
+
       {/* Top Banner / Mode Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0d0e15]/85 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-2xl relative z-10">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -188,10 +199,10 @@ export const TurnstileTerminal: React.FC = () => {
       </div>
 
       {/* Main Container: Biometric Terminal */}
-      <div className="w-full space-y-5">
+      <div className="w-full space-y-5 relative z-10">
           
           {/* Hardware Sensor Simulator Box */}
-          <div className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-xl relative overflow-hidden">
+          <div className="bg-[#0d0e15]/80 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center justify-between border-b border-gym-border pb-3 mb-2">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-400" />
@@ -229,7 +240,7 @@ export const TurnstileTerminal: React.FC = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && searchQuery && executeScan(searchQuery)}
                     placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/15 text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors shadow-inner"
                   />
                 </div>
                 <button
