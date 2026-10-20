@@ -608,100 +608,40 @@ export const IndependentTerminalApp: React.FC = () => {
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-white/25 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold"
+            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="absolute top-4 right-4">
-              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500/25 text-amber-300 border border-amber-500/40">
-                Inscripción
-              </span>
+            <div className="w-20 h-20 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              👤
             </div>
-
-            <div>
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                👤
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
-                Cliente Nuevo
-              </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300">
-                Registrarme &rarr;
-              </span>
-              <span className="w-8 h-8 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
-                +
-              </span>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+              Cliente Nuevo
+            </h3>
           </div>
 
-          {/* Opción 2: VISITA / PASE DIARIO */}
+          {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-white/25 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-green"
+            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
           >
-            <div className="absolute top-4 right-4">
-              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
-                Pase del Día
-              </span>
+            <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              🎟️
             </div>
-
-            <div>
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                🎟️
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
-                Quiero Visita
-              </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300">
-                Pase de Visita &rarr;
-              </span>
-              <span className="w-8 h-8 rounded-xl bg-emerald-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
-                ✓
-              </span>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow">
+              Quiero Visita
+            </h3>
           </div>
 
           {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border-2 border-amber-400 hover:border-amber-300 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5"
+            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="absolute top-4 right-4">
-              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse">
-                Acceso Directo
-              </span>
+            <div className="w-20 h-20 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              ⚡
             </div>
-
-            <div>
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/30 border border-amber-400/50 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                ⚡
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
-                Ya Tengo Membresía
-              </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300">
-                Validar Huella / ID &rarr;
-              </span>
-              <span className="w-8 h-8 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
-                👆
-              </span>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+              Ya Tengo Membresía
+            </h3>
           </div>
 
         </div>
