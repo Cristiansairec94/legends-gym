@@ -15,6 +15,7 @@ import {
   Clock,
   ExternalLink,
   Users,
+  Image,
   LogOut,
   Download
 } from 'lucide-react';
@@ -33,6 +34,9 @@ export const TurnstileTerminal: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [bgImage, setBgImage] = useState<string>(() => {
+    return localStorage.getItem('legends_terminal_bg') || gymBg;
+  });
 
   // Trigger simulated scan
   const executeScan = (identifier: string) => {
@@ -109,7 +113,7 @@ export const TurnstileTerminal: React.FC = () => {
       {/* Real Gym Background Photo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
         <img
-          src={gymBg}
+          src={bgImage}
           alt="Fitness Legends Gym Background"
           className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
         />
@@ -117,7 +121,7 @@ export const TurnstileTerminal: React.FC = () => {
       </div>
 
       {/* Top Banner / Mode Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/60 backdrop-blur-2xl p-5 rounded-2xl border border-white/20 shadow-2xl relative z-10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 relative z-10">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -153,6 +157,32 @@ export const TurnstileTerminal: React.FC = () => {
             <LogOut className="w-3.5 h-3.5" />
             <span>Registrar Salida</span>
           </button>
+
+          <label
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-xs font-bold text-gray-100 hover:text-white cursor-pointer transition-all shadow-md group"
+            title="Cambiar fotografía de fondo del gimnasio"
+          >
+            <Image className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>Cambiar Foto</span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const result = event.target?.result as string;
+                  if (result) {
+                    setBgImage(result);
+                    try { localStorage.setItem('legends_terminal_bg', result); } catch {}
+                  }
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
 
           <button
             onClick={() => setIsHistoryModalOpen(true)}
@@ -202,7 +232,7 @@ export const TurnstileTerminal: React.FC = () => {
       <div className="w-full space-y-5 relative z-10">
           
           {/* Hardware Sensor Simulator Box */}
-          <div className="bg-slate-900/55 backdrop-blur-2xl rounded-2xl border border-white/20 p-6 shadow-2xl relative overflow-hidden">
+          <div className="p-3 relative">
             <div className="flex items-center justify-between border-b border-gym-border pb-3 mb-2">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-400" />

@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Flame,
   Sparkles,
+  Image,
   ArrowRight
 } from 'lucide-react';
 import { getGymAvatar } from '../../utils/genderAvatar';
@@ -49,6 +50,9 @@ export const IndependentTerminalApp: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [bgImage, setBgImage] = useState<string>(() => {
+    return localStorage.getItem('legends_terminal_bg') || gymBg;
+  });
 
   // Standalone terminal configuration
   const [config, setConfig] = useState<TerminalConfig>(() => getTerminalConfig());
@@ -315,7 +319,7 @@ export const IndependentTerminalApp: React.FC = () => {
       {/* Real Gym Background Photo */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <img
-          src={gymBg}
+          src={bgImage}
           alt="Fitness Legends Gym Background"
           className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
         />
@@ -325,7 +329,7 @@ export const IndependentTerminalApp: React.FC = () => {
 
       {/* Top Application Bar / Brand & Terminal Header */}
       <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 backdrop-blur-2xl px-5 py-3.5 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 relative">
           
           {/* Subtle glow accent */}
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -357,6 +361,33 @@ export const IndependentTerminalApp: React.FC = () => {
 
           {/* Right Action Buttons */}
           <div className="flex items-center flex-wrap gap-2">
+            {/* Cambiar Foto Button */}
+            <label
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-xs font-bold text-gray-100 hover:text-white cursor-pointer transition-all shadow-md group"
+              title="Cambiar fotografía de fondo del gimnasio"
+            >
+              <Image className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span>Cambiar Foto</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const result = event.target?.result as string;
+                    if (result) {
+                      setBgImage(result);
+                      try { localStorage.setItem('legends_terminal_bg', result); } catch {}
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </label>
+
             {/* View Access History */}
             <button
               onClick={() => setIsHistoryModalOpen(true)}
@@ -410,7 +441,7 @@ export const IndependentTerminalApp: React.FC = () => {
       <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3 relative z-10">
         
         {/* Hardware Sensor Simulator Box */}
-        <div className="bg-slate-900/55 backdrop-blur-2xl rounded-2xl border border-white/20 px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
+        <div className="relative flex-1 flex flex-col justify-between gap-3 px-4 py-2">
           
           {/* Top sensor status bar */}
           <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
@@ -565,7 +596,7 @@ export const IndependentTerminalApp: React.FC = () => {
         </div>
 
         {/* Quick Testing Bar for Operator convenience */}
-        <div className="px-4 py-2.5 bg-slate-900/60 backdrop-blur-2xl rounded-xl border border-white/20 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-300 shrink-0 relative z-10">
+        <div className="px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-white shrink-0 relative z-10">
           <span>Pruebas rápidas:</span>
           <div className="flex items-center flex-wrap gap-2">
             <button
