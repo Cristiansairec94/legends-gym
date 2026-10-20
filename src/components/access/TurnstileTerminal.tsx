@@ -117,7 +117,7 @@ export const TurnstileTerminal: React.FC = () => {
           alt="Fitness Legends Gym Background"
           className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
         />
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+
       </div>
 
       {/* Top Banner / Mode Header */}

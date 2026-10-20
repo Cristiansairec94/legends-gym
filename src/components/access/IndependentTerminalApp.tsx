@@ -324,7 +324,7 @@ export const IndependentTerminalApp: React.FC = () => {
           className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
         />
         {/* Soft atmospheric overlay without black darkness */}
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+
       </div>
 
       {/* Top Application Bar / Brand & Terminal Header */}
