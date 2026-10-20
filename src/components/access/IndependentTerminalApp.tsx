@@ -316,14 +316,36 @@ export const IndependentTerminalApp: React.FC = () => {
   return (
     <div className="relative min-h-screen h-screen w-full overflow-y-auto text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
       
+            {/* Hardware-accelerated 8K Ultra-Sharp Filter definition */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }} aria-hidden="true">
+        <defs>
+          <filter id="ultra-sharp-8k-terminal" x="-10%" y="-10%" width="120%" height="120%">
+            <feConvolveMatrix 
+              order="3" 
+              preserveAlpha="true" 
+              kernelMatrix="
+                0 -0.25 0 
+                -0.25 2.0 -0.25 
+                0 -0.25 0" 
+            />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Real Gym Background Photo */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <img
           src={bgImage}
           alt="Fitness Legends Gym Background"
-          className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
+          style={{
+            filter: 'url(#ultra-sharp-8k-terminal) brightness(0.68) contrast(1.18) saturate(1.10)',
+            imageRendering: '-webkit-optimize-contrast',
+            transform: 'translateZ(0)',
+          }}
+          className="w-full h-full object-cover object-center"
         />
-        {/* Soft atmospheric overlay without black darkness */}
+        {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
+        <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] pointer-events-none" />
 
       </div>
 

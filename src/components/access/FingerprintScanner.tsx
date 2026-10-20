@@ -132,7 +132,7 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
             ? 'text-emerald-400'
             : status === 'denied'
             ? 'text-red-400'
-            : 'text-gray-300'
+            : 'text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]'
         }`}>
           {status === 'scanning' && 'Escaneando Huella Digital...'}
           {status === 'granted' && (clientName ? `¡Bienvenido, ${clientName}!` : '¡Acceso Concedido!')}
@@ -141,7 +141,7 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
         </p>
 
         {(status === 'idle' || status === 'scanning' || status === 'denied') && (
-          <p className="text-xs text-gym-muted mt-1">
+          <p className="text-xs text-amber-300/90 font-semibold drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)] mt-1">
             {status === 'idle' && 'Haz clic en el sensor o usa los accesos rápidos abajo'}
             {status === 'scanning' && 'Leyendo minucias biométricas...'}
             {status === 'denied' && 'Consulte el estado de su membresía en recepción'}

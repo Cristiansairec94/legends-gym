@@ -110,13 +110,36 @@ export const TurnstileTerminal: React.FC = () => {
   return (
     <div className={`space-y-6 relative rounded-3xl overflow-hidden p-3 sm:p-5 ${isFullScreen ? 'p-6 min-h-screen' : ''}`}>
       
+            {/* Hardware-accelerated 8K Ultra-Sharp Filter definition */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }} aria-hidden="true">
+        <defs>
+          <filter id="ultra-sharp-8k-turnstile" x="-10%" y="-10%" width="120%" height="120%">
+            <feConvolveMatrix 
+              order="3" 
+              preserveAlpha="true" 
+              kernelMatrix="
+                0 -0.25 0 
+                -0.25 2.0 -0.25 
+                0 -0.25 0" 
+            />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Real Gym Background Photo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
         <img
           src={bgImage}
           alt="Fitness Legends Gym Background"
-          className="w-full h-full object-cover object-center filter brightness-105 contrast-[1.05]"
+          style={{
+            filter: 'url(#ultra-sharp-8k-turnstile) brightness(0.68) contrast(1.18) saturate(1.10)',
+            imageRendering: '-webkit-optimize-contrast',
+            transform: 'translateZ(0)',
+          }}
+          className="w-full h-full object-cover object-center"
         />
+        {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
+        <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] pointer-events-none" />
 
       </div>
 
