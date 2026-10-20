@@ -525,50 +525,85 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     syncServerData();
 
-    // 4. Background safety polling (every 3 seconds) for all modules in real time
-    const pollInterval = setInterval(() => {
+    // 4. Real-time background sync polling (every 2.5 seconds) for multi-computer linked profiles
+    const executeSync = () => {
       fetchFullDatabaseFromServer(undefined, serverVersionRef.current).then(res => {
-        if (res.success && res.database) {
+        if (res.success) {
           setIsTerminalConnected(true);
-          serverVersionRef.current = res.version;
-          const db = res.database;
-          if (Array.isArray(db.members) && db.members.length > 0) {
-            setMembers(prev => {
-              const next = mergeMemberLists(prev, db.members!);
-              membersRef.current = next;
-              return next;
-            });
-          }
-          if (Array.isArray(db.products) && db.products.length > 0) {
-            setProducts(prev => mergeById(prev, db.products!));
-          }
-          if (Array.isArray(db.sales) && db.sales.length > 0) {
-            setSales(prev => mergeById(prev, db.sales!));
-          }
-          if (Array.isArray(db.expenses) && db.expenses.length > 0) {
-            setExpenses(prev => mergeById(prev, db.expenses!));
-          }
-          if (db.cashSession) {
-            setCashSession(prev => {
-              const prevTime = new Date(prev.openedAt || 0).getTime();
-              const serverTime = new Date(db.cashSession!.openedAt || 0).getTime();
-              return serverTime >= prevTime ? db.cashSession! : prev;
-            });
-          }
-          if (Array.isArray(db.employees) && db.employees.length > 0) {
-            setEmployees(prev => mergeById(prev, db.employees!));
-          }
-          if (Array.isArray(db.accessLogs) && db.accessLogs.length > 0) {
-            db.accessLogs.forEach(l => ingestIncomingAccessLog(l));
+          if (res.hasChanges && res.database) {
+            serverVersionRef.current = res.version;
+            const db = res.database;
+            if (Array.isArray(db.members) && db.members.length > 0) {
+              setMembers(prev => {
+                const next = mergeMemberLists(prev, db.members!);
+                membersRef.current = next;
+                storage.saveMembers(next);
+                return next;
+              });
+            }
+            if (Array.isArray(db.products) && db.products.length > 0) {
+              setProducts(prev => {
+                const next = mergeById(prev, db.products!);
+                storage.saveProducts(next);
+                return next;
+              });
+            }
+            if (Array.isArray(db.sales) && db.sales.length > 0) {
+              setSales(prev => {
+                const next = mergeById(prev, db.sales!);
+                storage.saveSales(next);
+                return next;
+              });
+            }
+            if (Array.isArray(db.expenses) && db.expenses.length > 0) {
+              setExpenses(prev => {
+                const next = mergeById(prev, db.expenses!);
+                storage.saveExpenses(next);
+                return next;
+              });
+            }
+            if (db.cashSession) {
+              setCashSession(prev => {
+                const prevTime = new Date(prev.openedAt || 0).getTime();
+                const serverTime = new Date(db.cashSession!.openedAt || 0).getTime();
+                if (serverTime >= prevTime) {
+                  storage.saveCashSession(db.cashSession!);
+                  return db.cashSession!;
+                }
+                return prev;
+              });
+            }
+            if (Array.isArray(db.employees) && db.employees.length > 0) {
+              setEmployees(prev => {
+                const next = mergeById(prev, db.employees!);
+                storage.saveEmployees(next);
+                return next;
+              });
+            }
+            if (Array.isArray(db.accessLogs) && db.accessLogs.length > 0) {
+              db.accessLogs.forEach(l => ingestIncomingAccessLog(l));
+            }
           }
         }
       }).catch(() => {});
-    }, 3000);
+    };
+
+    const pollInterval = setInterval(executeSync, 2500);
+
+    // Instant sync on window focus / tab active (switching between computers)
+    const onFocusSync = () => {
+      executeSync();
+    };
+    window.addEventListener('focus', onFocusSync);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onFocusSync();
+    });
 
     return () => {
       unsubscribeLocal();
       unsubscribeRemote();
       clearInterval(pollInterval);
+      window.removeEventListener('focus', onFocusSync);
     };
   }, [ingestIncomingAccessLog, mergeMemberLists, mergeById]);
 

@@ -150,6 +150,34 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
             </div>
           </div>
 
+          {/* Cloud Vercel Connection & Multi-Computer Access */}
+          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-blue-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>☁️</span> Acceso en la Nube (Vercel) • Multi-Equipo
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText('https://legends-gym-gold.vercel.app');
+                  alert('¡Enlace copiado! Pégalo en tu otra computadora para abrir el sistema con tu mismo perfil.');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/35 text-blue-300 text-[10px] font-bold border border-blue-500/30 transition-all cursor-pointer"
+              >
+                Copiar Enlace
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-300 leading-relaxed">
+              Abre este enlace en tu otra computadora e inicia sesión con tu mismo perfil (ej. Administrador Roberto):
+            </p>
+            <div className="p-2 rounded-lg bg-black/60 border border-white/15 font-mono text-xs text-amber-300 select-all break-all flex items-center justify-between gap-2">
+              <span>https://legends-gym-gold.vercel.app</span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold shrink-0">Tiempo Real</span>
+            </div>
+            <p className="text-[10px] text-gray-400 leading-normal">
+              💡 Ambos dispositivos están enlazados automáticamente. Cualquier socio agregado, venta o asistencia se refleja al instante en ambas computadoras.
+            </p>
+          </div>
+
           {/* Force Sync Button */}
           <button
             onClick={() => forceSync()}

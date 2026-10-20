@@ -281,7 +281,7 @@ const htmlContent = `<!DOCTYPE html>
       const [relaySeconds, setRelaySeconds] = useState(0);
       const [showHistoryModal, setShowHistoryModal] = useState(false);
       const [showConfigModal, setShowConfigModal] = useState(false);
-      const [serverUrl, setServerUrl] = useState(() => localStorage.getItem('legends_server_url') || 'http://localhost:3001');
+      const [serverUrl, setServerUrl] = useState(() => localStorage.getItem('legends_server_url') || 'https://legends-gym-gold.vercel.app');
       const [serverOnline, setServerOnline] = useState(false);
 
       const relayTimerRef = useRef(null);

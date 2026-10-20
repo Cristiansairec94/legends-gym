@@ -138,7 +138,16 @@ export function getResolvedServerUrl(customUrl?: string): string {
  */
 export function getSyncTargets(customUrl?: string): string[] {
   const primary = getResolvedServerUrl(customUrl);
-  const targets = new Set<string>([primary, LOCAL_SERVER_URL, CLOUD_SERVER_URL]);
+  const targets = new Set<string>([primary]);
+
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    // Under HTTPS (like Vercel production), prevent Mixed Content by only using HTTPS endpoints
+    targets.add(CLOUD_SERVER_URL);
+  } else {
+    targets.add(LOCAL_SERVER_URL);
+    targets.add(CLOUD_SERVER_URL);
+  }
+
   return Array.from(targets).filter(Boolean);
 }
 
@@ -534,11 +543,12 @@ export async function fetchFullDatabaseFromServer(
         clearTimeout(timer);
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.database) {
+          if (json.success) {
             return {
               success: true,
               version: Number(json.version || 0),
               database: json.database as SyncedDatabase,
+              hasChanges: json.hasChanges !== undefined ? json.hasChanges : (Number(json.version || 0) > sinceVersion)
             };
           }
         }

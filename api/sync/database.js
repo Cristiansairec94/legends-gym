@@ -12,10 +12,20 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const store = await getFullDatabase();
+      const since = parseInt(req.query?.sinceVersion || 0, 10);
+      if (since > 0 && store.version <= since) {
+        return res.status(200).json({
+          success: true,
+          version: store.version,
+          updatedAt: store.updatedAt,
+          hasChanges: false
+        });
+      }
       return res.status(200).json({
         success: true,
         version: store.version,
         updatedAt: store.updatedAt,
+        hasChanges: true,
         database: store
       });
     }
