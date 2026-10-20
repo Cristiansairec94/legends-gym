@@ -24,18 +24,33 @@ import { IndependentTerminalApp } from './components/access/IndependentTerminalA
 export const isTerminalMode = (): boolean => {
   if (typeof window === 'undefined') return false;
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get('mode') === 'main') return false;
+  if (searchParams.get('mode') === 'main' || searchParams.get('mode') === 'pos' || searchParams.get('tab') === 'pos') return false;
   if (searchParams.get('mode') === 'terminal' || searchParams.get('terminal') === 'true') return true;
   if (window.location.hash.includes('terminal')) return true;
-  if (localStorage.getItem('legends_device_mode') === 'main') return false;
+  if (localStorage.getItem('legends_device_mode') === 'main' || localStorage.getItem('legends_device_mode') === 'pos') return false;
   if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
   if ((window as any).electronAPI?.appMode === 'terminal') return true;
   return false;
 };
 
+const getInitialTab = (): string => {
+  if (typeof window === 'undefined') return 'dashboard';
+  const searchParams = new URLSearchParams(window.location.search);
+  const target = searchParams.get('tab') || searchParams.get('mode');
+  if (target === 'pos') return 'pos';
+  if (target === 'access') return 'access';
+  if (target === 'clients') return 'clients';
+  if (target === 'catalog') return 'catalog';
+  if (target === 'cash') return 'cash';
+  if (target === 'incomes') return 'incomes';
+  if (target === 'expenses') return 'expenses';
+  if (target === 'inventory') return 'inventory';
+  return 'dashboard';
+};
+
 const MainLayout: React.FC = () => {
   const { currentRole } = useGym();
-  const [activeTab, setActiveTab] = useState<string>('dashboard'); 
+  const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
