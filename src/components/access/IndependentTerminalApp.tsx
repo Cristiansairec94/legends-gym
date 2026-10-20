@@ -26,7 +26,8 @@ import {
   Flame,
   Sparkles,
   Image,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react';
 import { getGymAvatar } from '../../utils/genderAvatar';
 import { checkServerHealth, fetchMembersFromServer } from '../../services/syncService';
@@ -47,6 +48,22 @@ export const IndependentTerminalApp: React.FC = () => {
 
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+
+  // 3 Main Options Modals State
+  const [showNewMemberModal, setShowNewMemberModal] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [showDirectAccessModal, setShowDirectAccessModal] = useState(false);
+
+  // New client form state
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientId, setNewClientId] = useState('');
+  const [newClientPhone, setNewClientPhone] = useState('');
+  const [newClientPlan, setNewClientPlan] = useState('Mensualidad Completa');
+  const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(false);
+
+  // Visit pass state
+  const [visitClientName, setVisitClientName] = useState('');
+  const [visitCost, setVisitCost] = useState('5.00');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -130,6 +147,70 @@ export const IndependentTerminalApp: React.FC = () => {
     } catch {
       // ignore
     }
+  };
+
+  // Handle Registration of New Member
+  const handleRegisterNewMember = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmedName = newClientName.trim();
+    if (!trimmedName) return;
+    const memberId = newClientId.trim() || ('MEM-' + Math.floor(100 + Math.random() * 900));
+    
+    // Add to members
+    const newMember: any = {
+      id: memberId,
+      name: trimmedName,
+      phone: newClientPhone.trim() || 'N/A',
+      membershipType: newClientPlan,
+      status: 'active',
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 30*24*60*60*1000).toISOString(),
+      daysRemaining: 30,
+      biometricEnrolled: true,
+      notes: 'Registrado desde Terminal de Acceso',
+      gender: 'male',
+      biometrics: {
+        enrolled: true,
+        template: 'simulated_template_' + Date.now(),
+        registeredAt: new Date().toISOString(),
+        quality: 95
+      }
+    };
+
+    const updated = [newMember, ...members];
+    replaceMembers(updated);
+
+    setShowNewMemberModal(false);
+    setNewClientName('');
+    setNewClientId('');
+    setNewClientPhone('');
+    setNewClientFingerprintEnrolled(false);
+
+    // Instant direct access for the new member
+    executeScan(memberId);
+  };
+
+  // Handle Visit / Day Pass
+  const handleRegisterVisit = () => {
+    const name = visitClientName.trim() || 'Visitante del Día';
+
+    setScanStatus('granted');
+    setLastVerifiedClient({
+      name: name,
+      plan: 'Pase por 1 Día',
+      reason: 'Pase de Visita Concedido',
+      status: 'granted',
+      daysRemaining: 1
+    });
+
+    triggerTurnstileRelay(5);
+    announceAccess(name, true);
+    sounds.playAccessGranted();
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+
+    setShowVisitModal(false);
+    setVisitClientName('');
+    setTimeout(() => { setScanStatus('idle'); setLastVerifiedClient(null); }, 5000);
   };
 
   // Turnstile relay pulse simulator
@@ -459,200 +540,455 @@ export const IndependentTerminalApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Container: Biometric Terminal Card adapted to window size */}
-      <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3 relative z-10">
-        
-        {/* Hardware Sensor Simulator Box */}
-        <div className="relative flex-1 flex flex-col justify-between gap-3 px-4 py-2">
-          
-          {/* Top sensor status bar */}
-          <div className="flex items-center justify-between border-b border-gym-border pb-2.5 shrink-0">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-200">
-                SENSOR BIOMÉTRICO ÓPTICO USB
+      {/* Main Container: 3 Clear Intuitive Access Options */}
+      <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center py-4 px-4 relative z-10">
+
+        {/* Turnstile Relay Active Banner when open */}
+        {relayRemainingSeconds > 0 && (
+          <div className="w-full max-w-2xl mb-4 py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-500/30 via-emerald-500/40 to-emerald-500/30 border border-emerald-400/80 shadow-glow-green text-center animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-center gap-2.5 text-emerald-200 font-black text-sm uppercase tracking-wider">
+              <CheckCircle2 className="w-5 h-5 text-emerald-300 animate-spin" />
+              <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
+              <span className="bg-emerald-400 text-black px-2.5 py-0.5 rounded-full font-mono text-xs font-black">
+                {relayRemainingSeconds}s
               </span>
             </div>
-            
-            <div className="flex items-center gap-2">
-              {serverStatus === 'connected' ? (
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                  <Wifi className="w-3 h-3" />
-                  LAN Activa
-                </span>
-              ) : (
-                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
-                  <WifiOff className="w-3 h-3" />
-                  Caché Local
-                </span>
-              )}
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">
-                500 DPI • Online
+          </div>
+        )}
+
+        {/* Verified Client Alert Banner */}
+        {lastVerifiedClient && scanStatus !== 'idle' && (
+          <div className={'w-full max-w-2xl mb-4 p-4 rounded-2xl border flex items-center justify-between gap-4 animate-in zoom-in-95 duration-200 shadow-2xl ' + (
+            lastVerifiedClient.status === 'granted'
+              ? 'bg-emerald-950/80 border-emerald-400 text-white shadow-glow-green'
+              : 'bg-red-950/80 border-red-400 text-white shadow-glow-red'
+          )}>
+            <div className="flex items-center gap-3">
+              <img 
+                src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
+                alt={lastVerifiedClient.name} 
+                className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md"
+              />
+              <div>
+                <h4 className="text-base font-black text-white">{lastVerifiedClient.name}</h4>
+                <p className="text-xs text-gray-200">{lastVerifiedClient.reason}</p>
+                {lastVerifiedClient.plan && (
+                  <span className="text-[11px] font-mono text-amber-300 font-bold">
+                    Plan: {lastVerifiedClient.plan}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button 
+              onClick={() => { setLastVerifiedClient(null); setScanStatus('idle'); }}
+              className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-gray-300 hover:text-white"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
+
+        {/* Main Welcome Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+            SELECCIONA TU TIPO DE INGRESO
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
+            Toca una de las 3 opciones para gestionar tu acceso a la sala
+          </p>
+        </div>
+
+        {/* The 3 Clean High-Impact Options Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
+
+          {/* Opción 1: CLIENTE NUEVO */}
+          <div 
+            onClick={() => setShowNewMemberModal(true)}
+            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-white/25 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold"
+          >
+            <div className="absolute top-4 right-4">
+              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500/25 text-amber-300 border border-amber-500/40">
+                Inscripción
+              </span>
+            </div>
+
+            <div>
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                👤
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+                Cliente Nuevo
+              </h3>
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300">
+                Registrarme &rarr;
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
+                +
               </span>
             </div>
           </div>
 
-          {/* Turnstile Relay Active Banner when open */}
-          {relayRemainingSeconds > 0 && (
-            <div className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/30 to-emerald-500/20 border border-emerald-400/60 shadow-glow-green text-center animate-in zoom-in-95 duration-200 shrink-0 relative z-20">
-              <div className="flex items-center justify-center gap-2 text-emerald-300 font-black text-xs sm:text-sm uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 animate-spin" />
-                <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
-                <span className="bg-emerald-400 text-black px-2 py-0.5 rounded-full font-mono text-xs font-black">
-                  {relayRemainingSeconds}s
-                </span>
-              </div>
+          {/* Opción 2: VISITA / PASE DIARIO */}
+          <div 
+            onClick={() => setShowVisitModal(true)}
+            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-white/25 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-green"
+          >
+            <div className="absolute top-4 right-4">
+              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+                Pase del Día
+              </span>
             </div>
-          )}
 
-          {/* Central Animated Scanner Pad */}
-          <FingerprintScanner
-            status={scanStatus}
-            onScanClick={handleDirectPadClick}
-            disabled={scanStatus === 'scanning'}
-            motivationalQuote={currentQuote}
-            clientPhoto={lastVerifiedClient?.avatarUrl}
-            clientName={lastVerifiedClient?.name}
-            planName={lastVerifiedClient?.plan}
-          />
+            <div>
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                🎟️
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
+                Quiero Visita
+              </h3>
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
+              </p>
+            </div>
 
-          {/* Verified Client Card (when granted or denied) */}
-          {lastVerifiedClient && scanStatus !== 'idle' && (
-            <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 animate-in fade-in duration-300 shrink-0 relative z-20 ${
-              lastVerifiedClient.status === 'granted'
-                ? 'bg-emerald-950/30 border-emerald-500/40'
-                : 'bg-red-950/30 border-red-500/40'
-            }`}>
-              <div className="flex items-center gap-3">
-                <img 
-                  src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
-                  alt={lastVerifiedClient.name} 
-                  loading="eager"
-                  className="w-11 h-11 rounded-xl object-cover border border-gym-border shadow-md"
-                />
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300">
+                Pase de Visita &rarr;
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-emerald-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
+                ✓
+              </span>
+            </div>
+          </div>
+
+          {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
+          <div 
+            onClick={() => setShowDirectAccessModal(true)}
+            className="group relative p-6 rounded-3xl bg-black/50 hover:bg-black/70 backdrop-blur-xl border-2 border-amber-400 hover:border-amber-300 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-1.5"
+          >
+            <div className="absolute top-4 right-4">
+              <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse">
+                Acceso Directo
+              </span>
+            </div>
+
+            <div>
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/30 border border-amber-400/50 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                ⚡
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+                Ya Tengo Membresía
+              </h3>
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300">
+                Validar Huella / ID &rarr;
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold text-sm shadow-md group-hover:translate-x-1 transition-transform">
+                👆
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom subtle hint */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
+          </p>
+        </div>
+
+      </div>
+
+      {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
+      {showNewMemberModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D0E15] border border-amber-500/40 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">👤</span>
                 <div>
-                  <h4 className="text-sm font-black text-white">{lastVerifiedClient.name}</h4>
-                  <p className="text-xs text-gray-300 mt-0.5">{lastVerifiedClient.reason}</p>
-                  {lastVerifiedClient.plan && (
-                    <span className="text-[11px] font-mono text-amber-400">
-                      Plan: {lastVerifiedClient.plan}
-                    </span>
-                  )}
+                  <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                    Registro de Cliente Nuevo
+                  </h3>
+                  <p className="text-xs text-gray-300">Completa los datos y captura la huella digital</p>
                 </div>
               </div>
-
-              {typeof lastVerifiedClient.daysRemaining === 'number' && (
-                <div className="text-right shrink-0">
-                  <span className={`text-xs font-bold px-2 py-1 rounded-md block ${
-                    lastVerifiedClient.daysRemaining >= 0
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                  }`}>
-                    {lastVerifiedClient.daysRemaining >= 0 
-                      ? `${lastVerifiedClient.daysRemaining} días vigentes` 
-                      : `Vencida`}
-                  </span>
-                </div>
-              )}
+              <button 
+                onClick={() => setShowNewMemberModal(false)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
 
-          {/* Bottom Controls Wrapper */}
-          <div className="shrink-0">
-            {/* Manual Search or Barcode Input */}
-            <div className="pt-3 border-t border-gym-border/80">
-              <label className="text-xs font-semibold text-gym-muted block mb-1.5">
-                O buscar socio por nombre, cédula o ID:
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
+            <form onSubmit={handleRegisterNewMember} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Nombre Completo *</label>
+                <input 
+                  type="text"
+                  required
+                  value={newClientName}
+                  onChange={(e) => setNewClientName(e.target.value)}
+                  placeholder="Ej. Andrea García Morales"
+                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">Cédula / Documento ID</label>
+                  <input 
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchQuery.trim()) {
-                        executeScan(searchQuery.trim());
-                        setSearchQuery('');
-                      }
-                    }}
-                    placeholder="Ej. Carlos Mendoza, Juan Solis, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-zinc-300 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/40 transition-all shadow-inner"
+                    value={newClientId}
+                    onChange={(e) => setNewClientId(e.target.value)}
+                    placeholder="Ej. 10234567"
+                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
                   />
                 </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">Teléfono / WhatsApp</label>
+                  <input 
+                    type="tel"
+                    value={newClientPhone}
+                    onChange={(e) => setNewClientPhone(e.target.value)}
+                    placeholder="Ej. 8888-9999"
+                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Tipo de Membresía / Plan</label>
+                <select 
+                  value={newClientPlan}
+                  onChange={(e) => setNewClientPlan(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-black/80 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-amber-400"
+                >
+                  <option value="Mensualidad Completa">Mensualidad Completa ($25 / mes)</option>
+                  <option value="Plan Estudiante">Plan Estudiante ($20 / mes)</option>
+                  <option value="Plan Trimestral">Plan Trimestral ($65 / 3 meses)</option>
+                  <option value="Plan Anual VIP">Plan Anual VIP ($220 / año)</option>
+                </select>
+              </div>
+
+              {/* Fingerprint Capture Simulator */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">👆</span>
+                  <div>
+                    <p className="text-xs font-bold text-white">Captura de Huella Digital</p>
+                    <p className="text-[11px] text-gray-300">
+                      {newClientFingerprintEnrolled ? '✓ Huella enrolada correctamente' : 'Haz clic para capturar huella'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewClientFingerprintEnrolled(true)}
+                  className={'px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ' + (
+                    newClientFingerprintEnrolled 
+                      ? 'bg-emerald-500 text-black shadow-glow-green' 
+                      : 'bg-amber-500 hover:bg-amber-400 text-black shadow-glow-gold'
+                  )}
+                >
+                  {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Capturar Huella'}
+                </button>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNewMemberModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-black shadow-glow-gold uppercase tracking-wider"
+                >
+                  Guardar e Ingresar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: PASE DE VISITA / CLASE PRUEBA */}
+      {showVisitModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D0E15] border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🎟️</span>
+                <div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                    Pase de Visita por 1 Día
+                  </h3>
+                  <p className="text-xs text-gray-300">Ingreso rápido para entrenamiento diario</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowVisitModal(false)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Nombre del Visitante (Opcional)</label>
+                <input 
+                  type="text"
+                  value={visitClientName}
+                  onChange={(e) => setVisitClientName(e.target.value)}
+                  placeholder="Ej. Juan Pérez (o dejar vacío)"
+                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-gray-300">Tarifa de Visita Diaria:</p>
+                  <p className="text-2xl font-black text-emerald-400 font-mono">{'$' + visitCost}</p>
+                </div>
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                  Paso Inmediato
+                </span>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowVisitModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRegisterVisit}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-black text-black shadow-glow-green uppercase tracking-wider"
+                >
+                  🔓 Conceder Acceso
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
+      {showDirectAccessModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D0E15] border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">⚡</span>
+                <div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                    Validación de Socio Activo
+                  </h3>
+                  <p className="text-xs text-gray-300">Posa tu huella o ingresa tu cédula / ID</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowDirectAccessModal(false)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center justify-center py-4">
+              {/* Interactive Fingerprint Pad */}
+              <div 
+                onClick={() => {
+                  executeScan('MEM-001');
+                  setShowDirectAccessModal(false);
+                }}
+                className="relative w-32 h-32 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-glow-gold group"
+                title="Haz clic para simular lectura de huella"
+              >
+                <div className="text-5xl text-amber-400 group-hover:scale-110 transition-transform">
+                  <Zap className="w-16 h-16 fill-amber-400" />
+                </div>
+              </div>
+              <p className="text-xs font-bold text-amber-400 mt-3 uppercase tracking-wider">
+                Toca el sensor de huella
+              </p>
+            </div>
+
+            {/* Search / ID input */}
+            <div className="mt-2 pt-4 border-t border-white/15">
+              <label className="text-xs font-bold text-gray-300 block mb-1.5">O escribe tu cédula o ID de socio:</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      executeScan(searchQuery.trim());
+                      setSearchQuery('');
+                      setShowDirectAccessModal(false);
+                    }
+                  }}
+                  placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
+                  className="flex-1 px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                />
                 <button
                   onClick={() => {
                     if (searchQuery.trim()) {
                       executeScan(searchQuery.trim());
                       setSearchQuery('');
+                      setShowDirectAccessModal(false);
                     }
                   }}
-                  disabled={!searchQuery.trim() || scanStatus === 'scanning'}
-                  className="px-6 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all shrink-0"
+                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold"
                 >
                   Verificar
                 </button>
               </div>
-              <p className="text-[11px] text-gym-muted mt-1.5">
-                💡 <span className="font-semibold text-gray-300">Escáner USB / RFID automático:</span> Puedes pasar cualquier tarjeta, código o huella directamente en este equipo en cualquier momento.
-              </p>
             </div>
 
-            {/* Quick Access Today Counter */}
-            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs text-gym-muted flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
-              </span>
-              <button
-                onClick={() => setIsHistoryModalOpen(true)}
-                className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all"
+            {/* Quick test buttons */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-2 text-xs">
+              <span className="text-gray-400 py-1">Pruebas rápidas:</span>
+              <button 
+                onClick={() => { executeScan('MEM-001'); setShowDirectAccessModal(false); }}
+                className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg font-bold border border-emerald-500/30"
               >
-                <Clock className="w-3.5 h-3.5" />
-                <span>Ver desglose completo &rarr;</span>
+                ✓ Carlos Mendoza (Activo)
+              </button>
+              <button 
+                onClick={() => { executeScan('MEM-004'); setShowDirectAccessModal(false); }}
+                className="px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded-lg font-bold border border-amber-500/30"
+              >
+                ⚠️ Vencida
               </button>
             </div>
           </div>
-
         </div>
-
-        {/* Quick Testing Bar for Operator convenience */}
-        <div className="px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-white shrink-0 relative z-10">
-          <span>Pruebas rápidas:</span>
-          <div className="flex items-center flex-wrap gap-2">
-            <button
-              onClick={() => executeScan('MEM-001')}
-              disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-emerald-400 font-medium transition-colors"
-            >
-              ✓ Carlos Mendoza (Activo)
-            </button>
-            <button
-              onClick={() => executeScan('MEM-008')}
-              disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-emerald-400 font-medium transition-colors"
-            >
-              ✓ Juan Solis (Activo)
-            </button>
-            <button
-              onClick={() => executeScan('MEM-004')}
-              disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-amber-400 font-medium transition-colors"
-            >
-              ⚠ Membresía Vencida
-            </button>
-            <button
-              onClick={() => executeScan('DESCONOCIDO')}
-              disabled={scanStatus === 'scanning'}
-              className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-lg text-red-400 font-medium transition-colors"
-            >
-              ✗ No Registrado
-            </button>
-          </div>
-        </div>
-
-      </div>
+      )}
 
       {/* Access History Breakdown Modal */}
       <AccessHistory 
