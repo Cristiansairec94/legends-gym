@@ -27,13 +27,31 @@ import {
   Sparkles,
   Image,
   ArrowRight,
-  X
+  X,
+  Calendar,
+  Mail,
+  User,
+  CreditCard,
+  Banknote,
+  ArrowRightLeft,
+  Fingerprint,
+  Check
 } from 'lucide-react';
+import { Client, MembershipPlanType, PaymentMethod } from '../../types';
 import { getGymAvatar } from '../../utils/genderAvatar';
 import { checkServerHealth, fetchMembersFromServer } from '../../services/syncService';
 
 export const IndependentTerminalApp: React.FC = () => {
-  const { verifyBiometricAccess, members, accessLogs, forceSync, replaceMembers, syncMembersWithServer } = useGym();
+  const { 
+    verifyBiometricAccess, 
+    members, 
+    accessLogs, 
+    forceSync, 
+    replaceMembers, 
+    syncMembersWithServer, 
+    addMember, 
+    catalogPlans 
+  } = useGym();
 
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'granted' | 'denied'>('idle');
   const [currentQuote, setCurrentQuote] = useState<string>('');
@@ -54,12 +72,55 @@ export const IndependentTerminalApp: React.FC = () => {
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [showDirectAccessModal, setShowDirectAccessModal] = useState(false);
 
-  // New client form state
+  // New client form state (Nombre, Cumpleaños, Edad, Correo, Mensualidad, Opción de Pago)
   const [newClientName, setNewClientName] = useState('');
+  const [newClientBirthDate, setNewClientBirthDate] = useState('');
+  const [newClientAge, setNewClientAge] = useState<number | string>('');
+  const [newClientEmail, setNewClientEmail] = useState('');
+  const [newClientPlan, setNewClientPlan] = useState('Mensualidad Estándar');
+  const [newClientPaymentMethod, setNewClientPaymentMethod] = useState<PaymentMethod>('cash');
   const [newClientId, setNewClientId] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
-  const [newClientPlan, setNewClientPlan] = useState('Mensualidad Completa');
   const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(false);
+
+  // Available plans list (from catalogPlans or gym defaults)
+  const availablePlans = (catalogPlans && catalogPlans.length > 0)
+    ? catalogPlans.filter(p => p.active !== false)
+    : [
+        { id: 'CAT-PLAN-002', name: 'Mensualidad Estándar', type: 'monthly', durationDays: 30, price: 850 },
+        { id: 'CAT-PLAN-005', name: 'Mensualidad Estudiante', type: 'monthly', durationDays: 30, price: 650 },
+        { id: 'CAT-PLAN-003', name: 'Plan Trimestral Fuerza', type: 'quarterly', durationDays: 90, price: 2300 },
+        { id: 'CAT-PLAN-004', name: 'Membresía Black VIP Anual', type: 'annual', durationDays: 365, price: 9500 },
+      ];
+
+  // Birthday change: auto-calculate Age
+  const handleBirthDateChange = (dateStr: string) => {
+    setNewClientBirthDate(dateStr);
+    if (dateStr) {
+      const birth = new Date(dateStr);
+      if (!isNaN(birth.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        if (age >= 0 && age <= 120) {
+          setNewClientAge(age);
+        }
+      }
+    }
+  };
+
+  // Age change: approximate birth year if not set
+  const handleAgeChange = (val: string) => {
+    setNewClientAge(val);
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num > 0 && num < 120 && !newClientBirthDate) {
+      const approxYear = new Date().getFullYear() - num;
+      setNewClientBirthDate(`${approxYear}-01-01`);
+    }
+  };
 
   // Visit pass state
   const [visitClientName, setVisitClientName] = useState('');
@@ -154,36 +215,76 @@ export const IndependentTerminalApp: React.FC = () => {
     if (e) e.preventDefault();
     const trimmedName = newClientName.trim();
     if (!trimmedName) return;
+
+    // Determine plan properties
+    const selectedPlanObj = availablePlans.find(p => p.name === newClientPlan || p.id === newClientPlan);
+    const planType: MembershipPlanType = selectedPlanObj ? (selectedPlanObj.type as MembershipPlanType) : 'monthly';
+    const planPrice = selectedPlanObj ? selectedPlanObj.price : 850;
+    const durationDays = selectedPlanObj ? selectedPlanObj.durationDays : 30;
+    const planName = selectedPlanObj ? selectedPlanObj.name : newClientPlan;
+
     const memberId = newClientId.trim() || ('MEM-' + Math.floor(100 + Math.random() * 900));
-    
-    // Add to members
-    const newMember: any = {
+    const finalBirthDate = newClientBirthDate || (newClientAge ? `${new Date().getFullYear() - Number(newClientAge)}-01-01` : '1998-01-01');
+    const finalEmail = newClientEmail.trim() || `${memberId.toLowerCase()}@legendsgym.com`;
+
+    const paymentLabel = newClientPaymentMethod === 'cash' 
+      ? 'Efectivo' 
+      : newClientPaymentMethod === 'card' 
+        ? 'Tarjeta' 
+        : 'Transferencia / SINPE';
+
+    const clientData: Partial<Client> = {
       id: memberId,
-      name: trimmedName,
-      phone: newClientPhone.trim() || 'N/A',
-      membershipType: newClientPlan,
-      status: 'active',
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30*24*60*60*1000).toISOString(),
-      daysRemaining: 30,
-      biometricEnrolled: true,
-      notes: 'Registrado desde Terminal de Acceso',
-      gender: 'male',
-      biometrics: {
-        enrolled: true,
-        template: 'simulated_template_' + Date.now(),
-        registeredAt: new Date().toISOString(),
-        quality: 95
-      }
+      fullName: trimmedName,
+      documentId: newClientId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`,
+      email: finalEmail,
+      phone: newClientPhone.trim() || '+52 55 0000 0000',
+      birthDate: finalBirthDate,
+      avatarUrl: getGymAvatar(trimmedName),
+      biometricRegistered: newClientFingerprintEnrolled,
+      biometricHash: `BIO_HASH_${memberId}`,
+      biometricTemplate: `FP_THUMB_RIGHT_${memberId}`,
+      membership: {
+        planType,
+        planName,
+        startDate: new Date().toISOString().slice(0, 10),
+        endDate: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        price: planPrice,
+        status: 'active',
+        daysRemaining: durationDays,
+      },
+      medicalNotes: `Inscripción desde Terminal. Edad: ${newClientAge || 'N/A'}. Método de pago: ${paymentLabel}.`
     };
 
-    const updated = [newMember, ...members];
-    replaceMembers(updated);
+    if (addMember) {
+      addMember(clientData, newClientPaymentMethod);
+    } else {
+      const fullMember: any = {
+        ...clientData,
+        name: trimmedName,
+        status: 'active',
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
+        daysRemaining: durationDays,
+        biometricEnrolled: newClientFingerprintEnrolled,
+        biometrics: {
+          enrolled: newClientFingerprintEnrolled,
+          template: 'simulated_template_' + Date.now(),
+          registeredAt: new Date().toISOString(),
+          quality: 95
+        }
+      };
+      replaceMembers([fullMember, ...members]);
+    }
 
     setShowNewMemberModal(false);
     setNewClientName('');
+    setNewClientBirthDate('');
+    setNewClientAge('');
+    setNewClientEmail('');
     setNewClientId('');
     setNewClientPhone('');
+    setNewClientPaymentMethod('cash');
     setNewClientFingerprintEnrolled(false);
 
     // Instant direct access for the new member
@@ -419,14 +520,14 @@ export const IndependentTerminalApp: React.FC = () => {
           src={bgImage}
           alt="Fitness Legends Gym Background"
           style={{
-            filter: 'url(#ultra-sharp-8k-terminal) brightness(0.68) contrast(1.18) saturate(1.10)',
+            filter: 'url(#ultra-sharp-8k-terminal) brightness(0.98) contrast(1.08) saturate(1.08)',
             imageRendering: '-webkit-optimize-contrast',
             transform: 'translateZ(0)',
           }}
           className="w-full h-full object-cover object-center"
         />
         {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
-        <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] pointer-events-none" />
+        
 
       </div>
 
@@ -438,7 +539,11 @@ export const IndependentTerminalApp: React.FC = () => {
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Left Title with Gym Logo */}
-          <div className="flex items-center gap-3.5">
+          <div 
+            className="flex items-center gap-3.5 select-none"
+            onDoubleClick={() => setIsConfigModalOpen(true)}
+            title="FITNESS LEGENDS"
+          >
             <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 p-1 shrink-0 shadow-lg flex items-center justify-center">
               <img
                 src={logoImg}
@@ -462,81 +567,7 @@ export const IndependentTerminalApp: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Action Buttons */}
-          <div className="flex items-center flex-wrap gap-2">
-            {/* Cambiar Foto Button */}
-            <label
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-xs font-bold text-gray-100 hover:text-white cursor-pointer transition-all shadow-md group"
-              title="Cambiar fotografía de fondo del gimnasio"
-            >
-              <Image className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span>Cambiar Foto</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    const result = event.target?.result as string;
-                    if (result) {
-                      setBgImage(result);
-                      try { localStorage.setItem('legends_terminal_bg', result); } catch {}
-                    }
-                  };
-                  reader.readAsDataURL(file);
-                }}
-              />
-            </label>
 
-            {/* View Access History */}
-            <button
-              onClick={() => setIsHistoryModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
-              title="Ver desglose detallado de accesos registrados"
-            >
-              <Clock className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-              <span>Ver Registro de Accesos</span>
-              <span className="bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border border-amber-500/40">
-                {accessLogs.length}
-              </span>
-            </button>
-
-            {/* Mute audio toggle */}
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="p-2 rounded-xl bg-gym-surface hover:bg-gym-border text-gym-muted hover:text-white transition-colors border border-gym-border"
-              title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
-            >
-              {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-            </button>
-
-            {/* Network / Terminal Settings */}
-            <button
-              onClick={() => setIsConfigModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border text-xs font-semibold text-gray-200 transition-colors border border-gym-border"
-              title="Configuración de red y sincronización"
-            >
-              <Settings className="w-4 h-4 text-gym-muted hover:text-amber-400" />
-              {serverStatus === 'connected' ? (
-                <span className="w-2 h-2 rounded-full bg-emerald-400" title="Enlazado al Servidor Central" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-amber-400" title="Modo Autónomo Local" />
-              )}
-            </button>
-
-            {/* Kiosk / Fullscreen toggle */}
-            <button
-              onClick={toggleFullScreen}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gym-surface hover:bg-gym-border text-xs font-semibold text-gray-200 transition-colors border border-gym-border"
-              title="Modo pantalla completa para kiosco de recepción (F11)"
-            >
-              {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              <span className="hidden md:inline">{isFullScreen ? 'Salir' : 'Pantalla Completa'}</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -590,7 +621,7 @@ export const IndependentTerminalApp: React.FC = () => {
 
         {/* Main Welcome Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-2.5 shadow-md">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
           </div>
@@ -602,13 +633,13 @@ export const IndependentTerminalApp: React.FC = () => {
           </p>
         </div>
 
-        {/* The 3 Clean High-Impact Options Grid */}
+        {/* The 3 Clean High-Impact Options Grid - No Black Background, Minimalist & Sleek */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
             <div className="w-20 h-20 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
               👤
@@ -621,7 +652,7 @@ export const IndependentTerminalApp: React.FC = () => {
           {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
+            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
           >
             <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
               🎟️
@@ -634,7 +665,7 @@ export const IndependentTerminalApp: React.FC = () => {
           {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-8 rounded-3xl bg-black/55 hover:bg-black/75 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
             <div className="w-20 h-20 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
               ⚡
@@ -657,74 +688,229 @@ export const IndependentTerminalApp: React.FC = () => {
 
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
       {showNewMemberModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D0E15] border border-amber-500/40 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-[#161824]/95 border border-amber-500/40 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto">
+            
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl">👤</span>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
+                  👤
+                </div>
                 <div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-wider">
-                    Registro de Cliente Nuevo
-                  </h3>
-                  <p className="text-xs text-gray-300">Completa los datos y captura la huella digital</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
+                      Registro de Cliente Nuevo
+                    </h3>
+                    <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                      Inscripción
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-0.5">
+                    Ingresa tus datos personales, mensualidad y opción de pago
+                  </p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowNewMemberModal(false)}
-                className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                title="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleRegisterNewMember} className="space-y-3.5">
+            <form onSubmit={handleRegisterNewMember} className="space-y-4">
+              
+              {/* 1. Nombre Completo */}
               <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">Nombre Completo *</label>
+                <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Nombre Completo *</span>
+                </label>
                 <input 
                   type="text"
                   required
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
                   placeholder="Ej. Andrea García Morales"
-                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* 2 & 3. Fecha de Cumpleaños y Edad */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-300 block mb-1">Cédula / Documento ID</label>
+                  <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Fecha de Cumpleaños *</span>
+                  </label>
                   <input 
-                    type="text"
-                    value={newClientId}
-                    onChange={(e) => setNewClientId(e.target.value)}
-                    placeholder="Ej. 10234567"
-                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    type="date"
+                    required
+                    value={newClientBirthDate}
+                    onChange={(e) => handleBirthDateChange(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-300 block mb-1">Teléfono / WhatsApp</label>
+                  <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Edad *</span>
+                    </span>
+                    <span className="text-[10px] text-amber-400/90 font-medium">(Automática)</span>
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="number"
+                      required
+                      min="8"
+                      max="110"
+                      value={newClientAge}
+                      onChange={(e) => handleAgeChange(e.target.value)}
+                      placeholder="Ej. 25"
+                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all pr-12"
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold pointer-events-none">
+                      años
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Correo Electrónico y Teléfono */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Correo Electrónico *</span>
+                  </label>
+                  <input 
+                    type="email"
+                    required
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                    placeholder="andrea@ejemplo.com"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-200 block mb-1">
+                    Teléfono / WhatsApp
+                  </label>
                   <input 
                     type="tel"
                     value={newClientPhone}
                     onChange={(e) => setNewClientPhone(e.target.value)}
                     placeholder="Ej. 8888-9999"
-                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                   />
                 </div>
               </div>
 
+              {/* Cédula / Documento ID */}
               <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">Tipo de Membresía / Plan</label>
-                <select 
-                  value={newClientPlan}
-                  onChange={(e) => setNewClientPlan(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-black/80 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-amber-400"
-                >
-                  <option value="Mensualidad Completa">Mensualidad Completa ($25 / mes)</option>
-                  <option value="Plan Estudiante">Plan Estudiante ($20 / mes)</option>
-                  <option value="Plan Trimestral">Plan Trimestral ($65 / 3 meses)</option>
-                  <option value="Plan Anual VIP">Plan Anual VIP ($220 / año)</option>
-                </select>
+                <label className="text-xs font-bold text-gray-300 block mb-1">
+                  Cédula / Documento ID (Opcional)
+                </label>
+                <input 
+                  type="text"
+                  value={newClientId}
+                  onChange={(e) => setNewClientId(e.target.value)}
+                  placeholder="Ej. 10234567"
+                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                />
+              </div>
+
+              {/* 5. Mensualidad */}
+              <div>
+                <label className="text-xs font-bold text-gray-200 block mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>Mensualidad / Plan de Entrenamiento *</span>
+                  </span>
+                  <span className="text-[11px] text-amber-400 font-semibold">Toca para seleccionar</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {availablePlans.map((plan) => {
+                    const isSelected = newClientPlan === plan.name;
+                    return (
+                      <div
+                        key={plan.id}
+                        onClick={() => setNewClientPlan(plan.name)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-amber-500/20 border-amber-400 shadow-glow-gold/40 ring-1 ring-amber-400'
+                            : 'bg-white/10 border-white/15 hover:border-white/30 hover:bg-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-bold text-white leading-tight">{plan.name}</span>
+                          {isSelected ? (
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 shadow-sm" />
+                          ) : (
+                            <span className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0" />
+                          )}
+                        </div>
+                        <div className="mt-2 flex items-baseline justify-between">
+                          <span className="text-sm font-black text-amber-400">
+                            ${plan.price.toLocaleString('es-MX')}
+                          </span>
+                          <span className="text-[10px] text-gray-300 font-medium">
+                            {plan.durationDays} días
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 6. Opción de Pago */}
+              <div>
+                <label className="text-xs font-bold text-gray-200 block mb-1.5 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Opción de Pago *</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewClientPaymentMethod('cash')}
+                    className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                      newClientPaymentMethod === 'cash'
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                        : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                    }`}
+                  >
+                    <Banknote className="w-4 h-4" />
+                    <span>💵 Efectivo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewClientPaymentMethod('card')}
+                    className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                      newClientPaymentMethod === 'card'
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                        : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>💳 Tarjeta</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewClientPaymentMethod('transfer')}
+                    className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                      newClientPaymentMethod === 'transfer'
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                        : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                    }`}
+                  >
+                    <ArrowRightLeft className="w-4 h-4" />
+                    <span>📱 Transfer / SINPE</span>
+                  </button>
+                </div>
               </div>
 
               {/* Fingerprint Capture Simulator */}
@@ -734,38 +920,42 @@ export const IndependentTerminalApp: React.FC = () => {
                   <div>
                     <p className="text-xs font-bold text-white">Captura de Huella Digital</p>
                     <p className="text-[11px] text-gray-300">
-                      {newClientFingerprintEnrolled ? '✓ Huella enrolada correctamente' : 'Haz clic para capturar huella'}
+                      {newClientFingerprintEnrolled 
+                        ? '✓ Huella enrolada correctamente' 
+                        : 'Sensor biométrico listo para capturar'}
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setNewClientFingerprintEnrolled(true)}
-                  className={'px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ' + (
+                  onClick={() => setNewClientFingerprintEnrolled(!newClientFingerprintEnrolled)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                     newClientFingerprintEnrolled 
                       ? 'bg-emerald-500 text-black shadow-glow-green' 
                       : 'bg-amber-500 hover:bg-amber-400 text-black shadow-glow-gold'
-                  )}
+                  }`}
                 >
                   {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Capturar Huella'}
                 </button>
               </div>
 
+              {/* Action Buttons */}
               <div className="pt-2 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowNewMemberModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300"
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-black shadow-glow-gold uppercase tracking-wider"
+                  className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-black shadow-glow-gold uppercase tracking-wider transition-all transform hover:scale-[1.02]"
                 >
                   Guardar e Ingresar
                 </button>
               </div>
+
             </form>
           </div>
         </div>
@@ -773,8 +963,8 @@ export const IndependentTerminalApp: React.FC = () => {
 
       {/* MODAL 2: PASE DE VISITA / CLASE PRUEBA */}
       {showVisitModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D0E15] border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#161824]/95 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">🎟️</span>
@@ -801,7 +991,7 @@ export const IndependentTerminalApp: React.FC = () => {
                   value={visitClientName}
                   onChange={(e) => setVisitClientName(e.target.value)}
                   placeholder="Ej. Juan Pérez (o dejar vacío)"
-                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
+                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
                 />
               </div>
 
@@ -838,8 +1028,8 @@ export const IndependentTerminalApp: React.FC = () => {
 
       {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
       {showDirectAccessModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D0E15] border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#161824]/95 border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">⚡</span>
@@ -893,7 +1083,7 @@ export const IndependentTerminalApp: React.FC = () => {
                     }
                   }}
                   placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                  className="flex-1 px-3.5 py-2.5 bg-black/60 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="flex-1 px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
                 />
                 <button
                   onClick={() => {
@@ -910,22 +1100,7 @@ export const IndependentTerminalApp: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick test buttons */}
-            <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-2 text-xs">
-              <span className="text-gray-400 py-1">Pruebas rápidas:</span>
-              <button 
-                onClick={() => { executeScan('MEM-001'); setShowDirectAccessModal(false); }}
-                className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg font-bold border border-emerald-500/30"
-              >
-                ✓ Carlos Mendoza (Activo)
-              </button>
-              <button 
-                onClick={() => { executeScan('MEM-004'); setShowDirectAccessModal(false); }}
-                className="px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded-lg font-bold border border-amber-500/30"
-              >
-                ⚠️ Vencida
-              </button>
-            </div>
+
           </div>
         </div>
       )}
