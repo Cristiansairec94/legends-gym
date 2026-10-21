@@ -662,7 +662,7 @@ export const IndependentTerminalApp: React.FC = () => {
             </h3>
           </div>
 
-          {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
+          {/* Opción 3: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
             className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
@@ -671,8 +671,11 @@ export const IndependentTerminalApp: React.FC = () => {
               ⚡
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-              Ya Tengo Membresía
+              Ya Soy Cliente
             </h3>
+            <span className="text-xs font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow">
+              Registra tu Huella
+            </span>
           </div>
 
         </div>
