@@ -591,8 +591,8 @@ const htmlContent = `<!DOCTYPE html>
           </header>
 
           {/* Main Scanner Container with Glassmorphism so photo is visible */}
-          <main className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between gap-3 relative z-10">
-            <div className="bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/20 px-5 py-4 sm:px-7 sm:py-4 shadow-2xl relative flex-1 flex flex-col justify-between gap-2.5">
+          <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center items-center gap-3 relative z-10 my-auto">
+            <div className="w-full bg-black/65 backdrop-blur-2xl rounded-3xl border border-white/20 p-6 sm:p-8 shadow-2xl relative flex flex-col justify-center items-center gap-4">
               
               {/* Sensor Subheader */}
               <div className="flex items-center justify-between border-b border-white/15 pb-2.5 shrink-0">
@@ -695,7 +695,7 @@ const htmlContent = `<!DOCTYPE html>
                   </p>
 
                   <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow">
-                    {scanStatus === 'idle' && 'Haz clic en el sensor o usa los accesos rápidos abajo'}
+                    {scanStatus === 'idle' && 'Escanee su huella digital, código de barras o pase su tarjeta RFID'}
                     {scanStatus === 'scanning' && 'Leyendo minucias biométricas...'}
                     {scanStatus === 'granted' && (currentQuote || '¡Acceso autorizado!')}
                     {scanStatus === 'denied' && (verifiedClient?.reason || 'Consulte en recepción')}
@@ -703,93 +703,6 @@ const htmlContent = `<!DOCTYPE html>
                 </div>
               </div>
 
-              {/* Bottom Search & Barcode Input */}
-              <div className="pt-3 border-t border-white/15 shrink-0">
-                <label className="text-xs font-semibold text-gray-300 block mb-1.5">
-                  O buscar socio por nombre, cédula o ID:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchQuery.trim()) {
-                        executeScan(searchQuery.trim());
-                        setSearchQuery('');
-                      }
-                    }}
-                    placeholder="Ej. Carlos Mendoza, Juan Solis, MEM-001 o 45892011..."
-                    className="flex-1 px-4 py-2.5 bg-black/60 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"
-                  />
-                  <button
-                    onClick={() => {
-                      if (searchQuery.trim()) {
-                        executeScan(searchQuery.trim());
-                        setSearchQuery('');
-                      }
-                    }}
-                    disabled={!searchQuery.trim() || scanStatus === 'scanning'}
-                    className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold transition-all shrink-0 cursor-pointer"
-                  >
-                    Verificar
-                  </button>
-                </div>
-
-                <p className="text-[11px] text-gray-300 mt-1.5 drop-shadow">
-                  💡 <span className="font-semibold text-white">Escáner USB / RFID automático:</span> Puedes pasar cualquier tarjeta, código o huella directamente en este equipo en cualquier momento.
-                </p>
-              </div>
-
-              {/* Today counter */}
-              <div className="mt-2 pt-2 border-t border-white/15 flex items-center justify-between text-xs text-gray-300">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Accesos hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
-                </span>
-                <button
-                  onClick={() => setShowHistoryModal(true)}
-                  className="font-bold text-amber-400 hover:text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-3 py-1 rounded-xl transition-all"
-                >
-                  Ver desglose completo →
-                </button>
-              </div>
-
-            </div>
-
-            {/* Quick Testing Bar with Glassmorphism */}
-            <div className="px-4 py-2.5 bg-black/65 backdrop-blur-2xl rounded-xl border border-white/20 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-300 shrink-0">
-              <span className="font-semibold text-white">Pruebas rápidas:</span>
-              <div className="flex items-center flex-wrap gap-2">
-                <button
-                  onClick={() => executeScan('MEM-001')}
-                  disabled={scanStatus === 'scanning'}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-emerald-300 font-bold transition-colors"
-                >
-                  ✓ Carlos Mendoza (Activo)
-                </button>
-                <button
-                  onClick={() => executeScan('MEM-008')}
-                  disabled={scanStatus === 'scanning'}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-emerald-300 font-bold transition-colors"
-                >
-                  ✓ Juan Solis (Activo)
-                </button>
-                <button
-                  onClick={() => executeScan('MEM-004')}
-                  disabled={scanStatus === 'scanning'}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-amber-300 font-bold transition-colors"
-                >
-                  ⚠️ Membresía Vencida
-                </button>
-                <button
-                  onClick={() => executeScan('DESCONOCIDO')}
-                  disabled={scanStatus === 'scanning'}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-red-400 font-bold transition-colors"
-                >
-                  ✗ No Registrado
-                </button>
-              </div>
             </div>
           </main>
 
