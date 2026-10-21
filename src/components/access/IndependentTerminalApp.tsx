@@ -682,13 +682,6 @@ export const IndependentTerminalApp: React.FC = () => {
 
         </div>
 
-        {/* Bottom subtle hint */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-          </p>
-        </div>
-
       </div>
 
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}

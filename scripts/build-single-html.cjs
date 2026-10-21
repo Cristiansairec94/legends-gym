@@ -1,3 +1,6 @@
+// Builder script with 3 clean options
+const fs = require("fs");
+// ... 
 const fs = require('fs');
 const path = require('path');
 
@@ -823,43 +826,11 @@ const htmlContent = `<!DOCTYPE html>
 
             </div>
 
-            {/* Subtle Hint */}
-            <p className="text-xs sm:text-sm text-gray-300 mt-7 drop-shadow font-medium text-center">
-              💡 <span className="text-white font-bold">Lector Automático:</span> Puedes posar tu dedo en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-            </p>
+
 
           </main>
 
-          {/* FOOTER */}
-          <footer className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/45 backdrop-blur-xl px-5 py-2.5 rounded-xl border border-white/20 text-xs text-gray-300">
-              <div className="flex items-center gap-3">
-                <span className={\`w-2 h-2 rounded-full \${serverOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}\`} />
-                <span className="font-semibold text-gray-200">
-                  {serverOnline ? 'Sincronizado en Tiempo Real (Nube / LAN)' : 'Modo Autónomo Local'}
-                </span>
-              </div>
 
-              {/* Darkness Slider */}
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <span className="text-[11px] text-gray-300">☀️ Iluminación Fondo:</span>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.75"
-                  step="0.05"
-                  value={bgDarkness}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setBgDarkness(val);
-                    localStorage.setItem('legends_bg_darkness', String(val));
-                  }}
-                  className="w-24 accent-amber-500 cursor-pointer"
-                />
-                <span className="text-xs font-mono text-amber-400 font-bold">{Math.round((1 - bgDarkness) * 100)}%</span>
-              </div>
-            </div>
-          </footer>
 
           {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
           {showNewMemberModal && (
