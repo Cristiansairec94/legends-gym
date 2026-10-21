@@ -35,7 +35,9 @@ import {
   Banknote,
   ArrowRightLeft,
   Fingerprint,
-  Check
+  Check,
+  Dumbbell,
+  BicepsFlexed
 } from 'lucide-react';
 import { Client, MembershipPlanType, PaymentMethod } from '../../types';
 import { getGymAvatar } from '../../utils/genderAvatar';
@@ -641,8 +643,8 @@ export const IndependentTerminalApp: React.FC = () => {
             onClick={() => setShowNewMemberModal(true)}
             className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              👤
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
+              <BicepsFlexed className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
               Cliente Nuevo
@@ -654,8 +656,8 @@ export const IndependentTerminalApp: React.FC = () => {
             onClick={() => setShowVisitModal(true)}
             className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
           >
-            <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              🎟️
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-emerald-500/20">
+              <Dumbbell className="w-12 h-12 sm:w-14 sm:h-14 text-emerald-400 group-hover:text-emerald-300 filter drop-shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow">
               Quiero Visita
@@ -667,8 +669,8 @@ export const IndependentTerminalApp: React.FC = () => {
             onClick={() => setShowDirectAccessModal(true)}
             className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              ⚡
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/25 border border-amber-400/60 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
+              <Fingerprint className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
               Ya Soy Cliente
@@ -970,7 +972,7 @@ export const IndependentTerminalApp: React.FC = () => {
           <div className="bg-[#161824]/95 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
-                <span className="text-2xl">🎟️</span>
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center"><Dumbbell className="w-5 h-5 text-emerald-400" /></div>
                 <div>
                   <h3 className="text-lg font-black text-white uppercase tracking-wider">
                     Pase de Visita por 1 Día
@@ -1035,7 +1037,7 @@ export const IndependentTerminalApp: React.FC = () => {
           <div className="bg-[#161824]/95 border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
-                <span className="text-2xl">⚡</span>
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center"><Fingerprint className="w-5 h-5 text-amber-400" /></div>
                 <div>
                   <h3 className="text-lg font-black text-white uppercase tracking-wider">
                     Validación de Socio Activo
