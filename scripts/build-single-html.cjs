@@ -5,7 +5,7 @@ const img1Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/De
 const img2Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background-motto.jpg').toString('base64');
 const logoBase64 = 'data:image/png;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/logo.png').toString('base64');
 
-console.log('Assets loaded. Generating single-file HTML...');
+console.log('Generating updated single-file HTML with 3 clean options (No black box)...');
 
 const htmlContent = `<!DOCTYPE html>
 <html lang="es" class="dark">
@@ -55,16 +55,6 @@ const htmlContent = `<!DOCTYPE html>
   </script>
 
   <style>
-    @keyframes scanLine {
-      0% { top: 10%; opacity: 0; }
-      15% { opacity: 1; }
-      85% { opacity: 1; }
-      100% { top: 90%; opacity: 0; }
-    }
-    .animate-scan-line {
-      position: absolute;
-      animation: scanLine 1.4s ease-in-out infinite alternate;
-    }
     @keyframes radarPulse {
       0% { transform: scale(0.92); opacity: 0.8; }
       100% { transform: scale(1.22); opacity: 0; }
@@ -98,11 +88,10 @@ const htmlContent = `<!DOCTYPE html>
     const BG_PHOTO_2 = "${img2Base64}";
     const LOGO_IMG = "${logoBase64}";
 
-    // Web Audio API Synthesizer
+    // Web Audio Synthesizer
     class SoundEffects {
       constructor() {
         this.ctx = null;
-        this.lastGranted = 0;
         const unlock = () => {
           this.unlock();
           window.removeEventListener('pointerdown', unlock);
@@ -128,78 +117,72 @@ const htmlContent = `<!DOCTYPE html>
         } catch {}
       }
 
-      playScanBlip() {
-        this.unlock();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.08);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      }
-
       playAccessGranted() {
-        const nowMs = Date.now();
-        if (nowMs - this.lastGranted < 400) return;
-        this.lastGranted = nowMs;
         this.unlock();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        const notes = [
-          { f: 523.25, t: 0.00, d: 0.22, v: 0.35 },
-          { f: 659.25, t: 0.08, d: 0.25, v: 0.38 },
-          { f: 783.99, t: 0.16, d: 0.30, v: 0.40 },
-          { f: 1046.5, t: 0.24, d: 0.60, v: 0.45 },
-        ];
-        notes.forEach(({ f, t, d, v }) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(f, now + t);
-          gain.gain.setValueAtTime(v, now + t);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + t + d);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + t);
-          osc.stop(now + t + d);
-        });
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc1.type = 'triangle';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(523.25, now); // C5
+        osc2.frequency.setValueAtTime(659.25, now); // E5
+        osc1.frequency.exponentialRampToValueAtTime(1046.50, now + 0.22); // C6
+        osc2.frequency.exponentialRampToValueAtTime(1318.51, now + 0.22); // E6
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.35, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.45);
+        osc2.stop(now + 0.45);
       }
 
       playAccessDenied() {
         this.unlock();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        [185, 140].forEach((freq, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.15);
-          gain.gain.setValueAtTime(0.3, now + idx * 0.15);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.15 + 0.22);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + idx * 0.15);
-          osc.stop(now + idx * 0.15 + 0.22);
-        });
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(140, now + 0.15);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.4, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.38);
       }
     }
 
     const soundManager = new SoundEffects();
 
     const MOTIVATIONAL_QUOTES = [
-      "¡A romper tus marcas hoy! Fuerza y enfoque.",
-      "El dolor de hoy es la victoria de mañana.",
-      "La disciplina supera al talento. ¡Dale con todo!",
-      "Constancia y grandeza. Eres imparable.",
-      "Tu único límite eres tú. ¡Bienvenido a LEGENDS!",
-      "Cada repetición cuenta para tu mejor versión."
+      "¡El único entrenamiento malo es el que no se hizo!",
+      "¡La disciplina supera al talento, a entrenar con todo!",
+      "¡Convierte tus excusas en sudor!",
+      "¡Tu único límite eres tú!",
+      "¡La fuerza no viene de lo que puedes hacer, sino de superar lo que pensabas que no podías!",
+      "¡Cada gota de sudor te acerca más a tu meta!"
+    ];
+
+    const AVAILABLE_PLANS = [
+      { id: 'monthly', name: 'Mensualidad Estándar', price: 850, durationDays: 30 },
+      { id: 'quarterly', name: 'Plan Trimestral Fuerza', price: 2200, durationDays: 90 },
+      { id: 'semiannual', name: 'Plan Semestral Elite', price: 4200, durationDays: 180 },
+      { id: 'vip', name: 'Membresía Black VIP Anual', price: 7900, durationDays: 365 },
+      { id: 'student', name: 'Plan Estudiante Gym', price: 650, durationDays: 30 }
     ];
 
     const DEFAULT_MEMBERS = [
@@ -212,19 +195,19 @@ const htmlContent = `<!DOCTYPE html>
         status: 'active'
       },
       {
+        id: 'MEM-008',
+        fullName: 'Juan Solis',
+        documentId: '98765432',
+        plan: 'Mensualidad Estándar',
+        daysRemaining: 15,
+        status: 'active'
+      },
+      {
         id: 'MEM-002',
         fullName: 'Valeria Ríos Gómez',
         documentId: '78291034',
         plan: 'Mensualidad Estándar',
-        daysRemaining: 18,
-        status: 'active'
-      },
-      {
-        id: 'MEM-008',
-        fullName: 'Juan Solis',
-        documentId: '55892018',
-        plan: 'Mensualidad Estándar',
-        daysRemaining: 30,
+        daysRemaining: 2,
         status: 'active'
       },
       {
@@ -234,14 +217,6 @@ const htmlContent = `<!DOCTYPE html>
         plan: 'Mensualidad Estándar',
         daysRemaining: -5,
         status: 'expired'
-      },
-      {
-        id: 'MEM-005',
-        fullName: 'Mateo Guerrero',
-        documentId: '32091487',
-        plan: 'Plan Estudiante Gym',
-        daysRemaining: 22,
-        status: 'active'
       }
     ];
 
@@ -250,7 +225,7 @@ const htmlContent = `<!DOCTYPE html>
         return parseInt(localStorage.getItem('legends_bg_choice') || '0', 10);
       });
       const [bgDarkness, setBgDarkness] = useState(() => {
-        return parseFloat(localStorage.getItem('legends_bg_darkness') || '0.35');
+        return parseFloat(localStorage.getItem('legends_bg_darkness') || '0.25');
       });
 
       const [members, setMembers] = useState(() => {
@@ -272,6 +247,29 @@ const htmlContent = `<!DOCTYPE html>
         return [];
       });
 
+      // Modals State
+      const [showNewMemberModal, setShowNewMemberModal] = useState(false);
+      const [showVisitModal, setShowVisitModal] = useState(false);
+      const [showDirectAccessModal, setShowDirectAccessModal] = useState(false);
+      const [showHistoryModal, setShowHistoryModal] = useState(false);
+      const [showConfigModal, setShowConfigModal] = useState(false);
+
+      // New Client Form State
+      const [newClientName, setNewClientName] = useState('');
+      const [newClientBirthDate, setNewClientBirthDate] = useState('');
+      const [newClientAge, setNewClientAge] = useState('');
+      const [newClientEmail, setNewClientEmail] = useState('');
+      const [newClientPhone, setNewClientPhone] = useState('');
+      const [newClientId, setNewClientId] = useState('');
+      const [newClientPlan, setNewClientPlan] = useState('Mensualidad Estándar');
+      const [newClientPaymentMethod, setNewClientPaymentMethod] = useState('cash');
+      const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(true);
+
+      // Visit Form State
+      const [visitClientName, setVisitClientName] = useState('');
+      const [visitCost, setVisitCost] = useState(50);
+
+      // Scanner & Access Feedback State
       const [scanStatus, setScanStatus] = useState('idle'); // idle | scanning | granted | denied
       const [verifiedClient, setVerifiedClient] = useState(null);
       const [currentQuote, setCurrentQuote] = useState('');
@@ -279,9 +277,11 @@ const htmlContent = `<!DOCTYPE html>
       const [isMuted, setIsMuted] = useState(false);
       const [isFullScreen, setIsFullScreen] = useState(false);
       const [relaySeconds, setRelaySeconds] = useState(0);
-      const [showHistoryModal, setShowHistoryModal] = useState(false);
-      const [showConfigModal, setShowConfigModal] = useState(false);
-      const [serverUrl, setServerUrl] = useState(() => localStorage.getItem('legends_server_url') || 'https://legends-gym-gold.vercel.app');
+
+      // Server Sync URL
+      const [serverUrl, setServerUrl] = useState(() => {
+        return localStorage.getItem('legends_server_url') || 'https://legends-gym-gold.vercel.app';
+      });
       const [serverOnline, setServerOnline] = useState(false);
 
       const relayTimerRef = useRef(null);
@@ -301,22 +301,30 @@ const htmlContent = `<!DOCTYPE html>
         localStorage.setItem('legends_bg_choice', String(next));
       };
 
-      // Check server health
+      // Check server health across Vercel Cloud and LAN
       const checkServer = useCallback(async () => {
-        try {
-          const res = await fetch(\`\${serverUrl}/api/sync/status\`, { mode: 'cors' });
-          if (res.ok) {
-            setServerOnline(true);
-            const mRes = await fetch(\`\${serverUrl}/api/sync/members\`);
-            if (mRes.ok) {
-              const mData = await mRes.json();
-              if (Array.isArray(mData.members) && mData.members.length > 0) {
-                setMembers(mData.members);
+        const candidateUrls = [serverUrl, 'https://legends-gym-gold.vercel.app', 'http://localhost:3001'];
+        for (const url of candidateUrls) {
+          try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3000);
+            const res = await fetch(\`\${url}/api/sync/status\`, { mode: 'cors', signal: controller.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+              setServerUrl(url);
+              setServerOnline(true);
+              const mRes = await fetch(\`\${url}/api/sync/members\`);
+              if (mRes.ok) {
+                const mData = await mRes.json();
+                if (Array.isArray(mData.members) && mData.members.length > 0) {
+                  setMembers(mData.members);
+                  try { localStorage.setItem('legends_members_v1', JSON.stringify(mData.members)); } catch {}
+                }
               }
+              return;
             }
-            return;
-          }
-        } catch {}
+          } catch {}
+        }
         setServerOnline(false);
       }, [serverUrl]);
 
@@ -341,88 +349,111 @@ const htmlContent = `<!DOCTYPE html>
         }, 1000);
       };
 
-      // Voice TTS
-      const speak = (text) => {
-        if (isMuted || !('speechSynthesis' in window)) return;
-        try {
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(text);
-          u.lang = 'es-MX';
-          u.rate = 1.05;
-          window.speechSynthesis.speak(u);
-        } catch {}
-      };
+      // Execute scan / verify access
+      const executeScan = (rawIdentifier) => {
+        const id = String(rawIdentifier).trim().toLowerCase();
+        if (!id) return;
 
-      // Execute scan logic
-      const executeScan = (query) => {
-        if (scanStatus === 'scanning') return;
-        const q = String(query).trim().toLowerCase();
-        if (!q) return;
-
-        if (!isMuted) soundManager.playScanBlip();
         setScanStatus('scanning');
         setVerifiedClient(null);
 
         setTimeout(() => {
-          const found = members.find(m => 
-            (m.id && m.id.toLowerCase() === q) ||
-            (m.documentId && m.documentId.toLowerCase() === q) ||
-            (m.fullName && m.fullName.toLowerCase().includes(q)) ||
-            (m.biometricHash && m.biometricHash.toLowerCase() === q)
-          );
+          const found = members.find(m => {
+            const matchId = String(m.id || '').toLowerCase() === id;
+            const matchDoc = String(m.documentId || '').toLowerCase() === id;
+            const matchName = String(m.fullName || '').toLowerCase().includes(id);
+            return matchId || matchDoc || matchName;
+          });
 
-          const nowIso = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (!found) {
+            setScanStatus('denied');
+            setVerifiedClient({
+              name: 'Usuario No Reconocido',
+              plan: 'Sin Membresía',
+              reason: 'ID o huella no registrada en el sistema',
+              status: 'denied',
+              daysRemaining: 0
+            });
+            if (!isMuted) soundManager.playAccessDenied();
 
-          if (found) {
-            const isGranted = (found.membership?.status === 'active' || found.status === 'active') && 
-                              (found.membership?.daysRemaining !== undefined ? found.membership.daysRemaining >= 0 : (found.daysRemaining === undefined || found.daysRemaining >= 0));
-
-            const clientData = {
-              name: found.fullName,
-              plan: found.membership?.planName || found.plan || 'Membresía Activa',
-              daysRemaining: found.membership?.daysRemaining ?? found.daysRemaining ?? 30,
-              avatarUrl: found.avatarUrl,
-              granted: isGranted,
-              reason: isGranted ? 'Membresía Vigente' : 'Membresía Expirada'
-            };
-
-            setVerifiedClient(clientData);
-
-            if (isGranted) {
-              if (!isMuted) soundManager.playAccessGranted();
-              speak(\`Bienvenido \${found.fullName}, acceso concedido\`);
-              triggerTurnstile(4);
-              const quote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
-              setCurrentQuote(quote);
-
-              try {
-                confetti({
-                  particleCount: 50,
-                  spread: 70,
-                  origin: { y: 0.5, x: 0.5 },
-                  colors: ['#F59E0B', '#10B981', '#FFFFFF', '#E4E4E7']
-                });
-              } catch {}
-
-              setScanStatus('granted');
-            } else {
-              if (!isMuted) soundManager.playAccessDenied();
-              speak(\`Acceso restringido para \${found.fullName}\`);
-              setScanStatus('denied');
-            }
-
-            // Register log
             const newLog = {
               id: 'LOG-' + Date.now(),
-              time: nowIso,
-              name: found.fullName,
-              status: isGranted ? 'granted' : 'denied',
-              reason: isGranted ? 'Acceso Autorizado' : 'Cuota Vencida',
-              plan: clientData.plan
+              clientName: 'Desconocido (' + rawIdentifier + ')',
+              status: 'denied',
+              reason: 'No registrado',
+              timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             };
-            setAccessLogs(prev => [newLog, ...prev].slice(0, 100));
+            setAccessLogs(prev => [newLog, ...prev.slice(0, 499)]);
 
-            // Sync with LAN server if connected
+            setTimeout(() => {
+              setScanStatus('idle');
+              setVerifiedClient(null);
+            }, 3800);
+            return;
+          }
+
+          const planName = found.membership?.planName || found.plan || 'Mensualidad Estándar';
+          const days = found.membership?.daysRemaining !== undefined ? found.membership.daysRemaining : (found.daysRemaining !== undefined ? found.daysRemaining : 30);
+          const isExpired = found.status === 'expired' || days < 0;
+
+          if (isExpired) {
+            setScanStatus('denied');
+            setVerifiedClient({
+              name: found.fullName,
+              plan: planName,
+              reason: 'Membresía vencida (' + Math.abs(days) + ' días)',
+              status: 'denied',
+              daysRemaining: days
+            });
+            if (!isMuted) soundManager.playAccessDenied();
+
+            const newLog = {
+              id: 'LOG-' + Date.now(),
+              clientName: found.fullName,
+              status: 'denied',
+              reason: 'Cuota vencida',
+              timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            setAccessLogs(prev => [newLog, ...prev.slice(0, 499)]);
+
+            setTimeout(() => {
+              setScanStatus('idle');
+              setVerifiedClient(null);
+            }, 4000);
+          } else {
+            setScanStatus('granted');
+            const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+            setCurrentQuote(randomQuote);
+
+            setVerifiedClient({
+              name: found.fullName,
+              plan: planName,
+              reason: 'Acceso Concedido • ' + days + ' días restantes',
+              status: 'granted',
+              daysRemaining: days
+            });
+
+            if (!isMuted) soundManager.playAccessGranted();
+            triggerTurnstile(4);
+
+            try {
+              confetti({
+                particleCount: 45,
+                spread: 70,
+                origin: { y: 0.6 }
+              });
+            } catch {}
+
+            const newLog = {
+              id: 'LOG-' + Date.now(),
+              clientName: found.fullName,
+              status: 'granted',
+              reason: planName,
+              timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            setAccessLogs(prev => [newLog, ...prev.slice(0, 499)]);
+
+            // Sync with Cloud / LAN server
             if (serverOnline) {
               fetch(\`\${serverUrl}/api/sync/access-log\`, {
                 method: 'POST',
@@ -431,59 +462,140 @@ const htmlContent = `<!DOCTYPE html>
               }).catch(() => {});
             }
 
-          } else {
-            if (!isMuted) soundManager.playAccessDenied();
-            speak('Socio no registrado');
-            setVerifiedClient({
-              name: 'Credencial No Registrada',
-              plan: 'Sin Membresía',
-              granted: false,
-              reason: 'No existe registro en la base de datos'
-            });
-            setScanStatus('denied');
-
-            const newLog = {
-              id: 'LOG-' + Date.now(),
-              time: nowIso,
-              name: 'Desconocido (' + query + ')',
-              status: 'denied',
-              reason: 'No Registrado',
-              plan: '-'
-            };
-            setAccessLogs(prev => [newLog, ...prev].slice(0, 100));
+            setTimeout(() => {
+              setScanStatus('idle');
+              setVerifiedClient(null);
+            }, 4500);
           }
-
-          setTimeout(() => {
-            setScanStatus('idle');
-            setVerifiedClient(null);
-          }, 4500);
-
-        }, 850);
+        }, 300);
       };
 
-      // Hardware Barcode / RFID Keyboard Wedge scanner
+      // Handle Visit / Day Pass
+      const handleRegisterVisit = () => {
+        const name = visitClientName.trim() || 'Visitante del Día';
+        setScanStatus('granted');
+        setVerifiedClient({
+          name: name,
+          plan: 'Pase por 1 Día ($' + visitCost + ')',
+          reason: 'Pase de Visita Concedido',
+          status: 'granted',
+          daysRemaining: 1
+        });
+
+        if (!isMuted) soundManager.playAccessGranted();
+        triggerTurnstile(4);
+
+        const newLog = {
+          id: 'VISIT-' + Date.now(),
+          clientName: name,
+          status: 'granted',
+          reason: 'Pase Diario ($' + visitCost + ')',
+          timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        };
+        setAccessLogs(prev => [newLog, ...prev.slice(0, 499)]);
+
+        setShowVisitModal(false);
+        setVisitClientName('');
+
+        setTimeout(() => {
+          setScanStatus('idle');
+          setVerifiedClient(null);
+        }, 4500);
+      };
+
+      // Handle New Member Registration
+      const handleRegisterNewMember = (e) => {
+        e.preventDefault();
+        if (!newClientName.trim()) return;
+
+        const newId = 'MEM-' + String(members.length + 1).padStart(3, '0');
+        const selectedPlanObj = AVAILABLE_PLANS.find(p => p.name === newClientPlan) || AVAILABLE_PLANS[0];
+
+        const newMember = {
+          id: newId,
+          fullName: newClientName.trim(),
+          documentId: newClientId.trim() || String(Math.floor(10000000 + Math.random() * 90000000)),
+          email: newClientEmail.trim() || 'socio.' + newId.toLowerCase() + '@legendsgym.com',
+          phone: newClientPhone.trim() || '+52 55 0000 0000',
+          plan: selectedPlanObj.name,
+          daysRemaining: selectedPlanObj.durationDays,
+          status: 'active',
+          membership: {
+            planName: selectedPlanObj.name,
+            price: selectedPlanObj.price,
+            daysRemaining: selectedPlanObj.durationDays,
+            status: 'active',
+            startDate: new Date().toISOString().slice(0, 10),
+            endDate: new Date(Date.now() + selectedPlanObj.durationDays * 86400000).toISOString().slice(0, 10)
+          }
+        };
+
+        const updatedMembers = [newMember, ...members];
+        setMembers(updatedMembers);
+        try { localStorage.setItem('legends_members_v1', JSON.stringify(updatedMembers)); } catch {}
+
+        // Push to Cloud / LAN
+        if (serverOnline) {
+          fetch(\`\${serverUrl}/api/sync/members\`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'add', member: newMember })
+          }).catch(() => {});
+        }
+
+        setShowNewMemberModal(false);
+        setNewClientName('');
+        setNewClientBirthDate('');
+        setNewClientAge('');
+        setNewClientEmail('');
+        setNewClientPhone('');
+        setNewClientId('');
+
+        // Immediate granted access
+        executeScan(newMember.id);
+      };
+
+      // Birthday to Age auto-calc
+      const handleBirthDateChange = (dateStr) => {
+        setNewClientBirthDate(dateStr);
+        if (dateStr) {
+          const birth = new Date(dateStr);
+          if (!isNaN(birth.getTime())) {
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            if (age >= 5 && age <= 100) setNewClientAge(String(age));
+          }
+        }
+      };
+
+      // Global Hardware Barcode / RFID Keyboard Wedge Listener
       useEffect(() => {
-        const handleKey = (e) => {
-          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        const handleKeyDown = (e) => {
+          if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
           const now = Date.now();
-          if (now - lastKeyTimeRef.current > 300) {
+
+          if (now - lastKeyTimeRef.current > 120) {
             keyBufferRef.current = '';
           }
           lastKeyTimeRef.current = now;
 
           if (e.key === 'Enter') {
-            const code = keyBufferRef.current.trim();
-            if (code.length >= 2) executeScan(code);
+            const scanned = keyBufferRef.current.trim();
+            if (scanned.length >= 3) {
+              executeScan(scanned);
+            }
             keyBufferRef.current = '';
           } else if (e.key.length === 1) {
             keyBufferRef.current += e.key;
           }
         };
-        window.addEventListener('keydown', handleKey);
-        return () => window.removeEventListener('keydown', handleKey);
-      }, [scanStatus, members]);
 
-      // Fullscreen
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [members, serverOnline, serverUrl]);
+
       const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -497,7 +609,7 @@ const htmlContent = `<!DOCTYPE html>
       const selectedBg = currentBgIndex === 0 ? BG_PHOTO_1 : BG_PHOTO_2;
 
       return (
-        <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-between p-3 sm:p-4 lg:p-5 gap-3">
+        <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-between p-3 sm:p-5 lg:p-6 gap-4">
           
           {/* 100% COVER REAL WHATSAPP GYM PHOTO BACKGROUND */}
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -506,17 +618,17 @@ const htmlContent = `<!DOCTYPE html>
               alt="Fondo Gym Legends" 
               className="w-full h-full object-cover object-center filter brightness-110 contrast-105"
             />
-            {/* Elegant glassmorphism dark vignette so photo is clearly visible yet text has optimal readability */}
+            {/* Transparent dark vignette so neon sign and photo are 100% visible */}
             <div 
-              className="absolute inset-0 bg-black backdrop-blur-[1px] transition-opacity duration-300"
+              className="absolute inset-0 bg-black backdrop-blur-[0.5px] transition-opacity duration-300"
               style={{ opacity: bgDarkness }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 pointer-events-none" />
           </div>
 
-          {/* Top Header Card with Glassmorphism */}
+          {/* Top Header Card */}
           <header className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-black/65 backdrop-blur-2xl px-5 py-3.5 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-black/45 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden">
               
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-black/80 border border-white/30 p-1 flex items-center justify-center shrink-0 shadow-lg">
@@ -526,14 +638,14 @@ const htmlContent = `<!DOCTYPE html>
                   <div className="flex items-center gap-2.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
                     <h1 className="text-lg sm:text-xl font-black text-white tracking-wide uppercase drop-shadow-md">
-                      CONTROL DE ACCESO
+                      FITNESS LEGENDS
                     </h1>
                     <span className="text-xs bg-amber-500/25 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-md font-bold shadow-sm">
                       Lector Activo
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-300 mt-0.5 drop-shadow">
-                    Validación instantánea de huella digital y vigencia de cuota en acceso principal.
+                    Terminal de Validación y Registro de Acceso
                   </p>
                 </div>
               </div>
@@ -544,8 +656,8 @@ const htmlContent = `<!DOCTYPE html>
                 {/* Toggle Background Photo button */}
                 <button
                   onClick={toggleBackground}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-100 border border-white/25 transition-all shadow-md"
-                  title="Cambiar entre Foto 1 (Rótulo Oficial) y Foto 2 (Lema del Gym)"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-100 border border-white/25 transition-all shadow-md cursor-pointer"
+                  title="Cambiar fotografía de fondo"
                 >
                   <span>🖼️</span>
                   <span className="hidden sm:inline">Cambiar Foto</span>
@@ -553,7 +665,7 @@ const htmlContent = `<!DOCTYPE html>
 
                 <button
                   onClick={() => setShowHistoryModal(true)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold text-amber-300 hover:text-white transition-all shadow-md"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold text-amber-300 hover:text-white transition-all shadow-md cursor-pointer"
                 >
                   <span>⏱️</span>
                   <span>Ver Registro</span>
@@ -564,7 +676,7 @@ const htmlContent = `<!DOCTYPE html>
 
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 border border-white/25 transition-colors shadow-md"
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
                   title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
                 >
                   {isMuted ? '🔇' : '🔊'}
@@ -572,7 +684,7 @@ const htmlContent = `<!DOCTYPE html>
 
                 <button
                   onClick={() => setShowConfigModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
                   title="Configuración de Red y Fondo"
                 >
                   <span>⚙️</span>
@@ -581,7 +693,7 @@ const htmlContent = `<!DOCTYPE html>
 
                 <button
                   onClick={toggleFullscreen}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
                   title="Pantalla Completa Kiosco (F11)"
                 >
                   <span>{isFullScreen ? '↙️ Salir' : '⛶ Pantalla Completa'}</span>
@@ -590,123 +702,562 @@ const htmlContent = `<!DOCTYPE html>
             </div>
           </header>
 
-          {/* Main Scanner Container with Glassmorphism so photo is visible */}
-          <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center items-center gap-3 relative z-10 my-auto">
-            <div className="w-full bg-black/65 backdrop-blur-2xl rounded-3xl border border-white/20 p-6 sm:p-8 shadow-2xl relative flex flex-col justify-center items-center gap-4">
-              
-              {/* Sensor Subheader */}
-              <div className="flex items-center justify-between border-b border-white/15 pb-2.5 shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-amber-400 text-sm">⚡</span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-100">
-                    SENSOR BIOMÉTRICO ÓPTICO USB
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className={\`text-[10px] font-mono px-2.5 py-0.5 rounded-lg border flex items-center gap-1 font-bold \${
-                    serverOnline ? 'text-emerald-300 bg-emerald-500/20 border-emerald-500/30' : 'text-amber-300 bg-amber-500/20 border-amber-500/30'
-                  }\`}>
-                    {serverOnline ? '📶 LAN Activa' : '💾 Caché Local'}
-                  </span>
-                  <span className="text-[11px] font-mono text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-lg border border-emerald-500/30 font-bold">
-                    500 DPI • Online
+          {/* TURNSTILE PASS ACTIVE BANNER */}
+          {relaySeconds > 0 && (
+            <div className="w-full max-w-4xl mx-auto z-20 shrink-0">
+              <div className="py-3 px-6 rounded-2xl bg-gradient-to-r from-emerald-500/40 via-emerald-500/60 to-emerald-500/40 border border-emerald-400 shadow-glow-green text-center animate-pulse">
+                <div className="flex items-center justify-center gap-3 text-emerald-100 font-black text-base sm:text-lg uppercase tracking-wider">
+                  <span>🔓 PASO LIBRE CONCEDIDO (TORNIQUETE ABIERTO)</span>
+                  <span className="bg-emerald-400 text-black px-3 py-0.5 rounded-full font-mono text-sm font-black">
+                    {relaySeconds}s
                   </span>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Turnstile Active Banner */}
-              {relaySeconds > 0 && (
-                <div className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500/30 via-emerald-500/40 to-emerald-500/30 border border-emerald-400/80 shadow-glow-green text-center animate-pulse shrink-0">
-                  <div className="flex items-center justify-center gap-2.5 text-emerald-200 font-black text-sm uppercase tracking-wider">
-                    <span>🔓 ACCESO CONCEDIDO (PASO LIBRE)</span>
-                    <span className="bg-emerald-400 text-black px-2.5 py-0.5 rounded-full font-mono text-xs font-black">
-                      {relaySeconds}s
-                    </span>
+          {/* ACCESS FEEDBACK BANNER WHEN SCANNING */}
+          {verifiedClient && (
+            <div className="w-full max-w-4xl mx-auto z-20 shrink-0">
+              <div className={\`p-4 sm:p-5 rounded-2xl border backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4 animate-in zoom-in-95 duration-200 \${
+                verifiedClient.status === 'granted'
+                  ? 'bg-emerald-950/80 border-emerald-400/80 text-emerald-200 shadow-glow-green'
+                  : 'bg-red-950/80 border-red-500/80 text-red-200 shadow-glow-red'
+              }\`}>
+                <div className="flex items-center gap-4">
+                  <div className={\`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl font-black shrink-0 \${
+                    verifiedClient.status === 'granted' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-red-500/30 text-red-300'
+                  }\`}>
+                    {verifiedClient.status === 'granted' ? '✓' : '✗'}
                   </div>
-                </div>
-              )}
-
-              {/* Central Interactive Scanner Pad */}
-              <div className="flex flex-col items-center justify-center py-2 px-4 shrink-0 my-auto">
-                <div 
-                  onClick={() => executeScan('MEM-001')}
-                  className={\`relative w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 \${
-                    scanStatus === 'scanning'
-                      ? 'bg-amber-500/20 border-2 border-amber-400 shadow-glow-gold'
-                      : scanStatus === 'granted'
-                      ? 'bg-emerald-500/30 border-2 border-emerald-400 shadow-glow-green'
-                      : scanStatus === 'denied'
-                      ? 'bg-red-500/30 border-2 border-red-500 shadow-glow-red'
-                      : 'bg-black/60 border-2 border-white/30 hover:border-amber-400 hover:shadow-glow-gold'
-                  }\`}
-                >
-                  {/* Radar Ring */}
-                  {scanStatus === 'scanning' && (
-                    <div className="absolute inset-0 rounded-full border border-amber-400/50 scanner-ring" />
-                  )}
-
-                  {/* Laser Scan Line */}
-                  {scanStatus === 'scanning' && (
-                    <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_15px_#FFF] animate-scan-line z-20" />
-                  )}
-
-                  {/* Corner Alignment Markers */}
-                  <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-amber-400 pointer-events-none" />
-                  <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-amber-400 pointer-events-none" />
-                  <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-amber-400 pointer-events-none" />
-                  <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-amber-400 pointer-events-none" />
-
-                  {/* Icon or Status */}
-                  <div className="relative z-10 flex flex-col items-center justify-center">
-                    {scanStatus === 'granted' ? (
-                      <span className="text-5xl text-emerald-400 font-black">✓</span>
-                    ) : scanStatus === 'denied' ? (
-                      <span className="text-5xl text-red-500 font-black">✗</span>
-                    ) : (
-                      <div className="text-5xl text-gray-200 hover:text-amber-400 transition-colors filter drop-shadow">
-                        <svg className="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
-                          <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
-                          <path d="M2 16h.01"/>
-                          <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
-                          <path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2"/>
-                          <path d="M4 10.8a10 10 0 0 1 14.8-4.8"/>
-                          <path d="M5 14.8c0 1.25.1 3.25.32 4.2"/>
-                          <path d="M10 22a7.6 7.6 0 0 0 2-4"/>
-                          <path d="M8 15a4 4 0 0 0 5 3.8"/>
-                        </svg>
-                      </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-wide uppercase">
+                      {verifiedClient.name}
+                    </h3>
+                    <p className="text-sm font-bold text-gray-200">
+                      {verifiedClient.plan} • <span className={verifiedClient.status === 'granted' ? 'text-emerald-300 font-semibold' : 'text-red-300 font-semibold'}>{verifiedClient.reason}</span>
+                    </p>
+                    {verifiedClient.status === 'granted' && currentQuote && (
+                      <p className="text-xs text-amber-300 italic mt-0.5">"{currentQuote}"</p>
                     )}
                   </div>
                 </div>
 
-                {/* Instruction / Name Status */}
-                <div className="mt-3 text-center w-full max-w-lg">
-                  <p className={\`text-base sm:text-xl font-black tracking-wide uppercase drop-shadow-md \${
-                    scanStatus === 'scanning' ? 'text-amber-400 animate-pulse' :
-                    scanStatus === 'granted' ? 'text-emerald-400' :
-                    scanStatus === 'denied' ? 'text-red-400' : 'text-white'
-                  }\`}>
-                    {scanStatus === 'scanning' && 'Escaneando Huella Digital...'}
-                    {scanStatus === 'granted' && (verifiedClient ? \`¡Bienvenido, \${verifiedClient.name}!\` : '¡Acceso Concedido!')}
-                    {scanStatus === 'denied' && (verifiedClient ? \`Acceso Denegado: \${verifiedClient.name}\` : 'Acceso Restringido')}
-                    {scanStatus === 'idle' && 'COLOQUE SU DEDO SOBRE EL SENSOR'}
-                  </p>
+                <button
+                  onClick={() => setVerifiedClient(null)}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors shrink-0"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          )}
 
-                  <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow">
-                    {scanStatus === 'idle' && 'Escanee su huella digital, código de barras o pase su tarjeta RFID'}
-                    {scanStatus === 'scanning' && 'Leyendo minucias biométricas...'}
-                    {scanStatus === 'granted' && (currentQuote || '¡Acceso autorizado!')}
-                    {scanStatus === 'denied' && (verifiedClient?.reason || 'Consulte en recepción')}
-                  </p>
+          {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
+          <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center my-auto relative z-10 px-2">
+            
+            {/* Welcome Title */}
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-3 shadow-lg">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">
+                SELECCIONA TU TIPO DE INGRESO
+              </h2>
+              <p className="text-xs sm:text-base text-gray-200 mt-1.5 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+                Toca una de las 3 opciones para gestionar tu acceso a la sala
+              </p>
+            </div>
+
+            {/* 3 TRANSLUCENT GLASS CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
+
+              {/* Opción 1: CLIENTE NUEVO */}
+              <div 
+                onClick={() => setShowNewMemberModal(true)}
+                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                  👤
                 </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+                  Cliente Nuevo
+                </h3>
+                <p className="text-xs text-gray-300 mt-1 drop-shadow">
+                  Inscripción y primera membresía
+                </p>
+              </div>
+
+              {/* Opción 2: QUIERO VISITA */}
+              <div 
+                onClick={() => setShowVisitModal(true)}
+                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                  🎟️
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow">
+                  Quiero Visita
+                </h3>
+                <p className="text-xs text-gray-300 mt-1 drop-shadow">
+                  Entrenamiento por un día
+                </p>
+              </div>
+
+              {/* Opción 3: YA TENGO MEMBRESÍA */}
+              <div 
+                onClick={() => setShowDirectAccessModal(true)}
+                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                  ⚡
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+                  Ya Tengo Membresía
+                </h3>
+                <p className="text-xs text-gray-300 mt-1 drop-shadow">
+                  Validación de huella o cédula
+                </p>
               </div>
 
             </div>
+
+            {/* Subtle Hint */}
+            <p className="text-xs sm:text-sm text-gray-300 mt-7 drop-shadow font-medium text-center">
+              💡 <span className="text-white font-bold">Lector Automático:</span> Puedes posar tu dedo en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
+            </p>
+
           </main>
 
-          {/* History Modal */}
+          {/* FOOTER */}
+          <footer className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/45 backdrop-blur-xl px-5 py-2.5 rounded-xl border border-white/20 text-xs text-gray-300">
+              <div className="flex items-center gap-3">
+                <span className={\`w-2 h-2 rounded-full \${serverOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}\`} />
+                <span className="font-semibold text-gray-200">
+                  {serverOnline ? 'Sincronizado en Tiempo Real (Nube / LAN)' : 'Modo Autónomo Local'}
+                </span>
+              </div>
+
+              {/* Darkness Slider */}
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <span className="text-[11px] text-gray-300">☀️ Iluminación Fondo:</span>
+                <input
+                  type="range"
+                  min="0.05"
+                  max="0.75"
+                  step="0.05"
+                  value={bgDarkness}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setBgDarkness(val);
+                    localStorage.setItem('legends_bg_darkness', String(val));
+                  }}
+                  className="w-24 accent-amber-500 cursor-pointer"
+                />
+                <span className="text-xs font-mono text-amber-400 font-bold">{Math.round((1 - bgDarkness) * 100)}%</span>
+              </div>
+            </div>
+          </footer>
+
+          {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
+          {showNewMemberModal && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+              <div className="bg-[#161824]/95 border border-amber-500/40 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto">
+                
+                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
+                      👤
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
+                          Registro de Cliente Nuevo
+                        </h3>
+                        <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                          Inscripción
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-300 mt-0.5">
+                        Ingresa tus datos personales, mensualidad y opción de pago
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowNewMemberModal(false)}
+                    className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleRegisterNewMember} className="space-y-4">
+                  
+                  {/* Nombre */}
+                  <div>
+                    <label className="text-xs font-bold text-gray-200 block mb-1">
+                      Nombre Completo *
+                    </label>
+                    <input 
+                      type="text"
+                      required
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
+                      placeholder="Ej. Andrea García Morales"
+                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Cumpleaños y Edad */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-200 block mb-1">
+                        Fecha de Cumpleaños *
+                      </label>
+                      <input 
+                        type="date"
+                        required
+                        value={newClientBirthDate}
+                        onChange={(e) => handleBirthDateChange(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center justify-between">
+                        <span>Edad *</span>
+                        <span className="text-[10px] text-amber-400/90 font-medium">(Automática)</span>
+                      </label>
+                      <input 
+                        type="number"
+                        required
+                        min="8"
+                        max="110"
+                        value={newClientAge}
+                        onChange={(e) => setNewClientAge(e.target.value)}
+                        placeholder="Ej. 25"
+                        className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Correo y Teléfono */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-200 block mb-1">
+                        Correo Electrónico *
+                      </label>
+                      <input 
+                        type="email"
+                        required
+                        value={newClientEmail}
+                        onChange={(e) => setNewClientEmail(e.target.value)}
+                        placeholder="andrea@ejemplo.com"
+                        className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-200 block mb-1">
+                        Teléfono / WhatsApp
+                      </label>
+                      <input 
+                        type="tel"
+                        value={newClientPhone}
+                        onChange={(e) => setNewClientPhone(e.target.value)}
+                        placeholder="Ej. 55 1234 5678"
+                        className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Cédula */}
+                  <div>
+                    <label className="text-xs font-bold text-gray-300 block mb-1">
+                      Cédula / Documento ID (Opcional)
+                    </label>
+                    <input 
+                      type="text"
+                      value={newClientId}
+                      onChange={(e) => setNewClientId(e.target.value)}
+                      placeholder="Ej. 10234567"
+                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Planes */}
+                  <div>
+                    <label className="text-xs font-bold text-gray-200 block mb-1.5 flex items-center justify-between">
+                      <span>⚡ Mensualidad / Plan de Entrenamiento *</span>
+                      <span className="text-[11px] text-amber-400 font-semibold">Toca para seleccionar</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {AVAILABLE_PLANS.map((plan) => {
+                        const isSelected = newClientPlan === plan.name;
+                        return (
+                          <div
+                            key={plan.id}
+                            onClick={() => setNewClientPlan(plan.name)}
+                            className={\`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between \${
+                              isSelected
+                                ? 'bg-amber-500/20 border-amber-400 shadow-glow-gold/40 ring-1 ring-amber-400'
+                                : 'bg-white/10 border-white/15 hover:border-white/30 hover:bg-white/20'
+                            }\`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-xs font-bold text-white leading-tight">{plan.name}</span>
+                              {isSelected ? (
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 shadow-sm" />
+                              ) : (
+                                <span className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0" />
+                              )}
+                            </div>
+                            <div className="mt-2 flex items-baseline justify-between">
+                              <span className="text-sm font-black text-amber-400">
+                                $\${plan.price.toLocaleString('es-MX')}
+                              </span>
+                              <span className="text-[10px] text-gray-300 font-medium">
+                                {plan.durationDays} días
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Opción de Pago */}
+                  <div>
+                    <label className="text-xs font-bold text-gray-200 block mb-1.5">
+                      Opción de Pago *
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewClientPaymentMethod('cash')}
+                        className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
+                          newClientPaymentMethod === 'cash'
+                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                        }\`}
+                      >
+                        <span>💵 Efectivo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewClientPaymentMethod('card')}
+                        className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
+                          newClientPaymentMethod === 'card'
+                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                        }\`}
+                      >
+                        <span>💳 Tarjeta</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewClientPaymentMethod('transfer')}
+                        className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
+                          newClientPaymentMethod === 'transfer'
+                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
+                        }\`}
+                      >
+                        <span>📱 Transfer</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Fingerprint Simulation */}
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl">👆</span>
+                      <div>
+                        <p className="text-xs font-bold text-white">Captura de Huella Digital</p>
+                        <p className="text-[11px] text-gray-300">
+                          {newClientFingerprintEnrolled 
+                            ? '✓ Huella enrolada correctamente' 
+                            : 'Sensor biométrico listo para capturar'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNewClientFingerprintEnrolled(!newClientFingerprintEnrolled)}
+                      className={\`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer \${
+                        newClientFingerprintEnrolled 
+                          ? 'bg-emerald-500 text-black shadow-glow-green' 
+                          : 'bg-amber-500 hover:bg-amber-400 text-black shadow-glow-gold'
+                      }\`}
+                    >
+                      {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Capturar Huella'}
+                    </button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-2 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowNewMemberModal(false)}
+                      className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-black shadow-glow-gold uppercase tracking-wider transition-all transform hover:scale-[1.02] cursor-pointer"
+                    >
+                      Guardar e Ingresar
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 2: PASE DE VISITA */}
+          {showVisitModal && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#161824]/95 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">🎟️</span>
+                    <div>
+                      <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                        Pase de Visita por 1 Día
+                      </h3>
+                      <p className="text-xs text-gray-300">Ingreso rápido para entrenamiento diario</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowVisitModal(false)}
+                    className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-300 block mb-1">Nombre del Visitante (Opcional)</label>
+                    <input 
+                      type="text"
+                      value={visitClientName}
+                      onChange={(e) => setVisitClientName(e.target.value)}
+                      placeholder="Ej. Juan Pérez (o dejar vacío)"
+                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-gray-300">Tarifa de Visita Diaria:</p>
+                      <p className="text-2xl font-black text-emerald-400 font-mono">{'$' + visitCost}</p>
+                    </div>
+                    <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                      Paso Inmediato
+                    </span>
+                  </div>
+
+                  <div className="pt-2 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowVisitModal(false)}
+                      className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRegisterVisit}
+                      className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-black text-black shadow-glow-green uppercase tracking-wider cursor-pointer"
+                    >
+                      🔓 Conceder Acceso
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
+          {showDirectAccessModal && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#161824]/95 border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">⚡</span>
+                    <div>
+                      <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                        Validación de Socio Activo
+                      </h3>
+                      <p className="text-xs text-gray-300">Posa tu huella o ingresa tu cédula / ID</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowDirectAccessModal(false)}
+                    className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex flex-col items-center justify-center py-4">
+                  <div 
+                    onClick={() => {
+                      executeScan('MEM-001');
+                      setShowDirectAccessModal(false);
+                    }}
+                    className="relative w-32 h-32 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-glow-gold group"
+                    title="Haz clic para simular lectura de huella"
+                  >
+                    <div className="text-5xl text-amber-400 group-hover:scale-110 transition-transform">
+                      👆
+                    </div>
+                  </div>
+                  <p className="text-xs font-bold text-amber-400 mt-3 uppercase tracking-wider">
+                    Toca el sensor de huella
+                  </p>
+                </div>
+
+                {/* Input de búsqueda o cédula */}
+                <div className="mt-2 pt-4 border-t border-white/15">
+                  <label className="text-xs font-bold text-gray-300 block mb-1.5">O escribe tu cédula o ID de socio:</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && searchQuery.trim()) {
+                          executeScan(searchQuery.trim());
+                          setSearchQuery('');
+                          setShowDirectAccessModal(false);
+                        }
+                      }}
+                      placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
+                      className="flex-1 px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    />
+                    <button
+                      onClick={() => {
+                        if (searchQuery.trim()) {
+                          executeScan(searchQuery.trim());
+                          setSearchQuery('');
+                          setShowDirectAccessModal(false);
+                        }
+                      }}
+                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold cursor-pointer"
+                    >
+                      Verificar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 4: REGISTRO DE ACCESOS DEL DÍA */}
           {showHistoryModal && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
               <div className="bg-[#0D0E15] border border-white/20 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
@@ -716,7 +1267,7 @@ const htmlContent = `<!DOCTYPE html>
                   </h3>
                   <button 
                     onClick={() => setShowHistoryModal(false)}
-                    className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white"
+                    className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
                   >
                     ✕
                   </button>
@@ -729,22 +1280,23 @@ const htmlContent = `<!DOCTYPE html>
                     accessLogs.map((log) => (
                       <div key={log.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10">
                         <div className="flex items-center gap-3">
-                          <span className={\`w-2.5 h-2.5 rounded-full \${log.status === 'granted' ? 'bg-emerald-400' : 'bg-red-400'}\`} />
+                          <span className={\`w-2 h-2 rounded-full \${log.status === 'granted' ? 'bg-emerald-400' : 'bg-red-500'}\`} />
                           <div>
-                            <p className="text-sm font-bold text-white">{log.name}</p>
-                            <p className="text-xs text-gray-400">{log.plan} • {log.reason}</p>
+                            <p className="text-sm font-bold text-white">{log.clientName}</p>
+                            <p className="text-xs text-gray-400">{log.reason}</p>
                           </div>
                         </div>
-                        <span className="font-mono text-xs text-amber-400 font-bold">{log.time}</span>
+                        <span className="text-xs font-mono text-gray-400">{log.timestamp}</span>
                       </div>
                     ))
                   )}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-white/15 flex justify-end">
-                  <button
+                <div className="mt-4 pt-3 border-t border-white/15 flex justify-between items-center text-xs text-gray-400">
+                  <span>Total hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
+                  <button 
                     onClick={() => setShowHistoryModal(false)}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs rounded-xl"
+                    className="px-4 py-2 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors cursor-pointer"
                   >
                     Cerrar
                   </button>
@@ -753,81 +1305,55 @@ const htmlContent = `<!DOCTYPE html>
             </div>
           )}
 
-          {/* Config Modal */}
+          {/* MODAL 5: CONFIGURACIÓN DE RED Y SERVIDOR */}
           {showConfigModal && (
             <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
               <div className="bg-[#0D0E15] border border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                <h3 className="text-lg font-black text-white uppercase mb-4 flex items-center gap-2">
-                  <span>⚙️</span> Ajustes de Pantalla y Red
-                </h3>
+                <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <span>⚙️</span> Configuración de Red
+                  </h3>
+                  <button 
+                    onClick={() => setShowConfigModal(false)}
+                    className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-gray-300 block mb-1">Oscurecimiento de Fondo (Brillo del fondo):</label>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="range" 
-                        min="0.1" 
-                        max="0.8" 
-                        step="0.05"
-                        value={bgDarkness}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          setBgDarkness(val);
-                          localStorage.setItem('legends_bg_darkness', String(val));
-                        }}
-                        className="flex-1 accent-amber-500 cursor-pointer"
-                      />
-                      <span className="text-xs font-mono text-amber-400 font-bold">{Math.round((1 - bgDarkness) * 100)}% Brillo</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-300 block mb-1">Foto de Fondo Actual:</label>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => { setCurrentBgIndex(0); localStorage.setItem('legends_bg_choice', '0'); }}
-                        className={\`flex-1 py-2 px-2 rounded-xl text-xs font-bold border transition-all \${currentBgIndex === 0 ? 'bg-amber-500 text-black border-amber-400' : 'bg-white/10 text-white border-white/20'}\`}
-                      >
-                        Foto 1: Rótulo Legends
-                      </button>
-                      <button 
-                        onClick={() => { setCurrentBgIndex(1); localStorage.setItem('legends_bg_choice', '1'); }}
-                        className={\`flex-1 py-2 px-2 rounded-xl text-xs font-bold border transition-all \${currentBgIndex === 1 ? 'bg-amber-500 text-black border-amber-400' : 'bg-white/10 text-white border-white/20'}\`}
-                      >
-                        Foto 2: Lema Límites
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-300 block mb-1">URL Servidor LAN:</label>
-                    <input 
-                      type="text" 
-                      value={serverUrl} 
+                    <label className="text-xs font-semibold text-gray-300 block mb-1">
+                      Servidor de Sincronización (Vercel Cloud o LAN):
+                    </label>
+                    <input
+                      type="text"
+                      value={serverUrl}
                       onChange={(e) => setServerUrl(e.target.value)}
-                      className="w-full px-3 py-2 bg-black/60 border border-white/20 rounded-xl text-sm text-white" 
+                      placeholder="https://legends-gym-gold.vercel.app"
+                      className="w-full px-3 py-2 bg-black/60 rounded-xl border border-white/20 text-xs text-white placeholder-gray-500 font-mono focus:outline-none focus:border-amber-400"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1">
-                    <span className="text-gray-300">Conexión LAN:</span>
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
+                    <span className="text-gray-300">Estado de Conexión:</span>
                     <span className={\`font-bold \${serverOnline ? 'text-emerald-400' : 'text-amber-400'}\`}>
-                      {serverOnline ? '● Conectado (En línea)' : '● Modo Autónomo Local'}
+                      {serverOnline ? '● Conectado (Online)' : '○ Desconectado'}
                     </span>
                   </div>
-                </div>
 
-                <div className="mt-6 flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      localStorage.setItem('legends_server_url', serverUrl);
-                      checkServer();
-                      setShowConfigModal(false);
-                    }}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs rounded-xl"
-                  >
-                    Guardar
-                  </button>
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => {
+                        localStorage.setItem('legends_server_url', serverUrl);
+                        checkServer();
+                        setShowConfigModal(false);
+                      }}
+                      className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+                    >
+                      Guardar y Probar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -837,15 +1363,17 @@ const htmlContent = `<!DOCTYPE html>
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
-</html>
-`;
+</html>`;
 
 const dest1 = 'C:/Users/DELL/Desktop/gym leyends/Control_De_Acceso_Web.html';
 const dest2 = 'C:/Users/DELL/Desktop/Control_De_Acceso_Web.html';
+const scriptFile = 'C:/Users/DELL/Desktop/gym leyends/LEGENDS/scripts/build-single-html.cjs';
 
+fs.writeFileSync(scriptFile, '// Builder script with 3 clean options\nconst fs = require("fs");\n// ... \n' + fs.readFileSync(__filename, 'utf8'), 'utf8');
 fs.writeFileSync(dest1, htmlContent, 'utf8');
 fs.writeFileSync(dest2, htmlContent, 'utf8');
 
