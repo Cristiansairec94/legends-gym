@@ -838,14 +838,13 @@ export const IndependentTerminalApp: React.FC = () => {
                 <div>
                   <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Correo Electrónico *</span>
+                    <span>Correo Electrónico (Opcional)</span>
                   </label>
                   <input 
                     type="email"
-                    required
                     value={newClientEmail}
                     onChange={(e) => setNewClientEmail(e.target.value)}
-                    placeholder="andrea@ejemplo.com"
+                    placeholder="andrea@ejemplo.com (opcional)"
                     className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                   />
                 </div>

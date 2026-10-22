@@ -792,14 +792,13 @@ const htmlContent = `<!DOCTYPE html>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-bold text-gray-200 block mb-1">
-                        Correo Electrónico *
+                        Correo Electrónico (Opcional)
                       </label>
                       <input 
                         type="email"
-                        required
                         value={newClientEmail}
                         onChange={(e) => setNewClientEmail(e.target.value)}
-                        placeholder="andrea@ejemplo.com"
+                        placeholder="andrea@ejemplo.com (opcional)"
                         className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                       />
                     </div>
