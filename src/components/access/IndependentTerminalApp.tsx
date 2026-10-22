@@ -533,46 +533,6 @@ export const IndependentTerminalApp: React.FC = () => {
 
       </div>
 
-      {/* Top Application Bar / Brand & Terminal Header */}
-      <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 relative">
-          
-          {/* Subtle glow accent */}
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Left Title with Gym Logo */}
-          <div 
-            className="flex items-center gap-3.5 select-none"
-            onDoubleClick={() => setIsConfigModalOpen(true)}
-            title="FITNESS LEGENDS"
-          >
-            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 p-1 shrink-0 shadow-lg flex items-center justify-center">
-              <img
-                src={logoImg}
-                alt="Fitness Legends Gym"
-                className="w-full h-full object-contain filter drop-shadow"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <h1 className="text-lg sm:text-xl font-black text-white tracking-wide uppercase">
-                  CONTROL DE ACCESO
-                </h1>
-                <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-md font-bold">
-                  Lector Activo
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-gym-muted mt-0.5">
-                Validación instantánea de huella digital y vigencia de cuota en el acceso principal.
-              </p>
-            </div>
-          </div>
-
-
-        </div>
-      </div>
-
       {/* Main Container: 3 Clear Intuitive Access Options */}
       <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center py-4 px-4 relative z-10">
 
@@ -623,7 +583,7 @@ export const IndependentTerminalApp: React.FC = () => {
 
         {/* Main Welcome Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-2.5 shadow-md">
+          <div onDoubleClick={() => setIsConfigModalOpen(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-2.5 shadow-md cursor-pointer select-none">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
           </div>

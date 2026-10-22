@@ -612,7 +612,7 @@ const htmlContent = `<!DOCTYPE html>
       const selectedBg = currentBgIndex === 0 ? BG_PHOTO_1 : BG_PHOTO_2;
 
       return (
-        <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-between p-3 sm:p-5 lg:p-6 gap-4">
+        <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-center items-center p-3 sm:p-5 lg:p-6">
           
           {/* 100% COVER REAL WHATSAPP GYM PHOTO BACKGROUND */}
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -628,82 +628,6 @@ const htmlContent = `<!DOCTYPE html>
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 pointer-events-none" />
           </div>
-
-          {/* Top Header Card */}
-          <header className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-black/45 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/20 shadow-2xl relative overflow-hidden">
-              
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-black/80 border border-white/30 p-1 flex items-center justify-center shrink-0 shadow-lg">
-                  <img src={LOGO_IMG} alt="Logo" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <h1 className="text-lg sm:text-xl font-black text-white tracking-wide uppercase drop-shadow-md">
-                      FITNESS LEGENDS
-                    </h1>
-                    <span className="text-xs bg-amber-500/25 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-md font-bold shadow-sm">
-                      Lector Activo
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-300 mt-0.5 drop-shadow">
-                    Terminal de Validación y Registro de Acceso
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center flex-wrap gap-2">
-                
-                {/* Toggle Background Photo button */}
-                <button
-                  onClick={toggleBackground}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-100 border border-white/25 transition-all shadow-md cursor-pointer"
-                  title="Cambiar fotografía de fondo"
-                >
-                  <span>🖼️</span>
-                  <span className="hidden sm:inline">Cambiar Foto</span>
-                </button>
-
-                <button
-                  onClick={() => setShowHistoryModal(true)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold text-amber-300 hover:text-white transition-all shadow-md cursor-pointer"
-                >
-                  <span>⏱️</span>
-                  <span>Ver Registro</span>
-                  <span className="bg-amber-500/40 text-white px-2 py-0.5 rounded-full text-[11px] font-mono font-bold">
-                    {accessLogs.length}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
-                  title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
-                >
-                  {isMuted ? '🔇' : '🔊'}
-                </button>
-
-                <button
-                  onClick={() => setShowConfigModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
-                  title="Configuración de Red y Fondo"
-                >
-                  <span>⚙️</span>
-                  <span className={\`w-2 h-2 rounded-full \${serverOnline ? 'bg-emerald-400' : 'bg-amber-400'}\`} />
-                </button>
-
-                <button
-                  onClick={toggleFullscreen}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-gray-200 border border-white/25 transition-colors shadow-md cursor-pointer"
-                  title="Pantalla Completa Kiosco (F11)"
-                >
-                  <span>{isFullScreen ? '↙️ Salir' : '⛶ Pantalla Completa'}</span>
-                </button>
-              </div>
-            </div>
-          </header>
 
           {/* TURNSTILE PASS ACTIVE BANNER */}
           {relaySeconds > 0 && (
@@ -761,7 +685,7 @@ const htmlContent = `<!DOCTYPE html>
             
             {/* Welcome Title */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-3 shadow-lg">
+              <div onDoubleClick={() => setShowConfigModal(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-3 shadow-lg cursor-pointer select-none">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
                 <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
               </div>
