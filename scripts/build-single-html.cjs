@@ -1,6 +1,3 @@
-// Builder script with 3 clean options
-const fs = require("fs");
-// ... 
 const fs = require('fs');
 const path = require('path');
 
@@ -1266,11 +1263,15 @@ const htmlContent = `<!DOCTYPE html>
 
 const dest1 = 'C:/Users/DELL/Desktop/gym leyends/Control_De_Acceso_Web.html';
 const dest2 = 'C:/Users/DELL/Desktop/Control_De_Acceso_Web.html';
-const scriptFile = 'C:/Users/DELL/Desktop/gym leyends/LEGENDS/scripts/build-single-html.cjs';
+const dest3 = path.join(__dirname, '../public/Control_De_Acceso_Web.html');
+const dest4 = path.join(__dirname, '../public/terminal.html');
 
-fs.writeFileSync(scriptFile, '// Builder script with 3 clean options\nconst fs = require("fs");\n// ... \n' + fs.readFileSync(__filename, 'utf8'), 'utf8');
 fs.writeFileSync(dest1, htmlContent, 'utf8');
 fs.writeFileSync(dest2, htmlContent, 'utf8');
+fs.writeFileSync(dest3, htmlContent, 'utf8');
+fs.writeFileSync(dest4, htmlContent, 'utf8');
 
 console.log('✓ Successfully generated: ' + dest1);
 console.log('✓ Successfully generated: ' + dest2);
+console.log('✓ Successfully generated: ' + dest3);
+console.log('✓ Successfully generated: ' + dest4);
