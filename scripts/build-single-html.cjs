@@ -697,19 +697,19 @@ const htmlContent = `<!DOCTYPE html>
             {/* 3 TRANSLUCENT GLASS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
-              {/* Opción 1: CLIENTE NUEVO */}
+              {/* Opción 1: YA TENGO MEMBRESÍA */}
               <div 
-                onClick={() => setShowNewMemberModal(true)}
-                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+                onClick={() => setShowDirectAccessModal(true)}
+                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                  👤
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                  ⚡
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-                  Cliente Nuevo
+                  Ya Tengo Membresía
                 </h3>
                 <p className="text-xs text-gray-300 mt-1 drop-shadow">
-                  Inscripción y primera membresía
+                  Validación de huella o cédula
                 </p>
               </div>
 
@@ -729,19 +729,19 @@ const htmlContent = `<!DOCTYPE html>
                 </p>
               </div>
 
-              {/* Opción 3: YA TENGO MEMBRESÍA */}
+              {/* Opción 3: CLIENTE NUEVO */}
               <div 
-                onClick={() => setShowDirectAccessModal(true)}
-                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+                onClick={() => setShowNewMemberModal(true)}
+                className="group relative p-8 sm:p-10 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                  ⚡
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-4xl sm:text-5xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                  👤
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-                  Ya Tengo Membresía
+                  Cliente Nuevo
                 </h3>
                 <p className="text-xs text-gray-300 mt-1 drop-shadow">
-                  Validación de huella o cédula
+                  Inscripción y primera membresía
                 </p>
               </div>
 

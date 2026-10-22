@@ -598,17 +598,20 @@ export const IndependentTerminalApp: React.FC = () => {
         {/* The 3 Clean High-Impact Options Grid - No Black Background, Minimalist & Sleek */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
-          {/* Opción 1: CLIENTE NUEVO */}
+          {/* Opción 1: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
           <div 
-            onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            onClick={() => setShowDirectAccessModal(true)}
+            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
-              <BicepsFlexed className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/25 border border-amber-400/60 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
+              <Fingerprint className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-              Cliente Nuevo
+              Ya Tengo Membresía
             </h3>
+            <span className="text-xs font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow">
+              Registra tu Huella
+            </span>
           </div>
 
           {/* Opción 2: QUIERO VISITA */}
@@ -624,20 +627,17 @@ export const IndependentTerminalApp: React.FC = () => {
             </h3>
           </div>
 
-          {/* Opción 3: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
+          {/* Opción 3: CLIENTE NUEVO */}
           <div 
-            onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            onClick={() => setShowNewMemberModal(true)}
+            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/25 border border-amber-400/60 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
-              <Fingerprint className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
+              <BicepsFlexed className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-              Ya Soy Cliente
+              Cliente Nuevo
             </h3>
-            <span className="text-xs font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow">
-              Registra tu Huella
-            </span>
           </div>
 
         </div>
