@@ -149,6 +149,24 @@ const htmlContent = `<!DOCTYPE html>
         } catch {}
       }
 
+      
+      playScanBlip() {
+        this.unlock();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
       playAccessGranted() {
         this.unlock();
         if (!this.ctx) return;
@@ -295,7 +313,10 @@ const htmlContent = `<!DOCTYPE html>
       const [newClientId, setNewClientId] = useState('');
       const [newClientPlan, setNewClientPlan] = useState('Mensualidad Estándar');
       const [newClientPaymentMethod, setNewClientPaymentMethod] = useState('cash');
-      const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(true);
+      const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(false);
+        const [showBiometricDashboard, setShowBiometricDashboard] = useState(false);
+        const [biometricScanState, setBiometricScanState] = useState('idle'); // idle | scanning | completed
+        const [selectedFinger, setSelectedFinger] = useState('Pulgar Derecho');
 
       // Visit Form State
       const [visitClientName, setVisitClientName] = useState('');
@@ -536,6 +557,49 @@ const htmlContent = `<!DOCTYPE html>
       };
 
       // Handle New Member Registration
+      
+      // Speech synthesis
+      const speakCustomMessage = (text) => {
+        if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'es-MX';
+          utterance.rate = 0.95;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          const voices = window.speechSynthesis.getVoices();
+          const esVoice = voices.find(v => (v.lang && v.lang.startsWith('es')) || (v.name && (v.name.includes('Spanish') || v.name.includes('Mexico'))));
+          if (esVoice) utterance.voice = esVoice;
+          window.speechSynthesis.speak(utterance);
+        } catch {}
+      };
+
+      // Biometric Enrollment Action
+      const handleEnrollFingerprintAction = () => {
+        if (biometricScanState === 'scanning') return;
+        setBiometricScanState('scanning');
+        soundManager.playScanBlip();
+
+        setTimeout(() => {
+          setBiometricScanState('completed');
+          setNewClientFingerprintEnrolled(true);
+          soundManager.playAccessGranted();
+          try {
+            confetti({
+              particleCount: 50,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          } catch {}
+
+          setTimeout(() => {
+            setShowBiometricDashboard(false);
+            setBiometricScanState('idle');
+          }, 900);
+        }, 1200);
+      };
+
       const handleRegisterNewMember = (e) => {
         e.preventDefault();
         if (!newClientName.trim()) return;
@@ -584,6 +648,7 @@ const htmlContent = `<!DOCTYPE html>
         setNewClientId('');
 
         // Immediate granted access
+        speakCustomMessage("Por favor diríjase al encargado");
         executeScan(newMember.id);
       };
 
@@ -925,33 +990,64 @@ const htmlContent = `<!DOCTYPE html>
                     </div>
                   </div>
 
-                  {/* Fingerprint Simulation */}
-                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-2xl">👆</span>
-                      <div>
-                        <p className="text-xs font-bold text-white">Captura de Huella Digital</p>
-                        <p className="text-[11px] text-gray-300">
-                          {newClientFingerprintEnrolled 
-                            ? '✓ Huella enrolada correctamente' 
-                            : 'Sensor biométrico listo para capturar'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setNewClientFingerprintEnrolled(!newClientFingerprintEnrolled)}
-                      className={\`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer \${
-                        newClientFingerprintEnrolled 
-                          ? 'bg-emerald-500 text-black shadow-glow-green' 
-                          : 'bg-amber-500 hover:bg-amber-400 text-black shadow-glow-gold'
-                      }\`}
+                  {/* Fingerprint Enrollment Card Launcher */}
+                    <div 
+                      onClick={() => {
+                        setBiometricScanState('idle');
+                        setShowBiometricDashboard(true);
+                      }}
+                      className={"p-4 rounded-2xl border transition-all cursor-pointer group flex items-center justify-between gap-3 " + (
+                        newClientFingerprintEnrolled
+                          ? "bg-emerald-500/10 border-emerald-500/40 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                          : "bg-amber-500/10 border-amber-500/40 hover:bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+                      )}
                     >
-                      {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Capturar Huella'}
-                    </button>
-                  </div>
+                      <div className="flex items-center gap-3">
+                        <div className={"w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110 " + (
+                          newClientFingerprintEnrolled 
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                            : "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                        )}>
+                          {newClientFingerprintEnrolled ? '✓' : '👆'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                              Escáner Biométrico de Huella
+                            </p>
+                            <span className={"text-[10px] font-black uppercase px-2 py-0.5 rounded-full " + (
+                              newClientFingerprintEnrolled
+                                ? "bg-emerald-500 text-black shadow-glow-green"
+                                : "bg-amber-500/30 text-amber-300 border border-amber-500/40"
+                            )}>
+                              {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Pendiente'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-300 mt-0.5">
+                            {newClientFingerprintEnrolled 
+                              ? "✓ Huella vinculada (" + selectedFinger + ") • Clic para ver escáner / re-escanear" 
+                              : "Haz clic aquí para abrir el dashboard y registrar tu huella en grande"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBiometricScanState('idle');
+                          setShowBiometricDashboard(true);
+                        }}
+                        className={"px-3.5 py-2 rounded-xl text-xs font-black transition-all transform group-hover:scale-105 shrink-0 cursor-pointer " + (
+                          newClientFingerprintEnrolled 
+                            ? "bg-emerald-500 text-black shadow-glow-green" 
+                            : "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-glow-gold"
+                        )}
+                      >
+                        {newClientFingerprintEnrolled ? '✓ Ver Escáner' : '⚡ Abrir Escáner'}
+                      </button>
+                    </div>
 
-                  {/* Action Buttons */}
+                    {/* Action Buttons */}
                   <div className="pt-2 flex gap-3">
                     <button
                       type="button"
@@ -969,6 +1065,221 @@ const htmlContent = `<!DOCTYPE html>
                   </div>
 
                 </form>
+              </div>
+            </div>
+          )}
+
+          
+          {/* MODAL: DASHBOARD DEL ESCÁNER BIOMÉTRICO EN GRANDE */}
+          {showBiometricDashboard && (
+            <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+              <div className="relative bg-gradient-to-b from-[#111625] via-[#0b0e17] to-[#04060a] border-2 border-cyan-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-[0_0_60px_rgba(6,182,212,0.35)] animate-in zoom-in-95 duration-200 text-white overflow-hidden">
+                {/* Top decorative neon cyber bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#22d3ee]" />
+
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-2xl text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                      ⚡
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-wide uppercase">
+                        Dashboard Biométrico de Huella
+                      </h3>
+                      <p className="text-xs text-gray-300">
+                        Estación de enrolamiento óptico en alta resolución • 500 DPI
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-black">
+                      <span className={"w-2 h-2 rounded-full " + (
+                        biometricScanState === 'scanning' ? "bg-amber-400 animate-ping" :
+                        biometricScanState === 'completed' ? "bg-emerald-400" : "bg-cyan-400 animate-ping"
+                      )} />
+                      {biometricScanState === 'scanning' ? 'ESCANEANDO' :
+                       biometricScanState === 'completed' ? 'ENROLADA' : 'SENSOR ACTIVO'}
+                    </div>
+                    <button 
+                      onClick={() => setShowBiometricDashboard(false)}
+                      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                {/* Client summary pill if name exists */}
+                {newClientName.trim() && (
+                  <div className="mb-3 px-3.5 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-between text-xs">
+                    <span className="text-gray-300">Socio a enrolar: <strong className="text-white font-bold">{newClientName}</strong></span>
+                    <span className="text-cyan-400 font-mono font-bold">{newClientPlan}</span>
+                  </div>
+                )}
+
+                {/* Selector of Finger */}
+                <div className="mb-3">
+                  <label className="text-xs font-bold text-gray-300 block mb-1.5">
+                    Selecciona el dedo a registrar:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {['Pulgar Derecho', 'Índice Derecho', 'Pulgar Izquierdo', 'Índice Izquierdo'].map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setSelectedFinger(f)}
+                        className={"py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center cursor-pointer " + (
+                          selectedFinger === f
+                            ? "bg-cyan-500 text-black border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white"
+                        )}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Centerpiece Scanner Dashboard View ("en grande") */}
+                <div className="flex flex-col items-center justify-center my-2 select-none">
+                  <div 
+                    onClick={() => {
+                      if (biometricScanState !== 'scanning') {
+                        handleEnrollFingerprintAction();
+                      }
+                    }}
+                    className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center cursor-pointer group my-1"
+                    title="Haz clic para registrar tu huella"
+                  >
+                    {/* Outer Glow Halo */}
+                    <div className={"absolute inset-4 rounded-full blur-2xl transition-all duration-500 pointer-events-none " + (
+                      biometricScanState === 'completed'
+                        ? "bg-emerald-500/30"
+                        : biometricScanState === 'scanning'
+                        ? "bg-amber-500/30"
+                        : "bg-cyan-500/20 group-hover:bg-cyan-400/35"
+                    )} />
+
+                    {/* Rotating HUD Rings (Clockwise) */}
+                    <img 
+                      src="${biometricRingsBase64}" 
+                      alt="HUD Biometric Rings" 
+                      className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(6,182,212,0.45)] pointer-events-none animate-biometric-spin"
+                    />
+
+                    {/* Upright Center Fingerprint */}
+                    <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center rounded-full overflow-hidden">
+                      <img 
+                        src="${biometricFpBase64}" 
+                        alt="Huella Digital" 
+                        className={"w-full h-full object-contain filter transition-transform duration-300 " + (
+                          biometricScanState === 'completed'
+                            ? "drop-shadow-[0_0_20px_rgba(16,185,129,0.9)] scale-105"
+                            : "drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] group-hover:scale-105"
+                        )}
+                      />
+
+                      {/* Biometric Laser Scanning Line */}
+                      <div className="absolute left-0 right-0 pointer-events-none animate-biometric-laser">
+                        <div className={"h-10 w-full bg-gradient-to-t to-transparent " + (
+                          biometricScanState === 'completed' ? "from-emerald-400/50" : "from-cyan-400/40"
+                        )} />
+                        <div className={"h-1 w-full " + (
+                          biometricScanState === 'completed'
+                            ? "bg-emerald-300 shadow-[0_0_15px_#34d399,0_0_30px_#10b981]"
+                            : "bg-cyan-300 shadow-[0_0_12px_#38bdf8,0_0_24px_#06b6d4]"
+                        )} />
+                      </div>
+                    </div>
+
+                    {/* Radar Pulse Wave */}
+                    <div className="absolute w-36 h-36 rounded-full border border-cyan-400/50 animate-ping pointer-events-none opacity-40" />
+                  </div>
+
+                  {/* Status Badge Under Scanner */}
+                  <div className="mt-2 text-center">
+                    {biometricScanState === 'idle' && (
+                      <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="text-xs font-black text-cyan-300 uppercase tracking-wider">
+                          SENSOR LISTO • TOCA EL ESCÁNER O PULSA REGISTRARME
+                        </span>
+                      </div>
+                    )}
+                    {biometricScanState === 'scanning' && (
+                      <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 animate-pulse">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                        <span className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                          ESCANEANDO MINUCIAS Y CRESTAS PAPILARES...
+                        </span>
+                      </div>
+                    )}
+                    {biometricScanState === 'completed' && (
+                      <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="text-xs font-black text-emerald-300 uppercase tracking-wider">
+                          ✓ HUELLA REGISTRADA CON ÉXITO (CALIDAD 99%)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* High-Tech Biometric Telemetry Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3 text-center">
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Calidad de Señal</p>
+                    <p className="text-xs font-black text-emerald-400 mt-0.5">98.6% Óptima</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Minucias</p>
+                    <p className="text-xs font-black text-cyan-400 mt-0.5">136 Detectadas</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Resolución</p>
+                    <p className="text-xs font-black text-amber-400 mt-0.5">508 DPI Óptico</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Seguridad</p>
+                    <p className="text-xs font-black text-purple-400 mt-0.5">Cifrado SHA-256</p>
+                  </div>
+                </div>
+
+                {/* Primary Action Button: REGISTRARME */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleEnrollFingerprintAction}
+                    disabled={biometricScanState === 'scanning'}
+                    className={"w-full py-3.5 sm:py-4 rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider shadow-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer " + (
+                      biometricScanState === 'completed'
+                        ? "bg-emerald-500 text-black shadow-glow-green"
+                        : "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-black shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                    )}
+                  >
+                    {biometricScanState === 'scanning' ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        <span>Escaneando Huella Digital...</span>
+                      </span>
+                    ) : biometricScanState === 'completed' ? (
+                      <span>✓ ¡Huella Registrada con Éxito!</span>
+                    ) : (
+                      <span>👆 Registrar Mi Huella Digital</span>
+                    )}
+                  </button>
+
+                  <div className="mt-2.5 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowBiometricDashboard(false)}
+                      className="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer font-bold"
+                    >
+                      ← Volver al Formulario de Registro
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1264,13 +1575,18 @@ const dest1 = 'C:/Users/DELL/Desktop/gym leyends/Control_De_Acceso_Web.html';
 const dest2 = 'C:/Users/DELL/Desktop/Control_De_Acceso_Web.html';
 const dest3 = path.join(__dirname, '../public/Control_De_Acceso_Web.html');
 const dest4 = path.join(__dirname, '../public/terminal.html');
+const dest5 = path.join(__dirname, '../dist/Control_De_Acceso_Web.html');
+const dest6 = path.join(__dirname, '../dist/terminal.html');
+const dest7 = path.join(__dirname, '../release/FITNESS_LEGENDS_TERMINAL-win32-x64/resources/app/dist/Control_De_Acceso_Web.html');
+const dest8 = path.join(__dirname, '../release/FITNESS_LEGENDS_TERMINAL-win32-x64/resources/app/dist/terminal.html');
 
-fs.writeFileSync(dest1, htmlContent, 'utf8');
-fs.writeFileSync(dest2, htmlContent, 'utf8');
-fs.writeFileSync(dest3, htmlContent, 'utf8');
-fs.writeFileSync(dest4, htmlContent, 'utf8');
-
-console.log('✓ Successfully generated: ' + dest1);
-console.log('✓ Successfully generated: ' + dest2);
-console.log('✓ Successfully generated: ' + dest3);
-console.log('✓ Successfully generated: ' + dest4);
+[dest1, dest2, dest3, dest4, dest5, dest6, dest7, dest8].forEach(d => {
+  try {
+    if (fs.existsSync(path.dirname(d))) {
+      fs.writeFileSync(d, htmlContent, 'utf8');
+      console.log('✓ Successfully generated: ' + d);
+    }
+  } catch (err) {
+    console.error('Error writing to ' + d, err);
+  }
+});
