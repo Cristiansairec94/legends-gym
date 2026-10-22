@@ -1,3 +1,4 @@
+import { IndependentTerminalApp } from './IndependentTerminalApp';
 import gymBg from '../../assets/gym-background.jpg';
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
@@ -106,6 +107,24 @@ export const TurnstileTerminal: React.FC = () => {
       setIsFullScreen(false);
     }
   };
+
+  
+  // Modo Pantalla Completa: Cubre toda la pantalla al 100% y oculta todos los menús
+  if (isFullScreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black w-screen h-screen overflow-hidden">
+        <IndependentTerminalApp 
+          isEmbeddedFullScreen={true} 
+          onExitFullScreen={() => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen().catch(() => {});
+            }
+            setIsFullScreen(false);
+          }} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`space-y-6 relative rounded-3xl overflow-hidden p-3 sm:p-5 ${isFullScreen ? 'p-6 min-h-screen' : ''}`}>
@@ -246,7 +265,7 @@ export const TurnstileTerminal: React.FC = () => {
             title="Modo pantalla completa para recepción o kiosco"
           >
             {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            <span>{isFullScreen ? 'Salir' : 'Kiosco'}</span>
+            <span>{isFullScreen ? 'Salir' : 'PANTALLA COMPLETA'}</span>
           </button>
         </div>
       </div>

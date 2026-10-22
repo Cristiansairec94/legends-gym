@@ -246,3 +246,29 @@
 .animate-biometric-laser {
   animation: biometric-laser 2.4s ease-in-out infinite;
 }
+
+
+@keyframes green-laser-scan {
+  0% {
+    top: 2%;
+    opacity: 0.3;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    top: 2%;
+    opacity: 0.3;
+  }
+}
+
+.animate-green-laser {
+  animation: green-laser-scan 2.3s ease-in-out infinite;
+}
