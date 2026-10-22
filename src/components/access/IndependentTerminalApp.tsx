@@ -861,12 +861,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
         </div>
 
-        {/* Bottom subtle hint */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-          </p>
-        </div>
+        
 
       </div>
 
@@ -1405,16 +1400,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">Nombre del Visitante (Opcional)</label>
-                <input 
-                  type="text"
-                  value={visitClientName}
-                  onChange={(e) => setVisitClientName(e.target.value)}
-                  placeholder="Ej. Juan Pérez (o dejar vacío)"
-                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
-                />
-              </div>
 
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
                 <div>
