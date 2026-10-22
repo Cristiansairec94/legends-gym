@@ -10,7 +10,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|terminal\\.html|Control_De_Acceso_Web\\.html).*)",
       "destination": "/index.html"
     }
   ]

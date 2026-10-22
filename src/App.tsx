@@ -26,6 +26,7 @@ export const isTerminalMode = (): boolean => {
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.get('mode') === 'main' || searchParams.get('mode') === 'pos' || searchParams.get('tab') === 'pos') return false;
   if (searchParams.get('mode') === 'terminal' || searchParams.get('terminal') === 'true') return true;
+  if (window.location.pathname.toLowerCase().includes('terminal')) return true;
   if (window.location.hash.includes('terminal')) return true;
   if (localStorage.getItem('legends_device_mode') === 'main' || localStorage.getItem('legends_device_mode') === 'pos') return false;
   if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
