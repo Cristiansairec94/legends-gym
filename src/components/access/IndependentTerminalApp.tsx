@@ -194,6 +194,27 @@ export const IndependentTerminalApp: React.FC = () => {
     }
   }, [syncWithServer, config.autoSync, config.syncIntervalSeconds]);
 
+  // Custom speech synthesis announcement
+  const speakCustomMessage = (text: string) => {
+    if (!config.voiceEnabled || isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-MX';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.volume = config.soundVolume ?? 1.0;
+      const voices = window.speechSynthesis.getVoices();
+      const esVoice = voices.find(v => (v.lang && v.lang.startsWith('es')) || (v.name && (v.name.includes('Spanish') || v.name.includes('Mexico'))));
+      if (esVoice) utterance.voice = esVoice;
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      // ignore
+    }
+  };
+
   // Speech synthesis announcement
   const announceAccess = (clientName: string, granted: boolean) => {
     if (!config.voiceEnabled || isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -292,8 +313,34 @@ export const IndependentTerminalApp: React.FC = () => {
     setNewClientPaymentMethod('cash');
     setNewClientFingerprintEnrolled(false);
 
-    // Instant direct access for the new member
-    executeScan(memberId);
+    // Announce out loud as requested: "Por favor diríjase al encargado"
+    speakCustomMessage("Por favor diríjase al encargado");
+
+    // Display welcome banner on screen & trigger turnstile
+    setScanStatus('granted');
+    setLastVerifiedClient({
+      name: trimmedName,
+      plan: planName,
+      daysRemaining: durationDays,
+      reason: 'Registro completado • Por favor diríjase al encargado',
+      avatarUrl: getGymAvatar(trimmedName),
+      status: 'granted',
+    });
+
+    triggerTurnstileRelay(config.relayPulseDurationSeconds || 5);
+    if (!isMuted) sounds.playAccessGranted();
+    try {
+      confetti({
+        particleCount: 55,
+        spread: 70,
+        origin: { y: 0.5, x: 0.5 }
+      });
+    } catch {}
+
+    setTimeout(() => {
+      setScanStatus('idle');
+      setLastVerifiedClient(null);
+    }, 6000);
   };
 
   // Handle Visit / Day Pass
@@ -584,19 +631,6 @@ export const IndependentTerminalApp: React.FC = () => {
           </div>
         )}
 
-        {/* Main Welcome Header */}
-        <div className="text-center mb-6">
-          <div onDoubleClick={() => setIsConfigModalOpen(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-xs font-bold text-amber-300 mb-2.5 shadow-md cursor-pointer select-none">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-            SELECCIONA TU TIPO DE INGRESO
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-            Toca una de las 3 opciones para gestionar tu acceso a la sala
-          </p>
-        </div>
 
         {/* The 3 Clean High-Impact Options Grid with 4K Gym Action Photos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
@@ -690,13 +724,7 @@ export const IndependentTerminalApp: React.FC = () => {
 
         </div>
 
-        {/* Bottom subtle hint */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-          </p>
-        </div>
-
+        
       </div>
       
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
