@@ -207,3 +207,42 @@
   }
 }
 
+
+
+@keyframes biometric-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes biometric-laser {
+  0% {
+    top: 5%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    top: 85%;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0;
+  }
+}
+
+.animate-biometric-spin {
+  animation: biometric-spin 22s linear infinite;
+}
+
+.animate-biometric-laser {
+  animation: biometric-laser 2.4s ease-in-out infinite;
+}

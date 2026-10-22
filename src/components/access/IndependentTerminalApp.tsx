@@ -822,20 +822,6 @@ export const IndependentTerminalApp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Cédula / Documento ID */}
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">
-                  Cédula / Documento ID (Opcional)
-                </label>
-                <input 
-                  type="text"
-                  value={newClientId}
-                  onChange={(e) => setNewClientId(e.target.value)}
-                  placeholder="Ej. 10234567"
-                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
-              </div>
-
               {/* 5. Mensualidad */}
               <div>
                 <label className="text-xs font-bold text-gray-200 block mb-1.5 flex items-center justify-between">
@@ -1060,23 +1046,54 @@ export const IndependentTerminalApp: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            <div className="flex flex-col items-center justify-center py-4">
-              {/* Interactive Fingerprint Pad */}
+            <div className="flex flex-col items-center justify-center py-2 select-none">
+              {/* Interactive Biometric Scanner with Rotating HUD & Scanning Laser */}
               <div 
                 onClick={() => {
                   executeScan('MEM-001');
                   setShowDirectAccessModal(false);
                 }}
-                className="relative w-32 h-32 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-glow-gold group"
-                title="Haz clic para simular lectura de huella"
+                className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center cursor-pointer group my-1"
+                title="Haz clic para simular lectura biométrica"
               >
-                <div className="text-5xl text-amber-400 group-hover:scale-110 transition-transform">
-                  <Zap className="w-16 h-16 fill-amber-400" />
+                {/* Outer Glow Halo */}
+                <div className="absolute inset-4 rounded-full bg-cyan-500/15 blur-2xl group-hover:bg-cyan-400/30 transition-all duration-500 pointer-events-none" />
+
+                {/* Rotating HUD Rings (Clockwise) */}
+                <img 
+                  src="/biometric-rings-opt.png" 
+                  alt="HUD Biometric Rings" 
+                  className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] pointer-events-none animate-biometric-spin"
+                />
+
+                {/* Upright Center Fingerprint */}
+                <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center rounded-full overflow-hidden">
+                  <img 
+                    src="/biometric-fingerprint-opt.png" 
+                    alt="Huella Digital" 
+                    className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] group-hover:scale-105 transition-transform duration-300"
+                  />
+
+                  {/* Biometric Laser Scanning Line */}
+                  <div className="absolute left-0 right-0 pointer-events-none animate-biometric-laser">
+                    <div className="h-10 w-full bg-gradient-to-t from-cyan-400/30 to-transparent" />
+                    <div className="h-0.5 w-full bg-cyan-300 shadow-[0_0_12px_#38bdf8,0_0_24px_#06b6d4]" />
+                  </div>
                 </div>
+
+                {/* Radar Pulse Wave */}
+                <div className="absolute w-36 h-36 rounded-full border border-cyan-400/50 animate-ping pointer-events-none opacity-40" />
               </div>
-              <p className="text-xs font-bold text-amber-400 mt-3 uppercase tracking-wider">
-                Toca el sensor de huella
+
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 mt-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span className="text-xs font-black text-cyan-300 uppercase tracking-wider">
+                  SENSOR BIOMÉTRICO ACTIVO
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                Posa tu huella en el lector USB o ingresa tu ID
               </p>
             </div>
 

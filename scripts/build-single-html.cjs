@@ -4,6 +4,8 @@ const path = require('path');
 const img1Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background.jpg').toString('base64');
 const img2Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background-motto.jpg').toString('base64');
 const logoBase64 = 'data:image/png;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/logo.png').toString('base64');
+const biometricRingsBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-rings-opt.png')).toString('base64');
+const biometricFpBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-fingerprint-opt.png')).toString('base64');
 
 console.log('Generating updated single-file HTML with 3 clean options (No black box)...');
 
@@ -75,6 +77,24 @@ const htmlContent = `<!DOCTYPE html>
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #f59e0b;
+    }
+  
+    @keyframes biometric-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes biometric-laser {
+      0% { top: 5%; opacity: 0; }
+      15% { opacity: 1; }
+      50% { top: 85%; opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 5%; opacity: 0; }
+    }
+    .animate-biometric-spin {
+      animation: biometric-spin 22s linear infinite;
+    }
+    .animate-biometric-laser {
+      animation: biometric-laser 2.4s ease-in-out infinite;
     }
   </style>
 </head>
@@ -1094,22 +1114,54 @@ const htmlContent = `<!DOCTYPE html>
                     ✕
                   </button>
                 </div>
-
-                <div className="flex flex-col items-center justify-center py-4">
+                <div className="flex flex-col items-center justify-center py-2 select-none">
+                  {/* Interactive Biometric Scanner with Rotating HUD & Scanning Laser */}
                   <div 
                     onClick={() => {
                       executeScan('MEM-001');
                       setShowDirectAccessModal(false);
                     }}
-                    className="relative w-32 h-32 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-glow-gold group"
-                    title="Haz clic para simular lectura de huella"
+                    className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center cursor-pointer group my-1"
+                    title="Haz clic para simular lectura biométrica"
                   >
-                    <div className="text-5xl text-amber-400 group-hover:scale-110 transition-transform">
-                      👆
+                    {/* Outer Glow Halo */}
+                    <div className="absolute inset-4 rounded-full bg-cyan-500/15 blur-2xl group-hover:bg-cyan-400/30 transition-all duration-500 pointer-events-none" />
+
+                    {/* Rotating HUD Rings (Clockwise) */}
+                    <img 
+                      src="${biometricRingsBase64}" 
+                      alt="HUD Biometric Rings" 
+                      className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] pointer-events-none animate-biometric-spin"
+                    />
+
+                    {/* Upright Center Fingerprint */}
+                    <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center rounded-full overflow-hidden">
+                      <img 
+                        src="${biometricFpBase64}" 
+                        alt="Huella Digital" 
+                        className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] group-hover:scale-105 transition-transform duration-300"
+                      />
+
+                      {/* Biometric Laser Scanning Line */}
+                      <div className="absolute left-0 right-0 pointer-events-none animate-biometric-laser">
+                        <div className="h-10 w-full bg-gradient-to-t from-cyan-400/30 to-transparent" />
+                        <div className="h-0.5 w-full bg-cyan-300 shadow-[0_0_12px_#38bdf8,0_0_24px_#06b6d4]" />
+                      </div>
                     </div>
+
+                    {/* Radar Pulse Wave */}
+                    <div className="absolute w-36 h-36 rounded-full border border-cyan-400/50 animate-ping pointer-events-none opacity-40" />
                   </div>
-                  <p className="text-xs font-bold text-amber-400 mt-3 uppercase tracking-wider">
-                    Toca el sensor de huella
+
+                  {/* Status Badge */}
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 mt-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                    <span className="text-xs font-black text-cyan-300 uppercase tracking-wider">
+                      SENSOR BIOMÉTRICO ACTIVO
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Posa tu huella en el lector USB o ingresa tu ID
                   </p>
                 </div>
 
