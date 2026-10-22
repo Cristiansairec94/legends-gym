@@ -1,3 +1,6 @@
+import cardClienteNuevo from '../../assets/card-cliente-nuevo.jpg';
+import cardVisita from '../../assets/card-visita.jpg';
+import cardHuella from '../../assets/card-huella.jpg';
 import gymBg from '../../assets/gym-background.jpg';
 import logoImg from '../../assets/logo.png';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -595,55 +598,107 @@ export const IndependentTerminalApp: React.FC = () => {
           </p>
         </div>
 
-        {/* The 3 Clean High-Impact Options Grid - No Black Background, Minimalist & Sleek */}
+        {/* The 3 Clean High-Impact Options Grid with 4K Gym Action Photos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
-          {/* Opción 1: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
+          {/* Opción 1: CLIENTE NUEVO */}
           <div 
-            onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            onClick={() => setShowNewMemberModal(true)}
+            className="group relative p-5 sm:p-6 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-between text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/25 border border-amber-400/60 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
-              <Fingerprint className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
+            {/* Cuadro Central con Fotografía 4K de Gym y Marco Neón Dorado */}
+            <div className="relative w-full aspect-[4/3] max-w-[270px] rounded-2xl overflow-hidden mb-4 border-2 border-amber-400/60 shadow-lg shadow-amber-500/25 group-hover:border-amber-400 group-hover:shadow-glow-gold transition-all duration-300">
+              <img 
+                src={cardClienteNuevo} 
+                alt="Atleta Fitness Cliente Nuevo" 
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 brightness-95 contrast-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent pointer-events-none" />
+              <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-amber-500/85 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-md">
+                <span>💪</span>
+                <span className="uppercase tracking-wider">Nuevo</span>
+              </div>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-              Ya Tengo Membresía
-            </h3>
-            <span className="text-xs font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow">
-              Registra tu Huella
-            </span>
+
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+                Cliente Nuevo
+              </h3>
+              <p className="text-xs text-gray-200 mt-1 drop-shadow font-medium">
+                Inscripción y primera membresía
+              </p>
+            </div>
           </div>
 
           {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
+            className="group relative p-5 sm:p-6 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border-2 border-white/30 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-between text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-emerald-500/20">
-              <Dumbbell className="w-12 h-12 sm:w-14 sm:h-14 text-emerald-400 group-hover:text-emerald-300 filter drop-shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+            {/* Cuadro Central con Fotografía 4K de Mancuernas y Marco Neón Esmeralda */}
+            <div className="relative w-full aspect-[4/3] max-w-[270px] rounded-2xl overflow-hidden mb-4 border-2 border-emerald-400/60 shadow-lg shadow-emerald-500/25 group-hover:border-emerald-400 group-hover:shadow-glow-green transition-all duration-300">
+              <img 
+                src={cardVisita} 
+                alt="Mancuernas de Gym Pase de Visita" 
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 brightness-95 contrast-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent pointer-events-none" />
+              <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-md">
+                <span>🏋️‍♂️</span>
+                <span className="uppercase tracking-wider">Pase $5</span>
+              </div>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow">
-              Quiero Visita
-            </h3>
+
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow">
+                Quiero Visita
+              </h3>
+              <p className="text-xs text-gray-200 mt-1 drop-shadow font-medium">
+                Entrenamiento por un día
+              </p>
+            </div>
           </div>
 
-          {/* Opción 3: CLIENTE NUEVO */}
+          {/* Opción 3: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
           <div 
-            onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-8 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/30 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            onClick={() => setShowDirectAccessModal(true)}
+            className="group relative p-5 sm:p-6 rounded-3xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col items-center justify-between text-center cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-amber-500/20">
-              <BicepsFlexed className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 group-hover:text-amber-300 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" />
+            {/* Cuadro Central con Fotografía 4K de Huella Biométrica y Marco Neón Ciber-Ámbar */}
+            <div className="relative w-full aspect-[4/3] max-w-[270px] rounded-2xl overflow-hidden mb-4 border-2 border-amber-400/60 shadow-lg shadow-amber-500/30 group-hover:border-amber-400 group-hover:shadow-glow-gold transition-all duration-300">
+              <img 
+                src={cardHuella} 
+                alt="Lector Biométrico de Huella Gym" 
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 brightness-95 contrast-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent pointer-events-none" />
+              <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-amber-500/85 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-md">
+                <span>👆</span>
+                <span className="uppercase tracking-wider">Huella</span>
+              </div>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
-              Cliente Nuevo
-            </h3>
+
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow">
+                Ya Tengo Membresía
+              </h3>
+              <span className="text-xs font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow block">
+                Registra tu Huella
+              </span>
+            </div>
           </div>
 
         </div>
 
-      </div>
+        {/* Bottom subtle hint */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
+          </p>
+        </div>
 
+      </div>
+      
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
       {showNewMemberModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
