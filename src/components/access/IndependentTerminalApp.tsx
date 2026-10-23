@@ -2,6 +2,7 @@ import cardClienteNuevo from '../../assets/card-cliente-nuevo.jpg';
 import cardVisita from '../../assets/card-visita.jpg';
 import cardHuella from '../../assets/card-huella.jpg';
 import gymBg from '../../assets/gym-background.jpg';
+import gymBgMotto from '../../assets/gym-background-motto.jpg';
 import logoImg from '../../assets/logo.png';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGym } from '../../context/GymContext';
@@ -146,6 +147,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v5_leyends_gym_studio_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v5_leyends_gym_studio_8k');
+      localStorage.setItem('legends_terminal_bg', gymBg);
+      return gymBg;
+    }
     return localStorage.getItem('legends_terminal_bg') || gymBg;
   });
 
@@ -587,6 +593,13 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   }, [onExitFullScreen]);
 
   // Fullscreen / Kiosk toggle
+  const toggleBackground = () => {
+    const nextBg = bgImage === gymBg ? gymBgMotto : gymBg;
+    setBgImage(nextBg);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('legends_terminal_bg', nextBg);
+    }
+  };
   const toggleFullScreen = () => {
     if ((window as any).electronAPI?.toggleFullScreen) {
       (window as any).electronAPI.toggleFullScreen();
@@ -779,9 +792,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Cliente Nuevo
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
-              </p>
+              
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -818,9 +829,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                 Quiero Visita
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
-              </p>
+              
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -857,9 +866,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Ya Tengo Membresía
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
-              </p>
+              
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">

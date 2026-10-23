@@ -36,6 +36,11 @@ export const TurnstileTerminal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v5_leyends_gym_studio_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v5_leyends_gym_studio_8k');
+      localStorage.setItem('legends_terminal_bg', gymBg);
+      return gymBg;
+    }
     return localStorage.getItem('legends_terminal_bg') || gymBg;
   });
 
