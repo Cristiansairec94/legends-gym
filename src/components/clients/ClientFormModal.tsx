@@ -1,7 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Client, MembershipPlanType, PaymentMethod, DEFAULT_CLIENT_AVATAR } from '../../types';
 import { useGym } from '../../context/GymContext';
-import { X, UserPlus, Image, ShieldAlert, Sparkles, Upload, Trash2, Camera, Dumbbell, Banknote, CreditCard, ArrowRightLeft } from 'lucide-react';
+import { 
+  X, 
+  UserPlus, 
+  ShieldAlert, 
+  ShieldCheck,
+  Sparkles, 
+  Dumbbell, 
+  Banknote, 
+  CreditCard, 
+  ArrowRightLeft 
+} from 'lucide-react';
 import { 
   getGymAvatar, 
   detectGender, 
@@ -27,8 +37,10 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const { addMember, catalogPlans } = useGym();
 
   const [fullName, setFullName] = useState('');
+  const [documentId, setDocumentId] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState(GYM_AREAS_PHOTOS[0]);
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [genderFilter, setGenderFilter] = useState<'male' | 'female'>('male');
   const [hasManuallySelectedPhoto, setHasManuallySelectedPhoto] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'CAT-PLAN-002');
@@ -39,57 +51,6 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [emergencyRel, setEmergencyRel] = useState('');
   const [medicalNotes, setMedicalNotes] = useState('');
   const [enrollNow, setEnrollNow] = useState(true);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP, etc.).');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 320;
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          setAvatarUrl(dataUrl);
-        } else {
-          setAvatarUrl(event.target?.result as string);
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleRemovePhoto = () => {
-    setAvatarUrl(DEFAULT_CLIENT_AVATAR);
-  };
 
   const DEFAULT_PLANS: { id: string; type: MembershipPlanType; name: string; price: number; duration: string; durationDays: number }[] = [
     { id: 'CAT-PLAN-001', type: 'daily', name: 'Pase por Día (Day Pass)', price: 150, duration: '1 día', durationDays: 1 },
@@ -125,10 +86,13 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
 
     const daysRemaining = Math.max(1, Math.round((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
+    const finalDocId = documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const finalEmail = email.trim() || `${fullName.toLowerCase().replace(/\s+/g, '.') || 'cliente'}@email.com`;
+
     const created = addMember({
       fullName: fullName.trim(),
-      documentId: `${Math.floor(10000000 + Math.random() * 90000000)}`,
-      email: `${fullName.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+      documentId: finalDocId,
+      email: finalEmail, '.')}@email.com`,
       phone: phone.trim() || '+52 55 1234 5678',
       avatarUrl: (avatarUrl && !avatarUrl.includes("rect width='128' height='128'"))
         ? avatarUrl
@@ -181,119 +145,21 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
           
           <div className="overflow-y-auto px-5 py-3.5 space-y-3.5 flex-1 custom-scrollbar">
-            {/* Avatar Selector & Upload */}
-            <div className="bg-gym-surface/40 p-3 rounded-xl border border-gym-border space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <label className="text-xs font-bold text-white block">
-                    Foto de Perfil del Cliente:
-                  </label>
-                  <p className="text-[10px] sm:text-[11px] text-gym-muted">
-                    Sube una imagen desde tu equipo, elige un avatar o elimínala.
-                  </p>
-                </div>
-
-                {/* Buttons: Cambiar y Eliminar */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
-                    title="Subir imagen desde tu dispositivo"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Subir / Cambiar Foto</span>
-                  </button>
-
-                  {avatarUrl && avatarUrl !== DEFAULT_CLIENT_AVATAR && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      className="px-2.5 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
-                      title="Eliminar foto de perfil actual"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Eliminar Foto</span>
-                    </button>
-                  )}
-                </div>
+            {/* Direct Access Connection Badge */}
+            <div className="p-3 bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent rounded-xl border border-emerald-500/30 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm">
+                <ShieldCheck className="w-4 h-4" />
               </div>
-
-              {/* Preview + Presets */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-0.5">
-                {/* Current Active Preview */}
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <div className="relative group">
-                    <img
-                      src={avatarUrl || DEFAULT_CLIENT_AVATAR}
-                      alt="Foto actual"
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-amber-400 shadow-md ring-2 ring-amber-500/30"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-bold"
-                      title="Hacer clic para cambiar imagen"
-                    >
-                      <Camera className="w-3.5 h-3.5 mb-0.5" />
-                      <span>Cambiar</span>
-                    </button>
-                  </div>
-
-                  <div className="text-left">
-                    <span className="text-xs font-bold text-white block">
-                      {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Silueta Predeterminada' : 'Foto Asignada'}
-                    </span>
-                    <span className="text-[10px] text-gym-muted block">
-                      {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y control de acceso'}
-                    </span>
-                  </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white">Conexión 100% Directa con Control de Acceso</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">EN LÍNEA</span>
                 </div>
-
-                {/* Presets Gallery: Gym Areas */}
-                <div className="w-full sm:w-auto sm:flex-1 border-t sm:border-t-0 sm:border-l border-gym-border/60 pt-2 sm:pt-0 sm:pl-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-gym-muted font-semibold">
-                      Áreas del Gimnasio sugeridas:
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
-                    {GYM_AREAS_PHOTOS.map((url, i) => {
-                      const labels = ['Power Rack', 'Mancuernas', 'Poleas', 'Cardio'];
-                      return (
-                        <div key={i} className="flex flex-col items-center gap-0.5 shrink-0">
-                          <img
-                            src={url}
-                            alt={labels[i] || `Área ${i + 1}`}
-                            onClick={() => {
-                              setAvatarUrl(url);
-                              setHasManuallySelectedPhoto(true);
-                            }}
-                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover cursor-pointer border-2 transition-all ${
-                              avatarUrl === url
-                                ? 'border-amber-400 shadow-glow-gold scale-105 ring-2 ring-amber-400/40 opacity-100'
-                                : 'border-gym-border opacity-70 hover:opacity-100 hover:scale-105'
-                            }`}
-                            title={labels[i]}
-                          />
-                          <span className="text-[8px] text-gym-muted max-w-[50px] text-center truncate">
-                            {labels[i]}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                <p className="text-[11px] text-zinc-300 leading-tight mt-0.5">
+                  Al guardar, este socio quedará habilitado de inmediato para ingresar por el torniquete usando su <strong>Cédula / Tarjeta RFID</strong> o <strong>Huella Digital</strong>.
+                </p>
               </div>
             </div>
-
             {/* Basic Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>

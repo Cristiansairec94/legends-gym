@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Client, MembershipStatus, MembershipPlanType, DEFAULT_CLIENT_AVATAR } from '../../types';
 import { useGym } from '../../context/GymContext';
 import { 
@@ -13,19 +13,11 @@ import {
   Save, 
   CheckCircle2, 
   ShieldAlert, 
-  Upload, 
-  Trash2, 
-  Camera,
   Plus
 } from 'lucide-react';
 import { 
   getGymAvatar, 
-  detectGender, 
-  GYM_AREAS_PHOTOS,
-  MALE_GYM_PHOTOS, 
-  FEMALE_GYM_PHOTOS, 
-  MALE_GYM_SVG_AVATAR, 
-  FEMALE_GYM_SVG_AVATAR 
+  detectGender 
 } from '../../utils/genderAvatar';
 
 interface ClientEditModalProps {
@@ -42,6 +34,8 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
   const { updateMember, addNotification, catalogPlans, updateCatalogPlan, addCatalogPlan } = useGym();
 
   const [fullName, setFullName] = useState(client.fullName || '');
+  const [documentId, setDocumentId] = useState(client.documentId || '');
+  const [email, setEmail] = useState(client.email || '');
   const [phone, setPhone] = useState(client.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(() => getGymAvatar(client.fullName || '', client.avatarUrl));
   const [genderFilter, setGenderFilter] = useState<'male' | 'female'>(() => detectGender(client.fullName || ''));
@@ -200,57 +194,6 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
   const [activeTab, setActiveTab] = useState<'personal' | 'membership' | 'emergency' | 'medical'>('personal');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, WebP, etc.).');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 320;
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          setAvatarUrl(dataUrl);
-        } else {
-          setAvatarUrl(event.target?.result as string);
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleRemovePhoto = () => {
-    setAvatarUrl(DEFAULT_CLIENT_AVATAR);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) return;
@@ -265,8 +208,8 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
 
     const updatedData: Partial<Client> = {
       fullName: fullName.trim(),
-      documentId: client.documentId,
-      email: client.email,
+      documentId: documentId.trim() || client.documentId,
+      email: email.trim() || client.email,
       phone: phone.trim(),
       avatarUrl,
       birthDate: birthDate || undefined,
@@ -396,119 +339,6 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
           {/* TAB 1: Personal & Contacto */}
           {activeTab === 'personal' && (
             <div className="space-y-4 animate-fade-in">
-              {/* Avatar Selector & Upload */}
-              <div className="bg-gym-surface/40 p-4 rounded-xl border border-gym-border space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-white block">
-                      Foto de Perfil del Cliente:
-                    </label>
-                    <p className="text-[11px] text-gym-muted">
-                      Sube una imagen desde tu equipo, elige un avatar o elimínala.
-                    </p>
-                  </div>
-
-                  {/* Buttons: Cambiar y Eliminar */}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
-                      title="Subir imagen desde tu dispositivo"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Subir / Cambiar Foto</span>
-                    </button>
-
-                    {avatarUrl && avatarUrl !== DEFAULT_CLIENT_AVATAR && (
-                      <button
-                        type="button"
-                        onClick={handleRemovePhoto}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
-                        title="Eliminar foto de perfil actual"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Eliminar Foto</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Preview + Presets */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
-                  {/* Current Active Preview */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="relative group">
-                      <img
-                        src={avatarUrl || DEFAULT_CLIENT_AVATAR}
-                        alt="Foto actual"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-blue-400 shadow-md ring-2 ring-blue-500/30"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-bold"
-                        title="Hacer clic para cambiar imagen"
-                      >
-                        <Camera className="w-4 h-4 mb-0.5" />
-                        <span>Cambiar</span>
-                      </button>
-                    </div>
-
-                    <div className="text-left">
-                      <span className="text-xs font-bold text-white block">
-                        {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Silueta Predeterminada' : 'Foto Asignada'}
-                      </span>
-                      <span className="text-[11px] text-gym-muted block">
-                        {avatarUrl === DEFAULT_CLIENT_AVATAR ? 'Sin foto de perfil' : 'Visible en carnet y control de acceso'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Presets Gallery: Gym Areas */}
-                  <div className="w-full sm:w-auto sm:flex-1 border-t sm:border-t-0 sm:border-l border-gym-border/60 pt-3 sm:pt-0 sm:pl-4">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] text-gym-muted font-semibold">
-                        Áreas del Gimnasio sugeridas:
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
-                      {GYM_AREAS_PHOTOS.map((url, i) => {
-                        const labels = ['Power Rack', 'Mancuernas', 'Poleas', 'Cardio'];
-                        return (
-                          <div key={i} className="flex flex-col items-center gap-1 shrink-0">
-                            <img
-                              src={url}
-                              alt={labels[i] || `Área ${i + 1}`}
-                              onClick={() => {
-                                setAvatarUrl(url);
-                                setHasManuallySelectedPhoto(true);
-                              }}
-                              className={`w-11 h-11 rounded-xl object-cover cursor-pointer border-2 transition-all ${
-                                avatarUrl === url
-                                  ? 'border-amber-400 shadow-glow-gold scale-110 ring-2 ring-amber-400/40 opacity-100'
-                                  : 'border-gym-border opacity-70 hover:opacity-100 hover:scale-105'
-                              }`}
-                              title={labels[i]}
-                            />
-                            <span className="text-[9px] text-gym-muted max-w-[58px] text-center truncate">
-                              {labels[i]}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Basic Fields Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

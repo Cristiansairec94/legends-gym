@@ -745,13 +745,6 @@ const htmlContent = `<!DOCTYPE html>
           {!isFullScreen && (
             <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
               <button
-                onClick={() => setShowConfigModal(true)}
-                className="p-2 sm:p-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center justify-center shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
-                title="Configuración de Red / Servidor"
-              >
-                ⚙️
-              </button>
-              <button
                 onClick={toggleBackground}
                 className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
                 title="Alternar entre Foto de Máquinas y Foto de Lema del Gimnasio"
@@ -847,119 +840,112 @@ const htmlContent = `<!DOCTYPE html>
 
             
 
-            {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 w-full">
+            {/* The 3 Clean High-Impact Options Grid with Full-Bleed Action Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full max-w-5xl mx-auto">
 
               {/* Opción 1: CLIENTE NUEVO */}
               <div 
                 onClick={() => setShowNewMemberModal(true)}
-                className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
+                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_45px_rgba(245,158,11,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
-                {/* Fotografía de Gym: Cliente Nuevo */}
-                <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-500/40 shadow-lg">
-                  <img 
-                    src={IMG_CARD_NUEVO} 
-                    alt="Cliente Nuevo Gym" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute top-2.5 right-2.5">
-                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black shadow-md tracking-wider">
-                      Inscripción
-                    </span>
-                  </div>
+                <img 
+                  src={IMG_CARD_NUEVO} 
+                  alt="Cliente Nuevo Gym" 
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                  <span>💪</span>
+                  <span className="uppercase tracking-wider">Inscripción</span>
                 </div>
 
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+                <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
                     Cliente Nuevo
                   </h3>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
-                    Registrarme &rarr;
-                  </span>
-                  <span className="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
-                    +
-                  </span>
+                  
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                      Registrarme &rarr;
+                    </span>
+                    <span className="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                      +
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Opción 2: QUIERO VISITA */}
               <div 
                 onClick={() => setShowVisitModal(true)}
-                className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-green overflow-hidden"
+                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-emerald-400/60 hover:border-emerald-400 transition-all duration-500 shadow-[0_0_25px_rgba(16,185,129,0.25)] hover:shadow-[0_0_45px_rgba(16,185,129,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
-                {/* Fotografía de Gym: Pase de Visita */}
-                <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-emerald-500/40 shadow-lg">
-                  <img 
-                    src={IMG_CARD_VISITA} 
-                    alt="Pase de Visita Gym" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute top-2.5 right-2.5">
-                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500 text-black shadow-md tracking-wider">
-                      Pase del Día
-                    </span>
-                  </div>
+                <img 
+                  src={IMG_CARD_VISITA} 
+                  alt="Pase de Visita Gym" 
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-emerald-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                  <span>🎟️</span>
+                  <span className="uppercase tracking-wider">Pase del Día</span>
                 </div>
 
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
+                <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-emerald-400/40 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow-md">
                     Quiero Visita
                   </h3>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1">
-                    Pase de Visita &rarr;
-                  </span>
-                  <span className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
-                    ✓
-                  </span>
+                  
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1">
+                      Pase de Visita &rarr;
+                    </span>
+                    <span className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                      ✓
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
               <div 
                 onClick={() => setShowDirectAccessModal(true)}
-                className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
+                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-amber-400/70 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
-                {/* Fotografía de Gym: Lector Biométrico de Huella */}
-                <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-400/60 shadow-lg">
-                  <img 
-                    src={IMG_CARD_HUELLA} 
-                    alt="Lector Biométrico de Huella Gym" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute top-2.5 right-2.5">
-                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse shadow-md">
-                      Acceso Directo
-                    </span>
-                  </div>
+                <img 
+                  src={IMG_CARD_HUELLA} 
+                  alt="Lector Biométrico de Huella Gym" 
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                  <span>👆</span>
+                  <span className="uppercase tracking-wider">Acceso Directo</span>
                 </div>
 
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+                <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
                     Ya Tengo Membresía
                   </h3>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
-                    Validar Huella &rarr;
-                  </span>
-                  <span className="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
-                    👆
-                  </span>
+                  
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                      Validar Huella &rarr;
+                    </span>
+                    <span className="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                      👆
+                    </span>
+                  </div>
                 </div>
               </div>
 
             </div>
-
           </main>
 
 
