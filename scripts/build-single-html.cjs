@@ -736,7 +736,7 @@ const htmlContent = `<!DOCTYPE html>
       const selectedBg = currentBgIndex === 0 ? BG_PHOTO_1 : BG_PHOTO_2;
 
       return (
-        <div onDoubleClick={(e) => { if (e.target === e.currentTarget) setShowConfigModal(true); }} className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-center items-center p-3 sm:p-5 lg:p-6">
+        <div onDoubleClick={(e) => { if (e.target === e.currentTarget) setShowConfigModal(true); }} className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-between items-center p-3 sm:p-4 lg:p-6">
 
           {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
           {!isFullScreen && (
@@ -775,7 +775,7 @@ const htmlContent = `<!DOCTYPE html>
             <img 
               src={selectedBg}
               alt="Fondo Gym Legends" 
-              className="w-full h-full object-cover object-center filter brightness-110 contrast-105"
+              style={{ objectPosition: "center 38%" }} className="w-full h-full object-cover filter brightness-110 contrast-105"
             />
             {/* Transparent dark vignette so neon sign and photo are 100% visible */}
             <div 
@@ -837,7 +837,10 @@ const htmlContent = `<!DOCTYPE html>
           )}
 
                     {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
-          <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center my-auto relative z-10 px-2">
+          <!-- Espacio superior para lucir LEYENDS GYM y CLUB FITNESS sin tapar -->
+          <div className="flex-1 w-full min-h-[160px] sm:min-h-[220px] pointer-events-none"></div>
+
+          <main className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-2 pb-4 sm:pb-8 mt-auto">
 
             
 

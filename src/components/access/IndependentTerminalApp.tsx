@@ -677,7 +677,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           alt="Fitness Legends Gym Background"
           style={{
             filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
-            objectPosition: 'center center',
+            objectPosition: 'center 38%',
           }}
           className="w-full h-full object-cover object-center"
         />
@@ -737,10 +737,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       )}
 
       {/* ESPACIO SUPERIOR / CENTRAL TOTALMENTE DESPEJADO: EL LOGO "GYM LEGENDS" DE LA FOTO RESALTA 100% VISIBLE Y PROTAGONISTA */}
-      <div className="flex-1 w-full min-h-[140px] sm:min-h-[200px] pointer-events-none" />
+      <div className="flex-1 w-full min-h-[180px] sm:min-h-[240px] pointer-events-none" />
 
       {/* Main Container: 3 Clear Intuitive Access Options */}
-      <div className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-3 pb-3 sm:pb-6 mt-auto">
+      <div className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-3 pb-4 sm:pb-8 mt-auto">
 
         
         {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
