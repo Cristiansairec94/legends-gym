@@ -4,6 +4,9 @@ const path = require('path');
 const img1Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background.jpg').toString('base64');
 const img2Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background-motto.jpg').toString('base64');
 const logoBase64 = 'data:image/png;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/logo.png').toString('base64');
+const cardNuevoBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-cliente-nuevo.jpg')).toString('base64');
+const cardVisitaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-visita.jpg')).toString('base64');
+const cardHuellaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-huella.jpg')).toString('base64');
 const biometricRingsBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-rings-opt.png')).toString('base64');
 const biometricFpBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-fingerprint-opt.png')).toString('base64');
 const biometricGreenFpBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-green-fp-opt.png')).toString('base64');
@@ -736,6 +739,14 @@ const htmlContent = `<!DOCTYPE html>
           {!isFullScreen && (
             <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
               <button
+                onClick={toggleBackground}
+                className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+                title="Alternar entre Foto de Máquinas y Foto de Lema del Gimnasio"
+              >
+                <span>🖼️</span>
+                <span className="hidden sm:inline">Cambiar Fondo</span>
+              </button>
+              <button
                 onClick={toggleFullscreen}
                 className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
                 title="Activar Pantalla Completa"
@@ -831,30 +842,33 @@ const htmlContent = `<!DOCTYPE html>
               </div>
             )}
 
-            {/* The 3 Clean High-Impact Options Grid */}
+            {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
               {/* Opción 1: CLIENTE NUEVO */}
               <div 
                 onClick={() => setShowNewMemberModal(true)}
-                className="group relative p-6 rounded-3xl bg-black/65 hover:bg-black/85 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+                className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
               >
-                <div className="absolute top-4 right-4">
-                  <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500/25 text-amber-300 border border-amber-500/40 tracking-wider">
-                    Inscripción
-                  </span>
+                {/* Fotografía de Gym: Cliente Nuevo */}
+                <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-500/40 shadow-lg">
+                  <img 
+                    src={IMG_CARD_NUEVO} 
+                    alt="Cliente Nuevo Gym" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute top-3 right-3">
+                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black shadow-md tracking-wider">
+                      Inscripción
+                    </span>
+                  </div>
                 </div>
 
                 <div>
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                    👤
-                  </div>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                     Cliente Nuevo
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -870,24 +884,27 @@ const htmlContent = `<!DOCTYPE html>
               {/* Opción 2: QUIERO VISITA */}
               <div 
                 onClick={() => setShowVisitModal(true)}
-                className="group relative p-6 rounded-3xl bg-black/65 hover:bg-black/85 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
+                className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green overflow-hidden"
               >
-                <div className="absolute top-4 right-4">
-                  <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 tracking-wider">
-                    Pase del Día
-                  </span>
+                {/* Fotografía de Gym: Pase de Visita */}
+                <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-emerald-500/40 shadow-lg">
+                  <img 
+                    src={IMG_CARD_VISITA} 
+                    alt="Pase de Visita Gym" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute top-3 right-3">
+                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500 text-black shadow-md tracking-wider">
+                      Pase del Día
+                    </span>
+                  </div>
                 </div>
 
                 <div>
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                    🎟️
-                  </div>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                     Quiero Visita
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -903,24 +920,27 @@ const htmlContent = `<!DOCTYPE html>
               {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
               <div 
                 onClick={() => setShowDirectAccessModal(true)}
-                className="group relative p-6 rounded-3xl bg-black/65 hover:bg-black/85 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+                className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
               >
-                <div className="absolute top-4 right-4">
-                  <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse">
-                    Acceso Directo
-                  </span>
+                {/* Fotografía de Gym: Lector Biométrico de Huella */}
+                <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-400/60 shadow-lg">
+                  <img 
+                    src={IMG_CARD_HUELLA} 
+                    alt="Lector Biométrico de Huella Gym" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute top-3 right-3">
+                    <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse shadow-md">
+                      Acceso Directo
+                    </span>
+                  </div>
                 </div>
 
                 <div>
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500/30 border border-amber-400/60 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-inner">
-                    ⚡
-                  </div>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                     Ya Tengo Membresía
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
