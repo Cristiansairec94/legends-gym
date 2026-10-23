@@ -311,18 +311,18 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         </div>
 
         {/* Quick Operations Strip & Status Indicators */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           
           {/* Lector Activo Pill */}
           <div 
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
               flashScanner 
                 ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
                 : 'bg-gradient-to-r from-[#14151d] to-[#111218] text-emerald-400 border-emerald-500/30'
             }`}
             title="Lector de código de barras USB/Bluetooth en línea"
           >
-            <ScanLine className={`w-3.5 h-3.5 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
+            <ScanLine className={`w-4 h-4 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
             <span className="hidden sm:inline">Lector Activo</span>
           </div>
 
@@ -330,9 +330,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <button
             type="button"
             onClick={() => setShowMovementsModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/35 hover:border-amber-500/60 text-amber-300 hover:text-amber-200 text-xs sm:text-sm font-extrabold transition-all shadow-sm shrink-0 active:scale-95"
           >
-            <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px]">
+            <span className="w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-xs shadow-sm">
               $
             </span>
             <span>Movimientos</span>
@@ -345,9 +345,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               if (onNavigateToCash) onNavigateToCash();
               else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
             }}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-black shadow-md border border-amber-300/50 transition-all shrink-0 active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs sm:text-sm font-black shadow-md hover:shadow-glow-gold/40 border border-amber-300/60 transition-all shrink-0 active:scale-[0.98]"
           >
-            <Lock className="w-3.5 h-3.5" />
+            <Lock className="w-4 h-4 stroke-[2.5]" />
             <span>Cerrar Turno</span>
           </button>
 
@@ -355,19 +355,18 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <button
             type="button"
             onClick={() => setShowCatalogModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-amber-400/50 text-xs font-bold text-zinc-200 hover:text-white transition-all shadow-sm shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.12] hover:border-amber-400/60 text-xs sm:text-sm font-extrabold text-zinc-100 hover:text-white transition-all shadow-sm shrink-0 active:scale-95"
             title="Explorar productos por categoría"
           >
-            <Package className="w-3.5 h-3.5 text-amber-400" />
+            <Package className="w-4 h-4 text-amber-400" />
             <span>Catálogo</span>
           </button>
 
           {/* Sincronizado Pill */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold text-xs shadow-sm">
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold text-xs sm:text-sm shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
             <span className="hidden lg:inline">Sincronizado</span>
           </div>
-
 
         </div>
 
