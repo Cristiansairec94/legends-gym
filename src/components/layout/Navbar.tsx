@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
 import { 
-  Flame,
-  ShoppingBag, 
+  Flame, 
   Clock, 
   Bell, 
   Cloud, 
@@ -92,20 +91,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right / Controls Bar: Unified Single-Line Layout */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          
-          {/* Direct Punto de Venta Top Button */}
-          <button
-            onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 h-10 px-3.5 sm:px-4 rounded-xl font-black text-xs transition-all shadow-md whitespace-nowrap shrink-0 ${
-              activeTab === 'pos'
-                ? 'bg-amber-500 text-black border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                : 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 hover:border-amber-400'
-            }`}
-            title="Ir directo al Punto de Venta"
-          >
-            <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-            <span>Punto de Venta</span>
-          </button>
           
           {/* Real-time Clock */}
           <div 
