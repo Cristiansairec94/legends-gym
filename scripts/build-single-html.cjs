@@ -7,6 +7,7 @@ const logoBase64 = 'data:image/png;base64,' + fs.readFileSync('C:/Users/DELL/Des
 const cardNuevoBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-cliente-nuevo.jpg')).toString('base64');
 const cardVisitaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-visita.jpg')).toString('base64');
 const cardHuellaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-huella.jpg')).toString('base64');
+const modalBgBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/modal-gym-bg.jpg')).toString('base64');
 const biometricRingsBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-rings-opt.png')).toString('base64');
 const biometricFpBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-fingerprint-opt.png')).toString('base64');
 const biometricGreenFpBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/biometric-green-fp-opt.png')).toString('base64');
@@ -29,7 +30,7 @@ const htmlContent = `<!DOCTYPE html>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
   <!-- Babel Standalone for JSX in browser -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
 
   <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -121,6 +122,8 @@ const htmlContent = `<!DOCTYPE html>
 
     const BG_PHOTO_1 = "${img1Base64}";
     const BG_PHOTO_2 = "${img2Base64}";
+    const BG_PHOTO_3 = "${modalBgBase64}";
+    const MODAL_GYM_BG = "${modalBgBase64}";
     const LOGO_IMG = "${logoBase64}";
     const IMG_CARD_NUEVO = "${cardNuevoBase64}";
     const IMG_CARD_VISITA = "${cardVisitaBase64}";
@@ -355,7 +358,7 @@ const htmlContent = `<!DOCTYPE html>
       }, [accessLogs]);
 
       const toggleBackground = () => {
-        const next = currentBgIndex === 0 ? 1 : 0;
+        const next = (currentBgIndex + 1) % 3;
         setCurrentBgIndex(next);
         localStorage.setItem('legends_bg_choice', String(next));
       };
@@ -733,7 +736,7 @@ const htmlContent = `<!DOCTYPE html>
         }
       };
 
-      const selectedBg = currentBgIndex === 0 ? BG_PHOTO_1 : BG_PHOTO_2;
+      const selectedBg = currentBgIndex === 0 ? BG_PHOTO_1 : (currentBgIndex === 1 ? BG_PHOTO_2 : BG_PHOTO_3);
 
       return (
         <div onDoubleClick={(e) => { if (e.target === e.currentTarget) setShowConfigModal(true); }} className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-between items-center p-3 sm:p-4 lg:p-6">
@@ -837,7 +840,7 @@ const htmlContent = `<!DOCTYPE html>
           )}
 
                     {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
-          <!-- Espacio superior para lucir LEYENDS GYM y CLUB FITNESS sin tapar -->
+          {/* Espacio superior para lucir LEYENDS GYM y CLUB FITNESS sin tapar */}
           <div className="flex-1 w-full min-h-[160px] sm:min-h-[220px] pointer-events-none"></div>
 
           <main className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-2 pb-4 sm:pb-8 mt-auto">
@@ -964,9 +967,19 @@ const htmlContent = `<!DOCTYPE html>
           {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
           {showNewMemberModal && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-              <div className="bg-[#161824]/95 border border-amber-500/40 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto">
+              <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto overflow-hidden">
+                {/* Fondo de Mancuernas y Textura Fitness */}
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                  <img 
+                    src={MODAL_GYM_BG} 
+                    alt="Fondo Mancuernas Fitness" 
+                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+                </div>
                 
-                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+                <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
                       👤
@@ -993,7 +1006,7 @@ const htmlContent = `<!DOCTYPE html>
                   </button>
                 </div>
 
-                <form onSubmit={handleRegisterNewMember} className="space-y-4">
+                <form onSubmit={handleRegisterNewMember} className="relative z-10 space-y-4">
                   
                   {/* Nombre */}
                   <div>
@@ -1464,8 +1477,17 @@ const htmlContent = `<!DOCTYPE html>
           {/* MODAL 2: PASE DE VISITA */}
           {showVisitModal && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-[#161824]/95 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+              <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl shadow-emerald-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                  <img 
+                    src={MODAL_GYM_BG} 
+                    alt="Fondo Mancuernas Fitness" 
+                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] pointer-events-none" />
+                </div>
+                <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
                   <div className="flex items-center gap-2.5">
                     <span className="text-2xl">🎟️</span>
                     <div>
@@ -1483,7 +1505,7 @@ const htmlContent = `<!DOCTYPE html>
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="relative z-10 space-y-4">
                   <div>
                     <label className="text-xs font-bold text-gray-300 block mb-1">Nombre del Visitante (Opcional)</label>
                     <input 
@@ -1529,8 +1551,17 @@ const htmlContent = `<!DOCTYPE html>
           {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           {showDirectAccessModal && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-[#161824]/95 border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+              <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                  <img 
+                    src={MODAL_GYM_BG} 
+                    alt="Fondo Mancuernas Fitness" 
+                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+                </div>
+                <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
                   <div className="flex items-center gap-2.5">
                     <span className="text-2xl">⚡</span>
                     <div>

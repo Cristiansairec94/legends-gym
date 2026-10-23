@@ -3,6 +3,7 @@ import cardVisita from '../../assets/card-visita.jpg';
 import cardHuella from '../../assets/card-huella.jpg';
 import gymBg from '../../assets/gym-background.jpg';
 import gymBgMotto from '../../assets/gym-background-motto.jpg';
+import modalGymBg from '../../assets/modal-gym-bg.jpg';
 import logoImg from '../../assets/logo.png';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGym } from '../../context/GymContext';
@@ -594,7 +595,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
   // Fullscreen / Kiosk toggle
   const toggleBackground = () => {
-    const nextBg = bgImage === gymBg ? gymBgMotto : gymBg;
+    const nextBg = bgImage === gymBg ? gymBgMotto : (bgImage === gymBgMotto ? modalGymBg : gymBg);
     setBgImage(nextBg);
     if (typeof window !== 'undefined') {
       localStorage.setItem('legends_terminal_bg', nextBg);
@@ -657,6 +658,14 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
       {!isFullScreen && (
         <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+          <button
+            onClick={toggleBackground}
+            className="px-3.5 py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+            title="Cambiar imagen de fondo (Mancuernas / Estudio / Neón)"
+          >
+            <Image className="w-4 h-4 text-amber-400" />
+            <span className="hidden sm:inline">CAMBIAR FONDO</span>
+          </button>
           <button
             onClick={toggleFullScreen}
             className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/30 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
@@ -868,10 +877,20 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
       {showNewMemberModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-[#161824]/95 border border-amber-500/40 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto">
+          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto overflow-hidden">
+            {/* Background Fitness Dumbbell Photo */}
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+              <img 
+                src={modalGymBg} 
+                alt="Fondo Mancuernas Fitness" 
+                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+            </div>
             
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+            <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
                   👤
@@ -899,7 +918,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleRegisterNewMember} className="space-y-4">
+            <form onSubmit={handleRegisterNewMember} className="relative z-10 space-y-4">
               
               {/* 1. Nombre Completo */}
               <div>
@@ -1380,8 +1399,17 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* MODAL 2: PASE DE VISITA / CLASE PRUEBA */}
       {showVisitModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#161824]/95 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl shadow-emerald-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+              <img 
+                src={modalGymBg} 
+                alt="Fondo Mancuernas Fitness" 
+                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] pointer-events-none" />
+            </div>
+            <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center"><Dumbbell className="w-5 h-5 text-emerald-400" /></div>
                 <div>
@@ -1399,7 +1427,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="relative z-10 space-y-4">
 
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
                 <div>
@@ -1435,8 +1463,17 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
       {showDirectAccessModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#161824]/95 border border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-4">
+          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+              <img 
+                src={modalGymBg} 
+                alt="Fondo Mancuernas Fitness" 
+                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+            </div>
+            <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center"><Fingerprint className="w-5 h-5 text-amber-400" /></div>
                 <div>
