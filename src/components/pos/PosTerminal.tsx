@@ -75,12 +75,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Live Clock
-  const [currentTime, setCurrentTime] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const categories = [
     { id: 'all', label: 'Todas las Categorías' },
@@ -374,26 +368,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             <span className="hidden lg:inline">Sincronizado</span>
           </div>
 
-          {/* Real-time Clock */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] text-zinc-200 border border-white/[0.08] font-mono text-xs font-semibold shadow-sm">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span>{currentTime.toLocaleTimeString('es-MX')}</span>
-          </div>
-
-          {/* Cashier / User Card */}
-          <div className="flex items-center gap-2 pl-2 border-l border-white/[0.08]">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-400/40 flex items-center justify-center font-black text-amber-400 text-xs shrink-0 shadow-sm">
-              {currentRole === 'admin' ? 'RG' : 'CR'}
-            </div>
-            <div className="hidden xl:block text-left leading-tight">
-              <span className="font-extrabold text-xs text-white block">
-                {currentRole === 'admin' ? 'Don Roberto Garza' : 'Camila Herrera'}
-              </span>
-              <span className="text-[9px] font-black uppercase text-amber-400 tracking-wider block">
-                {currentRole === 'admin' ? 'DUEÑO / ADMIN' : 'RECEPCIÓN'}
-              </span>
-            </div>
-          </div>
 
         </div>
 
