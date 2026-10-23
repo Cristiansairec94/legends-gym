@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
-import { 
-  Flame, 
+import {  
   Clock, 
   Bell, 
   Cloud, 
@@ -28,8 +27,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { 
     currentUser,
     logout,
-    todayCheckInsCount, 
-    cashSession,
     unreadNotificationsCount,
     syncState
   } = useGym();
@@ -100,30 +97,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Clock className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="font-mono text-sm sm:text-base font-black text-white tracking-wider">
               {currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          </div>
-
-          {/* Today Check-Ins */}
-          <div 
-            onClick={() => setActiveTab('access')}
-            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 cursor-pointer hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all text-xs shadow-sm whitespace-nowrap shrink-0"
-            title="Socios ingresados hoy"
-          >
-            <Flame className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
-            <span className="text-zinc-300 font-medium">Accesos hoy:</span>
-            <span className="font-bold text-emerald-400 font-mono text-sm">{todayCheckInsCount}</span>
-          </div>
-
-          {/* Cash Status */}
-          <div 
-            onClick={() => setActiveTab('cash')}
-            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-pointer hover:bg-white/[0.08] hover:border-white/25 transition-all text-xs whitespace-nowrap shrink-0"
-            title="Estado de caja"
-          >
-            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-rose-500'}`} />
-            <span className="text-zinc-400 font-medium">Caja:</span>
-            <span className="font-bold text-zinc-200">
-              {cashSession.status === 'open' ? 'Abierta' : 'Cerrada'}
             </span>
           </div>
 
