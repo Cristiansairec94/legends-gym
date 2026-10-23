@@ -421,10 +421,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 p-3.5 sm:p-4 min-h-0 overflow-hidden items-stretch">
           
           {/* LEFT SECTION: Search, Barcode & Ticket List (7-8 cols) */}
-          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col justify-between min-h-0 overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3 shadow-inner">
+          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col justify-between min-h-0 bg-black/40 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3 shadow-inner relative">
             
             {/* Top Barcode / Search Box */}
-            <div className="space-y-2 shrink-0 pb-2 border-b border-white/[0.06]">
+            <div className="space-y-2 shrink-0 pb-2 border-b border-white/[0.06] relative z-20">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                   <Barcode className="w-4 h-4 text-amber-400" />
@@ -446,8 +446,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     setBarcodeInput(e.target.value);
                     setSearch(e.target.value);
                   }}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 250)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -464,50 +462,158 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       setBarcodeInput('');
                       setSearch('');
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white transition-colors z-10"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white transition-colors z-10 p-1"
+                    title="Limpiar búsqueda"
                   >
                     ✕
                   </button>
                 )}
 
-                {/* Instant Search Suggestions Popover */}
-                {isSearchFocused && barcodeInput.trim().length >= 1 && (
-                  <div className="absolute top-full left-0 mt-1.5 w-full bg-[#12131b]/98 backdrop-blur-xl border border-white/[0.15] rounded-2xl shadow-2xl p-1.5 z-40 max-h-60 overflow-y-auto divide-y divide-white/[0.06]">
+                {/* Large Instant Search Results Dropdown Overlay */}
+                {barcodeInput.trim().length >= 1 && (
+                  <div className="absolute top-full left-0 mt-2 w-full bg-[#12131d]/98 backdrop-blur-2xl border-2 border-amber-400/50 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 sm:p-3 z-50 max-h-[460px] overflow-y-auto space-y-2 animate-fade-in">
+                    
+                    {/* Popover Header */}
+                    <div className="flex items-center justify-between px-2 pb-2 border-b border-white/[0.08] text-xs">
+                      <span className="text-zinc-300 font-bold flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Resultados de búsqueda:</span>
+                        <span className="text-amber-400 font-mono font-black">"{barcodeInput}"</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBarcodeInput('');
+                          setSearch('');
+                        }}
+                        className="text-zinc-400 hover:text-white text-xs font-semibold px-2 py-0.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors"
+                      >
+                        ✕ Cerrar
+                      </button>
+                    </div>
+
+                    {/* Products List (Large Cards) */}
                     {products
                       .filter(p => 
                         p.name.toLowerCase().includes(barcodeInput.toLowerCase()) || 
                         (p.flavor && p.flavor.toLowerCase().includes(barcodeInput.toLowerCase())) ||
+                        (p.brand && p.brand.toLowerCase().includes(barcodeInput.toLowerCase())) ||
                         p.barcode.includes(barcodeInput)
-                      )
-                      .slice(0, 6)
-                      .map(p => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onMouseDown={() => {
-                            addToCart(p, 1);
-                            setBarcodeInput('');
-                            setSearch('');
-                            sounds.playBarcodeBeep();
-                          }}
-                          className="w-full text-left p-2.5 rounded-xl hover:bg-amber-400/15 flex items-center justify-between gap-3 transition-colors group"
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <Package className="w-4 h-4 text-amber-400 shrink-0" />
-                            <div className="truncate">
-                              <span className="text-xs font-bold text-white group-hover:text-amber-400 block truncate">
-                                {p.name}
-                              </span>
-                              <span className="text-[10px] text-zinc-400">
-                                {p.flavor ? `${p.flavor} • ` : ''}Stock: {p.stock}
-                              </span>
+                      ).length === 0 ? (
+                        <div className="p-6 text-center text-zinc-400 space-y-2">
+                          <Package className="w-8 h-8 text-zinc-500 mx-auto opacity-50" />
+                          <p className="text-sm font-bold text-white">No se encontró ningún producto</p>
+                          <p className="text-xs text-zinc-400">Verifica la ortografía o intenta buscar por código de barras.</p>
+                        </div>
+                      ) : (
+                        products
+                          .filter(p => 
+                            p.name.toLowerCase().includes(barcodeInput.toLowerCase()) || 
+                            (p.flavor && p.flavor.toLowerCase().includes(barcodeInput.toLowerCase())) ||
+                            (p.brand && p.brand.toLowerCase().includes(barcodeInput.toLowerCase())) ||
+                            p.barcode.includes(barcodeInput)
+                          )
+                          .slice(0, 8)
+                          .map(p => (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                addToCart(p, 1);
+                                setBarcodeInput('');
+                                setSearch('');
+                                sounds.playBarcodeBeep();
+                              }}
+                              className="p-3 rounded-2xl bg-white/[0.03] hover:bg-amber-400/10 border border-white/[0.08] hover:border-amber-400/50 flex items-center justify-between gap-3.5 transition-all cursor-pointer group shadow-sm hover:shadow-lg active:scale-[0.99]"
+                            >
+                              {/* Large Product Image Thumbnail */}
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-white/[0.1] bg-[#161722] shrink-0 shadow-md relative">
+                                <img
+                                  src={p.image || '/logo.png'}
+                                  alt={p.name}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = '/logo.png';
+                                  }}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                {p.stock <= 0 && (
+                                  <div className="absolute inset-0 bg-black/75 flex items-center justify-center text-[10px] font-black text-red-400 uppercase">
+                                    Agotado
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Product Info (Large Title & Flavor) */}
+                              <div className="flex-1 min-w-0 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm sm:text-base font-black text-white group-hover:text-amber-400 transition-colors truncate">
+                                    {p.name}
+                                  </h4>
+                                  {p.brand && (
+                                    <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/[0.06] text-zinc-300 font-semibold text-[10px] uppercase">
+                                      {p.brand}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 flex-wrap text-xs">
+                                  {p.flavor && (
+                                    <span className="text-zinc-300 font-medium truncate">
+                                      {p.flavor}
+                                    </span>
+                                  )}
+                                  <span className="text-zinc-500">•</span>
+                                  <span className="font-mono text-[11px] text-zinc-400">
+                                    Cód: {p.barcode}
+                                  </span>
+                                  <span className="text-zinc-500">•</span>
+                                  {p.stock > 5 ? (
+                                    <span className="text-emerald-400 font-bold text-xs">
+                                      Stock: {p.stock}
+                                    </span>
+                                  ) : p.stock > 0 ? (
+                                    <span className="text-amber-400 font-bold text-xs animate-pulse">
+                                      Pocas: {p.stock}
+                                    </span>
+                                  ) : (
+                                    <span className="text-red-400 font-bold text-xs">
+                                      Sin stock (0)
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Price & Action Button */}
+                              <div className="text-right shrink-0 flex items-center gap-3">
+                                <div>
+                                  <span className="text-base sm:text-2xl font-mono font-black text-amber-400 block tracking-tight">
+                                    ${p.price.toFixed(2)}
+                                  </span>
+                                  <span className="text-[10px] text-zinc-400 font-semibold block">
+                                    por pieza
+                                  </span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addToCart(p, 1);
+                                    setBarcodeInput('');
+                                    setSearch('');
+                                    sounds.playBarcodeBeep();
+                                  }}
+                                  disabled={p.stock <= 0}
+                                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs sm:text-sm shadow-glow-gold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                                >
+                                  <Plus className="w-4 h-4 stroke-[3]" />
+                                  <span>Agregar</span>
+                                </button>
+                              </div>
+
                             </div>
-                          </div>
-                          <span className="font-mono font-black text-xs text-amber-400 shrink-0">
-                            ${p.price.toFixed(2)}
-                          </span>
-                        </button>
-                      ))}
+                          ))
+                      )}
+
                   </div>
                 )}
               </div>
