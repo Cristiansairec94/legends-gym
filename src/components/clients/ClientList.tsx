@@ -72,7 +72,7 @@ export const ClientList: React.FC = () => {
             </h1>
           </div>
           <p className="text-sm text-gym-muted mt-1">
-            Administración de expedientes, vigencias, enrolamiento biométrico y renovaciones. • <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Conectado 100% a Torniquetes</span>
+            Administración de expedientes, vigencias, enrolamiento biométrico y renovaciones. • <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Conectado 100% a Torniquetes</span>
           </p>
         </div>
 

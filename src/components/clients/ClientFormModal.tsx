@@ -92,7 +92,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
     const created = addMember({
       fullName: fullName.trim(),
       documentId: finalDocId,
-      email: finalEmail, '.')}@email.com`,
+      email: finalEmail,
       phone: phone.trim() || '+52 55 1234 5678',
       avatarUrl: (avatarUrl && !avatarUrl.includes("rect width='128' height='128'"))
         ? avatarUrl
@@ -185,6 +185,20 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
               </div>
 
               <div>
+                <label className="text-xs font-semibold text-amber-400 block mb-1 flex items-center justify-between">
+                  <span>Cédula / Tarjeta RFID / DNI *</span>
+                  <span className="text-[10px] text-gym-muted font-normal">Clave de Torniquete</span>
+                </label>
+                <input
+                  type="text"
+                  value={documentId}
+                  onChange={(e) => setDocumentId(e.target.value)}
+                  placeholder="Ej. 10984523 o pasa tarjeta RFID..."
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-amber-500/40 text-xs sm:text-sm text-white font-mono placeholder-gym-muted focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50"
+                />
+              </div>
+
+              <div>
                 <label className="text-xs font-semibold text-gym-muted block mb-1">
                   Teléfono WhatsApp
                 </label>
@@ -193,6 +207,19 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+52 55 9876 5432"
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gym-muted block mb-1">
+                  Correo Electrónico (Opcional)
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="cliente@email.com"
                   className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
                 />
               </div>

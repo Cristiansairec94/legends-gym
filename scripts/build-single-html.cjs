@@ -390,6 +390,73 @@ const htmlContent = `<!DOCTYPE html>
         setServerOnline(false);
       }, [serverUrl]);
 
+      // Multi-Window & Background Sync: BroadcastChannel + storage event + 1.5s live sync
+      useEffect(() => {
+        let channel = null;
+        try {
+          channel = new BroadcastChannel('legends_gym_sync_bus_v1');
+          channel.onmessage = (event) => {
+            const data = event.data;
+            if (!data) return;
+            if (data.type === 'MEMBER_ADDED' && data.member) {
+              setMembers(prev => {
+                const next = [data.member, ...prev.filter(m => m.id !== data.member.id)];
+                try { localStorage.setItem('legends_members_v1', JSON.stringify(next)); } catch {}
+                return next;
+              });
+            } else if (data.type === 'MEMBER_UPDATED' && data.member) {
+              setMembers(prev => {
+                const next = prev.map(m => m.id === data.member.id ? { ...m, ...data.member } : m);
+                try { localStorage.setItem('legends_members_v1', JSON.stringify(next)); } catch {}
+                return next;
+              });
+            } else if (data.type === 'MEMBER_DELETED' && data.memberId) {
+              setMembers(prev => {
+                const next = prev.filter(m => m.id !== data.memberId);
+                try { localStorage.setItem('legends_members_v1', JSON.stringify(next)); } catch {}
+                return next;
+              });
+            } else if (data.type === 'MEMBERS_REPLACED' && Array.isArray(data.members)) {
+              setMembers(data.members);
+              try { localStorage.setItem('legends_members_v1', JSON.stringify(data.members)); } catch {}
+            }
+          };
+        } catch {}
+
+        const handleStorage = (e) => {
+          if (e.key === 'legends_members_v1' && e.newValue) {
+            try {
+              const parsed = JSON.parse(e.newValue);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setMembers(parsed);
+              }
+            } catch {}
+          }
+        };
+
+        const pollLocalMembers = setInterval(() => {
+          try {
+            const raw = localStorage.getItem('legends_members_v1');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setMembers(prev => {
+                  if (prev.length !== parsed.length) return parsed;
+                  return prev;
+                });
+              }
+            }
+          } catch {}
+        }, 1500);
+
+        window.addEventListener('storage', handleStorage);
+        return () => {
+          window.removeEventListener('storage', handleStorage);
+          clearInterval(pollLocalMembers);
+          if (channel) channel.close();
+        };
+      }, []);
+
       useEffect(() => {
         checkServer();
         const interval = setInterval(checkServer, 5000);
@@ -411,20 +478,57 @@ const htmlContent = `<!DOCTYPE html>
         }, 1000);
       };
 
-      // Execute scan / verify access
+      // Execute scan / verify access with multi-attribute normalized matching
       const executeScan = (rawIdentifier) => {
-        const id = String(rawIdentifier).trim().toLowerCase();
-        if (!id) return;
+        const rawStr = String(rawIdentifier || '').trim();
+        if (!rawStr) return;
 
         setScanStatus('scanning');
         setVerifiedClient(null);
 
+        // Fetch latest pool directly from state and localStorage
+        let currentPool = members;
+        try {
+          const stored = localStorage.getItem('legends_members_v1');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) currentPool = parsed;
+          }
+        } catch {}
+
+        const norm = (str) => String(str || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+
+        const q = norm(rawStr);
+        const qCompact = q.replace(/[\s\-_]/g, '');
+        const qWords = q.split(/\s+/).filter(Boolean);
+        const qDigits = q.replace(/\D/g, '');
+
         setTimeout(() => {
-          const found = members.find(m => {
-            const matchId = String(m.id || '').toLowerCase() === id;
-            const matchDoc = String(m.documentId || '').toLowerCase() === id;
-            const matchName = String(m.fullName || '').toLowerCase().includes(id);
-            return matchId || matchDoc || matchName;
+          const found = currentPool.find(m => {
+            if (!q) return false;
+            const idNorm = norm(m.id);
+            const idCompact = idNorm.replace(/[\s\-_]/g, '');
+            const docNorm = norm(m.documentId);
+            const docCompact = docNorm.replace(/[\s\-_]/g, '');
+            const nameNorm = norm(m.fullName);
+            const emailNorm = norm(m.email);
+            const hashNorm = norm(m.biometricHash);
+            const tplNorm = norm(m.biometricTemplate);
+            const phoneDigits = String(m.phone || '').replace(/\D/g, '');
+
+            if (hashNorm && hashNorm === q) return true;
+            if (tplNorm && tplNorm === q) return true;
+            if (idNorm === q || idCompact === qCompact) return true;
+            if (docNorm === q || (docCompact && docCompact === qCompact)) return true;
+            if (emailNorm === q) return true;
+            if (qDigits.length >= 6 && phoneDigits.endsWith(qDigits)) return true;
+            if (nameNorm === q || nameNorm.includes(q)) return true;
+            if (qWords.length > 1 && qWords.every(w => nameNorm.includes(w))) return true;
+            return false;
           });
 
           if (!found) {
@@ -639,6 +743,13 @@ const htmlContent = `<!DOCTYPE html>
         setMembers(updatedMembers);
         try { localStorage.setItem('legends_members_v1', JSON.stringify(updatedMembers)); } catch {}
 
+        // Broadcast to all tabs/windows of Fitness Legends
+        try {
+          const ch = new BroadcastChannel('legends_gym_sync_bus_v1');
+          ch.postMessage({ type: 'MEMBER_ADDED', member: newMember });
+          ch.close();
+        } catch {}
+
         // Push to Cloud / LAN
         if (serverOnline) {
           fetch(\`\${serverUrl}/api/sync/members\`, {
@@ -754,7 +865,7 @@ const htmlContent = `<!DOCTYPE html>
               </button>
               <button
                 onClick={toggleFullscreen}
-                className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+                className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
                 title="Activar Pantalla Completa"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -771,7 +882,7 @@ const htmlContent = `<!DOCTYPE html>
             <img 
               src={selectedBg}
               alt="Fondo Gym Legends" 
-              style={{ objectPosition: "center 38%" }} className="w-full h-full object-cover filter brightness-110 contrast-105"
+              style={{ objectPosition: "center 10%" }} className="w-full h-full object-cover filter brightness-110 contrast-105"
             />
             {/* Transparent dark vignette so neon sign and photo are 100% visible */}
             <div 
@@ -787,7 +898,7 @@ const htmlContent = `<!DOCTYPE html>
               <div className="py-3 px-6 rounded-2xl bg-gradient-to-r from-emerald-500/40 via-emerald-500/60 to-emerald-500/40 border border-emerald-400 shadow-glow-green text-center animate-pulse">
                 <div className="flex items-center justify-center gap-3 text-emerald-100 font-black text-base sm:text-lg uppercase tracking-wider">
                   <span>🔓 PASO LIBRE CONCEDIDO (TORNIQUETE ABIERTO)</span>
-                  <span className="bg-emerald-400 text-black px-3 py-0.5 rounded-full font-mono text-sm font-black">
+                  <span className="bg-emerald-500 text-white px-3 py-0.5 rounded-full font-mono text-sm font-black shadow-md">
                     {relaySeconds}s
                   </span>
                 </div>
@@ -834,7 +945,7 @@ const htmlContent = `<!DOCTYPE html>
 
                     {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
           {/* Espacio superior para lucir LEYENDS GYM y CLUB FITNESS sin tapar */}
-          <div className="flex-1 w-full min-h-[160px] sm:min-h-[220px] pointer-events-none"></div>
+          <div className="flex-1 w-full min-h-[140px] sm:min-h-[180px] pointer-events-none"></div>
 
           <main className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-2 pb-4 sm:pb-8 mt-auto">
 
@@ -846,7 +957,7 @@ const htmlContent = `<!DOCTYPE html>
               {/* Opción 1: CLIENTE NUEVO */}
               <div 
                 onClick={() => setShowNewMemberModal(true)}
-                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_45px_rgba(245,158,11,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
+                className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_45px_rgba(245,158,11,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
                 <img 
                   src={IMG_CARD_NUEVO} 
@@ -856,21 +967,21 @@ const htmlContent = `<!DOCTYPE html>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
                 <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                   <span>💪</span>
-                  <span className="uppercase tracking-wider">Inscripción</span>
+                  <span className="tracking-wider">Inscripción</span>
                 </div>
 
                 <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     Cliente Nuevo
                   </h3>
                   
                   <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                    <span className="text-xs font-black text-amber-300 group-hover:text-amber-200 drop-shadow flex items-center gap-1">
                       Registrarme &rarr;
                     </span>
-                    <span className="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
                       +
                     </span>
                   </div>
@@ -880,7 +991,7 @@ const htmlContent = `<!DOCTYPE html>
               {/* Opción 2: QUIERO VISITA */}
               <div 
                 onClick={() => setShowVisitModal(true)}
-                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-emerald-400/60 hover:border-emerald-400 transition-all duration-500 shadow-[0_0_25px_rgba(16,185,129,0.25)] hover:shadow-[0_0_45px_rgba(16,185,129,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
+                className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-emerald-400/60 hover:border-emerald-400 transition-all duration-500 shadow-[0_0_25px_rgba(16,185,129,0.25)] hover:shadow-[0_0_45px_rgba(16,185,129,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
                 <img 
                   src={IMG_CARD_VISITA} 
@@ -890,21 +1001,21 @@ const htmlContent = `<!DOCTYPE html>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
                 <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-emerald-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                   <span>🎟️</span>
-                  <span className="uppercase tracking-wider">Pase del Día</span>
+                  <span className="tracking-wider">Pase del Día</span>
                 </div>
 
                 <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-emerald-400/40 transition-colors">
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow-md">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     Quiero Visita
                   </h3>
                   
                   <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1">
+                    <span className="text-xs font-black text-emerald-300 group-hover:text-emerald-200 drop-shadow flex items-center gap-1">
                       Pase de Visita &rarr;
                     </span>
-                    <span className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="w-8 h-8 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                       ✓
                     </span>
                   </div>
@@ -914,7 +1025,7 @@ const htmlContent = `<!DOCTYPE html>
               {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
               <div 
                 onClick={() => setShowDirectAccessModal(true)}
-                className="group relative h-[380px] sm:h-[420px] rounded-3xl overflow-hidden border-2 border-amber-400/70 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
+                className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-amber-400/70 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
               >
                 <img 
                   src={IMG_CARD_HUELLA} 
@@ -924,21 +1035,21 @@ const htmlContent = `<!DOCTYPE html>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
                 <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                <div className="relative z-10 self-end px-3 py-1 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
+                <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                   <span>👆</span>
-                  <span className="uppercase tracking-wider">Acceso Directo</span>
+                  <span className="tracking-wider">Acceso Directo</span>
                 </div>
 
                 <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
+                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     Ya Tengo Membresía
                   </h3>
                   
                   <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                    <span className="text-xs font-black text-amber-300 group-hover:text-amber-200 drop-shadow flex items-center gap-1">
                       Validar Huella &rarr;
                     </span>
-                    <span className="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                       👆
                     </span>
                   </div>
@@ -1135,7 +1246,7 @@ const htmlContent = `<!DOCTYPE html>
                         onClick={() => setNewClientPaymentMethod('cash')}
                         className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
                           newClientPaymentMethod === 'cash'
-                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
                             : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                         }\`}
                       >
@@ -1146,7 +1257,7 @@ const htmlContent = `<!DOCTYPE html>
                         onClick={() => setNewClientPaymentMethod('card')}
                         className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
                           newClientPaymentMethod === 'card'
-                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
                             : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                         }\`}
                       >
@@ -1157,7 +1268,7 @@ const htmlContent = `<!DOCTYPE html>
                         onClick={() => setNewClientPaymentMethod('transfer')}
                         className={\`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer \${
                           newClientPaymentMethod === 'transfer'
-                            ? 'bg-amber-500 text-black border-amber-400 shadow-glow-gold'
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
                             : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                         }\`}
                       >
@@ -1193,7 +1304,7 @@ const htmlContent = `<!DOCTYPE html>
                             </p>
                             <span className={"text-[10px] font-black uppercase px-2 py-0.5 rounded-full " + (
                               newClientFingerprintEnrolled
-                                ? "bg-emerald-500 text-black shadow-glow-green"
+                                ? "bg-emerald-500 text-white font-black shadow-glow-green"
                                 : "bg-amber-500/30 text-amber-300 border border-amber-500/40"
                             )}>
                               {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Pendiente'}
@@ -1215,8 +1326,8 @@ const htmlContent = `<!DOCTYPE html>
                         }}
                         className={"px-3.5 py-2 rounded-xl text-xs font-black transition-all transform group-hover:scale-105 shrink-0 cursor-pointer " + (
                           newClientFingerprintEnrolled 
-                            ? "bg-emerald-500 text-black shadow-glow-green" 
-                            : "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-glow-gold"
+                            ? "bg-emerald-500 text-white font-black shadow-glow-green" 
+                            : "bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black shadow-glow-gold"
                         )}
                       >
                         {newClientFingerprintEnrolled ? '✓ Ver Escáner' : '⚡ Abrir Escáner'}
@@ -1234,7 +1345,7 @@ const htmlContent = `<!DOCTYPE html>
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-black shadow-glow-gold uppercase tracking-wider transition-all transform hover:scale-[1.02] cursor-pointer"
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-xs font-black text-white shadow-glow-gold uppercase tracking-wider transition-all transform hover:scale-[1.02] cursor-pointer"
                     >
                       Guardar e Ingresar
                     </button>
@@ -1307,7 +1418,7 @@ const htmlContent = `<!DOCTYPE html>
                         onClick={() => setSelectedFinger(f)}
                         className={"py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-center cursor-pointer " + (
                           selectedFinger === f
-                            ? "bg-cyan-500 text-black border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                            ? "bg-cyan-600 text-white font-bold border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                             : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white"
                         )}
                       >
@@ -1430,8 +1541,8 @@ const htmlContent = `<!DOCTYPE html>
                     disabled={biometricScanState === 'scanning'}
                     className={"w-full py-3.5 sm:py-4 rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider shadow-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer " + (
                       biometricScanState === 'completed'
-                        ? "bg-emerald-500 text-black shadow-glow-green"
-                        : "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-black shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                        ? "bg-emerald-500 text-white font-black shadow-glow-green"
+                        : "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 text-white font-black shadow-[0_0_25px_rgba(245,158,11,0.5)]"
                     )}
                   >
                     {biometricScanState === 'scanning' ? (
@@ -1524,7 +1635,7 @@ const htmlContent = `<!DOCTYPE html>
                     <button
                       type="button"
                       onClick={handleRegisterVisit}
-                      className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-black text-black shadow-glow-green uppercase tracking-wider cursor-pointer"
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-xs font-black text-white shadow-glow-green uppercase tracking-wider cursor-pointer"
                     >
                       🔓 Conceder Acceso
                     </button>
@@ -1643,7 +1754,7 @@ const htmlContent = `<!DOCTYPE html>
                           setShowDirectAccessModal(false);
                         }
                       }}
-                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold cursor-pointer"
+                      className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold cursor-pointer"
                     >
                       Verificar
                     </button>
@@ -1692,7 +1803,7 @@ const htmlContent = `<!DOCTYPE html>
                   <span>Total hoy: <strong className="text-white font-mono">{accessLogs.length}</strong></span>
                   <button 
                     onClick={() => setShowHistoryModal(false)}
-                    className="px-4 py-2 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-white font-bold rounded-xl transition-colors cursor-pointer"
                   >
                     Cerrar
                   </button>
@@ -1745,7 +1856,7 @@ const htmlContent = `<!DOCTYPE html>
                         checkServer();
                         setShowConfigModal(false);
                       }}
-                      className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+                      className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-white font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer"
                     >
                       Guardar y Probar
                     </button>

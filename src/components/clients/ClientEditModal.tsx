@@ -340,6 +340,19 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
           {activeTab === 'personal' && (
             <div className="space-y-4 animate-fade-in">
               {/* Basic Fields Grid */}
+              {/* Badge indicando conexión directa con control de acceso */}
+              <div className="p-3 bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent rounded-xl border border-emerald-500/30 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Sincronizado con Torniquetes y Control de Acceso</p>
+                  <p className="text-[11px] text-zinc-300">
+                    Cualquier cambio a la Cédula/RFID o Membresía se actualiza de inmediato en los lectores de acceso.
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-gym-muted block mb-1">
@@ -364,6 +377,21 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
                 </div>
 
                 <div>
+                  <label className="text-xs font-semibold text-amber-400 block mb-1 flex items-center justify-between">
+                    <span>Cédula / Tarjeta RFID / DNI *</span>
+                    <span className="text-[10px] text-gym-muted font-normal">Clave de Torniquete / RFID</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={documentId}
+                    onChange={(e) => setDocumentId(e.target.value)}
+                    placeholder="Ej. 10984523 o tarjeta RFID"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-amber-500/40 font-mono text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40"
+                  />
+                </div>
+
+                <div>
                   <label className="text-xs font-semibold text-gym-muted block mb-1">
                     Teléfono / WhatsApp
                   </label>
@@ -372,6 +400,19 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+52 55 9876 5432"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gym-muted block mb-1">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="cliente@email.com"
                     className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-blue-400"
                   />
                 </div>
