@@ -732,6 +732,18 @@ const htmlContent = `<!DOCTYPE html>
       return (
         <div onDoubleClick={(e) => { if (e.target === e.currentTarget) setShowConfigModal(true); }} className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-center items-center p-3 sm:p-5 lg:p-6">
 
+                    {/* BADGE HASTA ARRIBA: TERMINAL DE ACCESO • FITNESS LEGENDS */}
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+            <div 
+              onDoubleClick={() => setShowConfigModal(true)} 
+              title="Doble clic para configuración" 
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 shadow-xl cursor-pointer select-none whitespace-nowrap"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+            </div>
+          </div>
+
           {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
           {!isFullScreen && (
             <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
@@ -818,18 +830,7 @@ const htmlContent = `<!DOCTYPE html>
                     {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
           <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center my-auto relative z-10 px-2">
 
-            {/* Main Welcome Header (Oculto en Pantalla Completa) */}
-            {!isFullScreen && (
-              <div className="text-center mb-6">
-                <div onDoubleClick={() => setShowConfigModal(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-                  Toca una de las 3 opciones para gestionar tu acceso a la sala
-                </p>
-              </div>
-            )}
+
 
             {/* The 3 Clean High-Impact Options Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
@@ -852,9 +853,6 @@ const htmlContent = `<!DOCTYPE html>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                     Cliente Nuevo
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -885,9 +883,6 @@ const htmlContent = `<!DOCTYPE html>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                     Quiero Visita
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -918,9 +913,6 @@ const htmlContent = `<!DOCTYPE html>
                   <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                     Ya Tengo Membresía
                   </h3>
-                  <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                    Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
-                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">

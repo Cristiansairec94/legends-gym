@@ -146,6 +146,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
+    if (localStorage.getItem('legends_terminal_bg_version') !== 'v3_cinematic') {
+      localStorage.setItem('legends_terminal_bg_version', 'v3_cinematic');
+      localStorage.setItem('legends_terminal_bg', gymBg);
+      return gymBg;
+    }
     return localStorage.getItem('legends_terminal_bg') || gymBg;
   });
 
@@ -655,6 +660,18 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       </svg>
 
       
+            {/* BADGE HASTA ARRIBA: TERMINAL DE ACCESO • FITNESS LEGENDS */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+        <div 
+          onDoubleClick={() => setIsConfigModalOpen(true)} 
+          title="Doble clic para configuración" 
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 shadow-xl cursor-pointer select-none whitespace-nowrap"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+        </div>
+      </div>
+
       {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
       {!isFullScreen && (
         <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
@@ -679,8 +696,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           style={{
             filter: 'url(#ultra-sharp-8k-terminal) brightness(0.98) contrast(1.08) saturate(1.08)',
             imageRendering: '-webkit-optimize-contrast',
-            transform: 'scale(1.06)',
-            objectPosition: 'center 70%',
+            objectPosition: 'center 45%',
           }}
           className="w-full h-full object-cover"
         />
@@ -739,18 +755,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
 
         
-        {/* Main Welcome Header (Oculto en Pantalla Completa) */}
-        {!isFullScreen && (
-          <div className="text-center mb-6">
-            <div onDoubleClick={() => setIsConfigModalOpen(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-              Toca una de las 3 opciones para gestionar tu acceso a la sala
-            </p>
-          </div>
-        )}
+
 
         {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
@@ -779,9 +784,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Cliente Nuevo
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
-              </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -818,9 +820,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                 Quiero Visita
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
-              </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -857,9 +856,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Ya Tengo Membresía
               </h3>
-              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
-                Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
-              </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
@@ -872,13 +868,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             </div>
           </div>
 
-        </div>
-
-        {/* Bottom subtle hint */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-          </p>
         </div>
 
       </div>
