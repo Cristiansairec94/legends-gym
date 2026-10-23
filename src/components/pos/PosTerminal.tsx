@@ -305,7 +305,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
             </div>
             <p className="text-[10px] text-amber-400 font-bold hidden sm:block">
-              🏪 Sucursal Matriz • Don Toño Brito
+              🏪 Sucursal Matriz
             </p>
           </div>
         </div>
