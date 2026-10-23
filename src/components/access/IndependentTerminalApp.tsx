@@ -752,22 +752,22 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         )}
 
         {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 w-full">
 
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
           >
-            {/* Fotografía de Gym Real: Cliente Nuevo */}
-            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-500/40 shadow-lg">
+            {/* Fotografía de Gym: Cliente Nuevo */}
+            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-500/40 shadow-lg">
               <img 
                 src={cardClienteNuevo} 
                 alt="Cliente Nuevo Gym" 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-2.5 right-2.5">
                 <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black shadow-md tracking-wider">
                   Inscripción
                 </span>
@@ -775,17 +775,16 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             </div>
 
             <div>
-              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+              <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Cliente Nuevo
               </h3>
-              
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+            <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
               <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
                 Registrarme &rarr;
               </span>
-              <span className="w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+              <span className="w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                 +
               </span>
             </div>
@@ -794,17 +793,17 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-green overflow-hidden"
           >
-            {/* Fotografía de Gym Real: Pase de Visita */}
-            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-emerald-500/40 shadow-lg">
+            {/* Fotografía de Gym: Pase de Visita */}
+            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-emerald-500/40 shadow-lg">
               <img 
                 src={cardVisita} 
                 alt="Pase de Visita Gym" 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-2.5 right-2.5">
                 <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500 text-black shadow-md tracking-wider">
                   Pase del Día
                 </span>
@@ -812,17 +811,16 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             </div>
 
             <div>
-              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
+              <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                 Quiero Visita
               </h3>
-              
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+            <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
               <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1">
                 Pase de Visita &rarr;
               </span>
-              <span className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+              <span className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                 ✓
               </span>
             </div>
@@ -831,17 +829,17 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
           >
-            {/* Fotografía de Gym Real: Lector Biométrico de Huella */}
-            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-400/60 shadow-lg">
+            {/* Fotografía de Gym: Lector Biométrico de Huella */}
+            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-400/60 shadow-lg">
               <img 
                 src={cardHuella} 
                 alt="Lector Biométrico de Huella Gym" 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95 group-hover:brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-2.5 right-2.5">
                 <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse shadow-md">
                   Acceso Directo
                 </span>
@@ -849,17 +847,16 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             </div>
 
             <div>
-              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
+              <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Ya Tengo Membresía
               </h3>
-              
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+            <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
               <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
                 Validar Huella &rarr;
               </span>
-              <span className="w-9 h-9 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+              <span className="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                 👆
               </span>
             </div>
