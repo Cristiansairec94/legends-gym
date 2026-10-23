@@ -122,6 +122,9 @@ const htmlContent = `<!DOCTYPE html>
     const BG_PHOTO_1 = "${img1Base64}";
     const BG_PHOTO_2 = "${img2Base64}";
     const LOGO_IMG = "${logoBase64}";
+    const IMG_CARD_NUEVO = "${cardNuevoBase64}";
+    const IMG_CARD_VISITA = "${cardVisitaBase64}";
+    const IMG_CARD_HUELLA = "${cardHuellaBase64}";
 
     // Web Audio Synthesizer
     class SoundEffects {
@@ -278,7 +281,7 @@ const htmlContent = `<!DOCTYPE html>
         return parseInt(localStorage.getItem('legends_bg_choice') || '0', 10);
       });
       const [bgDarkness, setBgDarkness] = useState(() => {
-        return parseFloat(localStorage.getItem('legends_bg_darkness') || '0.25');
+        return parseFloat(localStorage.getItem('legends_bg_darkness') || '0.05');
       });
 
       const [members, setMembers] = useState(() => {
@@ -772,7 +775,7 @@ const htmlContent = `<!DOCTYPE html>
               className="absolute inset-0 bg-black backdrop-blur-[0.5px] transition-opacity duration-300"
               style={{ opacity: bgDarkness }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
           </div>
 
           {/* TURNSTILE PASS ACTIVE BANNER */}

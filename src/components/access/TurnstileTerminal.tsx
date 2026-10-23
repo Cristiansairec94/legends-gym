@@ -36,8 +36,8 @@ export const TurnstileTerminal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v5_leyends_gym_studio_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v5_leyends_gym_studio_8k');
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v7_fixed_bright_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v7_fixed_bright_8k');
       localStorage.setItem('legends_terminal_bg', gymBg);
       return gymBg;
     }
@@ -134,21 +134,7 @@ export const TurnstileTerminal: React.FC = () => {
   return (
     <div className={`space-y-6 relative rounded-3xl overflow-hidden p-3 sm:p-5 ${isFullScreen ? 'p-6 min-h-screen' : ''}`}>
       
-            {/* Hardware-accelerated 8K Ultra-Sharp Filter definition */}
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }} aria-hidden="true">
-        <defs>
-          <filter id="ultra-sharp-8k-turnstile" x="-10%" y="-10%" width="120%" height="120%">
-            <feConvolveMatrix 
-              order="3" 
-              preserveAlpha="true" 
-              kernelMatrix="
-                0 -0.25 0 
-                -0.25 2.0 -0.25 
-                0 -0.25 0" 
-            />
-          </filter>
-        </defs>
-      </svg>
+            
 
       {/* Real Gym Background Photo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
@@ -156,12 +142,12 @@ export const TurnstileTerminal: React.FC = () => {
           src={bgImage}
           alt="Fitness Legends Gym Background"
           style={{
-            filter: 'url(#ultra-sharp-8k-turnstile) brightness(0.68) contrast(1.18) saturate(1.10)',
-            imageRendering: '-webkit-optimize-contrast',
-            transform: 'translateZ(0)',
+            filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
+            objectPosition: 'center center',
           }}
           className="w-full h-full object-cover object-center"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
         {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
         <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] pointer-events-none" />
 

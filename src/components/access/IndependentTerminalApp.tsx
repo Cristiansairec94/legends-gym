@@ -147,8 +147,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v5_leyends_gym_studio_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v5_leyends_gym_studio_8k');
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v7_fixed_bright_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v7_fixed_bright_8k');
       localStorage.setItem('legends_terminal_bg', gymBg);
       return gymBg;
     }
@@ -651,21 +651,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   return (
     <div className="relative min-h-screen h-screen w-full overflow-y-auto text-gym-text flex flex-col justify-between font-sans select-none p-3 sm:p-4 lg:p-5 gap-3">
       
-            {/* Hardware-accelerated 8K Ultra-Sharp Filter definition */}
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }} aria-hidden="true">
-        <defs>
-          <filter id="ultra-sharp-8k-terminal" x="-10%" y="-10%" width="120%" height="120%">
-            <feConvolveMatrix 
-              order="3" 
-              preserveAlpha="true" 
-              kernelMatrix="
-                0 -0.25 0 
-                -0.25 2.0 -0.25 
-                0 -0.25 0" 
-            />
-          </filter>
-        </defs>
-      </svg>
+            
 
       
       {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
@@ -690,13 +676,13 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           src={bgImage}
           alt="Fitness Legends Gym Background"
           style={{
-            filter: 'url(#ultra-sharp-8k-terminal) brightness(0.98) contrast(1.08) saturate(1.08)',
-            imageRendering: '-webkit-optimize-contrast',
-            transform: 'scale(1.06)',
-            objectPosition: 'center 70%',
+            filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
+            objectPosition: 'center center',
           }}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
+        {/* Subtle vignette for contrast and eye comfort */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
         {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
         
 
