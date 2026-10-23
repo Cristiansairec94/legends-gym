@@ -670,6 +670,20 @@ const htmlContent = `<!DOCTYPE html>
       // Global Hardware Barcode / RFID Keyboard Wedge Listener
       useEffect(() => {
         const handleKeyDown = (e) => {
+          if (e.key === 'Escape') {
+            if (showNewMemberModal || showVisitModal || showDirectAccessModal || showConfigModal) {
+              setShowNewMemberModal(false);
+              setShowVisitModal(false);
+              setShowDirectAccessModal(false);
+              setShowConfigModal(false);
+              return;
+            }
+            if (document.fullscreenElement) {
+              document.exitFullscreen().catch(() => {});
+            }
+            setIsFullScreen(false);
+            return;
+          }
           if (e.key === 'F2') { setShowConfigModal(true); return; }
           if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
           const now = Date.now();
@@ -694,6 +708,15 @@ const htmlContent = `<!DOCTYPE html>
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, [members, serverOnline, serverUrl]);
 
+            // Synchronize Fullscreen state on ESC or browser toggle
+      useEffect(() => {
+        const handleFsChange = () => {
+          setIsFullScreen(Boolean(document.fullscreenElement));
+        };
+        document.addEventListener('fullscreenchange', handleFsChange);
+        return () => document.removeEventListener('fullscreenchange', handleFsChange);
+      }, []);
+
       const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -708,6 +731,23 @@ const htmlContent = `<!DOCTYPE html>
 
       return (
         <div onDoubleClick={(e) => { if (e.target === e.currentTarget) setShowConfigModal(true); }} className="relative min-h-screen h-screen w-full overflow-y-auto bg-black text-[#F4F4F6] flex flex-col justify-center items-center p-3 sm:p-5 lg:p-6">
+
+          {/* BOTÓN PANTALLA COMPLETA (VISIBLE SOLO CUANDO NO ESTÁ EN PANTALLA COMPLETA) */}
+          {!isFullScreen && (
+            <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+              <button
+                onClick={toggleFullscreen}
+                className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+                title="Activar Pantalla Completa"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+                <span>PANTALLA COMPLETA</span>
+              </button>
+            </div>
+          )}
+
           
           {/* 100% COVER REAL WHATSAPP GYM PHOTO BACKGROUND */}
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -778,19 +818,18 @@ const htmlContent = `<!DOCTYPE html>
                     {/* MAIN CENTER: THE 3 HIGH-IMPACT CLEAN OPTIONS (NO BLACK CONTAINER BOX!) */}
           <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center my-auto relative z-10 px-2">
 
-            {/* Main Welcome Header */}
-            <div className="text-center mb-6">
-              <div onDoubleClick={() => setShowConfigModal(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+            {/* Main Welcome Header (Oculto en Pantalla Completa) */}
+            {!isFullScreen && (
+              <div className="text-center mb-6">
+                <div onDoubleClick={() => setShowConfigModal(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
+                  Toca una de las 3 opciones para gestionar tu acceso a la sala
+                </p>
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-                SELECCIONA TU TIPO DE INGRESO
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-                Toca una de las 3 opciones para gestionar tu acceso a la sala
-              </p>
-            </div>
+            )}
 
             {/* The 3 Clean High-Impact Options Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">

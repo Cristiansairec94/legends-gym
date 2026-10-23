@@ -660,8 +660,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
           <button
             onClick={toggleFullScreen}
-            className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/30 transition-all cursor-pointer transform hover:scale-105 active:scale-95"
-            title="Activar Pantalla Completa (Ocupa toda la pantalla sin menús. Presiona ESC para salir)"
+            className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/30 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+            title="Activar Pantalla Completa"
           >
             <Maximize2 className="w-4 h-4" />
             <span>PANTALLA COMPLETA</span>
@@ -669,15 +669,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         </div>
       )}
 
-      {/* HINT FLOTANTE TEMPORAL AL ENTRAR A PANTALLA COMPLETA */}
-      {showEscHint && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="px-5 py-2.5 rounded-full bg-black/85 backdrop-blur-md border border-amber-400/60 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl">
-            <span className="text-amber-400">💡</span>
-            <span>Modo Pantalla Completa Activo • Presiona <kbd className="px-2 py-0.5 rounded bg-white/20 text-amber-300 font-mono text-xs">ESC</kbd> para volver</span>
-          </div>
-        </div>
-      )}
+
 
       {/* Real Gym Background Photo */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -747,121 +739,147 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
 
         
-        {/* Main Welcome Header */}
-        <div className="text-center mb-6">
-          {!isFullScreen && (
+        {/* Main Welcome Header (Oculto en Pantalla Completa) */}
+        {!isFullScreen && (
+          <div className="text-center mb-6">
             <div onDoubleClick={() => setIsConfigModalOpen(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
             </div>
-          )}
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-            SELECCIONA TU TIPO DE INGRESO
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-            Toca una de las 3 opciones para gestionar tu acceso a la sala
-          </p>
-        </div>
+            <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
+              Toca una de las 3 opciones para gestionar tu acceso a la sala
+            </p>
+          </div>
+        )}
 
-        {/* The 3 Clean High-Impact Options Grid with Full-Card 4K Gym Action Photos */}
+        {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 w-full">
 
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative h-96 sm:h-[430px] rounded-3xl overflow-hidden border-2 border-white/30 hover:border-amber-400 transition-all duration-500 shadow-2xl flex flex-col justify-end p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
           >
-            {/* Foto 4K a Pantalla Completa de la Tarjeta */}
-            <img 
-              src={cardClienteNuevo} 
-              alt="Atleta Fitness Cliente Nuevo" 
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
-            />
-            {/* Degradado cinematográfico para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-
-            {/* Badge superior estilo Gym */}
-            <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
-              <span>💪</span>
-              <span className="uppercase tracking-wider">Nuevo</span>
+            {/* Fotografía de Gym Real: Cliente Nuevo */}
+            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-500/40 shadow-lg">
+              <img 
+                src={cardClienteNuevo} 
+                alt="Cliente Nuevo Gym" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute top-3 right-3">
+                <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black shadow-md tracking-wider">
+                  Inscripción
+                </span>
+              </div>
             </div>
 
-            {/* Textos */}
-            <div className="relative z-10 text-left">
-              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Cliente Nuevo
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow">
-                Inscripción y primera membresía
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                ¿Primera vez en el gimnasio? Regístrate aquí, elige tu membresía y enrola tu huella digital para comenzar a entrenar.
               </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                Registrarme &rarr;
+              </span>
+              <span className="w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                +
+              </span>
             </div>
           </div>
 
           {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative h-96 sm:h-[430px] rounded-3xl overflow-hidden border-2 border-white/30 hover:border-emerald-400 transition-all duration-500 shadow-2xl flex flex-col justify-end p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green"
+            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green overflow-hidden"
           >
-            {/* Foto 4K a Pantalla Completa de la Tarjeta */}
-            <img 
-              src={cardVisita} 
-              alt="Mancuernas de Gym Pase de Visita" 
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
-            />
-            {/* Degradado cinematográfico para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-
-            {/* Badge superior estilo Gym */}
-            <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-emerald-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
-              <span>🏋️‍♂️</span>
-              <span className="uppercase tracking-wider">Pase $5</span>
+            {/* Fotografía de Gym Real: Pase de Visita */}
+            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-emerald-500/40 shadow-lg">
+              <img 
+                src={cardVisita} 
+                alt="Pase de Visita Gym" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute top-3 right-3">
+                <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-emerald-500 text-black shadow-md tracking-wider">
+                  Pase del Día
+                </span>
+              </div>
             </div>
 
-            {/* Textos */}
-            <div className="relative z-10 text-left">
-              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider group-hover:text-emerald-400 transition-colors drop-shadow-md">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-emerald-400 transition-colors drop-shadow">
                 Quiero Visita
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow">
-                Entrenamiento por un día
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                Entrenamiento por 1 día o clase de prueba sin contrato ni mensualidad. Obtén acceso inmediato a la sala de entrenamiento.
               </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 flex items-center gap-1">
+                Pase de Visita &rarr;
+              </span>
+              <span className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                ✓
+              </span>
             </div>
           </div>
 
-          {/* Opción 3: YA SOY CLIENTE (REGISTRA TU HUELLA) */}
+          {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative h-96 sm:h-[430px] rounded-3xl overflow-hidden border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-500 shadow-2xl shadow-glow-gold/40 flex flex-col justify-end p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold"
+            className="group relative p-5 sm:p-6 rounded-3xl bg-black/75 hover:bg-black/90 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
           >
-            {/* Foto 4K a Pantalla Completa de la Tarjeta */}
-            <img 
-              src={cardHuella} 
-              alt="Lector Biométrico de Huella Gym" 
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
-            />
-            {/* Degradado cinematográfico para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-
-            {/* Badge superior estilo Gym */}
-            <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-amber-500/90 backdrop-blur-md flex items-center gap-1.5 text-black font-black text-xs shadow-lg">
-              <span>👆</span>
-              <span className="uppercase tracking-wider">Huella</span>
+            {/* Fotografía de Gym Real: Lector Biométrico de Huella */}
+            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden mb-4 border border-amber-400/60 shadow-lg">
+              <img 
+                src={cardHuella} 
+                alt="Lector Biométrico de Huella Gym" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute top-3 right-3">
+                <span className="text-[10px] uppercase font-black px-2.5 py-1 rounded-full bg-amber-500 text-black font-mono font-bold animate-pulse shadow-md">
+                  Acceso Directo
+                </span>
+              </div>
             </div>
 
-            {/* Textos */}
-            <div className="relative z-10 text-left">
-              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider group-hover:text-amber-400 transition-colors drop-shadow-md">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wide group-hover:text-amber-400 transition-colors drop-shadow">
                 Ya Tengo Membresía
               </h3>
-              <span className="text-xs sm:text-sm font-bold text-amber-300 mt-1 uppercase tracking-wider drop-shadow block">
-                Registra tu Huella
+              <p className="text-xs text-gray-200 mt-2 leading-relaxed font-medium">
+                Acceso instantáneo para socios registrados. Posa tu huella en el lector o escribe tu cédula para abrir el torniquete de inmediato.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                Validar Huella &rarr;
+              </span>
+              <span className="w-9 h-9 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                👆
               </span>
             </div>
           </div>
 
         </div>
 
-        
+        {/* Bottom subtle hint */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
+          </p>
+        </div>
 
       </div>
 
