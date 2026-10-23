@@ -681,86 +681,78 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           }}
           className="w-full h-full object-cover object-center"
         />
-        {/* Subtle vignette for contrast and eye comfort */}
+        {/* Transparent dark vignette so neon sign and photo are 100% visible */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
-        {/* Soft Eye-Care anti-glare shield so neon lights do not hurt the eyes */}
-        
-
+        {/* Spotlight cálido ámbar/dorado centrado exactamente en el logo GYM LEGENDS en la pared para que resalte con máxima fuerza */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.22)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
+        {/* Degradado oscuro inferior para que las tarjetas de opciones resalten con nitidez y contraste profesional */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+        {/* Viñeta sutil superior */}
+        <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
       </div>
 
+      {/* Turnstile Relay Active Banner when open */}
+      {relayRemainingSeconds > 0 && (
+        <div className="w-full max-w-2xl mx-auto mb-2 py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-500/30 via-emerald-500/40 to-emerald-500/30 border border-emerald-400/80 shadow-glow-green text-center animate-in zoom-in-95 duration-200 z-20 shrink-0">
+          <div className="flex items-center justify-center gap-2.5 text-emerald-200 font-black text-sm uppercase tracking-wider">
+            <CheckCircle2 className="w-5 h-5 text-emerald-300 animate-spin" />
+            <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
+            <span className="bg-emerald-400 text-black px-2.5 py-0.5 rounded-full font-mono text-xs font-black">
+              {relayRemainingSeconds}s
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Verified Client Alert Banner */}
+      {lastVerifiedClient && scanStatus !== 'idle' && (
+        <div className={'w-full max-w-2xl mx-auto mb-2 p-4 rounded-2xl border flex items-center justify-between gap-4 animate-in zoom-in-95 duration-200 shadow-2xl z-20 shrink-0 ' + (
+          lastVerifiedClient.status === 'granted'
+            ? 'bg-emerald-950/80 border-emerald-400 text-white shadow-glow-green'
+            : 'bg-red-950/80 border-red-400 text-white shadow-glow-red'
+        )}>
+          <div className="flex items-center gap-3">
+            <img 
+              src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
+              alt={lastVerifiedClient.name} 
+              className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md"
+            />
+            <div>
+              <h4 className="text-base font-black text-white">{lastVerifiedClient.name}</h4>
+              <p className="text-xs text-gray-200">{lastVerifiedClient.reason}</p>
+              {lastVerifiedClient.plan && (
+                <span className="text-[11px] font-mono text-amber-300 font-bold">
+                  Plan: {lastVerifiedClient.plan}
+                </span>
+              )}
+            </div>
+          </div>
+          <button 
+            onClick={() => { setLastVerifiedClient(null); setScanStatus('idle'); }}
+            className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-gray-300 hover:text-white"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {/* ESPACIO SUPERIOR / CENTRAL TOTALMENTE DESPEJADO: EL LOGO "GYM LEGENDS" DE LA FOTO RESALTA 100% VISIBLE Y PROTAGONISTA */}
+      <div className="flex-1 w-full min-h-[140px] sm:min-h-[200px] pointer-events-none" />
+
       {/* Main Container: 3 Clear Intuitive Access Options */}
-      <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center py-4 px-4 relative z-10">
-
-        {/* Turnstile Relay Active Banner when open */}
-        {relayRemainingSeconds > 0 && (
-          <div className="w-full max-w-2xl mb-4 py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-500/30 via-emerald-500/40 to-emerald-500/30 border border-emerald-400/80 shadow-glow-green text-center animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-center gap-2.5 text-emerald-200 font-black text-sm uppercase tracking-wider">
-              <CheckCircle2 className="w-5 h-5 text-emerald-300 animate-spin" />
-              <span>ACCESO CONCEDIDO (PASO LIBRE)</span>
-              <span className="bg-emerald-400 text-black px-2.5 py-0.5 rounded-full font-mono text-xs font-black">
-                {relayRemainingSeconds}s
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Verified Client Alert Banner */}
-        {lastVerifiedClient && scanStatus !== 'idle' && (
-          <div className={'w-full max-w-2xl mb-4 p-4 rounded-2xl border flex items-center justify-between gap-4 animate-in zoom-in-95 duration-200 shadow-2xl ' + (
-            lastVerifiedClient.status === 'granted'
-              ? 'bg-emerald-950/80 border-emerald-400 text-white shadow-glow-green'
-              : 'bg-red-950/80 border-red-400 text-white shadow-glow-red'
-          )}>
-            <div className="flex items-center gap-3">
-              <img 
-                src={getGymAvatar(lastVerifiedClient.name, lastVerifiedClient.avatarUrl)} 
-                alt={lastVerifiedClient.name} 
-                className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md"
-              />
-              <div>
-                <h4 className="text-base font-black text-white">{lastVerifiedClient.name}</h4>
-                <p className="text-xs text-gray-200">{lastVerifiedClient.reason}</p>
-                {lastVerifiedClient.plan && (
-                  <span className="text-[11px] font-mono text-amber-300 font-bold">
-                    Plan: {lastVerifiedClient.plan}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button 
-              onClick={() => { setLastVerifiedClient(null); setScanStatus('idle'); }}
-              className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-gray-300 hover:text-white"
-            >
-              Cerrar
-            </button>
-          </div>
-        )}
-
+      <div className="w-full max-w-5xl mx-auto shrink-0 relative z-10 px-3 pb-3 sm:pb-6 mt-auto">
 
         
-        {/* Main Welcome Header (Oculto en Pantalla Completa) */}
-        {!isFullScreen && (
-          <div className="text-center mb-6">
-            <div onDoubleClick={() => setIsConfigModalOpen(true)} title="Doble clic para configuración" className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-400 mb-2.5 shadow-md cursor-pointer select-none">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>TERMINAL DE ACCESO • FITNESS LEGENDS</span>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-200 mt-1 font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]">
-              Toca una de las 3 opciones para gestionar tu acceso a la sala
-            </p>
-          </div>
-        )}
-
         {/* The 3 Clean High-Impact Options Grid with Real Gym Images */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 w-full">
 
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-amber-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
           >
             {/* Fotografía de Gym: Cliente Nuevo */}
-            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-500/40 shadow-lg">
+            <div className="relative w-full h-36 sm:h-40 lg:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-500/40 shadow-lg">
               <img 
                 src={cardClienteNuevo} 
                 alt="Cliente Nuevo Gym" 
@@ -793,10 +785,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 2: QUIERO VISITA */}
           <div 
             onClick={() => setShowVisitModal(true)}
-            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-green overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-white/20 hover:border-emerald-400 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-green overflow-hidden"
           >
             {/* Fotografía de Gym: Pase de Visita */}
-            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-emerald-500/40 shadow-lg">
+            <div className="relative w-full h-36 sm:h-40 lg:h-44 rounded-2xl overflow-hidden mb-3 border border-emerald-500/40 shadow-lg">
               <img 
                 src={cardVisita} 
                 alt="Pase de Visita Gym" 
@@ -829,10 +821,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col cursor-pointer transform hover:-translate-y-1.5 hover:shadow-glow-gold overflow-hidden"
+            className="group relative p-4 sm:p-5 rounded-3xl bg-black/80 hover:bg-black/92 backdrop-blur-xl border-2 border-amber-400/80 hover:border-amber-400 transition-all duration-300 shadow-2xl shadow-glow-gold/40 flex flex-col justify-between cursor-pointer transform hover:-translate-y-2 hover:shadow-glow-gold overflow-hidden"
           >
             {/* Fotografía de Gym: Lector Biométrico de Huella */}
-            <div className="relative w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-400/60 shadow-lg">
+            <div className="relative w-full h-36 sm:h-40 lg:h-44 rounded-2xl overflow-hidden mb-3 border border-amber-400/60 shadow-lg">
               <img 
                 src={cardHuella} 
                 alt="Lector Biométrico de Huella Gym" 
@@ -865,7 +857,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         </div>
 
         {/* Bottom subtle hint */}
-        <div className="mt-6 text-center">
+        <div className="mt-3 text-center">
           <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
             💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
           </p>
