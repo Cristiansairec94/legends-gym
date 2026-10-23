@@ -286,7 +286,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 min-h-0 overflow-hidden items-stretch">
         
         {/* LEFT COLUMN: Header, Search, Action Buttons & Products Grid */}
-        <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
+        <div className="lg:col-span-7 xl:col-span-8 2xl:col-span-8 flex flex-col gap-2 min-h-0 overflow-hidden">
           
           {/* 1. TOP SUB-HEADER BAR (Integrated in Left Workspace) */}
           <div className="bg-gradient-to-r from-[#14151e] via-[#121319] to-[#14151e] rounded-2xl border border-white/[0.08] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 shadow-md shrink-0">
@@ -307,7 +307,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
 
             {/* Status Indicators Strip */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               
               {/* Sincronizado Pill */}
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold text-xs shadow-sm">
@@ -346,109 +346,120 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </div>
           
           {/* Integrated Search & Actions Toolbar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap xl:flex-nowrap">
-            {/* Search Input */}
-            <div className="relative flex-1 min-w-[150px]">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (search.trim()) {
-                      handleProductScanned(search.trim());
+          <div className="flex flex-col gap-2 shrink-0">
+            
+            {/* Top Toolbar Row: Search Input + Categories Selector */}
+            <div className="flex items-center gap-2">
+              {/* Search Input */}
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (search.trim()) {
+                        handleProductScanned(search.trim());
+                      }
                     }
-                  }
-                }}
-                placeholder="Buscar producto, sabor o código..."
-                className="w-full pl-9 pr-8 py-2 bg-gradient-to-r from-[#14151d] to-[#111218] rounded-xl border border-white/[0.08] text-xs sm:text-sm text-white placeholder-zinc-500 shadow-inner focus:outline-none focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 transition-all"
-              />
-              {search && (
-                <button 
-                  onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white transition-colors"
+                  }}
+                  placeholder="Buscar producto, sabor o código..."
+                  className="w-full pl-10 pr-9 py-2 bg-gradient-to-r from-[#14151d] to-[#111218] rounded-xl border border-white/[0.08] text-xs sm:text-sm text-white placeholder-zinc-500 shadow-inner focus:outline-none focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 transition-all"
+                />
+                {search && (
+                  <button 
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Categorías Button with dropdown */}
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#14151d] to-[#111218] hover:bg-[#1a1b24] border border-white/[0.08] hover:border-white/20 text-xs sm:text-sm font-bold text-zinc-200 transition-all shadow-sm"
                 >
-                  ✕
+                  <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="truncate max-w-[160px]">
+                    {categories.find(c => c.id === selectedCategory)?.label || 'Categorías'}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                 </button>
-              )}
-            </div>
 
-            {/* Barcode Scanner Active Indicator Pill */}
-            <div 
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
-                flashScanner 
-                  ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
-                  : 'bg-gradient-to-r from-[#14151d] to-[#111218] text-emerald-400 border-emerald-500/30'
-              }`}
-              title="Lector de código de barras USB/Bluetooth en línea. Escanea cualquier código en cualquier momento y se agregará directamente a la caja de cobro."
-            >
-              <ScanLine className={`w-3.5 h-3.5 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
-              <span className="hidden sm:inline">Lector Activo</span>
-            </div>
-
-            {/* Categorías Button with dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-[#14151d] to-[#111218] hover:bg-[#1a1b24] border border-white/[0.08] hover:border-white/20 text-xs sm:text-sm font-bold text-zinc-200 transition-all shadow-sm shrink-0"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
-                <span className="truncate max-w-[125px]">
-                  {categories.find(c => c.id === selectedCategory)?.label || 'Categorías'}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
-              </button>
-
-              {/* Categorías Dropdown Menu */}
-              {isCategoryOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-56 bg-[#14151d]/95 backdrop-blur-xl border border-white/[0.1] rounded-2xl shadow-2xl p-1.5 z-30 animate-fade-in divide-y divide-white/[0.05]">
-                  <div className="py-1">
-                    {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => {
-                          setSelectedCategory(cat.id);
-                          setIsCategoryOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between transition-colors ${
-                          selectedCategory === cat.id
-                            ? 'bg-amber-400/15 text-amber-400 font-black'
-                            : 'text-zinc-300 hover:bg-white/[0.05]'
-                        }`}
-                      >
-                        <span>{cat.label}</span>
-                        {selectedCategory === cat.id && <Check className="w-3.5 h-3.5" />}
-                      </button>
-                    ))}
+                {/* Categorías Dropdown Menu */}
+                {isCategoryOpen && (
+                  <div className="absolute top-full right-0 mt-1.5 w-60 bg-[#14151d]/95 backdrop-blur-xl border border-white/[0.1] rounded-2xl shadow-2xl p-1.5 z-30 animate-fade-in divide-y divide-white/[0.05]">
+                    <div className="py-1">
+                      {categories.map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => {
+                            setSelectedCategory(cat.id);
+                            setIsCategoryOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between transition-colors ${
+                            selectedCategory === cat.id
+                              ? 'bg-amber-400/15 text-amber-400 font-black'
+                              : 'text-zinc-300 hover:bg-white/[0.05]'
+                          }`}
+                        >
+                          <span>{cat.label}</span>
+                          {selectedCategory === cat.id && <Check className="w-3.5 h-3.5" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* $ Movimientos Button */}
-            <button
-              onClick={() => setShowMovementsModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0"
-            >
-              <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px]">
-                $
-              </span>
-              <span>Movimientos</span>
-            </button>
+            {/* Bottom Toolbar Row: Lector Activo + Movimientos + Cerrar Turno */}
+            <div className="flex items-center justify-between gap-2">
+              {/* Barcode Scanner Active Indicator Pill */}
+              <div 
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
+                  flashScanner 
+                    ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
+                    : 'bg-gradient-to-r from-[#14151d] to-[#111218] text-emerald-400 border-emerald-500/30'
+                }`}
+                title="Lector de código de barras USB/Bluetooth en línea. Escanea cualquier código en cualquier momento y se agregará directamente a la caja de cobro."
+              >
+                <ScanLine className={`w-3.5 h-3.5 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
+                <span>Lector Activo</span>
+              </div>
 
-            {/* 🔒 Cerrar Turno Button */}
-            <button
-              onClick={() => {
-                if (onNavigateToCash) onNavigateToCash();
-                else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs sm:text-sm font-black shadow-md border border-amber-300/50 transition-all shrink-0 active:scale-[0.98]"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Cerrar Turno</span>
-            </button>
+              {/* Action Buttons Group */}
+              <div className="flex items-center gap-2">
+                {/* $ Movimientos Button */}
+                <button
+                  onClick={() => setShowMovementsModal(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0"
+                >
+                  <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px]">
+                    $
+                  </span>
+                  <span>Movimientos</span>
+                </button>
+
+                {/* 🔒 Cerrar Turno Button */}
+                <button
+                  onClick={() => {
+                    if (onNavigateToCash) onNavigateToCash();
+                    else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs sm:text-sm font-black shadow-md border border-amber-300/50 transition-all shrink-0 active:scale-[0.98]"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Cerrar Turno</span>
+                </button>
+              </div>
+            </div>
+
           </div>
 
           {/* Product Cards Grid with internal scrolling */}
@@ -471,7 +482,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         </div>
 
         {/* RIGHT COLUMN: "Caja de Cobro" */}
-        <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 bg-gradient-to-b from-[#15161f] via-[#121319] to-[#0f1015] rounded-2xl border border-white/[0.08] p-3.5 shadow-2xl flex flex-col justify-between min-h-0 h-full overflow-hidden">
+        <div className="lg:col-span-5 xl:col-span-4 2xl:col-span-4 bg-gradient-to-b from-[#15161f] via-[#121319] to-[#0f1015] rounded-2xl border border-white/[0.08] p-3.5 shadow-2xl flex flex-col justify-between min-h-0 h-full overflow-hidden">
           
           {/* Top section: Header + Client + Barcode */}
           <div className="space-y-2.5 shrink-0">
