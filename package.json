@@ -6,7 +6,7 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/sync-dist.cjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "desktop:terminal": "vite build && electron electron/main.cjs",
