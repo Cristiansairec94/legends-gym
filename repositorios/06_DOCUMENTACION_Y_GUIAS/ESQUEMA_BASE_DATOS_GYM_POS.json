@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LegendsGymDatabaseSchema",
+  "description": "Esquema integral de base de datos relacional/documental para el Sistema ERP, Punto de Venta (POS) y Control de Acceso del Gimnasio.",
+  "tablas": {
+    "socios": {
+      "descripcion": "Registro maestro de atletas y miembros del gimnasio",
+      "campos": {
+        "id": "UUID / String autogenerado",
+        "codigo_socio": "String único (ej: 'SOC-1049')",
+        "codigo_barras_carnet": "String (EAN13 o Code128)",
+        "rfid_uid": "String hexadecimal tarjeta/pulsera (ej: '4A:2B:9C:1F')",
+        "hash_biometrico_huella": "String base64 o hash del template dactilar",
+        "nombres": "String",
+        "apellidos": "String",
+        "email": "String",
+        "telefono": "String",
+        "foto_url": "String (ruta en 02_IMAGENES_ALTA_CALIDAD/modelos_y_atletas/)",
+        "contacto_emergencia_nombre": "String",
+        "contacto_emergencia_tel": "String",
+        "observaciones_medicas": "String",
+        "estado_membresia": "Enum('ACTIVA', 'POR_VENCER', 'VENCIDA', 'EN_GRACIA', 'SUSPENDIDA')",
+        "plan_id": "UUID referencia a planes_membresia",
+        "fecha_inicio_plan": "ISO8601 Timestamp",
+        "fecha_fin_plan": "ISO8601 Timestamp",
+        "sucursal_sede_id": "UUID referencia a sucursales"
+      }
+    },
+    "planes_membresia": {
+      "descripcion": "Catálogo de suscripciones y membresías",
+      "campos": {
+        "id": "UUID",
+        "nombre": "String (ej: 'VIP Gold Anual', 'Pase Diario', 'Mes Regular')",
+        "precio": "Number (Float)",
+        "duracion_dias": "Integer (1, 30, 90, 365)",
+        "acceso_multisede": "Boolean",
+        "dias_gracia_tolerancia": "Integer (ej: 3)",
+        "badge_icono": "String (referencia a 02_IMAGENES_ALTA_CALIDAD/logos_y_badges/)"
+      }
+    },
+    "productos_pos": {
+      "descripcion": "Inventario de suplementos, snacks, bebidas y accesorios para venta en recepción",
+      "campos": {
+        "id": "UUID",
+        "codigo_barras_sku": "String único (ej: '750100234501')",
+        "nombre": "String (ej: 'Whey Protein Isolate 5lbs')",
+        "categoria": "Enum('PROTEINAS', 'CREATINAS', 'PRE_WORKOUT', 'AMINOACIDOS', 'BEBIDAS', 'SNACKS', 'ACCESORIOS')",
+        "precio_venta": "Number",
+        "precio_compra": "Number",
+        "stock_actual": "Integer",
+        "stock_minimo_alerta": "Integer",
+        "imagen_url": "String (referencia a 02_IMAGENES_ALTA_CALIDAD/suplementos_punto_de_venta/)"
+      }
+    },
+    "ventas_pos": {
+      "descripcion": "Transacciones de venta realizadas en la caja del gimnasio",
+      "campos": {
+        "id": "UUID",
+        "folio_ticket": "String único (ej: 'TK-2026-00452')",
+        "corte_caja_id": "UUID referencia al turno/corte activo",
+        "socio_id": "UUID o null para público general",
+        "items": [
+          {
+            "producto_id": "UUID",
+            "nombre": "String",
+            "cantidad": "Integer",
+            "precio_unitario": "Number",
+            "subtotal": "Number"
+          }
+        ],
+        "subtotal": "Number",
+        "impuesto_iva": "Number",
+        "total": "Number",
+        "metodo_pago": "Enum('EFECTIVO', 'TARJETA_CREDITO', 'TARJETA_DEBITO', 'TRANSFERENCIA', 'MIXTO')",
+        "monto_pagado_cliente": "Number",
+        "cambio_devuelto": "Number",
+        "usuario_cajero_id": "UUID",
+        "fecha_hora": "ISO8601 Timestamp"
+      }
+    },
+    "cortes_caja": {
+      "descripcion": "Control de turnos, arqueos, cortes X y Z del punto de venta",
+      "campos": {
+        "id": "UUID",
+        "folio_corte": "String (ej: 'CR-2026-010')",
+        "cajero_id": "UUID",
+        "sucursal_id": "UUID",
+        "fecha_apertura": "ISO8601 Timestamp",
+        "fondo_inicial_caja": "Number",
+        "total_ventas_efectivo": "Number",
+        "total_ventas_tarjeta": "Number",
+        "total_ventas_transferencia": "Number",
+        "total_gastos_salidas": "Number",
+        "efectivo_esperado": "Number",
+        "efectivo_declarado": "Number",
+        "diferencia": "Number (sobrante positivo / faltante negativo)",
+        "estado": "Enum('ABIERTO', 'CERRADO_CORTE_Z')",
+        "fecha_cierre": "ISO8601 Timestamp"
+      }
+    },
+    "registros_acceso": {
+      "descripcion": "Logs de entradas y salidas por torniquetes y lectores biométricos",
+      "campos": {
+        "id": "UUID",
+        "socio_id": "UUID referencia a socios",
+        "nombre_socio": "String",
+        "torniquete_id": "String (ej: 'TORNIQUETE-01-ENTRADA')",
+        "tipo_lectura": "Enum('HUELLA_BIOMETRICA', 'TARJETA_RFID', 'CODIGO_QR', 'ACCESO_MANUAL')",
+        "estado": "Enum('PERMITIDO', 'DENEGADO')",
+        "motivo_denegacion": "String o null (ej: 'Membresía vencida hace 4 días')",
+        "fecha_hora": "ISO8601 Timestamp"
+      }
+    },
+    "sucursales": {
+      "descripcion": "Sedes del gimnasio para soporte multi-sucursal",
+      "campos": {
+        "id": "UUID",
+        "nombre": "String (ej: 'Legends Gym Sede Central')",
+        "direccion": "String",
+        "capacidad_aforo_maxima": "Integer",
+        "aforo_actual": "Integer",
+        "torniquetes_activos": "Integer",
+        "telefono": "String"
+      }
+    }
+  }
+}

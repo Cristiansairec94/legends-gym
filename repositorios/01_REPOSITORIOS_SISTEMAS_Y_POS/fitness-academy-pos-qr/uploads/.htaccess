@@ -1,0 +1,15 @@
+Options -Indexes -ExecCGI
+
+# Runtime uploads must never be interpreted as server-side code.
+RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .cgi .pl .py .sh
+RemoveType .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .cgi .pl .py .sh
+
+<FilesMatch "(?i)(^\.|\.(?:php\d*|phtml|phar|cgi|pl|py|sh|shtml|htaccess|user\.ini))$">
+    Require all denied
+</FilesMatch>
+
+# Block legacy images saved at the upload root. Public video thumbnails opt
+# back in from their own directory; profile images are served by the app.
+<FilesMatch "(?i)\.(?:jpe?g|png|gif|webp)$">
+    Require all denied
+</FilesMatch>

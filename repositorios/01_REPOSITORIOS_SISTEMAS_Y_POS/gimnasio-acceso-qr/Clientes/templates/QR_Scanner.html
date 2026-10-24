@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner QR - ClubHouse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/QRScanner.css' %}">
+</head>
+<body>
+
+    <!-- Botón debug -->
+    <!-- <button class="debug-toggle" onclick="toggleDebug()">
+        <i class="fas fa-bug"></i> Debug
+    </button> -->
+
+    <!-- Log de debug -->
+    <div class="debug-log" id="debugLog">
+        <div class="debug-log-entry">Log de debug...</div>
+    </div>
+
+    <div class="scanner-container" id="mainContainer">
+        
+        <!-- Estado idle con icono y cámara -->
+        <div class="scanner-idle" id="scannerIdle">
+            <i class="fas fa-qrcode scanner-idle-icon"></i>
+            <p class="scanner-idle-text">Apunta el código QR a la cámara</p>
+        </div>
+
+        <!-- Visor de cámara - SIEMPRE VISIBLE -->
+        <div id="qr-reader"></div>
+
+        <!-- Tarjeta de resultado -->
+        <div class="result-card" id="resultCard">
+            <div class="result-icon" id="resultIcon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <h2 class="result-name" id="resultName">Usuario</h2>
+            
+            <div class="result-status" id="resultStatus">
+                <i class="fas fa-check-circle"></i>
+                <span>ACCESO PERMITIDO</span>
+            </div>
+            
+            <div class="result-details">
+                <div class="detail-row">
+                    <span class="detail-label">RUT</span>
+                    <span class="detail-value" id="resultRut">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Plan Activo</span>
+                    <span class="detail-value" id="resultPlan">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Fecha de Vencimiento</span>
+                    <span class="detail-value" id="resultExpiry">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Hora de Acceso</span>
+                    <span class="detail-value" id="resultTime">-</span>
+                </div>
+            </div>
+            
+            <p class="countdown">
+                Nuevo escaneo en <span id="countdownValue">5</span> segundos
+            </p>
+        </div>
+
+    </div>
+    <script src="{% static 'js/QRScanner.js' %}"></script>
+</body>
+</html>

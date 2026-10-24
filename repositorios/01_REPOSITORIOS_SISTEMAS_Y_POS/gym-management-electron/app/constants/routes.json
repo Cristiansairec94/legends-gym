@@ -1,0 +1,8 @@
+{
+  "HOME": "/home",
+  "COUNTER": "/counter",
+  "LOGIN": "/",
+  "DASHBOARD": "/dashboard",
+  "CUSTOMERS": "/customers/:slug",
+  "ENQUIRY": "/enquiry"
+}

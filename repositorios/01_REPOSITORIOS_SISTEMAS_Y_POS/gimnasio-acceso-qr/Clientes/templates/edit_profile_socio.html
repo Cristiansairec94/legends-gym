@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil - ClubHouse Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/editProfileSocio.css' %}">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="glass-card">
+            <div class="profile-header">
+                <div class="avatar-circle">
+                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                </div>
+                <div class="header-info">
+                    <h2>{{ user.get_full_name }}</h2>
+                    <div class="badges-row">
+                        <span class="info-badge" title="RUT">
+                            <i class="fas fa-id-card"></i> {{ user.rut }}
+                        </span>
+                        <span class="info-badge" title="Fecha de Nacimiento">
+                            <i class="fas fa-birthday-cake"></i> {{ user.birthdate|date:'d/m/Y' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="first_name">Nombre</label>
+                        <div class="form-input-wrapper">
+                            <input type="text" id="first_name" name="first_name" class="form-input" value="{{ user.first_name }}" required>
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="last_name">Apellido</label>
+                        <div class="form-input-wrapper">
+                            <input type="text" id="last_name" name="last_name" class="form-input" value="{{ user.last_name }}" required>
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="email">Correo Electrónico</label>
+                        <div class="form-input-wrapper">
+                            <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" required>
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="phone">Teléfono</label>
+                        <div class="form-input-wrapper">
+                            <input type="tel" id="phone" name="phone" class="form-input" value="{{ user.phone|default:'' }}" placeholder="+56 9 1234 5678">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-footer">
+                    <a href="{% url 'index_socio' %}" class="btn btn-ghost">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

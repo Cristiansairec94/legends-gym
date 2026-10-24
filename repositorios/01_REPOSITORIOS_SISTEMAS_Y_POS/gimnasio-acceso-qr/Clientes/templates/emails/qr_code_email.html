@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a ClubHouse</title>
+    <style>
+        /* Reset y fuentes */
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f7; color: #51545E; -webkit-font-smoothing: antialiased; width: 100% !important; height: 100%; }
+        
+        /* Contenedor Principal */
+        .email-wrapper { width: 100%; background-color: #f4f4f7; padding: 40px 0; }
+        .email-content { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        /* Header */
+        .email-header { background-color: #0a0a0a; padding: 30px; text-align: center; border-bottom: 4px solid #00ff9d; }
+        .email-header h1 { color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+        .email-header span { color: #00ff9d; }
+        
+        /* Body */
+        .email-body { padding: 40px 40px 20px 40px; }
+        .email-body h2 { color: #333333; font-size: 22px; margin-top: 0; }
+        .email-body p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; color: #51545E; }
+        
+        /* Tarjeta de Info */
+        .info-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin: 25px 0; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-label { font-size: 14px; font-weight: 600; color: #888; text-transform: uppercase; }
+        .info-value { font-size: 15px; font-weight: 700; color: #333; }
+
+        /* Sección de Adjuntos */
+        .attachments-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+        .attachment-item { display: flex; align-items: start; gap: 15px; margin-bottom: 20px; }
+        .att-icon { width: 40px; height: 40px; background: #e8fcf5; color: #00ff9d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .att-content h4 { margin: 0 0 5px 0; color: #333; font-size: 16px; }
+        .att-content p { margin: 0; font-size: 14px; color: #777; }
+
+        /* Footer */
+        .email-footer { background-color: #f4f4f7; padding: 30px; text-align: center; font-size: 13px; color: #a8aaaf; }
+        .social-links { margin-bottom: 15px; }
+        .social-links a { color: #a8aaaf; text-decoration: none; margin: 0 10px; font-weight: 600; }
+        
+        /* Botón (visual only, since files are attached) */
+        .btn-link { display: inline-block; background-color: #00ff9d; color: #0a0a0a; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: 700; margin-top: 10px; }
+        
+        @media only screen and (max-width: 600px) {
+          .email-body { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-content">
+            
+            <div class="email-header">
+                <h1>ClubHouse<span>Digital</span></h1>
+            </div>
+            
+            <div class="email-body">
+                <h2>¡Hola, {{ user.first_name }}! 👋</h2>
+                <p>Te damos la bienvenida oficial a la familia ClubHouse. Tu registro se ha completado exitosamente y tu plan <strong>{{ plan_name }}</strong> ya se encuentra activo.</p>
+                
+                <div class="info-box">
+                    <div class="info-row">
+                        <span class="info-label">Plan: </span>
+                        <span class="info-value">{{ plan_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Inicio: </span>
+                        <span class="info-value">{{ membership.start_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Vencimiento: </span>
+                        <span class="info-value">{{ membership.end_date|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+
+                {% if send_qr or send_contract %}
+                <div class="attachments-section">
+                    <p><strong>Hemos adjuntado los siguientes documentos importantes:</strong></p>
+                    
+                    {% if send_qr %}
+                    <div class="attachment-item">
+                        <div class="att-icon">📱</div>
+                        <div class="att-content">
+                            <h4>Tu Código QR de Acceso</h4>
+                            <p>Guarda la imagen adjunta en tu celular. Es tu llave digital para entrar al gimnasio.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if send_contract %}
+                    <div class="attachment-item">
+                        <div class="att-icon">📄</div>
+                        <div class="att-content">
+                            <h4>Contrato de Servicio</h4>
+                            <p>Una copia en PDF de tu contrato de socio con los términos y condiciones aceptados.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <p>Si tienes alguna duda, no dudes en responder a este correo o acercarte a recepción.</p>
+                <p>¡Nos vemos en el entrenamiento! 💪</p>
+            </div>
+
+            <div class="email-footer">
+                <div class="social-links">
+                    <a href="#">Instagram</a> • <a href="#">Sitio Web</a> • <a href="#">Soporte</a>
+                </div>
+                <p>&copy; 2025 ClubHouse Digital. Todos los derechos reservados.</p>
+                <p>Camino Monte Grande, Coltauco, O'Higgins</p>
+                <p>Fono: +56 9 6504 9281 | Email: contacto@clubhousedigital.com</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

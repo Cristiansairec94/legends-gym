@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="20" fill="#0b1120"/>
+  <!-- Carcasa impresora -->
+  <rect x="110" y="140" width="280" height="260" rx="16" fill="#1e293b" stroke="#475569" stroke-width="4"/>
+  <!-- Tapa frontal superior -->
+  <path d="M125 155 L375 155 L360 250 L140 250 Z" fill="#334155"/>
+  <!-- Ranura de salida de papel 80mm -->
+  <rect x="160" y="240" width="180" height="12" rx="4" fill="#020617"/>
+  <!-- Ticket saliendo -->
+  <path d="M170 240 L170 110 L330 110 L330 240 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- Texto simulado en ticket -->
+  <text x="250" y="130" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle" font-family="monospace">LEGENDS PRO GYM</text>
+  <line x1="180" y1="140" x2="320" y2="140" stroke="#94a3b8" stroke-width="1"/>
+  <text x="185" y="155" fill="#0f172a" font-size="8" font-family="monospace">1x WHEY PROTEIN $55</text>
+  <text x="185" y="170" fill="#0f172a" font-size="8" font-family="monospace">1x CREATINA 300G $35</text>
+  <text x="185" y="185" fill="#0f172a" font-size="9" font-weight="bold" font-family="monospace">TOTAL: $90.00</text>
+  <line x1="180" y1="195" x2="320" y2="195" stroke="#94a3b8" stroke-width="1"/>
+  <rect x="235" y="200" width="30" height="30" fill="#0f172a"/>
+  <!-- Botones de panel -->
+  <circle cx="150" cy="350" r="10" fill="#10b981"/> <!-- POWER -->
+  <circle cx="180" cy="350" r="10" fill="#eab308"/> <!-- ERROR -->
+  <rect x="310" y="340" width="50" height="24" rx="4" fill="#64748b"/> <!-- FEED -->
+  <text x="335" y="356" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle" font-family="sans-serif">FEED</text>
+  <text x="250" y="70" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">IMPRESORA TÉRMICA 80MM</text>
+  <text x="250" y="450" fill="#94a3b8" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">Protocolo ESC/POS USB y Red RJ45</text>
+</svg>

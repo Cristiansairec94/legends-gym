@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ plan.name }} - Detalles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/AdminPlanDetails.css' %}">
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="header-left">
+            <div class="plan-titles">
+                <h1>
+                    {{ plan.name }}
+                    <span class="plan-tag {% if plan.is_active %}tag-active{% else %}tag-inactive{% endif %}">
+                        {% if plan.is_active %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </h1>
+            </div>
+        </div>
+        
+        <a href="{% url 'index_admin' %}" class="btn-back">
+            <i class='bx bx-arrow-back'></i> Volver al Panel
+        </a>
+    </div>
+
+    <div class="dashboard-container">
+
+        <div class="kpi-grid">
+            <div class="kpi-card green">
+                <i class='bx bx-money kpi-icon-bg'></i>
+                <div class="kpi-label">Ingresos Totales</div>
+                <div class="kpi-value">${{ kpi_total_rev|floatformat:0 }}</div>
+            </div>
+            <div class="kpi-card green">
+                <i class='bx bx-calendar kpi-icon-bg'></i>
+                <div class="kpi-label">Ingresos Mensuales</div>
+                <div class="kpi-value">${{ kpi_monthly_rev|floatformat:0 }}</div>
+            </div>
+            <div class="kpi-card blue">
+                <i class='bx bx-user kpi-icon-bg'></i>
+                <div class="kpi-label">Usuarios Activos</div>
+                <div class="kpi-value">{{ kpi_active }}</div>
+            </div>
+            <div class="kpi-card blue">
+                <i class='bx bx-history kpi-icon-bg'></i>
+                <div class="kpi-label">Total Ventas</div>
+                <div class="kpi-value">{{ kpi_total_sold }}</div>
+            </div>
+        </div>
+
+        <div class="split-section">
+            
+            <div class="chart-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <h3 style="color: #fff; font-size: 1.1rem; margin: 0;">Rendimiento Financiero</h3>
+                    <span style="color: var(--text-muted); font-size: 0.8rem;">12 meses</span>
+                </div>
+                <div style="flex: 1; position: relative;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="plan-info-card">
+                <div class="info-header">
+                    <div class="price-tag">${{ plan.price|floatformat:0 }}<span>/mes</span></div>
+                    <div style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;">{{ plan.access_days }}</div>
+                </div>
+                
+                <div class="info-body">
+                    <div class="detail-row">
+                        <span class="detail-label">Duración</span>
+                        <span class="detail-val">{{ plan.duration_days }} días</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Categoría</span>
+                        <span class="detail-val" style="text-transform: capitalize;">{{ plan.plan_type }}</span>
+                    </div>
+                    
+                    <div style="margin-top: 10px;">
+                        <span class="detail-label" style="display: block; margin-bottom: 8px;">Incluye:</span>
+                        <div class="features-grid">
+                            {% if plan.includes_classes %}
+                                <div class="feat-pill"><i class='bx bx-dumbbell'></i> Clases</div>
+                            {% endif %}
+                            {% if plan.includes_nutritionist %}
+                                <div class="feat-pill"><i class='bx bx-apple'></i> Nutrición</div>
+                            {% endif %}
+                            {% for ben in beneficios_lista %}
+                                <div class="feat-pill"><i class='bx bx-check'></i> {{ ben }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-actions">
+                    <button onclick="document.getElementById('deleteModal').style.display='flex'" class="btn-act del">Eliminar</button>
+                    <a href="{% url 'admin_plan_edit' plan.id %}" class="btn-act edit">Editar Plan</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-head">
+                <h3 style="color: #fff; font-size: 1rem; margin: 0;">Usuarios Suscritos ({{ kpi_active }})</h3>
+            </div>
+            {% if active_memberships %}
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Inicio</th>
+                            <th>Vencimiento</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mem in active_memberships %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="user-avatar">{{ mem.user.first_name.0 }}</div>
+                                    <div>
+                                        <div style="color: #fff; font-weight: 500;">{{ mem.user.get_full_name }}</div>
+                                        <div style="font-size: 0.75rem; color: #666;">{{ mem.user.rut }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ mem.start_date|date:"d M Y" }}</td>
+                            <td>{{ mem.end_date|date:"d M Y" }}</td>
+                            <td>
+                                {% if mem.days_remaining < 7 %}
+                                    <span style="color: var(--warn); font-size: 0.85rem;">⚠ {{ mem.days_remaining }} días</span>
+                                {% else %}
+                                    <span style="color: var(--primary); font-size: 0.85rem;">Activo</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'admin_user_details' mem.user.id %}" style="color: #666; font-size: 1.2rem;"><i class='bx bx-chevron-right'></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <p>No hay usuarios activos en este plan.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div id="deleteModal">
+        <div class="modal-content">
+            <i class='bx bx-error-circle' style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+            <h3 style="color:#fff; margin-bottom: 10px;">¿Eliminar Plan?</h3>
+            <p style="color: #aaa; margin-bottom: 1.5rem;">Esta acción es irreversible y afectará las estadísticas.</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="document.getElementById('deleteModal').style.display='none'" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #444; background: transparent; color: #fff; cursor: pointer;">Cancelar</button>
+                <form method="POST" action="{% url 'admin_plan_delete' plan.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--danger); color: #fff; cursor: pointer;">Sí, Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Gráfico
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const labels = JSON.parse('{{ chart_labels|safe }}');
+            const dataValues = JSON.parse('{{ chart_values|safe }}');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Ingresos ($)',
+                        data: dataValues.length > 0 ? dataValues : [0],
+                        borderColor: '#00ff9d',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(0, 255, 157, 0.2)');
+                            gradient.addColorStop(1, 'rgba(0, 255, 157, 0)');
+                            return gradient;
+                        },
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666' } },
+                        x: { grid: { display: false }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

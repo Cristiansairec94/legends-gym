@@ -1595,3 +1595,5 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     </div>
   );
 };
+
+export default IndependentTerminalApp;

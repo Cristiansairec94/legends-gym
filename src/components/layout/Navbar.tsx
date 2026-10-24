@@ -5,7 +5,8 @@ import {
   Bell, 
   Cloud, 
   CloudOff, 
-  LogOut
+  LogOut,
+  Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -99,6 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
+
 
           {/* Offline / Cloud Sync Pill Button */}
           <button

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="40%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#a16207"/>
+    </linearGradient>
+  </defs>
+  <circle cx="150" cy="150" r="140" fill="#0f172a" stroke="url(#gold)" stroke-width="8"/>
+  <circle cx="150" cy="150" r="120" fill="#020617" stroke="#ca8a04" stroke-width="2" stroke-dasharray="6 3"/>
+  <text x="150" y="110" fill="url(#gold)" font-size="34" font-weight="900" text-anchor="middle" font-family="sans-serif">VIP</text>
+  <text x="150" y="145" fill="#ffffff" font-size="18" font-weight="700" text-anchor="middle" font-family="sans-serif">GOLD MEMBER</text>
+  <path d="M110 170 L190 170" stroke="url(#gold)" stroke-width="3"/>
+  <text x="150" y="200" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle" font-family="sans-serif">ACCESO ILIMITADO</text>
+  <text x="150" y="220" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle" font-family="sans-serif">TODAS LAS SEDES</text>
+</svg>

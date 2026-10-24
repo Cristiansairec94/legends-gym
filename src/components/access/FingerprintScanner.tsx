@@ -45,14 +45,14 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
       {/* Scanner Pad Container */}
       <div 
         onClick={() => !disabled && onScanClick()}
-        className={`relative ${hasPhoto ? 'w-28 h-28 sm:w-32 sm:h-32' : 'w-32 h-32 sm:w-36 sm:h-36'} rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 ${
+        className={`relative group ${hasPhoto ? 'w-28 h-28 sm:w-32 sm:h-32' : 'w-32 h-32 sm:w-36 sm:h-36'} rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 select-none shrink-0 ${
           status === 'scanning'
-            ? 'bg-amber-500/10 border-2 border-amber-400 shadow-glow-gold'
+            ? 'bg-amber-500/20 border-2 border-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.6)] scale-105'
             : status === 'granted'
-            ? 'bg-emerald-500/20 border-2 border-emerald-400 shadow-glow-green'
+            ? 'bg-emerald-500/20 border-2 border-emerald-400 shadow-glow-green scale-105'
             : status === 'denied'
-            ? 'bg-red-500/20 border-2 border-red-500 shadow-glow-red'
-            : 'bg-gym-surface/80 border-2 border-gym-border hover:border-amber-400/60 hover:shadow-glow-gold/40'
+            ? 'bg-red-500/20 border-2 border-red-500 shadow-glow-red scale-105'
+            : 'bg-black/50 backdrop-blur-md border-2 border-amber-500/35 hover:border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:shadow-[0_0_40px_rgba(245,158,11,0.4)]'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {/* Radar Ring Animation */}
@@ -62,12 +62,12 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
 
         {/* Laser Scan Line */}
         {status === 'scanning' && (
-          <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_12px_#FFFFFF] animate-scan-line z-20" />
+          <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-amber-200 to-transparent shadow-[0_0_15px_#FBBF24] animate-scan-line z-20" />
         )}
 
         {/* Outer Circular Track (when not showing full photo) */}
         {!hasPhoto && (
-          <div className="absolute inset-2 rounded-full border border-dashed border-gym-border/70 pointer-events-none" />
+          <div className="absolute inset-2 rounded-full border border-dashed border-amber-400/30 group-hover:border-amber-400/50 transition-colors pointer-events-none" />
         )}
 
         {/* Biometric Icon, State OR Member Photo */}
@@ -101,31 +101,29 @@ export const FingerprintScanner: React.FC<FingerprintScannerProps> = ({
                 )}
               </div>
             </div>
+          ) : status === 'scanning' ? (
+            <Fingerprint className="w-16 h-16 sm:w-20 sm:h-20 text-amber-400 animate-pulse drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
           ) : status === 'granted' ? (
-            <CheckCircle2 className="w-16 h-16 text-emerald-400 animate-pulse" />
+            <CheckCircle2 className="w-16 h-16 text-emerald-400 animate-pulse drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
           ) : status === 'denied' ? (
-            <XCircle className="w-16 h-16 text-red-500 animate-pulse" />
+            <XCircle className="w-16 h-16 text-red-500 animate-pulse drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
           ) : (
             <Fingerprint 
-              className={`w-16 h-16 sm:w-20 sm:h-20 transition-all ${
-                status === 'scanning'
-                  ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] scale-105'
-                  : 'text-gym-muted group-hover:text-amber-400'
-              }`} 
+              className="w-16 h-16 sm:w-20 sm:h-20 text-amber-400/80 group-hover:text-amber-300 drop-shadow-[0_0_14px_rgba(245,158,11,0.3)] transition-all" 
             />
           )}
         </div>
 
         {/* Corner alignment markers for high-tech HUD look */}
-        <div className="absolute top-1.5 left-1.5 w-2.5 h-2.5 border-t-2 border-l-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 border-t-2 border-r-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute bottom-1.5 left-1.5 w-2.5 h-2.5 border-b-2 border-l-2 border-amber-400/60 pointer-events-none" />
-        <div className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 border-b-2 border-r-2 border-amber-400/60 pointer-events-none" />
+        <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)] pointer-events-none" />
+        <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)] pointer-events-none" />
+        <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)] pointer-events-none" />
+        <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)] pointer-events-none" />
       </div>
 
       {/* Label and instructions */}
       <div className="mt-2.5 text-center w-full max-w-lg px-2">
-        <p className={`text-sm sm:text-base font-black tracking-wide uppercase transition-colors ${
+        <p className={`text-sm sm:text-base font-black tracking-wide uppercase transition-colors drop-shadow-[0_2px_5px_rgba(0,0,0,1)] ${
           status === 'scanning'
             ? 'text-amber-400 animate-pulse'
             : status === 'granted'

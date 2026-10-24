@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html { scroll-behavior: smooth; }
+html, body, #root { height: 100%; }
+
+body {
+  @apply bg-ink-950 text-gray-200 font-sans antialiased;
+}
+
+/* Brand text selection */
+::selection { background: rgba(225,29,42,0.35); color: #fff; }
+
+/* Global smooth transitions for interactive elements */
+a, button { transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+
+/* Thin dark scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #101012; }
+::-webkit-scrollbar-thumb { background: #33333a; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #4a4a52; }
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark hover:shadow-glow; }
+  .btn-outline { @apply btn border border-ink-600 text-gray-100 hover:border-brand hover:text-brand; }
+  .btn-ghost { @apply btn text-gray-300 hover:bg-ink-800; }
+
+  .card { @apply rounded-xl border border-ink-700 bg-ink-900 shadow-card; }
+  .input { @apply w-full rounded-lg border border-ink-700 bg-ink-850 px-3.5 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30; }
+  .label { @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-gray-400; }
+
+  .eyebrow { @apply text-brand text-xs font-semibold uppercase tracking-[0.2em]; }
+  .section-title { @apply font-heading text-3xl sm:text-4xl lg:text-5xl uppercase leading-tight text-white; }
+
+  /* Reusable hover lift for cards/tiles */
+  .hover-lift { @apply transition duration-300 hover:-translate-y-1 hover:shadow-glow; }
+}
+
+/* Masonry-ish gallery via CSS columns */
+.masonry { column-count: 1; column-gap: 1rem; }
+@media (min-width: 640px) { .masonry { column-count: 2; } }
+@media (min-width: 1024px) { .masonry { column-count: 3; } }
+.masonry > * { break-inside: avoid; margin-bottom: 1rem; }

@@ -1,0 +1,338 @@
+{% load static %}
+{% load qr_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de {{ user_detail.get_full_name }} - Moderador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/indexModerador.css' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    
+    <style>
+        /* CSS Consolidado (Estilo Admin) */
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #141414;
+            --border-color: #262626;
+            --primary-color: #00ff9d; /* Verde éxito */
+            --primary-dark: #00cc7e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --danger-color: #ff4757;
+            --danger-light: rgba(255, 71, 87, 0.1);
+        }
+
+        body { 
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .details-container { 
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 2rem; 
+        }
+
+        /* Header */
+        .details-header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .header-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 1.5rem; 
+        }
+        
+        .user-avatar-large {
+            width: 80px; 
+            height: 80px; 
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: #000;
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            font-weight: 800;
+        }
+        
+        .header-text h1 { 
+            font-size: 2rem; 
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary); 
+        }
+        
+        .user-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.4rem 1rem;
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            border-radius: 100px;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Grid System (2 Columnas) */
+        .details-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+        }
+
+        .detail-card { 
+            background: var(--card-bg); 
+            padding: 2rem; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-title { 
+            color: var(--primary-color); 
+            font-size: 1.25rem;
+            margin: 0 0 1.5rem 0;
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
+            padding-bottom: 0.75rem;
+        }
+
+        /* Filas de Información */
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 1rem 0; 
+            border-bottom: 1px solid var(--border-color);
+        }
+        .info-row:last-child { border-bottom: none; }
+        
+        .info-label { color: var(--text-secondary); font-weight: 500; }
+        .info-value { color: var(--text-primary); font-weight: 600; }
+
+        /* Utilitarios */
+        .full-width { grid-column: 1 / -1; }
+        
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .qr-section img {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            max-width: 200px;
+        }
+
+        /* Botones */
+        .header-actions { display: flex; gap: 1rem; }
+        .btn-action { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: 0.2s; 
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: none;
+        }
+        .btn-edit { background: var(--primary-color); color: #000; }
+        .btn-delete { background: var(--danger-light); color: var(--danger-color); border: 1px solid var(--danger-color); }
+        .btn-back { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+
+        /* Tablas */
+        .logs-table { width: 100%; border-collapse: collapse; }
+        .logs-table th { text-align: left; color: var(--primary-color); padding: 1rem; border-bottom: 2px solid var(--border-color); font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
+        .logs-table td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+
+        @media (max-width: 992px) {
+            .details-grid { grid-template-columns: 1fr; }
+            .details-header { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .header-info { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="details-container">
+    <div class="details-header">
+        <div class="header-info">
+            <div class="user-avatar-large">
+                {{ user_detail.first_name.0|upper }}{{ user_detail.last_name.0|upper }}
+            </div>
+            <div class="header-text">
+                <h1>{{ user_detail.get_full_name }}</h1>
+                <div class="user-role-badge">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                    {% if user_detail.is_active_member %}Activo{% else %}Inactivo{% endif %} • {{ user_detail.rut }}
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'index_moderador' %}" class="btn-action btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+            <a href="{% url 'moderador_editar_usuario' user_detail.id %}" class="btn-action btn-edit"><i class="fas fa-edit"></i> Editar</a>
+            <button onclick="openDeleteModal()" class="btn-action btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        
+        <div class="detail-card">
+            <h3 class="card-title"><i class="far fa-id-card"></i> Información Personal</h3>
+            
+            <div class="info-row">
+                <span class="info-label">RUT:</span>
+                <span class="info-value">{{ user_detail.rut }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user_detail.email }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ user_detail.phone|default:"-" }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Fecha de Nacimiento:</span>
+                <span class="info-value">{{ user_detail.birthdate|date:"d/m/Y"|default:"-" }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Fecha de Registro:</span>
+                <span class="info-value">{{ user_detail.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Estado de Membresía</h3>
+            
+            {% if user_detail.is_active_member %}
+                {% with membership=user_detail.get_active_membership %}
+                <div class="info-row">
+                    <span class="info-label">Estado:</span>
+                    <span class="info-value" style="color: var(--primary-color);">
+                        <i class="fas fa-check-circle"></i> Activo
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Plan Actual:</span>
+                    <span class="info-value">{{ membership.plan.name }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Fecha de Vencimiento:</span>
+                    <span class="info-value">{{ membership.end_date|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Días Restantes:</span>
+                    <span class="info-value">{{ membership.days_remaining }} días</span>
+                </div>
+                {% endwith %}
+            {% else %}
+                <div class="info-row">
+                    <span class="info-label">Estado:</span>
+                    <span class="info-value" style="color: var(--danger-color);">
+                        <i class="fas fa-times-circle"></i> Inactivo
+                    </span>
+                </div>
+                <p style="color: var(--text-secondary); margin-top: 1rem; text-align: center;">
+                    El usuario no tiene una membresía activa actualmente.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if user_detail.qr_unique_id %}
+        <div class="detail-card full-width">
+            <h3 class="card-title"><i class="fas fa-qrcode"></i> Código QR Personal</h3>
+            <div class="qr-section">
+                <img src="{% generate_qr_base64 user_detail.get_qr_data %}" alt="QR">
+                <p class="info-label">ID: {{ user_detail.qr_unique_id }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-card full-width">
+            <h3 class="card-title"><i class="fas fa-history"></i> Accesos Recientes</h3>
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Estado</th>
+                        <th>Plan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in access_logs %}
+                    <tr>
+                        <td>{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+                        <td style="color: {% if log.status == 'allowed' %}var(--primary-color){% else %}var(--danger-color){% endif %}">
+                            {{ log.status|capfirst }}
+                        </td>
+                        <td>{{ log.membership.plan.name|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No hay registros recientes</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+    <div class="detail-card" style="max-width: 400px; text-align: center; background: #141414; border: 1px solid var(--danger-color);">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+        <h2>¿Confirmar eliminación?</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Esta acción no se puede deshacer.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button onclick="closeDeleteModal()" class="btn-action btn-back">Cancelar</button>
+            <form action="{% url 'moderador_eliminar_usuario' user_detail.id %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-action btn-delete">Eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal() { document.getElementById('deleteModal').style.display = 'flex'; }
+    function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+    
+    // Cerrar al clickear afuera
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) { closeDeleteModal(); }
+    });
+</script>
+
+</body>
+</html>

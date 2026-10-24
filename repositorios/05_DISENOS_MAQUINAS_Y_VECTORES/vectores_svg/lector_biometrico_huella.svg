@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="20" fill="#090d16"/>
+  <!-- Marco del lector -->
+  <rect x="120" y="80" width="260" height="340" rx="25" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+  <rect x="150" y="120" width="200" height="240" rx="15" fill="#020617" stroke="#38bdf8" stroke-width="3"/>
+  <!-- Haz láser de escaneo animado -->
+  <line x1="160" y1="220" x2="340" y2="220" stroke="#38bdf8" stroke-width="4" stroke-dasharray="8 4"/>
+  <!-- Huella dactilar estilizada -->
+  <g fill="none" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round">
+    <path d="M250 160 A40 50 0 0 1 290 210 A40 50 0 0 1 250 260 A40 50 0 0 1 210 210"/>
+    <path d="M250 180 A25 35 0 0 1 275 215 A25 35 0 0 1 250 250 A25 35 0 0 1 225 215"/>
+    <path d="M250 200 A10 15 0 0 1 260 215 A10 15 0 0 1 250 230 A10 15 0 0 1 240 215"/>
+    <path d="M295 190 A60 70 0 0 1 310 230 A60 70 0 0 1 285 285 A60 70 0 0 1 215 285"/>
+    <path d="M205 190 A60 70 0 0 1 250 140 A60 70 0 0 1 320 180"/>
+    <path d="M200 240 A70 80 0 0 0 250 310 A70 80 0 0 0 325 250"/>
+  </g>
+  <!-- LED de estado -->
+  <circle cx="250" cy="385" r="10" fill="#10b981"/>
+  <text x="250" y="50" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">SENSOR BIOMÉTRICO ZK / OPTICAL</text>
+  <text x="250" y="470" fill="#94a3b8" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">Lectura Dactilar y Validación de Membresía</text>
+</svg>

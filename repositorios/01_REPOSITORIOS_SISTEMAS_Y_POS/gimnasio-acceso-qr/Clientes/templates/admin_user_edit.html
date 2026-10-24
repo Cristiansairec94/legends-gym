@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar {{ user_edit.get_full_name }} - ClubHouse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/adminUser.css' %}">
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="page-title">
+            <i class='bx bx-edit-alt'></i> Editar Usuario: {{ user_edit.username }}
+        </div>
+        <a href="{% url 'admin_user_details' user_edit.id %}" class="btn-close">
+            <i class='bx bx-x'></i> Cancelar
+        </a>
+    </header>
+
+    <form method="POST" class="main-grid">
+        {% csrf_token %}
+
+        <aside class="left-panel">
+            <div class="section-label">Información Básica</div>
+            
+            <div class="input-row">
+                <div class="form-group">
+                    <label>RUT (Fijo)</label>
+                    <input type="text" class="form-control" value="{{ user_edit.rut }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" class="form-control" value="{{ user_edit.username }}" disabled>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="first_name" class="form-control" value="{{ user_edit.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" name="last_name" class="form-control" value="{{ user_edit.last_name }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" name="email" class="form-control" value="{{ user_edit.email }}" required>
+            </div>
+
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="phone" class="form-control" value="{{ user_edit.phone|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label>Fecha Nacimiento</label>
+                    <input type="date" name="birthdate" class="form-control" value="{{ user_edit.birthdate|date:'Y-m-d' }}">
+                </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 1.5rem;">Seguridad</div>
+            
+            <div class="form-group">
+                <label>Cambiar Contraseña (Opcional)</label>
+                <input type="password" name="password" class="form-control" placeholder="Nueva contraseña (dejar vacío si no cambia)">
+            </div>
+        </aside>
+
+        <main class="right-panel">
+            <div class="right-content-wrapper">
+                
+                <div class="config-card">
+                    <h3><i class='bx bx-shield-quarter'></i> Rol y Accesos</h3>
+                    
+                    <div class="role-badge-selector" style="margin-bottom: 1.5rem;">
+                        <label>
+                            <input type="radio" name="role" value="socio" class="role-radio" 
+                                   {% if user_edit.role == 'socio' %}checked{% endif %} 
+                                   onchange="toggleMembershipPanel()">
+                            <span class="role-label"><i class='bx bx-user'></i> Socio</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="role" value="moderador" class="role-radio" 
+                                   {% if user_edit.role == 'moderador' %}checked{% endif %} 
+                                   onchange="toggleMembershipPanel()">
+                            <span class="role-label"><i class='bx bx-shield-alt-2'></i> Moderador</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="role" value="admin" class="role-radio" 
+                                   {% if user_edit.role == 'admin' %}checked{% endif %} 
+                                   onchange="toggleMembershipPanel()">
+                            <span class="role-label"><i class='bx bx-crown'></i> Admin</span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <h4>Cuenta Activa (Login)</h4>
+                            <p>Permite acceder al sistema/app.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="is_active" {% if user_edit.is_active %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="membershipPanel" class="membership-panel config-card {% if user_edit.role == 'socio' %}active{% endif %}">
+                    <h3><i class='bx bx-card'></i> Gestión de Membresía</h3>
+                    
+                    <div class="toggle-row" style="margin-bottom: 1.5rem;">
+                        <div class="toggle-info">
+                            <h4>Acceso al Gimnasio (QR)</h4>
+                            <p>Habilitar entrada por torniquete.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="is_active_member" {% if user_edit.is_active_member %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Plan Asignado</label>
+                        <select name="plan_id" class="form-control">
+                            <option value="">-- Sin Plan / Inactivo --</option>
+                            {% for plan in planes %}
+                                <option value="{{ plan.id }}" 
+                                    {% if current_membership and current_membership.plan.id == plan.id %}selected{% endif %}>
+                                    {{ plan.name }} (${{ plan.price|floatformat:0 }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small style="color: var(--warning); margin-top: 5px; display: block;">
+                            <i class='bx bx-info-circle'></i> Cambiar el plan aquí actualizará la membresía actual.
+                        </small>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>Inicio Vigencia</label>
+                            <input type="date" name="membership_start" class="form-control" 
+                                   value="{{ current_membership.start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fin Vigencia (Ajuste Manual)</label>
+                            <input type="date" name="membership_end" class="form-control" 
+                                   value="{{ current_membership.end_date|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <h3><i class='bx bx-data'></i> Metadata</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <span class="section-label" style="border:none; padding:0;">Registrado</span>
+                            <div style="color: #fff; font-size: 0.9rem;">{{ user_edit.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                        <div>
+                            <span class="section-label" style="border:none; padding:0;">Último Login</span>
+                            <div style="color: #fff; font-size: 0.9rem;">{{ user_edit.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</div>
+                        </div>
+                        {% if user_edit.qr_unique_id %}
+                        <div style="grid-column: 1/-1; margin-top: 0.5rem; word-break: break-all;">
+                            <span class="section-label" style="border:none; padding:0;">ID QR</span>
+                            <div style="color: #fff; font-family: monospace; font-size: 0.8rem;">{{ user_edit.qr_unique_id }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="action-footer">
+                <a href="{% url 'admin_user_details' user_edit.id %}" class="btn-cancel">Cancelar</a>
+                <button type="submit" class="btn-submit">
+                    <i class='bx bx-save'></i> Guardar Cambios
+                </button>
+            </div>
+        </main>
+    </form>
+
+    <script>
+        function toggleMembershipPanel() {
+            const socioRadio = document.querySelector('input[name="role"][value="socio"]');
+            const panel = document.getElementById('membershipPanel');
+            
+            if (socioRadio.checked) {
+                panel.classList.add('active');
+            } else {
+                panel.classList.remove('active');
+            }
+        }
+    </script>
+
+</body>
+</html>

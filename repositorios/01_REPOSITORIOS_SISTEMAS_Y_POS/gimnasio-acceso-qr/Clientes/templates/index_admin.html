@@ -1,0 +1,898 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - ClubHouse Digital</title>
+    <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+ <!-- SIDEBAR -->
+<aside class="sidebar">
+    <!-- Logo (FIJO) -->
+    <div class="sidebar-logo">
+        <i class='bx bx-dumbbell'></i>
+        <h1>ClubHouse</h1>
+    </div>
+
+    <!-- Navegación con scroll (SOLO ESTA PARTE SCROLLEA) -->
+    <ul class="sidebar-nav">
+        <li class="nav-section-title">Principal</li>
+        <li>
+            <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                <i class='bx bx-grid-alt'></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        
+        <li class="nav-section-title">Gestión</li>
+        <li>
+            <a href="#usuarios" class="nav-link" data-section="usuarios">
+                <i class='bx bx-user'></i>
+                <span>Usuarios</span>
+            </a>
+        </li>
+        <li>
+            <a href="#planes" class="nav-link" data-section="planes">
+                <i class='bx bx-card'></i>
+                <span>Planes</span>
+            </a>
+        </li>
+        <li>
+            <a href="#pagos" class="nav-link" data-section="pagos">
+                <i class='bx bx-money'></i>
+                <span>Pagos</span>
+            </a>
+        </li>
+        <li>
+            <a href="#asistencias" class="nav-link" data-section="asistencias">
+                <i class='bx bx-qr'></i>
+                <span>Asistencias</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Footer del Sidebar (FIJO) -->
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ request.user.first_name.0|upper }}{{ request.user.last_name.0|upper }}
+            </div>
+            <div class="user-info">
+                <h4>{{ request.user.get_full_name|default:request.user.username }}</h4>
+                <p>Administrador</p>
+            </div>
+        </div>
+        
+        <a href="{% url 'cerrar_sesion' %}" class="nav-link logout">
+            <i class='bx bx-log-out'></i>
+            <span>Cerrar Sesión</span>
+        </a>
+        
+        <p class="copyright">© 2025 ClubHouse Digital</p>
+    </div>
+</aside>
+
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content">
+            <!-- ========== DASHBOARD SECTION ========== -->
+            <section id="dashboard" class="content-section active">
+                <div class="content-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 class="page-title" style="font-size: 1.5rem;">
+                            <i class='bx bx-grid-alt'></i> Resumen Financiero
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Vista general del rendimiento del negocio
+                        </p>
+                    </div>
+                    <div class="date-badge">
+                        <i class='bx bx-calendar'></i> {% now "d M, Y" %}
+                    </div>
+                </div>
+
+                <div class="stats-grid-compact">
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Socios Activos</span>
+                            <i class='bx bx-user text-primary' style="color: var(--primary-color);"></i>
+                        </div>
+                        <div class="stat-compact-value">{{ usuarios_activos }}</div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_usuarios.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class='bx {% if cambio_usuarios.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
+                            {{ cambio_usuarios.porcentaje }}% vs mes anterior
+                        </div>
+                    </div>
+
+                    <div class="stat-card-compact" style="border-left: 3px solid var(--success-color);">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Ingresos (Mes)</span>
+                            <i class='bx bx-money' style="color: var(--success-color);"></i>
+                        </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ingresos_mensuales }}"></div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_ingresos.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class='bx {% if cambio_ingresos.es_positivo %}bx-trending-up{% else %}bx-trending-down{% endif %}'></i>
+                            {{ cambio_ingresos.porcentaje }}%
+                        </div>
+                    </div>
+
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Acumulado Año</span>
+                            <i class='bx bx-line-chart' style="color: var(--info-color);"></i>
+                        </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ingresos_anuales }}"></div>
+                        <div class="stat-compact-label" style="font-size: 0.65rem; opacity: 0.7;">Año fiscal actual</div>
+                    </div>
+
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Ticket Promedio</span>
+                            <i class='bx bx-purchase-tag' style="color: var(--warning-color);"></i>
+                        </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ticket_promedio }}"></div>
+                        <div class="stat-compact-label" style="font-size: 0.65rem; opacity: 0.7;">Por transacción</div>
+                    </div>
+                    
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Accesos Hoy</span>
+                            <i class='bx bx-run'></i>
+                        </div>
+                        <div class="stat-compact-value">{{ accesos_hoy }}</div>
+                        <div class="stat-trend-indicator" style="color: var(--text-secondary);">
+                            <i class='bx bx-history'></i> Últimas 24h
+                        </div>
+                    </div>
+                </div>
+
+                <div class="finance-dashboard-layout">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class='bx bx-bar-chart-square'></i> Flujo de Ingresos (12 meses)</h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class='bx bx-wallet'></i> Origen de Ingresos</h3>
+                        </div>
+                        <div class="chart-body" style="position: relative; height: 220px;">
+                            <canvas id="paymentMethodsChart"></canvas>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <span class="stat-compact-label">Distribución por método de pago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <div class="chart-header">
+                        <h3><i class='bx bx-trophy'></i> Rentabilidad por Plan</h3>
+                    </div>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Precio</th>
+                                <th>Inscritos Activos</th>
+                                <th>Impacto en Ganancias</th> <th>Ingresos en mes</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in lista_planes %}
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--text-primary);">{{ item.plan.name }}</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ item.plan.get_plan_type_display }}</div>
+                                </td>
+                                <td>${{ item.plan.price|floatformat:0 }}</td>
+                                <td>
+                                    <span class="status-badge active">
+                                        <i class='bx bx-user'></i> {{ item.usuarios_inscritos }}
+                                    </span>
+                                </td>
+                                <td style="width: 25%;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="profit-bar-container">
+                                            <div class="profit-bar-fill" style="width: {{ item.share|stringformat:'.1f' }}%;"></div>
+                                        </div>
+                                        <span style="font-size: 0.8rem; font-weight: bold;">{{ item.share }}%</span>
+                                    </div>
+                                </td>
+                                <td style="color: var(--success-color); font-weight: 700;">
+                                    ${{ item.ingresos_total|floatformat:0 }}
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin_plan_details' item.plan.id %}" class="btn-icon view" title="Ver detalles"><i class='bx bx-show'></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" style="text-align: center;">No hay datos de planes aún.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ========== USUARIOS SECTION ========== -->
+            <section id="usuarios" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class='bx bx-user'></i>
+                        Gestión de Usuarios
+                    </h2>
+                    <div class="header-actions">
+                        <a href="{% url 'admin_user_create' %}" class="btn btn-primary">
+                            <i class='bx bx-plus'></i>
+                            Nuevo Usuario
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Management Section -->
+                <div class="management-section">
+                    <!-- Tabs -->
+                    <div class="tabs-container" style="margin-bottom: 1.5rem;">
+                        <button class="tab-btn active" data-tab="socios">
+                            <i class='bx bx-user'></i>
+                            Socios ({{ total_socios }})
+                        </button>
+                        <button class="tab-btn" data-tab="moderadores">
+                            <i class='bx bx-shield'></i>
+                            Moderadores ({{ total_moderadores }})
+                        </button>
+                        <button class="tab-btn" data-tab="admins">
+                            <i class='bx bx-crown'></i>
+                            Admins ({{ total_admins }})
+                        </button>
+                    </div>
+
+                    <!-- Stats Summary -->
+                    <div class="stats-summary" style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--text-secondary);">Activos:</span>
+                            <span style="color: var(--success-color); font-weight: 600;">{{ socios_activos }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--text-secondary);">Inactivos:</span>
+                            <span style="color: var(--warning-color); font-weight: 600;">{{ socios_inactivos }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Socios -->
+                    <div class="tab-content active" id="socios-content">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchSocioInput" placeholder="Buscar por nombre, RUT o plan...">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Plan Actual</th>
+                                    <th>Estado</th>
+                                    <th>Días Restantes</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for socio_data in socios %}
+                                <tr class="searchable-socio-row user-row" data-search="{{ socio_data.user.get_full_name }} {{ socio_data.user.rut }} {{ socio_data.plan_name }}">
+                                    <td>
+                                        <strong>{{ socio_data.user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ socio_data.user.rut }}</div>
+                                    </td>
+                                    <td>{{ socio_data.plan_name }}</td>
+                                    <td>
+                                        <span class="status-badge {% if socio_data.estado == 'Activo' %}active{% else %}expired{% endif %}">
+                                            <i class='bx {% if socio_data.estado == 'Activo' %}bx-check-circle{% else %}bx-x-circle{% endif %}'></i>
+                                            {{ socio_data.estado }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if socio_data.dias_restantes > 0 %}
+                                            <span style="color: var(--success-color);">{{ socio_data.dias_restantes }} días</span>
+                                        {% else %}
+                                            <span style="color: var(--danger-color);">Vencido</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'admin_user_details' socio_data.user.id %}" class="btn-icon view" title="Ver detalles">
+                                                <i class='bx bx-show'></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_edit' socio_data.user.id %}" class="btn-icon edit" title="Editar">
+                                                <i class='bx bx-edit'></i>
+                                            </a>
+                                            <button class="btn-icon delete" title="Eliminar" 
+                                                    onclick="showDeleteModal({{ socio_data.user.id }}, '{{ socio_data.user.get_full_name }}', '{{ socio_data.user.rut }}')">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr id="no-socios-row">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No hay socios registrados.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <tr id="search-socio-no-results" style="display: none;">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron socios con esos datos.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de Moderadores -->
+                    <div class="tab-content" id="moderadores-content">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchModeradorInput" placeholder="Buscar moderador...">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha de Registro</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for moderador in moderadores %}
+                                <tr class="searchable-moderador-row user-row" data-search="{{ moderador.get_full_name }} {{ moderador.rut }} {{ moderador.email }} {{ moderador.phone }}">
+                                    <td><strong>{{ moderador.get_full_name }}</strong></td>
+                                    <td>{{ moderador.phone|default:"-" }}</td>
+                                    <td>{{ moderador.created_at|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'admin_user_details' moderador.id %}" class="btn-icon view" title="Ver detalles">
+                                                <i class='bx bx-show'></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_edit' moderador.id %}" class="btn-icon edit" title="Editar">
+                                                <i class='bx bx-edit'></i>
+                                            </a>
+                                            <button class="btn-icon delete" title="Eliminar"
+                                                    onclick="showDeleteModal({{ moderador.id }}, '{{ moderador.get_full_name }}', '{{ moderador.rut }}')">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr id="no-moderadores-row">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No hay moderadores registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr id="search-moderador-no-results" style="display: none;">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron moderadores.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de Administradores -->
+                    <div class="tab-content" id="admins-content">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchAdminInput" placeholder="Buscar administrador...">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Fecha de Registro</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admin_user in administradores %}
+                                <tr class="searchable-admin-row user-row" data-search="{{ admin_user.get_full_name }} {{ admin_user.rut }} {{ admin_user.email }}">
+                                    <td>
+                                        <strong>{{ admin_user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ admin_user.rut }}</div>
+                                    </td>
+                                    <td>{{ admin_user.email }}</td>
+                                    <td>{{ admin_user.created_at|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'admin_user_details' admin_user.id %}" class="btn-icon view" title="Ver detalles">
+                                                <i class='bx bx-show'></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_edit' admin_user.id %}" class="btn-icon edit" title="Editar">
+                                                <i class='bx bx-edit'></i>
+                                            </a>
+                                            {% if request.user.id != admin_user.id %}
+                                            <button class="btn-icon delete" title="Eliminar"
+                                                    onclick="showDeleteModal({{ admin_user.id }}, '{{ admin_user.get_full_name }}', '{{ admin_user.rut }}')">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr id="no-admins-row">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No hay otros administradores registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr id="search-admin-no-results" style="display: none;">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron administradores.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ========== PLANES SECTION ========== -->
+            <section id="planes" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class='bx bx-card'></i>
+                        Gestión de Planes
+                    </h2>
+                    <div class="header-actions">
+                        <a href="{% url 'admin_plan_create' %}" class="btn btn-primary">
+                            <i class='bx bx-plus'></i>
+                            Nuevo Plan
+                        </a>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Precio</th>
+                                <th>Días de Acceso</th>
+                                <th>Inscritos</th>
+                                <th>Ingresos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan_data in lista_planes %}
+                            <tr>
+                                <td><strong>{{ plan_data.plan.name }}</strong></td>
+                                <td style="color: var(--primary-color); font-weight: 600;">${{ plan_data.plan.price|floatformat:0 }}</td>
+                                <td>{{ plan_data.plan.access_days }}</td>
+                                <td>
+                                    <span class="status-badge active">
+                                        <i class='bx bx-user'></i>
+                                        {{ plan_data.usuarios_inscritos }}
+                                    </span>
+                                </td>
+                                <td style="color: var(--success-color); font-weight: 600;">${{ plan_data.ingresos_mes|floatformat:0 }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'admin_plan_details' plan_data.plan.id %}" class="btn-icon view" title="Ver detalles">
+                                            <i class='bx bx-show'></i>
+                                        </a>
+                                        <a href="{% url 'admin_plan_edit' plan_data.plan.id %}" class="btn-icon edit" title="Editar">
+                                            <i class='bx bx-edit'></i>
+                                        </a>
+                                        <button class="btn-icon delete" title="Eliminar" 
+                                            onclick="showDeletePlanModal('{{ plan_data.plan.id }}', '{{ plan_data.plan.name }}', '{{ plan_data.plan.plan_type }}', {{ plan_data.usuarios_inscritos }})">
+                                            <i class='bx bx-trash'></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                    No hay planes disponibles
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ========== PAGOS SECTION ========== -->
+            <section id="pagos" class="content-section">
+                <div class="content-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 class="page-title">
+                            <i class='bx bx-money'></i> Finanzas y Pagos
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Registro histórico de transacciones</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="{% url 'exportar_pagos_excel' %}" class="btn btn-secondary">
+                            <i class='bx bx-download'></i> Exportar Excel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="searchPaymentInput" placeholder="Buscar por socio, ID o monto..." onkeyup="filterTable('searchPaymentInput', 'payment-row')">
+                        </div>
+                        
+                        <div class="filter-container">
+                            <select class="form-control" id="paymentMethodFilter" onchange="filterPayments()">
+                                <option value="all">Todos los métodos</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="tarjeta">Tarjeta</option>
+                            </select>
+
+                            <select class="form-control" id="paymentMonthFilter" onchange="filterPayments()">
+                                <option value="all">Todos los meses</option>
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">ID / Fecha</th>
+                                    <th style="width: 25%;">Socio</th>
+                                    <th style="width: 15%;">Método</th>
+                                    <th style="width: 10%;">Monto</th>
+                                    <th style="width: 10%;">Transacción</th>
+                                    <th style="width: 5%;">Recibo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pago in transacciones %}
+                                <tr class="payment-row" data-method="{{ pago.payment_method }}" data-month="{{ pago.date|date:'m' }}">
+                                    <td>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-family: 'Courier New', monospace; color: var(--primary-color); font-weight: 700;">#{{ pago.id }}</span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ pago.date|date:"d M, H:i" }}</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="user-cell">
+                                            <div>
+                                                {% if pago.user %}
+                                                    <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">
+                                                        {{ pago.user.get_full_name }}
+                                                    </div>
+                                                    <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.5px;">
+                                                        {{ pago.user.rut }}
+                                                    </div>
+                                                {% else %}
+                                                    <div style="font-weight: 600; color: #aaa; font-size: 0.9rem; font-style: italic;">
+                                                        {{ pago.user_backup_name }} <span style="font-size: 0.7rem; color: var(--danger-color);">(Eliminado)</span>
+                                                    </div>
+                                                    <div style="font-size: 0.7rem; color: #666;">
+                                                        {{ pago.user_backup_rut }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="method-pill {{ pago.payment_method }}">
+                                            {% if pago.payment_method == 'efectivo' %}
+                                                <i class='bx bx-money'></i> Efectivo
+                                            {% elif pago.payment_method == 'transferencia' %}
+                                                <i class='bx bx-transfer'></i> Transf.
+                                            {% elif pago.payment_method == 'tarjeta' %}
+                                                <i class='bx bx-credit-card'></i> Tarjeta
+                                            {% else %}
+                                                {{ pago.get_payment_method_display }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span style="font-weight: 700; color: #fff;">${{ pago.amount|floatformat:0 }}</span>
+                                    </td>
+
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 5px;">
+                                            <span style="font-size: 0.8rem; color: var(--text-secondary);">Exitosa</span>
+                                            <i class='bx bxs-check-circle' style="color: var(--success-color); font-size: 1.2rem;"></i>
+                                        </div>
+                                    </td>
+
+                                    <td style="text-align: right;">
+                                        <a href="{% url 'ver_recibo_pago' pago.id %}" target="_blank" class="btn-icon-subtle" title="Ver Recibo">
+                                            <i class='bx bx-receipt'></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-secondary);">
+                                        No hay transacciones registradas.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== ASISTENCIAS SECTION ========== -->
+            <section id="asistencias" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class='bx bx-qr'></i>
+                        Control de Asistencias
+                    </h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="location.href='{% url 'mostrar_Scanner' %}'">
+                            <i class='bx bx-qr-scan'></i>
+                            Abrir Escáner QR
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-summary" style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Asistencia Hoy</span>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary);">
+                            {{ accesos_hoy }} <span style="font-size: 1rem; color: var(--success-color);">({{ porcentaje_asistencia }}%)</span>
+                        </div>
+                    </div>
+                    <div style="width: 1px; background: var(--border-color);"></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Ausentes (Con Plan)</span>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--warning-color);">
+                            {{ total_ausentes }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <div class="tabs-container" style="margin-bottom: 1.5rem;">
+                        <button class="tab-btn active" onclick="switchAssistTab('logs')">
+                            <i class='bx bx-list-ul'></i> Bitácora de Hoy
+                        </button>
+                        <button class="tab-btn" onclick="switchAssistTab('absent')">
+                            <i class='bx bx-user-x'></i> Ausentes Hoy
+                        </button>
+                    </div>
+
+                    <div id="tab-logs" class="assist-tab-content active">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchLogsInput" placeholder="Buscar en registros de hoy..." onkeyup="filterTable('searchLogsInput', 'logs-row')">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Plan</th>
+                                    <th>Estado</th>
+                                    <th>Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs_hoy %}
+                                <tr class="logs-row">
+                                    <td style="font-weight: 600; color: var(--text-primary);">
+                                        {{ log.timestamp|date:"H:i:s" }}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            {{ log.user.first_name }} {{ log.user.last_name }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if log.membership %}
+                                            {{ log.membership.plan.name }}
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.status == 'allowed' %}
+                                            <span class="status-badge active"><i class='bx bx-check'></i> Permitido</span>
+                                        {% else %}
+                                            <span class="status-badge expired"><i class='bx bx-x'></i> Denegado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                                        {% if log.status == 'denied' %}
+                                            {{ log.denial_reason }}
+                                        {% else %}
+                                            Acceso Correcto
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">No hay registros de acceso hoy.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-absent" class="assist-tab-content" style="display: none;">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchAbsentInput" placeholder="Buscar ausente..." onkeyup="filterTable('searchAbsentInput', 'absent-row')">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Plan Activo</th>
+                                    <th>Días Restantes</th>
+                                    <th>Contacto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lista_ausentes %}
+                                <tr class="absent-row">
+                                    <td>
+                                        <strong>{{ item.user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ item.user.rut }}</div>
+                                    </td>
+                                    <td>{{ item.plan }}</td>
+                                    <td>
+                                        <span style="color: {% if item.dias_restantes < 7 %}var(--warning-color){% else %}var(--success-color){% endif %}; font-weight: 600;">
+                                            {{ item.dias_restantes }} días
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if item.user.phone %}
+                                            <a href="tel:{{ item.user.phone }}" style="color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                                                <i class='bx bx-phone'></i> {{ item.user.phone }}
+                                            </a>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_user_details' item.user.id %}" class="btn-icon view" title="Ver Perfil">
+                                            <i class='bx bx-user'></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">¡Increíble! Todos los socios activos vinieron hoy.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <i class='bx bx-error-circle modal-icon'></i>
+            <h2 class="modal-title">¿Eliminar Usuario?</h2>
+            <p class="modal-message">
+                Esta acción es permanente y no se puede deshacer. Se eliminará toda la información asociada al usuario.
+            </p>
+            <div class="modal-user-info">
+                <div class="modal-user-name" id="modalUserName"></div>
+                <div class="modal-user-rut" id="modalUserRut"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                    <i class='bx bx-x'></i>
+                    Cancelar
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="modal-btn modal-btn-delete" id="confirmDeleteBtn">
+                        <i class='bx bx-trash'></i>
+                        Sí, Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación DE PLANES -->
+    <div class="modal-overlay" id="deletePlanModal">
+        <div class="modal-content">
+            <i class='bx bx-error-circle modal-icon'></i>
+            <h2 class="modal-title">¿Eliminar Plan?</h2>
+            <p class="modal-message">
+                Esta acción es permanente y no se puede deshacer.
+                <span id="planWarning" style="display: none;">
+                    <br><br>
+                    <strong style="color: var(--danger-color);">
+                        ADVERTENCIA: Este plan tiene <span id="planActiveUsers"></span> usuario(s) activo(s).
+                    </strong>
+                </span>
+            </p>
+            <div class="modal-user-info">
+                <div class="modal-user-name" id="modalPlanName"></div>
+                <div class="modal-user-rut" id="modalPlanType"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeDeletePlanModal()">
+                    <i class='bx bx-x'></i>
+                    Cancelar
+                </button>
+                <form id="deletePlanForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="modal-btn modal-btn-delete" id="confirmDeletePlanBtn">
+                        <i class='bx bx-trash'></i>
+                        Sí, Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.djangoChartData = {
+            ingresosLabels: JSON.parse('{{ chart_ingresos_labels|escapejs }}'),
+            ingresosData: JSON.parse('{{ chart_ingresos_data|escapejs }}'),
+            pagosLabels: JSON.parse('{{ chart_pagos_labels|escapejs }}'),
+            pagosData: JSON.parse('{{ chart_pagos_data|escapejs }}')
+        };
+    </script>
+    <script src="{% static 'js/indexAdmin.js' %}"></script>
+</body>
+</html>

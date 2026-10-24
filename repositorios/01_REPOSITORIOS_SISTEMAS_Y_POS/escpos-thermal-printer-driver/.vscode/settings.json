@@ -1,0 +1,15 @@
+{
+  "cSpell.words": [
+    "dohooo",
+    "escpos",
+    "npmrc",
+    "PNPM",
+    "serialport"
+  ],
+  "prettier.enable": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "goldRight.templateDirectoryPath": "./.vscode/templates"
+}

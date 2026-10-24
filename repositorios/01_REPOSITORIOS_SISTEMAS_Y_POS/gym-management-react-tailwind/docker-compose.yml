@@ -1,0 +1,61 @@
+# One command to run the whole stack:  docker compose up --build
+# App:      http://localhost:8080
+# API:      http://localhost:5000/api/health   (also proxied at :8080/api)
+# Postgres: localhost:5432  (user/pass/db: postgres / postgres / gym_management)
+
+services:
+  db:
+    image: postgres:16
+    container_name: gym-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gym_management
+    ports:
+      - "5432:5432"
+    volumes:
+      # schema + seed auto-run on FIRST start (empty volume), alphabetical order
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - gym_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gym_management"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: gym-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # wait until Postgres is actually ready
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/gym_management
+      JWT_SECRET: change_this_to_a_long_random_secret_at_least_32_chars
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: "*"
+    ports:
+      - "5000:5000"
+    volumes:
+      - gym_uploads:/app/uploads   # persist uploaded images across restarts/rebuilds
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api      # same-origin; Nginx proxies to backend
+    container_name: gym-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8090:80"    # host 8090 -> nginx 80 (8080 avoided; change if 8090 is taken)
+
+volumes:
+  gym_db_data:
+  gym_uploads:

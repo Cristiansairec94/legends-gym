@@ -18,8 +18,11 @@ import {
   Users,
   Image,
   LogOut,
-  Download
+  Download,
+  Sparkles
 } from 'lucide-react';
+import gymBgMain from '../../assets/gym-background.jpg';
+import gymBgMotivational from '../../assets/gym-background-4k.jpg';
 
 export const TurnstileTerminal: React.FC = () => {
   const { verifyBiometricAccess, registerExit, members, accessLogs, activeBranch } = useGym();
@@ -113,7 +116,6 @@ export const TurnstileTerminal: React.FC = () => {
     }
   };
 
-  
   // Modo Pantalla Completa: Cubre toda la pantalla al 100% y oculta todos los menús
   if (isFullScreen) {
     return (
@@ -134,8 +136,6 @@ export const TurnstileTerminal: React.FC = () => {
   return (
     <div className={`space-y-6 relative rounded-3xl overflow-hidden p-3 sm:p-5 ${isFullScreen ? 'p-6 min-h-screen' : ''}`}>
       
-            
-
       {/* Real Gym Background Photo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
         <img
@@ -161,7 +161,7 @@ export const TurnstileTerminal: React.FC = () => {
             <h1 className="text-xl font-black text-white tracking-wide uppercase">
               Control de Acceso
             </h1>
-            <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold">
+            <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold shadow-[0_0_10px_rgba(245,158,11,0.2)]">
               Lector Activo
             </span>
           </div>
@@ -230,12 +230,12 @@ export const TurnstileTerminal: React.FC = () => {
           </button>
 
           <button
-            onClick={() => window.open('?mode=terminal', '_blank', 'width=1180,height=840')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border/80 border border-gym-border text-xs font-bold text-white transition-all shadow-sm"
-            title="Abrir vista dedicada de Control de Acceso para equipo independiente"
+            onClick={() => window.open('?mode=terminal', '_blank', 'width=1280,height=850')}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-xs font-black text-amber-300 transition-all shadow-glow-gold"
+            title="Abrir Kiosco de Autoservicio y Registro estilo Smart Fit"
           >
-            <ExternalLink className="w-4 h-4 text-amber-400" />
-            <span>Equipo Independiente</span>
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>Kiosco Smart Fit</span>
           </button>
 
           {/* Download Windows Desktop App (.exe) */}

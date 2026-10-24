@@ -1,0 +1,70 @@
+# Vendor directory (Composer dependencies)
+/vendor/
+
+# Configuration files with sensitive data
+config/database.php
+config/api_config.php
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Runtime uploads can contain identity documents, resumes, profile photos,
+# payment records, and private videos. Keep only the directory guard file.
+uploads/**
+!uploads/.gitignore
+!uploads/.htaccess
+!uploads/coach_resumes/.htaccess
+!uploads/discount_ids/.htaccess
+!uploads/coach_videos/.htaccess
+!uploads/profile_images/.htaccess
+!uploads/video_thumbnails/.htaccess
+
+# Private application files; keep only server access controls and guards.
+storage/private/**
+!storage/private/.gitignore
+!storage/private/.htaccess
+
+# Cache directories
+cache/
+tmp/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.*.local
+
+# API keys and sensitive configuration files
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+auth.json
+secrets.json
+*.PublishSettings
+
+# Database backups and SQL dumps
+*.sql
+*.bak
+*.backup
+*.publishsettings
