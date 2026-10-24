@@ -25,7 +25,9 @@ import {
   EyeOff,
   User,
   Lock,
-  Sparkles
+  Sparkles,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 export const EmployeesManager: React.FC = () => {
@@ -33,6 +35,7 @@ export const EmployeesManager: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
@@ -296,8 +299,8 @@ export const EmployeesManager: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
+      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -308,150 +311,345 @@ export const EmployeesManager: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 'admin', label: 'Administradores' },
-            { id: 'receptionist', label: 'Recepción' },
-            { id: 'trainer', label: 'Entrenadores' },
-          ].map((tab) => (
+        <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end">
+          {/* Filtros por Rol */}
+          <div className="flex items-center gap-1.5 overflow-x-auto">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'admin', label: 'Administradores' },
+              { id: 'receptionist', label: 'Recepción' },
+              { id: 'trainer', label: 'Entrenadores' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setRoleFilter(tab.id as typeof roleFilter)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                  roleFilter === tab.id
+                    ? 'bg-amber-500 text-black font-bold'
+                    : 'bg-gym-surface text-gym-muted hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Selector de Vista: Cuadros vs Tabla */}
+          <div className="flex items-center bg-gym-surface p-1 rounded-xl border border-gym-border shrink-0">
             <button
-              key={tab.id}
-              onClick={() => setRoleFilter(tab.id as typeof roleFilter)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
-                roleFilter === tab.id
-                  ? 'bg-amber-500 text-black font-bold'
-                  : 'bg-gym-surface text-gym-muted hover:text-white'
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
               }`}
+              title="Vista en Cuadros / Tarjetas"
             >
-              {tab.label}
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Cuadros</span>
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'table'
+                  ? 'bg-amber-500 text-black shadow-sm'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+              title="Vista en Tabla"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>Tabla</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Employees Table */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
-                <th className="p-4">Empleado</th>
-                <th className="p-4">Puesto / Cargo</th>
-                <th className="p-4">Rol & Usuario</th>
-                <th className="p-4">Turno Asignado</th>
-                <th className="p-4">Sueldo Base</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gym-border/40 text-sm">
-              {filteredEmployees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-gym-surface/40 transition-colors">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
-                        alt={emp.fullName}
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
-                        }}
-                        className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0 bg-gym-surface"
-                      />
-                      <div>
-                        <div 
-                          onClick={() => handleOpenEditModal(emp)}
-                          className="font-bold text-white text-xs hover:text-amber-400 cursor-pointer transition-colors"
-                          title="Clic para editar"
-                        >
-                          {emp.fullName}
-                        </div>
-                        <div className="text-[11px] text-gym-muted font-mono">{emp.id} • {emp.phone}</div>
-                      </div>
-                    </div>
-                  </td>
+      {/* Estado Vacío */}
+      {filteredEmployees.length === 0 && (
+        <div className="bg-gym-card p-12 rounded-2xl border border-gym-border text-center">
+          <Users className="w-12 h-12 text-gym-muted mx-auto mb-3 opacity-40" />
+          <h3 className="text-base font-bold text-white">No se encontraron empleados</h3>
+          <p className="text-xs text-gym-muted mt-1">
+            Intenta modificando los filtros de búsqueda o registra un nuevo colaborador.
+          </p>
+        </div>
+      )}
 
-                  <td className="p-4">
-                    <span className="font-semibold text-white text-xs block">{emp.jobTitle}</span>
-                    <span className="text-[10px] text-gym-muted">Desde {emp.hireDate}</span>
-                  </td>
+      {/* Vista 1: Cuadros / Tarjetas (Grid View) */}
+      {viewMode === 'grid' && filteredEmployees.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredEmployees.map((emp) => (
+            <div
+              key={emp.id}
+              className="bg-gym-card rounded-2xl border border-gym-border hover:border-amber-400/50 p-5 shadow-lg flex flex-col justify-between transition-all relative overflow-hidden group hover:shadow-glow-gold/10"
+            >
+              {/* Barra superior de color según rol */}
+              <div className={`absolute top-0 left-0 right-0 h-1.5 ${
+                emp.role === 'admin'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-300'
+                  : emp.role === 'receptionist'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-300'
+                  : 'bg-gradient-to-r from-emerald-500 to-emerald-300'
+              }`} />
 
-                  <td className="p-4">
-                    <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border inline-block ${
-                      emp.role === 'admin'
-                        ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                        : emp.role === 'receptionist'
-                        ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                        : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                    }`}>
-                      {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
+              <div>
+                {/* Header de la Tarjeta: Rol & Estado */}
+                <div className="flex items-center justify-between gap-2 mb-3.5 pt-1">
+                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-lg border ${
+                    emp.role === 'admin'
+                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                      : emp.role === 'receptionist'
+                      ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                      : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                  }`}>
+                    {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
+                  </span>
+
+                  <button
+                    onClick={() => updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' })}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                      emp.status === 'active'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
+                    }`}
+                    title="Clic para alternar estado"
+                  >
+                    {emp.status === 'active' ? '● Activo' : '○ Inactivo'}
+                  </button>
+                </div>
+
+                {/* Perfil: Foto + Nombre + Puesto */}
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="relative shrink-0">
+                    <img
+                      src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
+                      alt={emp.fullName}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
+                      }}
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-gym-border group-hover:border-amber-400/60 bg-gym-surface shadow-md transition-colors"
+                    />
+                    <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-gym-card ${
+                      emp.status === 'active' ? 'bg-emerald-400 ring-2 ring-emerald-500/30' : 'bg-gray-500'
+                    }`} />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 
+                      onClick={() => handleOpenEditModal(emp)}
+                      className="font-black text-white text-sm truncate hover:text-amber-400 cursor-pointer transition-colors"
+                      title="Clic para editar empleado"
+                    >
+                      {emp.fullName}
+                    </h3>
+                    <p className="text-xs font-semibold text-gray-300 truncate mt-0.5">
+                      {emp.jobTitle}
+                    </p>
+                    <span className="text-[11px] text-gym-muted font-mono block mt-0.5">
+                      {emp.id} • {emp.phone}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bloques de Datos Clave (Detalles en cajas) */}
+                <div className="space-y-2 bg-gym-surface/40 p-3 rounded-xl border border-gym-border/60 text-xs">
+                  {/* Usuario de Acceso */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
+                      <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Usuario:</span>
                     </span>
                     {emp.username ? (
-                      <div className="text-[11px] text-gray-300 font-mono mt-1 flex items-center gap-1">
-                        <KeyRound className="w-3 h-3 text-amber-400/80 shrink-0" />
-                        <span className="text-amber-400 font-bold">@{emp.username}</span>
-                      </div>
+                      <span className="font-mono font-bold text-amber-400 text-xs">
+                        @{emp.username}
+                      </span>
                     ) : (
-                      <div className="text-[10px] text-gym-muted italic mt-0.5">Sin usuario</div>
+                      <span className="text-[10px] text-gym-muted italic">Sin asignar</span>
                     )}
-                  </td>
+                  </div>
 
-                  <td className="p-4 text-xs text-gray-300">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-gym-muted" />
-                      <span>{emp.shift}</span>
-                    </div>
-                  </td>
+                  {/* Turno */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
+                      <Clock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <span>Turno:</span>
+                    </span>
+                    <span className="text-gray-200 font-semibold text-[11px] truncate max-w-[150px]" title={emp.shift}>
+                      {emp.shift}
+                    </span>
+                  </div>
 
-                  <td className="p-4 font-mono font-bold text-xs text-amber-400">
-                    ${emp.salaryMonthly.toLocaleString()} MXN
-                  </td>
+                  {/* Sueldo Base */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Sueldo Base:</span>
+                    </span>
+                    <span className="font-mono font-bold text-white text-xs">
+                      ${emp.salaryMonthly ? emp.salaryMonthly.toLocaleString() : '0'} MXN
+                    </span>
+                  </div>
 
-                  <td className="p-4">
-                    <button
-                      onClick={() => {
-                        updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' });
-                      }}
-                      className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
-                        emp.status === 'active'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                          : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
-                      }`}
-                      title="Clic para cambiar estado"
-                    >
-                      {emp.status === 'active' ? 'Activo' : 'Inactivo'}
-                    </button>
-                  </td>
+                  {/* Fecha de Ingreso */}
+                  <div className="flex items-center justify-between pt-1 border-t border-gym-border/40 text-[10px] text-gym-muted">
+                    <span>Alta en nómina:</span>
+                    <span className="font-mono">{emp.hireDate}</span>
+                  </div>
+                </div>
+              </div>
 
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenEditModal(emp)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-bold transition-all shadow-sm group cursor-pointer"
-                        title="Editar empleado, rol y credenciales"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                        <span>Editar</span>
-                      </button>
+              {/* Botones de Acción */}
+              <div className="pt-3.5 mt-3.5 border-t border-gym-border/60 flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenEditModal(emp)}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-extrabold transition-all shadow-sm group cursor-pointer"
+                  title="Editar empleado, rol y credenciales"
+                >
+                  <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
+                      deleteEmployee(emp.id);
+                    }
+                  }}
+                  className="p-2 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
+                  title="Eliminar empleado"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Vista 2: Tabla (Table View) */}
+      {viewMode === 'table' && filteredEmployees.length > 0 && (
+        <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
+                  <th className="p-4">Empleado</th>
+                  <th className="p-4">Puesto / Cargo</th>
+                  <th className="p-4">Rol & Usuario</th>
+                  <th className="p-4">Turno Asignado</th>
+                  <th className="p-4">Sueldo Base</th>
+                  <th className="p-4">Estado</th>
+                  <th className="p-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gym-border/40 text-sm">
+                {filteredEmployees.map((emp) => (
+                  <tr key={emp.id} className="hover:bg-gym-surface/40 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
+                          alt={emp.fullName}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
+                          }}
+                          className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0 bg-gym-surface"
+                        />
+                        <div>
+                          <div 
+                            onClick={() => handleOpenEditModal(emp)}
+                            className="font-bold text-white text-xs hover:text-amber-400 cursor-pointer transition-colors"
+                            title="Clic para editar"
+                          >
+                            {emp.fullName}
+                          </div>
+                          <div className="text-[11px] text-gym-muted font-mono">{emp.id} • {emp.phone}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="p-4">
+                      <span className="font-semibold text-white text-xs block">{emp.jobTitle}</span>
+                      <span className="text-[10px] text-gym-muted">Desde {emp.hireDate}</span>
+                    </td>
+
+                    <td className="p-4">
+                      <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border inline-block ${
+                        emp.role === 'admin'
+                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                          : emp.role === 'receptionist'
+                          ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                          : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      }`}>
+                        {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
+                      </span>
+                      {emp.username ? (
+                        <div className="text-[11px] text-gray-300 font-mono mt-1 flex items-center gap-1">
+                          <KeyRound className="w-3 h-3 text-amber-400/80 shrink-0" />
+                          <span className="text-amber-400 font-bold">@{emp.username}</span>
+                        </div>
+                      ) : (
+                        <div className="text-[10px] text-gym-muted italic mt-0.5">Sin usuario</div>
+                      )}
+                    </td>
+
+                    <td className="p-4 text-xs text-gray-300">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-gym-muted" />
+                        <span>{emp.shift}</span>
+                      </div>
+                    </td>
+
+                    <td className="p-4 font-mono font-bold text-xs text-amber-400">
+                      ${emp.salaryMonthly.toLocaleString()} MXN
+                    </td>
+
+                    <td className="p-4">
                       <button
                         onClick={() => {
-                          if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
-                            deleteEmployee(emp.id);
-                          }
+                          updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' });
                         }}
-                        className="p-1.5 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
-                        title="Eliminar empleado"
+                        className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
+                          emp.status === 'active'
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
+                        }`}
+                        title="Clic para cambiar estado"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        {emp.status === 'active' ? 'Activo' : 'Inactivo'}
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenEditModal(emp)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-bold transition-all shadow-sm group cursor-pointer"
+                          title="Editar empleado, rol y credenciales"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                          <span>Editar</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
+                              deleteEmployee(emp.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
+                          title="Eliminar empleado"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal Agregar / Editar Empleado */}
       {showAddModal && (
