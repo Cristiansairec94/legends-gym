@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="20" fill="#0f172a"/>
+  <!-- Agarre curvado superior -->
+  <path d="M190 230 L190 140 Q250 90 310 140 L310 230" fill="none" stroke="#64748b" stroke-width="26" stroke-linecap="round"/>
+  <!-- Cuerpo esférico con base plana -->
+  <circle cx="250" cy="290" r="120" fill="#1e293b" stroke="#334155" stroke-width="6"/>
+  <!-- Detalle banda de color identificación de peso (Rojo = 32kg) -->
+  <path d="M185 195 Q250 215 315 195" stroke="#ef4444" stroke-width="12" fill="none"/>
+  <!-- Base de apoyo plana -->
+  <rect x="180" y="390" width="140" height="20" rx="8" fill="#0f172a"/>
+  <!-- Grabado de peso -->
+  <circle cx="250" cy="290" r="45" fill="#0f172a"/>
+  <text x="250" y="296" fill="#f8fafc" font-size="24" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">32</text>
+  <text x="250" y="318" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">KG</text>
+  <text x="250" y="60" fill="#f8fafc" font-size="22" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">KETTLEBELL COMPETICIÓN</text>
+</svg>

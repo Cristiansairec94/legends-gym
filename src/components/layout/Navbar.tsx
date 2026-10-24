@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
-import { 
-  Flame,
-  ShoppingBag, 
+import {  
   Clock, 
   Bell, 
   Cloud, 
   CloudOff, 
-  LogOut
+  LogOut,
+  Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -29,8 +28,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { 
     currentUser,
     logout,
-    todayCheckInsCount, 
-    cashSession,
     unreadNotificationsCount,
     syncState
   } = useGym();
@@ -93,20 +90,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right / Controls Bar: Unified Single-Line Layout */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           
-          {/* Direct Punto de Venta Top Button */}
-          <button
-            onClick={() => setActiveTab('pos')}
-            className={`flex items-center gap-2 h-10 px-3.5 sm:px-4 rounded-xl font-black text-xs transition-all shadow-md whitespace-nowrap shrink-0 ${
-              activeTab === 'pos'
-                ? 'bg-amber-500 text-black border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                : 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 hover:border-amber-400'
-            }`}
-            title="Ir directo al Punto de Venta"
-          >
-            <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-            <span>Punto de Venta</span>
-          </button>
-          
           {/* Real-time Clock */}
           <div 
             className="hidden md:flex items-center gap-2.5 h-10 px-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-white/[0.06] to-white/[0.04] border border-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.12)] whitespace-nowrap shrink-0"
@@ -118,29 +101,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          {/* Today Check-Ins */}
-          <div 
-            onClick={() => setActiveTab('access')}
-            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 cursor-pointer hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all text-xs shadow-sm whitespace-nowrap shrink-0"
-            title="Socios ingresados hoy"
-          >
-            <Flame className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
-            <span className="text-zinc-300 font-medium">Accesos hoy:</span>
-            <span className="font-bold text-emerald-400 font-mono text-sm">{todayCheckInsCount}</span>
-          </div>
-
-          {/* Cash Status */}
-          <div 
-            onClick={() => setActiveTab('cash')}
-            className="hidden lg:flex items-center gap-2.5 h-10 px-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] cursor-pointer hover:bg-white/[0.08] hover:border-white/25 transition-all text-xs whitespace-nowrap shrink-0"
-            title="Estado de caja"
-          >
-            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cashSession.status === 'open' ? 'bg-emerald-400 shadow-[0_0_8px_#10B981]' : 'bg-rose-500'}`} />
-            <span className="text-zinc-400 font-medium">Caja:</span>
-            <span className="font-bold text-zinc-200">
-              {cashSession.status === 'open' ? 'Abierta' : 'Cerrada'}
-            </span>
-          </div>
 
           {/* Offline / Cloud Sync Pill Button */}
           <button

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Env files (never commit secrets)
+.env
+**/.env
+!**/.env.example
+
+# Build output
+dist/
+build/
+frontend/dist/
+
+# Uploaded files (keep the folder, ignore contents)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local Postgres data (dev only)
+pgdata/
+*.pglog
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,706 @@
+:root {
+    --primary: #00ff9d;
+    --primary-dark: #00cc7d;
+    --danger: #ff4757;
+    --bg-dark: #0a0a0a;
+    --bg-card: #121212;
+    --border: rgba(255, 255, 255, 0.1);
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --sidebar-w: 280px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.05) 0%, transparent 20%),
+                      radial-gradient(circle at 90% 80%, rgba(0, 204, 255, 0.05) 0%, transparent 20%);
+    color: var(--text-main);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Wrapper Central */
+.main-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+}
+
+/* Card Principal */
+.register-card {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* --- Sidebar Izquierdo --- */
+.card-sidebar {
+    width: var(--sidebar-w);
+    background: #0f0f0f;
+    border-right: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.logo-icon { color: var(--primary); font-size: 1.4rem; }
+
+/* Pasos Verticales */
+.progress-vertical { display: flex; flex-direction: column; gap: 0; }
+
+.step-item { display: flex; gap: 15px; opacity: 0.4; transition: 0.3s; }
+.step-item.active { opacity: 1; }
+.step-item.completed { opacity: 0.7; }
+.step-item.completed .step-indicator { background: var(--primary); color: #000; border-color: var(--primary); }
+
+.step-indicator {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem;
+    background: #000; z-index: 2; transition: 0.3s;
+}
+
+.step-item.active .step-indicator {
+    border-color: var(--primary); color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+}
+
+.step-text { display: flex; flex-direction: column; justify-content: center; }
+.step-text strong { font-size: 0.95rem; margin-bottom: 2px; }
+.step-text span { font-size: 0.75rem; color: var(--text-muted); }
+
+.step-line {
+    width: 2px; height: 40px; background: var(--border);
+    margin-left: 15px; margin-top: -5px; margin-bottom: -5px;
+}
+
+.sidebar-footer p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+
+.btn-outline-sm {
+    display: block; text-align: center;
+    border: 1px solid var(--border); padding: 10px;
+    border-radius: 8px; color: var(--text-main);
+    text-decoration: none; font-size: 0.85rem; transition: 0.3s;
+}
+.btn-outline-sm:hover { border-color: var(--primary); color: var(--primary); }
+
+/* --- Área de Contenido (Derecha) --- */
+.card-content {
+    flex: 1;
+    position: relative;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.03), transparent 40%);
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Paneles de Pasos */
+.step-panel {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    padding: 2.5rem 3rem;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.4s ease;
+}
+
+.step-panel.active { display: flex; opacity: 1; transform: translateY(0); }
+
+.panel-header { margin-bottom: 1.5rem; flex-shrink: 0; }
+.panel-header h2 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #fff; }
+.panel-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* --- NUEVO: Estilos Planes Horizontales (Como Index Socio) --- */
+.plans-scroll-container {
+    flex: 1;
+    overflow-y: auto; /* Scroll interno vertical */
+    padding-right: 10px; /* Espacio para el scrollbar */
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* Scrollbar personalizado */
+.plans-scroll-container::-webkit-scrollbar { width: 6px; }
+.plans-scroll-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+.plans-scroll-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+.plans-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+.plan-card-horizontal {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+    overflow: hidden;
+    min-height: 340px;
+}
+
+/* Input radio oculto */
+.plan-card-horizontal input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 20; /* Un z-index alto para estar sobre el contenido y badges */
+}
+
+/* Hover */
+.plan-card-horizontal:hover {
+    transform: translateX(4px);
+    border-color: rgba(0, 255, 157, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Selected State */
+.plan-card-horizontal:has(input:checked) {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.08), rgba(0, 204, 255, 0.05));
+    box-shadow: 0 8px 32px rgba(0, 255, 157, 0.1);
+}
+
+/* Barra lateral de adorno */
+.plan-card-horizontal::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary), #00ccff);
+    transform: scaleY(0);
+    transition: 0.3s ease;
+}
+
+.plan-card-horizontal:hover::before,
+.plan-card-horizontal:has(input:checked)::before {
+    transform: scaleY(1);
+}
+
+/* Badge Recomendado */
+.horizontal-badge {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #ffa502, #ff6348);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(255, 165, 2, 0.3);
+    z-index: 10;
+}
+
+/* Estructura Interna del Plan */
+.plan-horizontal-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente el contenido */
+    gap: 1.5rem; 
+}
+
+.plan-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Alineación superior para que el precio no moleste al título */
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-right: 1rem;
+    flex-wrap: wrap; /* Permite que baje si es muy estrecho */
+    gap: 10px;
+}
+
+.plan-name {
+    font-size: 1.6rem; /* Un poco más grande */
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* NUEVA CLASE: Para la descripción de texto (si decides agregarla) */
+.plan-description-text {
+    font-size: 0.95rem;
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.plan-price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.plan-price span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Grid de caracteristicas (2 columnas) */
+.plan-features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    
+    /* CAMBIO 4: Más aire entre los items de la lista */
+    gap: 1rem 2rem; 
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem; /* Texto un pelín más grande */
+    color: var(--text-muted);
+}
+
+/* Ajuste para móvil */
+@media (max-width: 768px) {
+    .plan-card-horizontal {
+        flex-direction: column;
+        padding: 1.5rem;
+        min-height: auto; /* En móvil dejamos que la altura sea automática */
+    }
+    
+    .select-indicator-icon {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-left: 0;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        height: auto;
+    }
+}
+
+.feature-item i { color: var(--primary); font-size: 0.9rem; }
+
+/* Icono de selección grande a la derecha */
+.select-indicator-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    padding-left: 1.5rem;
+    color: rgba(255,255,255,0.2);
+    font-size: 1.5rem;
+    transition: 0.3s;
+}
+
+.plan-card-horizontal:has(input:checked) .select-indicator-icon {
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+}
+
+/* --- Estilos Paso 2: Formulario (ULTRA COMPACTO) --- */
+.compact-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 1.5rem;
+    flex: 1;
+    align-content: center;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full-width { grid-column: 1 / -1; }
+
+.form-group label { 
+    font-size: 0.75rem; 
+    color: var(--text-muted); 
+    text-transform: uppercase; 
+    font-weight: 600; 
+    margin-left: 4px;
+}
+
+.form-group input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95rem;
+    height: 42px;
+    transition: 0.3s;
+}
+.form-group input:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.08); }
+
+/* --- Estilos Paso 3: Pago --- */
+.payment-summary-box {
+    background: linear-gradient(90deg, rgba(0, 255, 157, 0.1), transparent);
+    border-left: 4px solid var(--primary);
+    padding: 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+.summary-row { display: flex; justify-content: space-between; align-items: center; }
+.summary-row strong { font-size: 1.4rem; color: #fff; }
+
+.payment-options-grid {
+    display: grid;
+    /* CAMBIO AQUÍ: De 3 columnas a 2 columnas para que ocupen el 50% cada una */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-option { cursor: pointer; position: relative; }
+.payment-option input { position: absolute; opacity: 0; }
+.option-content {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: 0.3s;
+}
+.payment-option:hover .option-content { background: rgba(255,255,255,0.05); }
+.payment-option input:checked + .option-content { border-color: var(--primary); background: rgba(0,255,157,0.05); color: var(--primary); }
+
+.option-content i { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+.option-content span { display: block; font-weight: 600; }
+.option-content small { font-size: 0.7rem; color: var(--text-muted); }
+
+.checkbox-wrapper {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);
+}
+
+/* --- Botones --- */
+.panel-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.btn-primary { background: var(--primary); color: #000; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,157,0.3); background: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-text { background: transparent; color: var(--text-muted); }
+.btn-text:hover { color: #fff; }
+
+/* --- Modal Personalizado --- */
+.custom-modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+    z-index: 1000; justify-content: center; align-items: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.custom-modal {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%; max-width: 400px;
+    text-align: center;
+    transform: scale(0.9);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+@keyframes scaleUp { to { transform: scale(1); } }
+
+.modal-icon-box {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem auto; font-size: 1.8rem;
+}
+.modal-icon-box.error { background: rgba(255, 71, 87, 0.1); color: var(--danger); }
+.modal-icon-box.success { background: rgba(0, 255, 157, 0.1); color: var(--primary); }
+
+.modal-title { font-size: 1.4rem; margin-bottom: 0.5rem; color: #fff; }
+.modal-text { color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
+.modal-btn { width: 100%; justify-content: center; }
+
+/* --- Paso 4: Exito --- */
+.success-wrapper {
+    text-align: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%;
+}
+.qr-result { background: #fff; padding: 15px; border-radius: 12px; margin: 2rem 0; }
+.qr-result img { max-width: 180px; display: block; }
+
+@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-wrapper { height: auto; display: block; overflow-y: auto;}
+    .register-card { flex-direction: column; height: auto; border-radius: 0; }
+    .card-sidebar { width: 100%; padding: 1.5rem; flex-direction: row; align-items: center; }
+    .progress-vertical { display: none; }
+    .step-panel { position: relative; opacity: 1; transform: none; padding: 1.5rem; }
+    .compact-form-grid { grid-template-columns: 1fr; }
+    .plan-features-grid { grid-template-columns: 1fr; } /* En movil 1 columna de features */
+    .select-indicator-icon { display: none; } /* Ocultar flecha en movil para ganar espacio */
+    .plan-horizontal-content { padding-right: 0; }
+    body { overflow: auto; }
+}
+
+.options-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 2rem;
+    background: rgba(255,255,255,0.03);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: flex-start; /* Alineación arriba para texto multilínea */
+    gap: 12px;
+    margin-bottom: 0; /* Quitamos margen individual */
+}
+
+.checkbox-wrapper input {
+    margin-top: 4px; /* Ajuste fino para alinear con la primera línea de texto */
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkbox-wrapper label {
+    font-size: 0.9rem;
+    color: #fff;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+/* --- Paso 4: Éxito / Digital Pass Redesign --- */
+
+.success-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centrado vertical total */
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    padding: 0 1rem;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* 1. Header Animado */
+.success-header {
+    margin-bottom: 1.5rem;
+}
+
+.success-icon-anim {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), #00ccff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #000;
+    margin: 0 auto 1rem auto;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+}
+
+.ripple {
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    animation: rippleEffect 2s infinite;
+    opacity: 0;
+}
+
+@keyframes rippleEffect {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.success-header h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(to right, #fff, #bbb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.success-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 2. Tarjeta de Pase Digital */
+.digital-pass {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.2rem;
+    width: 100%;
+    max-width: 280px; /* Ancho controlado */
+    position: relative;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Decoración superior de la tarjeta */
+.pass-top {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-bottom: 0.5rem;
+}
+
+.pass-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+/* Wrapper del QR para los bordes decorativos */
+.qr-frame-wrapper {
+    position: relative;
+    padding: 10px;
+    background: #fff;
+    border-radius: 12px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+/* Tamaño del QR Ajustado */
+.qr-content img {
+    width: 140px; /* Tamaño fijo ideal */
+    height: 140px;
+    display: block;
+}
+
+.scan-instruction {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.scan-instruction i {
+    color: var(--primary);
+    animation: pulseIcon 2s infinite;
+}
+
+@keyframes pulseIcon {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* 3. Footer y Botones */
+.success-footer {
+    width: 100%;
+    max-width: 300px;
+    /* Agregamos Flexbox para centrar el contenido */
+    display: flex;           
+    flex-direction: column;  
+    align-items: center;     
+    gap: 10px;               /* Espacio limpio entre la píldora y el botón */
+    margin-top: 1rem;
+}
+
+/* Aseguramos que el botón ocupe el ancho disponible y centre su texto */
+.success-footer .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.info-pill {
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    border-radius: 50px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* margin-bottom: 1rem;  <-- Eliminamos esto, usamos 'gap' en el padre */
+}
+
+.glow-effect {
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.25);
+    transition: 0.3s ease;
+}
+
+.glow-effect:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Ajustes Mobile Específicos */
+@media (max-height: 700px) {
+    .success-icon-anim { width: 50px; height: 50px; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .success-header h2 { font-size: 1.5rem; }
+    .qr-content img { width: 120px; height: 120px; }
+    .digital-pass { padding: 1rem; margin-bottom: 1rem; }
+}

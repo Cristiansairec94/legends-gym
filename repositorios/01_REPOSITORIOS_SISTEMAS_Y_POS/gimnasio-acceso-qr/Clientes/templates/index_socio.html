@@ -1,0 +1,359 @@
+{% load static %}
+{% load qr_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel - ClubHouse Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/indexSocio.css' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-dumbbell"></i>
+                <div>
+                    <h1>ClubHouse</h1>
+                    <span class="role-badge">Socio</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-section-title">Principal</li>
+                <li><a href="#" class="nav-link active" data-target="dashboard"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+                <li class="nav-section-title">Mi Cuenta</li>
+                <li><a href="#" class="nav-link" data-target="mi-plan"><i class="fas fa-id-card"></i><span>Mi Plan</span></a></li>
+                <li><a href="#" class="nav-link" data-target="mis-asistencias"><i class="fas fa-calendar-check"></i><span>Mis Asistencias</span></a></li>
+                <li><a href="#" class="nav-link" data-target="mi-qr"><i class="fas fa-qrcode"></i><span>Mi Código QR</span></a></li>
+                <li class="nav-section-title">Gestión</li>
+                <li><a href="#" class="nav-link" data-target="renovar"><i class="fas fa-sync-alt"></i><span>Renovar Plan</span></a></li>
+                <li><a href="#" class="nav-link" data-target="perfil"><i class="fas fa-user-cog"></i><span>Mi Perfil</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                    <div class="user-info">
+                        <h4>{{ user.get_full_name }}</h4>
+                        <p>Socio</p>
+                    </div>
+                </div>
+                <a href="{% url 'cerrar_sesion' %}" class="logout-button"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+                <div class="copyright">© 2025 ClubHouse Digital</div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            
+            <section id="dashboard" class="content-section active">
+                <div class="content-header">
+                    <div>
+                        <h2 class="page-title"><i class="fas fa-home"></i> ¡Hola, {{ user.first_name }}!</h2>
+                        <p class="page-subtitle">Bienvenido a tu panel de control</p>
+                    </div>
+                </div>
+                {% if membership and membership.days_remaining <= 7 and membership.days_remaining > 0 %}
+                <div class="alert-banner warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div><strong>Tu plan vence pronto</strong><p>Te quedan {{ membership.days_remaining }} días. Renueva ahora para no perder acceso.</p></div>
+                    <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Ahora</a>
+                </div>
+                {% elif not has_active_membership %}
+                <div class="alert-banner danger">
+                    <i class="fas fa-times-circle"></i>
+                    <div><strong>Plan Vencido</strong><p>Tu plan ha expirado. Renueva para continuar disfrutando del gimnasio.</p></div>
+                    <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Plan</a>
+                </div>
+                {% endif %}
+                
+                <div class="plan-status-card">
+                    <div class="plan-status-header">
+                        <div class="plan-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="plan-status-info">
+                            <h3>Estado de tu Membresía</h3>
+                            {% if has_active_membership %}
+                            <span class="status-badge active"><i class="fas fa-check"></i> Activo</span>
+                            {% else %}
+                            <span class="status-badge expired"><i class="fas fa-times"></i> Vencido</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if membership %}
+                    <div class="plan-details-grid">
+                        <div class="plan-detail-item"><i class="fas fa-ticket-alt"></i><div><span class="detail-label">Plan Actual</span><span class="detail-value">{{ membership.plan.name }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-calendar-day"></i><div><span class="detail-label">Fecha de Inicio</span><span class="detail-value">{{ membership.start_date|date:"d/m/Y" }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-calendar-times"></i><div><span class="detail-label">Fecha de Vencimiento</span><span class="detail-value">{{ membership.end_date|date:"d/m/Y" }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-clock"></i><div><span class="detail-label">Días Restantes</span><span class="detail-value {% if membership.days_remaining <= 7 %}text-warning{% endif %}">{{ membership.days_remaining }} días</span></div></div>
+                    </div>
+                    <div class="days-progress">
+                        {% widthratio membership.days_remaining membership.plan.duration_days 100 as progress_percent %}
+                        <div class="progress-label"><span>Progreso del plan</span><span>{{ progress_percent }}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: {{ progress_percent }}%"></div></div>
+                    </div>
+                    {% else %}
+                    <div class="no-plan-message"><i class="fas fa-info-circle"></i><p>No tienes un plan activo actualmente.</p><a href="#" class="btn btn-primary" onclick="navigateTo('renovar')"><i class="fas fa-plus"></i> Adquirir Plan</a></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section id="mi-plan" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title"><i class="fas fa-id-card"></i> Mi Plan</h2>
+                </div>
+
+                {% if membership %}
+                <div class="plan-full-card">
+                    <div class="plan-card-header">
+                        <div class="plan-badge-lg">{{ membership.plan.name }}</div>
+                        <div class="plan-price">${{ membership.plan.price|floatformat:0 }}<span>/mes</span></div>
+                    </div>
+
+                    <div class="plan-info-section">
+                        <h4><i class="fas fa-info-circle"></i> Detalles del Plan</h4>
+                        <ul class="plan-features-list">
+                            <li><i class="fas fa-check"></i> {{ membership.plan.access_days }}</li>
+                            <li><i class="fas fa-check"></i> Acceso a todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Código QR personal</li>
+                            {% if membership.plan.includes_classes %}<li><i class="fas fa-check"></i> Clases grupales incluidas</li>{% endif %}
+                            {% if membership.plan.includes_nutritionist %}<li><i class="fas fa-check"></i> Asesoría nutricional</li>{% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="plan-info-section">
+                        <h4><i class="fas fa-calendar-alt"></i> Vigencia</h4>
+                        <div class="date-range">
+                            <div class="date-item"><span class="date-label">Inicio</span><span class="date-value">{{ membership.start_date|date:"d/m/Y" }}</span></div>
+                            <div class="date-separator">→</div>
+                            <div class="date-item"><span class="date-label">Vencimiento</span><span class="date-value">{{ membership.end_date|date:"d/m/Y" }}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="plan-actions-group">
+                        <button class="btn btn-primary" onclick="navigateTo('renovar')" style="flex: 1; justify-content: center;">
+                            <i class="fas fa-sync-alt"></i> Renovar Plan
+                        </button>
+
+                        <button class="btn-danger-soft" onclick="openCancelModal()">
+                            <i class="fas fa-times-circle"></i> Cancelar Suscripción
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No tienes un plan activo</h3>
+                    <p>Adquiere un plan para comenzar a disfrutar del gimnasio</p>
+                    <button class="btn btn-primary" onclick="navigateTo('renovar')"><i class="fas fa-plus"></i> Ver Planes Disponibles</button>
+                </div>
+                {% endif %}
+            </section>
+
+            <section id="mis-asistencias" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title"><i class="fas fa-calendar-check"></i> Mis Asistencias</h2>
+                </div>
+                {% if accessed_today %}
+                <div class="alert alert-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle" style="font-size: 24px;"></i>
+                    <div><strong>¡Ya ingresaste hoy al gimnasio!</strong><p style="margin: 5px 0 0 0; font-size: 0.9em;">Tu asistencia ha sido registrada correctamente.</p></div>
+                </div>
+                {% endif %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon primary"><i class="fas fa-calendar-alt"></i></div><div class="stat-content"><h3>Este Mes</h3><div class="stat-value">{{ monthly_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Asistencias registradas</p></div></div>
+                    <div class="stat-card"><div class="stat-icon info"><i class="fas fa-calendar-week"></i></div><div class="stat-content"><h3>Esta Semana</h3><div class="stat-value">{{ weekly_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Últimos 7 días</p></div></div>
+                    <div class="stat-card"><div class="stat-icon success"><i class="fas fa-fire"></i></div><div class="stat-content"><h3>Racha Actual</h3><div class="stat-value">{{ streak_days }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Días consecutivos 🔥</p></div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"><i class="fas fa-history"></i></div><div class="stat-content"><h3>Total</h3><div class="stat-value">{{ total_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Asistencias totales</p></div></div>
+                </div>
+                <div class="management-section" style="margin-top: 30px;">
+                    <h3 class="section-title"><i class="fas fa-history"></i> Historial de Accesos (Últimos 30 días)</h3>
+                    {% if access_logs %}
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead><tr><th><i class="fas fa-calendar"></i> Fecha</th><th><i class="fas fa-clock"></i> Hora</th><th><i class="fas fa-calendar-day"></i> Día</th><th><i class="fas fa-tag"></i> Plan Activo</th><th><i class="fas fa-check-circle"></i> Estado</th></tr></thead>
+                            <tbody>
+                                {% for log in access_logs %}
+                                <tr>
+                                    <td><strong>{{ log.timestamp|date:"d/m/Y" }}</strong></td>
+                                    <td>{{ log.timestamp|time:"H:i" }}</td>
+                                    <td>{{ log.timestamp|date:"l" }}</td>
+                                    <td>{{ log.membership.plan.name|default:"Sin plan" }}</td>
+                                    <td><span class="status-badge allowed"><i class="fas fa-check-circle"></i> Permitido</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Sin registros aún</h3><p>Tus asistencias aparecerán aquí.</p></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section id="mi-qr" class="content-section">
+                <div class="content-header"><h2 class="page-title"><i class="fas fa-qrcode"></i> Mi Código QR</h2></div>
+                <div class="qr-display-card">
+                    <div class="qr-instructions"><i class="fas fa-info-circle"></i><p>Este es tu código QR personal para acceder al gimnasio.</p></div>
+                    
+                    {% if user.qr_unique_id %}
+                        <div class="qr-image-container">
+                            <img src="{% generate_qr_base64 user.get_qr_data %}" alt="Mi Código QR" class="qr-image">
+                        </div>
+                        
+                        <div class="qr-actions">
+                            <button onclick="downloadBase64QR('QR_{{ user.rut }}')" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Descargar QR
+                            </button>
+                            
+                            <button class="btn btn-secondary" onclick="shareQR()">
+                                <i class="fas fa-share-alt"></i> Compartir
+                            </button>
+                        </div>
+                        
+                        <div class="qr-info">
+                            <p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p>
+                            <p><strong>RUT:</strong> {{ user.rut }}</p>
+                        </div>
+                    {% else %}
+                        <div class="empty-state"><i class="fas fa-qrcode"></i><h3>QR no disponible</h3><p>Contacta con recepción.</p></div>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <section id="renovar" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title"><i class="fas fa-sync-alt"></i> Renovar o Cambiar Plan</h2>
+                    <p class="page-subtitle">Selecciona tu próximo objetivo</p>
+                </div>
+
+                <div class="plans-grid-admin">
+                    {% for item in planes_renovacion %}
+                    <div class="plan-card-admin" onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }}, {{ item.obj.id }})">
+                        {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
+                            <div style="position: absolute; top: 0; right: 0; background: linear-gradient(135deg, var(--warning-color), #ff6348); color: white; font-size: 0.7rem; font-weight: 700; padding: 6px 12px; border-bottom-left-radius: 16px; text-transform: uppercase;">Recomendado</div>
+                        {% endif %}
+
+                        <div class="plan-name">{{ item.obj.name }}</div>
+                        <div class="plan-price">${{ item.obj.price|floatformat:0 }} <span>/mes</span></div>
+                        
+                        <ul class="plan-features">
+                            <li><i class='fas fa-calendar-alt'></i> {{ item.obj.duration_days }} días de vigencia</li>
+                            <li><i class='fas fa-clock'></i> {{ item.obj.access_days }}</li>
+                            
+                            {% if item.obj.includes_classes %}<li><i class='fas fa-dumbbell'></i> Clases grupales incluidas</li>{% endif %}
+                            {% if item.obj.includes_nutritionist %}<li><i class='fas fa-apple-alt'></i> Evaluación nutricional</li>{% endif %}
+                            {% for beneficio in item.beneficios_extra %}<li><i class='fas fa-check-circle'></i> {{ beneficio }}</li>{% endfor %}
+                        </ul>
+                    </div>
+                    {% empty %}
+                        <p style="color: #888;">No hay planes disponibles.</p>
+                    {% endfor %}
+                </div>
+
+                <div id="renewalModal" class="modal-overlay">
+                    <div class="modal-content" style="text-align: left; max-width: 500px;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            <h3 class="modal-title" style="margin-top: 10px;">Confirmar Renovación</h3>
+                            <p class="modal-subtitle">Estás a un paso de activar tu plan.</p>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="color: var(--text-secondary);">Plan Seleccionado:</span>
+                                <strong id="modalPlanName" style="color: white;">-</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Total a Pagar:</span>
+                                <strong id="modalPlanPrice" style="color: var(--primary-color); font-size: 1.2rem;">-</strong>
+                            </div>
+                        </div>
+
+                        <form id="renewalForm" onsubmit="handleRenewalSubmit(event)">
+                            <input type="hidden" id="modalPlanId">
+
+                            <div class="input-wrapper-modern">
+                                <label>Método de Pago</label>
+                                <select id="paymentMethod" class="modern-input" required>
+                                    <option value="" disabled selected>Selecciona una opción...</option>
+                                    <option value="transferencia">Transferencia Bancaria</option>
+                                    <option value="tarjeta">Tarjeta (Crédito/Débito)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-wrapper-modern">
+                                <label>Comprobantes y Accesos</label>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+                                    <label class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0;">
+                                        <input type="checkbox" id="checkQR" style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                        <span>Enviar código QR a mi correo</span>
+                                    </label>
+                                    <label class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0;">
+                                        <input type="checkbox" id="checkContract" checked style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                        <span>Enviar contrato/comprobante a mi correo</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                                <button type="button" class="btn btn-secondary" onclick="closeRenewalModal()" style="flex: 1; justify-content: center;">Cancelar</button>
+                                <button type="submit" class="btn-confirm-pay" id="btnConfirmRenewal" style="flex: 1;">
+                                    <span class="btn-text">Confirmar y Pagar</span>
+                                    <div class="loader-spinner"></div>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="perfil" class="content-section">
+                <div class="content-header"><h2 class="page-title"><i class="fas fa-user-cog"></i> Mi Perfil</h2></div>
+                <div class="profile-card">
+                    <div class="profile-header"><div class="profile-avatar-large">{{ user.first_name.0 }}{{ user.last_name.0 }}</div><div class="profile-header-info"><h3>{{ user.get_full_name }}</h3><p>{{ user.email }}</p><span class="member-since"><i class="fas fa-calendar"></i> Miembro desde {{ user.created_at|date:"F Y" }}</span></div></div>
+                    <div class="profile-details"><h4><i class="fas fa-id-card"></i> Información Personal</h4><div class="detail-grid"><div class="detail-item"><span class="detail-label">RUT</span><span class="detail-value">{{ user.rut }}</span></div><div class="detail-item"><span class="detail-label">Correo</span><span class="detail-value">{{ user.email }}</span></div><div class="detail-item"><span class="detail-label">Teléfono</span><span class="detail-value">{{ user.phone }}</span></div><div class="detail-item"><span class="detail-label">Fecha de Nacimiento</span><span class="detail-value">{{ user.birthdate|date:"d/m/Y" }}</span></div></div></div>
+                    <div class="profile-actions"><a href="{% url 'edit_profile_socio' %}" class="btn btn-primary"><i class="fas fa-edit"></i> Editar Perfil</a><button class="btn btn-secondary" onclick="openPasswordModal()"><i class="fas fa-key"></i> Cambiar Contraseña</button></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button type="button" onclick="closePasswordModal()" style="position: absolute; top: 20px; right: 20px; background:none; border:none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; z-index: 10;"><i class="fas fa-times"></i></button>
+            <div id="step-1" class="step-container active">
+                <div class="modal-icon-large icon-lock"><i class="fas fa-user-lock"></i></div><h3 class="modal-title">Seguridad</h3><p class="modal-subtitle">Ingresa tu contraseña actual.</p>
+                <form id="formStep1" onsubmit="handleVerifyStep(event)"><div class="input-wrapper-modern"><label>Contraseña Actual</label><input type="password" id="current_password_input" class="modern-input" placeholder="••••••••" required autofocus><div id="step1-error" style="color: var(--danger-color); font-size: 0.85rem; margin-top: 5px; display: none;"></div></div><button type="submit" class="btn btn-primary btn-full" id="btn-verify"><span class="btn-text-content">Continuar <i class="fas fa-arrow-right"></i></span><div class="loader-spinner"></div></button></form>
+            </div>
+            <div id="step-2" class="step-container">
+                <div class="modal-icon-large icon-key"><i class="fas fa-key"></i></div><h3 class="modal-title">Nueva Contraseña</h3><p class="modal-subtitle">Define tu nueva clave.</p>
+                <form id="formStep2" onsubmit="handleSubmitNewPass(event)"><div class="input-wrapper-modern"><label>Nueva Contraseña</label><input type="password" id="new_password_input" class="modern-input" placeholder="Mínimo 8 caracteres" required oninput="validatePasswordsUI()"></div><div class="input-wrapper-modern"><label>Confirmar</label><input type="password" id="confirm_password_input" class="modern-input" placeholder="Repite la contraseña" required oninput="validatePasswordsUI()"><div id="match-feedback" class="match-indicator"></div></div><div id="step2-error" style="color: var(--danger-color); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div><button type="submit" class="btn btn-primary btn-full" id="btn-save-pass"><span class="btn-text-content">Cambiar Contraseña</span><div class="loader-spinner"></div></button><button type="button" class="btn-text" onclick="showStep(1)">Volver</button></form>
+            </div>
+            <div id="step-3" class="step-container"><div class="modal-icon-large icon-success"><i class="fas fa-check-circle"></i></div><h3 class="modal-title">¡Listo!</h3><p class="modal-subtitle">Contraseña actualizada.</p><button type="button" class="btn btn-primary btn-full" onclick="closePasswordModal()">Cerrar</button></div>
+        </div>
+    </div>
+
+    <div id="cancelModal" class="modal-overlay">
+        <div class="modal-warning-content">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #ff4757; margin-bottom: 1rem;"></i>
+            <h3 style="color: white; margin-bottom: 0.5rem;">¿Estás seguro?</h3>
+            <p style="color: #ccc; margin-bottom: 2rem; font-size: 0.95rem;">
+                Al cancelar tu plan, perderás el acceso al gimnasio de forma inmediata. Esta acción no se puede deshacer.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn btn-secondary" onclick="closeCancelModal()">Volver</button>
+                <button class="btn" style="background: #ff4757; color: white; border: none;" onclick="confirmCancelPlan()">Sí, Cancelar Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/socio.js' %}"></script>
+
+</body>
+</html>

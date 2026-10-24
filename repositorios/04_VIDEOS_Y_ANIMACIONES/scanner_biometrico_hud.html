@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>HUD Escáner Biométrico & Acceso Kiosco - Legends Gym</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: #030712; color: #f8fafc; overflow: hidden; display: flex; height: 100vh; }
+    .kiosk-container { position: relative; width: 100%; height: 100%; display: flex; }
+    
+    /* Background video */
+    video.bg-video {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+      opacity: 0.25; filter: saturate(1.4) contrast(1.2);
+    }
+
+    .overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(3, 7, 18, 0.95) 100%);
+      display: flex; flex-direction: column; justify-content: space-between; padding: 40px;
+    }
+
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; }
+    .logo span { color: #eab308; }
+    .status-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 8px 18px; border-radius: 9999px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .status-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+    /* HUD Scanner Center */
+    .scanner-center {
+      position: relative; margin: auto; width: 340px; height: 340px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    .radar-circle {
+      position: absolute; width: 320px; height: 320px; border-radius: 50%;
+      border: 2px dashed rgba(56, 189, 248, 0.35); animation: rotateRadar 12s linear infinite;
+    }
+
+    .radar-circle-inner {
+      position: absolute; width: 250px; height: 250px; border-radius: 50%;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    @keyframes rotateRadar { 100% { transform: rotate(360deg); } }
+
+    .laser-line {
+      position: absolute; width: 280px; height: 3px; background: #38bdf8;
+      box-shadow: 0 0 15px #38bdf8, 0 0 30px #0284c7;
+      animation: scanLaser 2.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes scanLaser {
+      0% { top: 40px; opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { top: 300px; opacity: 0.3; }
+    }
+
+    .biometric-icon { width: 120px; height: 120px; opacity: 0.85; filter: drop-shadow(0 0 12px #38bdf8); }
+
+    .scan-status-text {
+      margin-top: 24px; font-size: 20px; font-weight: 800; letter-spacing: 2px;
+      color: #38bdf8; text-transform: uppercase; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .footer { display: flex; justify-content: space-between; align-items: flex-end; }
+    .kiosk-info { color: #64748b; font-size: 13px; line-height: 1.6; }
+    .action-buttons { display: flex; gap: 12px; }
+    .btn { padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
+    .btn-grant { background: #10b981; color: #020617; }
+    .btn-deny { background: #ef4444; color: #ffffff; }
+    .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+  </style>
+</head>
+<body>
+  <div class="kiosk-container">
+    <video class="bg-video" autoplay loop muted playsinline>
+      <source src="entrenamiento_sentadillas_hd.webm" type="video/webm">
+    </video>
+
+    <div class="overlay">
+      <div class="header">
+        <div class="logo">LEGENDS <span>PRO GYM</span></div>
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          TORNIQUETE PRINCIPAL 01 — EN LÍNEA
+        </div>
+      </div>
+
+      <div class="scanner-center">
+        <div class="radar-circle"></div>
+        <div class="radar-circle-inner"></div>
+        <div class="laser-line"></div>
+        <svg class="biometric-icon" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8">
+          <path d="M12 2a10 10 0 0 0-10 10c0 4.4 2.9 8.2 7 9.5M12 2a10 10 0 0 1 10 10c0 4.4-2.9 8.2-7 9.5M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.7 3.7 5.6M12 6a6 6 0 0 1 6 6c0 2.5-1.5 4.7-3.7 5.6M12 10a2 2 0 0 0-2 2c0 .9.6 1.7 1.4 1.9M12 10a2 2 0 0 1 2 2c0 .9-.6 1.7-1.4 1.9"/>
+        </svg>
+        <div class="scan-status-text" id="statusText">COLOCA TU HUELLA O TARJETA</div>
+      </div>
+
+      <div class="footer">
+        <div class="kiosk-info">
+          Terminal Kiosco v2.5 • Sede Central<br>
+          Integración ZKTeco / RFID / Torniquete Electromecánico
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-grant" onclick="simulateAccess(true)">SIMULAR ACCESO OK</button>
+          <button class="btn btn-deny" onclick="simulateAccess(false)">SIMULAR DENEGADO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const audioGrant = new Audio('../03_SONIDOS_Y_EFECTOS_AUDIO/acceso_concedido_laser.wav');
+    const audioDeny = new Audio('../03_SONIDOS_Y_EFECTOS_AUDIO/acceso_denegado_buzzer.wav');
+    const statusText = document.getElementById('statusText');
+
+    function simulateAccess(granted) {
+      if (granted) {
+        audioGrant.currentTime = 0;
+        audioGrant.play().catch(() => {});
+        statusText.style.color = '#10b981';
+        statusText.innerText = 'ACCESO CONCEDIDO — ¡BIENVENIDO!';
+      } else {
+        audioDeny.currentTime = 0;
+        audioDeny.play().catch(() => {});
+        statusText.style.color = '#ef4444';
+        statusText.innerText = 'ACCESO DENEGADO — MEMBRESÍA VENCIDA';
+      }
+      setTimeout(() => {
+        statusText.style.color = '#38bdf8';
+        statusText.innerText = 'COLOCA TU HUELLA O TARJETA';
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

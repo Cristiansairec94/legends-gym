@@ -17,7 +17,10 @@ import {
   Trash2, 
   Phone,
   Mail,
-  Pencil
+  Pencil,
+  LayoutGrid,
+  List,
+  ChevronRight
 } from 'lucide-react';
 
 export const ClientList: React.FC = () => {
@@ -25,6 +28,7 @@ export const ClientList: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring_soon' | 'expired' | 'no_fingerprint'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -142,8 +146,8 @@ export const ClientList: React.FC = () => {
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
+      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -154,201 +158,396 @@ export const ClientList: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 'active', label: 'Activos' },
-            { id: 'expiring_soon', label: 'Por Vencer' },
-            { id: 'expired', label: 'Vencidos' },
-            { id: 'no_fingerprint', label: 'Sin Huella' },
-          ].map((tab) => (
+        <div className="flex items-center justify-between md:justify-end gap-2 overflow-x-auto">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'active', label: 'Activos' },
+              { id: 'expiring_soon', label: 'Por Vencer' },
+              { id: 'expired', label: 'Vencidos' },
+              { id: 'no_fingerprint', label: 'Sin Huella' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                  statusFilter === tab.id
+                    ? 'bg-amber-500 text-black font-bold'
+                    : 'bg-gym-surface text-gym-muted hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* View Mode Toggle: Recuadros vs Tabla */}
+          <div className="flex items-center bg-gym-surface p-1 rounded-xl border border-gym-border shrink-0 ml-1">
             <button
-              key={tab.id}
-              onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
-                statusFilter === tab.id
-                  ? 'bg-amber-500 text-black font-bold'
-                  : 'bg-gym-surface text-gym-muted hover:text-white'
+              onClick={() => setViewMode('grid')}
+              title="Vista minimalista en recuadros"
+              className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
+                viewMode === 'grid'
+                  ? 'bg-amber-500 text-black shadow-sm font-bold'
+                  : 'text-gym-muted hover:text-white'
               }`}
             >
-              {tab.label}
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">Recuadros</span>
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('table')}
+              title="Vista en tabla"
+              className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
+                viewMode === 'table'
+                  ? 'bg-amber-500 text-black shadow-sm font-bold'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">Tabla</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Members Table */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
-                <th className="p-4">Socio</th>
-                <th className="p-4">Contacto</th>
-                <th className="p-4">Membresía / Plan</th>
-                <th className="p-4">Estado & Vigencia</th>
-                <th className="p-4 text-center">Acceso Huella</th>
-                <th className="p-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gym-border/40 text-sm">
-              {filteredMembers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gym-muted">
-                    No se encontraron clientes que coincidan con los criterios.
-                  </td>
-                </tr>
-              ) : (
-                filteredMembers.map((member) => {
-                  const isExpired = member.membership.status === 'expired' || member.membership.daysRemaining < 0;
-                  const isExpiring = member.membership.daysRemaining <= 5 && !isExpired;
+      {/* Main Content: Recuadros (Grid) or Table */}
+      {viewMode === 'grid' ? (
+        filteredMembers.length === 0 ? (
+          <div className="bg-gym-card rounded-2xl border border-gym-border p-12 text-center text-gym-muted">
+            <Users className="w-12 h-12 mx-auto mb-3 opacity-30 text-amber-400" />
+            <p className="font-semibold text-white">No se encontraron clientes</p>
+            <p className="text-xs text-gym-muted mt-1">Prueba cambiando los filtros o el término de búsqueda.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {filteredMembers.map((member) => {
+              const isExpired = member.membership.status === 'expired' || member.membership.daysRemaining < 0;
+              const isExpiring = member.membership.daysRemaining <= 5 && !isExpired;
 
-                  return (
-                    <tr 
-                      key={member.id}
-                      className="hover:bg-gym-surface/40 transition-colors"
-                    >
-                      {/* Member Info */}
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={getGymAvatar(member.fullName, member.avatarUrl)}
-                            alt={member.fullName}
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
-                            }}
-                            className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0"
-                          />
-                          <div>
-                            <div className="font-bold text-white hover:text-amber-400 cursor-pointer" onClick={() => setSelectedClientForDetail(member)}>
-                              {member.fullName}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gym-muted font-mono mt-0.5">
-                              <span>ID: {member.id}</span>
-                              <span>•</span>
-                              <span>DNI: {member.documentId}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
+              return (
+                <div
+                  key={member.id}
+                  onClick={() => setSelectedClientForDetail(member)}
+                  className="group relative bg-gym-card hover:bg-[#16161c] rounded-2xl border border-gym-border hover:border-amber-500/50 p-4 transition-all duration-200 cursor-pointer shadow-md hover:shadow-glow-gold/15 flex flex-col justify-between"
+                  title="Haz clic para abrir el expediente completo"
+                >
+                  <div>
+                    {/* Top Row: Status badge & Biometrics */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                        isExpired 
+                          ? 'bg-red-500/15 text-red-400 border-red-500/30' 
+                          : isExpiring 
+                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
+                          : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      }`}>
+                        {isExpired ? 'Vencida' : isExpiring ? 'Por Vencer' : 'Activa'}
+                      </span>
 
-                      {/* Contact */}
-                      <td className="p-4 text-xs text-gym-muted">
-                        <div className="flex items-center gap-1.5 text-gray-200">
-                          <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>{member.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-gym-muted mt-1">
-                          <Mail className="w-3.5 h-3.5 text-blue-400" />
-                          <span>{member.email}</span>
-                        </div>
-                      </td>
+                      {member.biometricRegistered ? (
+                        <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium" title="Huella biométrica enrolada">
+                          <Fingerprint className="w-3.5 h-3.5" />
+                          <span>Huella OK</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedClientForEnroll(member);
+                          }}
+                          className="flex items-center gap-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+                          title="Haz clic para enrolar huella"
+                        >
+                          <Fingerprint className="w-3 h-3" />
+                          <span>Sin huella</span>
+                        </button>
+                      )}
+                    </div>
 
-                      {/* Plan */}
-                      <td className="p-4">
-                        <span className="font-bold text-white block text-xs">
+                    {/* Avatar & Client Identification */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="relative shrink-0">
+                        <img
+                          src={getGymAvatar(member.fullName, member.avatarUrl)}
+                          alt={member.fullName}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
+                          }}
+                          className="w-12 h-12 rounded-xl object-cover border border-gym-border group-hover:border-amber-400/60 transition-colors"
+                        />
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gym-card ${
+                          isExpired ? 'bg-red-500' : isExpiring ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors truncate">
+                          {member.fullName}
+                        </h3>
+                        <p className="text-[11px] text-gym-muted font-mono truncate">
+                          DNI: {member.documentId || 'S/N'}
+                        </p>
+                        <p className="text-[10px] text-gym-muted/80 font-mono">
+                          ID: {member.id}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Membership Details Mini-Box */}
+                    <div className="bg-gym-surface/70 rounded-xl p-2.5 border border-gym-border/60 mb-2.5 space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-white truncate max-w-[65%]">
                           {member.membership.planName}
                         </span>
-                        <span className="text-[11px] text-amber-400 font-mono">
-                          ${member.membership.price} MXN
+                        <span className="text-amber-400 font-bold font-mono text-[11px]">
+                          ${member.membership.price}
                         </span>
-                      </td>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-gym-muted">
+                        <span>Vigencia:</span>
+                        <span className={`font-semibold font-mono ${
+                          isExpired ? 'text-red-400' : isExpiring ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>
+                          {member.membership.daysRemaining >= 0 
+                            ? `${member.membership.daysRemaining} días restantes`
+                            : `Venció hace ${Math.abs(member.membership.daysRemaining)} d`}
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Status */}
-                      <td className="p-4">
-                        <div className="flex flex-col items-start gap-1">
-                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                            isExpired 
-                              ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                              : isExpiring 
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
-                              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          }`}>
-                            {isExpired ? 'Vencida' : isExpiring ? 'Por Vencer' : 'Activa'}
-                          </span>
-                          <span className="text-[11px] text-gym-muted font-mono">
-                            {member.membership.daysRemaining >= 0 
-                              ? `${member.membership.daysRemaining} días restantes`
-                              : `Venció hace ${Math.abs(member.membership.daysRemaining)} días`}
-                          </span>
-                        </div>
-                      </td>
+                    {/* Contact snippet */}
+                    {member.phone && (
+                      <div className="flex items-center gap-1.5 text-xs text-gym-muted truncate mb-1">
+                        <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span className="truncate">{member.phone}</span>
+                      </div>
+                    )}
+                  </div>
 
-                      {/* Biometric Status */}
-                      <td className="p-4 text-center">
-                        {member.biometricRegistered ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Huella activa para acceso">
-                            <Fingerprint className="w-4 h-4" />
-                            <span>Enrolada</span>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setSelectedClientForEnroll(member)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
-                            title="Haz clic para capturar su huella digital"
-                          >
-                            <Fingerprint className="w-4 h-4" />
-                            <span>Capturar</span>
-                          </button>
-                        )}
-                      </td>
+                  {/* Card Footer: Ver expediente + Acciones rápidas */}
+                  <div className="border-t border-gym-border/60 pt-2.5 mt-2 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-amber-400 group-hover:text-amber-300 flex items-center gap-0.5 transition-colors">
+                      Expediente
+                      <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
 
-                      {/* Actions */}
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => setSelectedClientForDetail(member)}
-                            className="p-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 text-gym-muted hover:text-white transition-colors"
-                            title="Ver expediente completo"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      {currentRole !== 'trainer' && (
+                        <button
+                          onClick={() => setSelectedClientForEdit(member)}
+                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-blue-500/20 text-gym-muted hover:text-blue-400 transition-colors"
+                          title="Editar datos"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      )}
 
-                          {currentRole !== 'trainer' && (
-                            <button
-                              onClick={() => setSelectedClientForEdit(member)}
-                              className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
-                              title="Editar datos del cliente"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">Editar</span>
-                            </button>
-                          )}
+                      {currentRole !== 'trainer' && (
+                        <button
+                          onClick={() => setSelectedClientForRenew(member)}
+                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-emerald-500/20 text-gym-muted hover:text-emerald-400 transition-colors"
+                          title="Renovar membresía"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                      )}
 
-                          {currentRole !== 'trainer' && (
-                            <button
-                              onClick={() => setSelectedClientForRenew(member)}
-                              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
-                              title="Renovar membresía"
-                            >
-                              <RefreshCw className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">Renovar</span>
-                            </button>
-                          )}
+                      {currentRole === 'admin' && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Eliminar socio ${member.fullName}?`)) {
+                              deleteMember(member.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 transition-colors"
+                          title="Eliminar socio"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : (
+        /* Members Table View */
+        <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
+                  <th className="p-4">Socio</th>
+                  <th className="p-4">Contacto</th>
+                  <th className="p-4">Membresía / Plan</th>
+                  <th className="p-4">Estado & Vigencia</th>
+                  <th className="p-4 text-center">Acceso Huella</th>
+                  <th className="p-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gym-border/40 text-sm">
+                {filteredMembers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-gym-muted">
+                      No se encontraron clientes que coincidan con los criterios.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMembers.map((member) => {
+                    const isExpired = member.membership.status === 'expired' || member.membership.daysRemaining < 0;
+                    const isExpiring = member.membership.daysRemaining <= 5 && !isExpired;
 
-                          {currentRole === 'admin' && (
-                            <button
-                              onClick={() => {
-                                if (confirm(`¿Eliminar socio ${member.fullName}?`)) {
-                                  deleteMember(member.id);
-                                }
+                    return (
+                      <tr 
+                        key={member.id}
+                        className="hover:bg-gym-surface/40 transition-colors"
+                      >
+                        {/* Member Info */}
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getGymAvatar(member.fullName, member.avatarUrl)}
+                              alt={member.fullName}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
                               }}
-                              className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 transition-colors"
-                              title="Eliminar socio"
+                              className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0"
+                            />
+                            <div>
+                              <div className="font-bold text-white hover:text-amber-400 cursor-pointer" onClick={() => setSelectedClientForDetail(member)}>
+                                {member.fullName}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gym-muted font-mono mt-0.5">
+                                <span>ID: {member.id}</span>
+                                <span>•</span>
+                                <span>DNI: {member.documentId}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Contact */}
+                        <td className="p-4 text-xs text-gym-muted">
+                          <div className="flex items-center gap-1.5 text-gray-200">
+                            <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>{member.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gym-muted mt-1">
+                            <Mail className="w-3.5 h-3.5 text-blue-400" />
+                            <span>{member.email}</span>
+                          </div>
+                        </td>
+
+                        {/* Plan */}
+                        <td className="p-4">
+                          <span className="font-bold text-white block text-xs">
+                            {member.membership.planName}
+                          </span>
+                          <span className="text-[11px] text-amber-400 font-mono">
+                            ${member.membership.price} MXN
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="p-4">
+                          <div className="flex flex-col items-start gap-1">
+                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                              isExpired 
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                                : isExpiring 
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            }`}>
+                              {isExpired ? 'Vencida' : isExpiring ? 'Por Vencer' : 'Activa'}
+                            </span>
+                            <span className="text-[11px] text-gym-muted font-mono">
+                              {member.membership.daysRemaining >= 0 
+                                ? `${member.membership.daysRemaining} días restantes`
+                                : `Venció hace ${Math.abs(member.membership.daysRemaining)} días`}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Biometric Status */}
+                        <td className="p-4 text-center">
+                          {member.biometricRegistered ? (
+                            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Huella activa para acceso">
+                              <Fingerprint className="w-4 h-4" />
+                              <span>Enrolada</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setSelectedClientForEnroll(member)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
+                              title="Haz clic para capturar su huella digital"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Fingerprint className="w-4 h-4" />
+                              <span>Capturar</span>
                             </button>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setSelectedClientForDetail(member)}
+                              className="p-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 text-gym-muted hover:text-white transition-colors"
+                              title="Ver expediente completo"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+
+                            {currentRole !== 'trainer' && (
+                              <button
+                                onClick={() => setSelectedClientForEdit(member)}
+                                className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
+                                title="Editar datos del cliente"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Editar</span>
+                              </button>
+                            )}
+
+                            {currentRole !== 'trainer' && (
+                              <button
+                                onClick={() => setSelectedClientForRenew(member)}
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
+                                title="Renovar membresía"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Renovar</span>
+                              </button>
+                            )}
+
+                            {currentRole === 'admin' && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`¿Eliminar socio ${member.fullName}?`)) {
+                                    deleteMember(member.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 transition-colors"
+                                title="Eliminar socio"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add Client Modal */}
       {showAddModal && (

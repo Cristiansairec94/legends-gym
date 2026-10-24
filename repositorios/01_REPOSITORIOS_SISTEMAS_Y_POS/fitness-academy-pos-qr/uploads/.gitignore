@@ -1,0 +1,6 @@
+# Never commit runtime uploads. These may contain personal, identity,
+# employment, health, or financial information.
+*
+!*/
+!.gitignore
+!.htaccess

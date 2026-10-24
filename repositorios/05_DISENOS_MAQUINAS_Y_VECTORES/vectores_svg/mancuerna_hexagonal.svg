@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="20" fill="#0f172a"/>
+  <!-- Mango moleteado cromado -->
+  <rect x="180" y="235" width="140" height="30" rx="5" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="200" y1="235" x2="200" y2="265" stroke="#64748b" stroke-width="2"/>
+  <line x1="220" y1="235" x2="220" y2="265" stroke="#64748b" stroke-width="2"/>
+  <line x1="240" y1="235" x2="240" y2="265" stroke="#64748b" stroke-width="2"/>
+  <line x1="260" y1="235" x2="260" y2="265" stroke="#64748b" stroke-width="2"/>
+  <line x1="280" y1="235" x2="280" y2="265" stroke="#64748b" stroke-width="2"/>
+  <line x1="300" y1="235" x2="300" y2="265" stroke="#64748b" stroke-width="2"/>
+  <!-- Cabeza hexagonal izquierda -->
+  <polygon points="120,160 180,180 180,320 120,340 70,290 70,210" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+  <text x="125" y="258" fill="#f8fafc" font-size="24" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">25</text>
+  <text x="125" y="278" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">KG</text>
+  <!-- Cabeza hexagonal derecha -->
+  <polygon points="380,160 430,210 430,290 380,340 320,320 320,180" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+  <text x="375" y="258" fill="#f8fafc" font-size="24" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">25</text>
+  <text x="375" y="278" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">KG</text>
+  <text x="250" y="90" fill="#f8fafc" font-size="22" font-weight="bold" text-anchor="middle" font-family="system-ui, sans-serif">MANCUERNA RUBBER HEX</text>
+</svg>
