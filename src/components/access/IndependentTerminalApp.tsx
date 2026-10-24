@@ -148,8 +148,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v7_fixed_bright_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v7_fixed_bright_8k');
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v8_caminadoras_club_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v8_caminadoras_club_8k');
       localStorage.setItem('legends_terminal_bg', gymBg);
       return gymBg;
     }
