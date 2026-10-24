@@ -13,10 +13,10 @@
     "desktop:dev": "electron electron/main.cjs --dev",
     "desktop:main": "vite build && electron electron/main.cjs --main",
     "sync-server": "node server/syncServer.cjs",
+    "push": "git add -A && git commit -m \"chore: actualizacion de cambios\" && git push origin main",
     "package": "node scripts/package-app.cjs"
   },
   "dependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.13",
     "@types/canvas-confetti": "^1.9.0",
     "autoprefixer": "^10.6.1",
     "canvas-confetti": "^1.9.4",
