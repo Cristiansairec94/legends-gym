@@ -148,8 +148,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v7_fixed_bright_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v7_fixed_bright_8k');
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v10_clear_photo') {
+      localStorage.setItem('legends_terminal_bg_version', 'v10_clear_photo');
       localStorage.setItem('legends_terminal_bg', gymBg);
       return gymBg;
     }
@@ -524,6 +524,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
+      if (showBiometricDashboard) {
+        setShowBiometricDashboard(false);
+        return;
+      }
       if (showNewMemberModal || showVisitModal || showDirectAccessModal || isConfigModalOpen || isHistoryModalOpen) {
         setShowNewMemberModal(false);
         setShowVisitModal(false);
@@ -532,8 +536,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         setIsHistoryModalOpen(false);
         return;
       }
+      const electronAPI = (window as any).electronAPI;
       if (document.fullscreenElement || isFullScreen) {
-        if (document.fullscreenElement) {
+        if (electronAPI?.exitFullScreen) {
+          electronAPI.exitFullScreen();
+        } else if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
         }
         setIsFullScreen(false);
@@ -568,7 +575,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [scanStatus]);
+  }, [scanStatus, isFullScreen, showBiometricDashboard, showNewMemberModal, showVisitModal, showDirectAccessModal, isConfigModalOpen, isHistoryModalOpen, onExitFullScreen]);
 
   
   useEffect(() => {
@@ -585,11 +592,28 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
+    let removeElectronListener: (() => void) | undefined;
+    const electronAPI = (window as any).electronAPI;
+    if (electronAPI?.onFullscreenChange) {
+      removeElectronListener = electronAPI.onFullscreenChange((isFull: boolean) => {
+        setIsFullScreen(!!isFull);
+        if (!isFull && onExitFullScreen) {
+          onExitFullScreen();
+        }
+      });
+    }
+    if (electronAPI?.isFullScreen) {
+      electronAPI.isFullScreen().then((isFull: boolean) => {
+        setIsFullScreen(!!isFull);
+      }).catch(() => {});
+    }
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      if (removeElectronListener) removeElectronListener();
     };
   }, [onExitFullScreen]);
 
@@ -685,8 +709,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           src={bgImage}
           alt="Fitness Legends Gym Background"
           style={{
-            filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
-            objectPosition: 'center 10%',
+            filter: 'brightness(1.06) contrast(1.06) saturate(1.06)',
+            objectPosition: bgImage === gymBg ? 'center 38%' : 'center center',
           }}
           className="w-full h-full object-cover object-center"
         />
@@ -765,7 +789,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               alt="Cliente Nuevo Gym" 
               className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
@@ -773,7 +797,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <span className="tracking-wider">Inscripción</span>
             </div>
 
-            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
+            <div className="relative z-10">
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Cliente Nuevo
               </h3>
@@ -799,7 +823,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               alt="Pase de Visita Gym" 
               className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
@@ -807,7 +831,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <span className="tracking-wider">Pase del Día</span>
             </div>
 
-            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-emerald-400/40 transition-colors">
+            <div className="relative z-10">
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-emerald-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Quiero Visita
               </h3>
@@ -833,7 +857,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               alt="Lector Biométrico de Huella Gym" 
               className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
@@ -841,7 +865,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <span className="tracking-wider">Acceso Directo</span>
             </div>
 
-            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
+            <div className="relative z-10">
               <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Ya Tengo Membresía
               </h3>
@@ -858,12 +882,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           </div>
 
         </div>
-        {/* Bottom subtle hint */}
-        <div className="mt-3 text-center">
-          <p className="text-xs text-gray-300 font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            💡 <strong className="text-white">Lector Automático:</strong> Puedes posar tu dedo directamente en el sensor USB o pasar tu tarjeta RFID en cualquier momento.
-          </p>
-        </div>
+
 
       </div>
 
@@ -876,9 +895,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <img 
                 src={modalGymBg} 
                 alt="Fondo Mancuernas Fitness" 
-                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
             </div>
             
@@ -1397,9 +1417,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <img 
                 src={modalGymBg} 
                 alt="Fondo Mancuernas Fitness" 
-                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] pointer-events-none" />
             </div>
             <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
@@ -1461,9 +1482,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <img 
                 src={modalGymBg} 
                 alt="Fondo Mancuernas Fitness" 
-                className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
             </div>
             <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">

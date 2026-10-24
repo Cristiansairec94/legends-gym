@@ -77,10 +77,29 @@ function createWindow() {
   }
 
   // F11 to toggle fullscreen / kiosk
+    // Fullscreen event notifications to renderer
+  mainWindow.on('enter-full-screen', () => {
+    try { mainWindow?.webContents?.send('window:fullscreen-changed', true); } catch {}
+  });
+  mainWindow.on('leave-full-screen', () => {
+    try { mainWindow?.webContents?.send('window:fullscreen-changed', false); } catch {}
+  });
+
+  // Global key events (F11 and ESCAPE to exit fullscreen)
   mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.key === 'F11' && input.type === 'keyDown') {
-      mainWindow.setFullScreen(!mainWindow.isFullScreen());
-      event.preventDefault();
+    if (input.type === 'keyDown') {
+      if (input.key === 'F11') {
+        const next = !mainWindow.isFullScreen();
+        mainWindow.setFullScreen(next);
+        try { mainWindow.webContents.send('window:fullscreen-changed', next); } catch {}
+        event.preventDefault();
+      } else if (input.key === 'Escape') {
+        if (mainWindow.isFullScreen()) {
+          mainWindow.setFullScreen(false);
+          try { mainWindow.webContents.send('window:fullscreen-changed', false); } catch {}
+          event.preventDefault();
+        }
+      }
     }
   });
 
@@ -92,7 +111,23 @@ function createWindow() {
 // IPC Handlers
 ipcMain.on('window:toggle-fullscreen', () => {
   if (mainWindow) {
-    mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    const next = !mainWindow.isFullScreen();
+    mainWindow.setFullScreen(next);
+    try { mainWindow.webContents.send('window:fullscreen-changed', next); } catch {}
+  }
+});
+
+ipcMain.on('window:exit-fullscreen', () => {
+  if (mainWindow && mainWindow.isFullScreen()) {
+    mainWindow.setFullScreen(false);
+    try { mainWindow.webContents.send('window:fullscreen-changed', false); } catch {}
+  }
+});
+
+ipcMain.on('window:enter-fullscreen', () => {
+  if (mainWindow && !mainWindow.isFullScreen()) {
+    mainWindow.setFullScreen(true);
+    try { mainWindow.webContents.send('window:fullscreen-changed', true); } catch {}
   }
 });
 

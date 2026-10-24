@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const img1Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background.jpg').toString('base64');
-const img2Base64 = 'data:image/jpeg;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/gym-background-motto.jpg').toString('base64');
-const logoBase64 = 'data:image/png;base64,' + fs.readFileSync('C:/Users/DELL/Desktop/gym leyends/LEGENDS/public/logo.png').toString('base64');
+const img1Base64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../public/gym-background.jpg')).toString('base64');
+const img2Base64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../public/gym-background-motto.jpg')).toString('base64');
+const logoBase64 = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, '../public/logo.png')).toString('base64');
 const cardNuevoBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-cliente-nuevo.jpg')).toString('base64');
 const cardVisitaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-visita.jpg')).toString('base64');
 const cardHuellaBase64 = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '../src/assets/card-huella.jpg')).toString('base64');
@@ -281,6 +281,12 @@ const htmlContent = `<!DOCTYPE html>
 
     function App() {
       const [currentBgIndex, setCurrentBgIndex] = useState(() => {
+        if (typeof window !== 'undefined' && localStorage.getItem('legends_bg_version') !== 'v9_bright') {
+          localStorage.setItem('legends_bg_version', 'v10_clear_photo');
+          localStorage.setItem('legends_bg_choice', '0');
+          localStorage.setItem('legends_bg_darkness', '0.05');
+          return 0;
+        }
         return parseInt(localStorage.getItem('legends_bg_choice') || '0', 10);
       });
       const [bgDarkness, setBgDarkness] = useState(() => {
@@ -798,10 +804,7 @@ const htmlContent = `<!DOCTYPE html>
               setShowConfigModal(false);
               return;
             }
-            if (document.fullscreenElement) {
-              document.exitFullscreen().catch(() => {});
-            }
-            setIsFullScreen(false);
+            exitFullscreen();
             return;
           }
           if (e.key === 'F2') { setShowConfigModal(true); return; }
@@ -828,22 +831,58 @@ const htmlContent = `<!DOCTYPE html>
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, [members, serverOnline, serverUrl]);
 
-            // Synchronize Fullscreen state on ESC or browser toggle
+      // Synchronize Fullscreen state on ESC, Electron IPC or browser toggle
       useEffect(() => {
         const handleFsChange = () => {
-          setIsFullScreen(Boolean(document.fullscreenElement));
+          setIsFullScreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
         };
         document.addEventListener('fullscreenchange', handleFsChange);
-        return () => document.removeEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+
+        let removeElectronListener;
+        if (window.electronAPI?.onFullscreenChange) {
+          removeElectronListener = window.electronAPI.onFullscreenChange((isFull) => {
+            setIsFullScreen(Boolean(isFull));
+          });
+        }
+        if (window.electronAPI?.isFullScreen) {
+          window.electronAPI.isFullScreen().then((isFull) => {
+            setIsFullScreen(Boolean(isFull));
+          }).catch(() => {});
+        }
+
+        return () => {
+          document.removeEventListener('fullscreenchange', handleFsChange);
+          document.removeEventListener('webkitfullscreenchange', handleFsChange);
+          if (removeElectronListener) removeElectronListener();
+        };
       }, []);
 
+      const exitFullscreen = () => {
+        if (window.electronAPI?.exitFullScreen) {
+          window.electronAPI.exitFullScreen();
+        }
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setIsFullScreen(false);
+      };
+
       const toggleFullscreen = () => {
+        if (isFullScreen) {
+          exitFullscreen();
+          return;
+        }
+        if (window.electronAPI?.toggleFullScreen) {
+          window.electronAPI.toggleFullScreen();
+          setIsFullScreen(true);
+          return;
+        }
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
           setIsFullScreen(true);
         } else {
-          document.exitFullscreen().catch(() => {});
-          setIsFullScreen(false);
+          exitFullscreen();
         }
       };
 
@@ -858,15 +897,15 @@ const htmlContent = `<!DOCTYPE html>
               <button
                 onClick={toggleBackground}
                 className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
-                title="Alternar entre Foto de Máquinas y Foto de Lema del Gimnasio"
+                title="Cambiar Foto de Fondo"
               >
                 <span>🖼️</span>
-                <span className="hidden sm:inline">Cambiar Fondo</span>
+                <span className="hidden sm:inline">CAMBIAR FONDO</span>
               </button>
               <button
                 onClick={toggleFullscreen}
                 className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
-                title="Activar Pantalla Completa"
+                title="Activar Pantalla Completa (Presiona ESC para salir)"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
@@ -882,14 +921,17 @@ const htmlContent = `<!DOCTYPE html>
             <img 
               src={selectedBg}
               alt="Fondo Gym Legends" 
-              style={{ objectPosition: "center 10%" }} className="w-full h-full object-cover filter brightness-110 contrast-105"
+              style={{ objectPosition: currentBgIndex === 0 ? "center 38%" : "center center" }} 
+              className="w-full h-full object-cover filter brightness-105 contrast-105"
             />
             {/* Transparent dark vignette so neon sign and photo are 100% visible */}
-            <div 
-              className="absolute inset-0 bg-black backdrop-blur-[0.5px] transition-opacity duration-300"
-              style={{ opacity: bgDarkness }}
-            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+            {/* Spotlight cálido ámbar/dorado centrado en el logo */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.22)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
+            {/* Degradado oscuro inferior para que las tarjetas resalten con nitidez */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+            {/* Viñeta sutil superior */}
+            <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
           </div>
 
           {/* TURNSTILE PASS ACTIVE BANNER */}
@@ -1070,9 +1112,10 @@ const htmlContent = `<!DOCTYPE html>
                   <img 
                     src={MODAL_GYM_BG} 
                     alt="Fondo Mancuernas Fitness" 
-                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                    style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                    className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
                 </div>
                 
@@ -1579,9 +1622,10 @@ const htmlContent = `<!DOCTYPE html>
                   <img 
                     src={MODAL_GYM_BG} 
                     alt="Fondo Mancuernas Fitness" 
-                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                    style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                    className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] pointer-events-none" />
                 </div>
                 <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
@@ -1653,9 +1697,10 @@ const htmlContent = `<!DOCTYPE html>
                   <img 
                     src={MODAL_GYM_BG} 
                     alt="Fondo Mancuernas Fitness" 
-                    className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
+                    style={{ filter: 'brightness(1.25) contrast(1.12)' }}
+                    className="w-full h-full object-cover object-bottom opacity-65 select-none pointer-events-none"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/55 via-[#0e1017]/65 to-[#0e1017]/80 pointer-events-none" />
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
                 </div>
                 <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
@@ -1876,8 +1921,8 @@ const htmlContent = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const dest1 = 'C:/Users/DELL/Desktop/gym leyends/Control_De_Acceso_Web.html';
-const dest2 = 'C:/Users/DELL/Desktop/Control_De_Acceso_Web.html';
+const dest1 = path.resolve(__dirname, '../../Control_De_Acceso_Web.html');
+const dest2 = path.resolve(__dirname, '../../ACCESO_WEB_FITNESS_LEGENDS.html');
 const dest3 = path.join(__dirname, '../public/Control_De_Acceso_Web.html');
 const dest4 = path.join(__dirname, '../public/terminal.html');
 const dest5 = path.join(__dirname, '../dist/Control_De_Acceso_Web.html');

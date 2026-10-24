@@ -1,165 +1,181 @@
-const packager = require('electron-packager');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
+
+function copyFilesRecursive(srcDir, destDir) {
+  if (!fs.existsSync(srcDir)) return;
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+  const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      copyFilesRecursive(srcPath, destPath);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+function cleanDirFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isFile()) {
+      try { fs.unlinkSync(fullPath); } catch {}
+    }
+  }
+}
 
 async function main() {
   try {
     execSync('taskkill /F /IM ControlDeAccesoLegends.exe /T', { stdio: 'ignore' });
   } catch {}
+  try {
+    execSync('taskkill /F /IM FitnessLegends.exe /T', { stdio: 'ignore' });
+  } catch {}
+
+  const rootLegendsDir = path.resolve(__dirname, '..');
+  const gymParentDir = path.resolve(__dirname, '../..');
+  const nodeEnv = { ...process.env, ELECTRON_RUN_AS_NODE: '1' };
+  const nodeBin = process.execPath;
 
   console.log('\n======================================================');
-  console.log('1. Compilando aplicación web (TypeScript + Vite)...');
+  console.log('1. Compilando TypeScript + Vite (Versión más reciente)...');
   console.log('======================================================');
-  execSync('npm.cmd run build', { stdio: 'inherit' });
+
+  cleanDirFiles(path.join(rootLegendsDir, 'dist', 'assets'));
+
+  const tscRes = spawnSync(nodeBin, ['node_modules/typescript/bin/tsc', '-b'], {
+    cwd: rootLegendsDir,
+    env: nodeEnv,
+    stdio: 'inherit'
+  });
+  if (tscRes.status !== 0) {
+    throw new Error('Error en compilación TypeScript');
+  }
+
+  const viteRes = spawnSync(nodeBin, ['node_modules/vite/bin/vite.js', 'build', '--emptyOutDir', 'false'], {
+    cwd: rootLegendsDir,
+    env: nodeEnv,
+    stdio: 'inherit'
+  });
+  if (viteRes.status !== 0) {
+    throw new Error('Error en compilación Vite');
+  }
 
   console.log('\n======================================================');
-  console.log('2. Generando ejecutable de Windows con Electron Packager...');
+  console.log('2. Generando versión HTML autocontenida actualizada...');
   console.log('======================================================');
-  
-  const iconPath = path.resolve(__dirname, '../build/icon.ico');
-
-  const appPaths = await packager({
-    dir: path.resolve(__dirname, '..'),
-    name: 'FITNESS_LEGENDS_TERMINAL',
-    executableName: 'ControlDeAccesoLegends',
-    platform: 'win32',
-    arch: 'x64',
-    out: path.resolve(__dirname, '../release'),
-    overwrite: true,
-    asar: false,
-    prune: true,
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
-    appVersion: '1.0.0',
-    appCopyright: 'Copyright © 2026 FITNESS LEGENDS GYM',
-    win32metadata: {
-      CompanyName: 'FITNESS LEGENDS GYM',
-      FileDescription: 'FITNESS LEGENDS - Terminal de Control de Acceso (Torniquete)',
-      OriginalFilename: 'ControlDeAccesoLegends.exe',
-      ProductName: 'FITNESS LEGENDS Control de Acceso',
-      InternalName: 'ControlDeAccesoLegends'
-    },
-    ignore: [
-      /^\/src($|\/)/,
-      /^\/\.git($|\/)/,
-      /^\/\.gemini($|\/)/,
-      /^\/release($|\/)/,
-      /^\/scratch($|\/)/,
-      /^\/tsconfig.*\.json$/,
-      /^\/vite\.config\.ts$/,
-      /^\/scripts($|\/)/
-    ]
+  spawnSync(nodeBin, ['scripts/build-single-html.cjs'], {
+    cwd: rootLegendsDir,
+    env: nodeEnv,
+    stdio: 'inherit'
   });
 
-  const outDir = appPaths[0];
+  console.log('\n======================================================');
+  console.log('3. Actualizando Ejecutable Nativo en release/...');
+  console.log('======================================================');
+
+  const outDir = path.join(rootLegendsDir, 'release', 'FITNESS_LEGENDS_TERMINAL-win32-x64');
+  const appDir = path.join(outDir, 'resources', 'app');
+
+  // Clean old hashed assets in release/resources/app/dist/assets
+  cleanDirFiles(path.join(appDir, 'dist', 'assets'));
+
+  // Sync updated build artifacts into release/resources/app
+  copyFilesRecursive(path.join(rootLegendsDir, 'dist'), path.join(appDir, 'dist'));
+  copyFilesRecursive(path.join(rootLegendsDir, 'electron'), path.join(appDir, 'electron'));
+  copyFilesRecursive(path.join(rootLegendsDir, 'server'), path.join(appDir, 'server'));
+  copyFilesRecursive(path.join(rootLegendsDir, 'data'), path.join(appDir, 'data'));
+  copyFilesRecursive(path.join(rootLegendsDir, 'build'), path.join(appDir, 'build'));
+  copyFilesRecursive(path.join(rootLegendsDir, 'public'), path.join(appDir, 'public'));
+  fs.copyFileSync(path.join(rootLegendsDir, 'package.json'), path.join(appDir, 'package.json'));
+
   const exePath = path.join(outDir, 'ControlDeAccesoLegends.exe');
   const erpExePath = path.join(outDir, 'FitnessLegends.exe');
+  const now = new Date();
 
-  // Provide both FitnessLegends.exe and ControlDeAccesoLegends.exe
   try {
-    if (!fs.existsSync(erpExePath) && fs.existsSync(exePath)) {
+    if (fs.existsSync(exePath)) {
+      fs.utimesSync(exePath, now, now);
       fs.copyFileSync(exePath, erpExePath);
+      fs.utimesSync(erpExePath, now, now);
     }
   } catch {}
 
+  console.log('   Carpeta release actualizada: ' + outDir);
+  console.log('   Ejecutable ERP:              ' + erpExePath);
+  console.log('   Ejecutable Terminal:         ' + exePath);
+
   console.log('\n======================================================');
-  console.log('3. Ejecutable generado exitosamente');
-  console.log('   Carpeta: ' + outDir);
-  console.log('   Archivo .exe: ' + exePath);
+  console.log('4. Generando lanzadores .EXE nativos en la carpeta principal...');
   console.log('======================================================');
 
-  // Create ZIP archive for easy distribution
-  console.log('\n4. Creando archivo comprimido ZIP para fácil traslado...');
-  const zipPath = path.resolve(__dirname, '../release/FITNESS_LEGENDS-Windows-x64.zip');
-  try {
-    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-    execSync(`powershell -NoProfile -Command "Compress-Archive -Path '${outDir}\\*' -DestinationPath '${zipPath}' -Force"`, { stdio: 'inherit' });
-    console.log('   Archivo ZIP creado en: ' + zipPath);
-  } catch (zipErr) {
-    console.warn('   (Aviso: No se pudo generar el ZIP automáticamente, pero la carpeta con el ejecutable está lista)');
+  const cscPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
+  const iconPath = path.join(rootLegendsDir, 'build', 'icon.ico');
+
+  if (fs.existsSync(cscPath)) {
+    const createLauncherExe = (outputExePath, targetExeName, modeArg) => {
+      const tempCs = path.join(rootLegendsDir, 'temp_launcher.cs');
+      const csCode = `
+using System;
+using System.IO;
+using System.Diagnostics;
+using System.Reflection;
+
+class Program {
+    [STAThread]
+    static void Main(string[] args) {
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        string target = Path.Combine(baseDir, "LEGENDS", "release", "FITNESS_LEGENDS_TERMINAL-win32-x64", "${targetExeName}");
+        if (!File.Exists(target)) {
+            target = Path.Combine(baseDir, "release", "FITNESS_LEGENDS_TERMINAL-win32-x64", "${targetExeName}");
+        }
+        if (File.Exists(target)) {
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = target;
+            psi.Arguments = "${modeArg}";
+            psi.WorkingDirectory = Path.GetDirectoryName(target);
+            psi.UseShellExecute = false;
+            Process.Start(psi);
+        }
+    }
+}
+`;
+      fs.writeFileSync(tempCs, csCode, 'utf8');
+      const iconArg = fs.existsSync(iconPath) ? `"/win32icon:${iconPath}"` : '';
+      execSync(`"${cscPath}" /nologo /target:winexe /out:"${outputExePath}" ${iconArg} "${tempCs}"`, { stdio: 'inherit' });
+      try { fs.unlinkSync(tempCs); } catch {}
+      console.log('   ✓ Ejecutable creado: ' + outputExePath);
+    };
+
+    createLauncherExe(path.join(gymParentDir, 'FITNESS_LEGENDS_SISTEMA_ERP.exe'), 'FitnessLegends.exe', '--main');
+    createLauncherExe(path.join(gymParentDir, 'FITNESS_LEGENDS_TERMINAL_ACCESO.exe'), 'ControlDeAccesoLegends.exe', '--terminal');
   }
 
-  // Create root launchers (.bat)
-  const rootBatTerminal = path.resolve(__dirname, '../EJECUTAR_TERMINAL_ACCESO.bat');
-  const batContentTerminal = `@echo off
-title FITNESS LEGENDS - Control de Acceso
-echo ============================================================
-echo   Iniciando Terminal de Control de Acceso (Torniquete)
-echo   FITNESS LEGENDS GYM - Version Ejecutable Nativa
-echo ============================================================
-start "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe" --terminal
-`;
-  fs.writeFileSync(rootBatTerminal, batContentTerminal);
+  // Update .bat launchers in LEGENDS and gym root
+  fs.writeFileSync(
+    path.join(rootLegendsDir, 'EJECUTAR_TERMINAL_ACCESO.bat'),
+    `@echo off\r\ntitle FITNESS LEGENDS - Control de Acceso\r\nstart "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe" --terminal\r\n`
+  );
+  fs.writeFileSync(
+    path.join(rootLegendsDir, 'EJECUTAR_SISTEMA_PRINCIPAL.bat'),
+    `@echo off\r\ntitle FITNESS LEGENDS - Sistema Central ERP\r\nstart "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\FitnessLegends.exe" --main\r\n`
+  );
+  fs.writeFileSync(
+    path.join(gymParentDir, 'EJECUTAR_FITNESS_LEGENDS.bat'),
+    `@echo off\r\ntitle FITNESS LEGENDS - Sistema Central ERP\r\nstart "" "%~dp0LEGENDS\\release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\FitnessLegends.exe" --main\r\n`
+  );
+  fs.writeFileSync(
+    path.join(gymParentDir, 'EJECUTAR_TERMINAL_ACCESO.bat'),
+    `@echo off\r\ntitle FITNESS LEGENDS - Terminal de Control de Acceso\r\nstart "" "%~dp0LEGENDS\\release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe" --terminal\r\n`
+  );
 
-  const rootBatERP = path.resolve(__dirname, '../EJECUTAR_SISTEMA_PRINCIPAL.bat');
-  const batContentERP = `@echo off
-title FITNESS LEGENDS - Sistema Central ERP
-echo ============================================================
-echo   Iniciando Sistema Central ERP (POS, Socios, Caja, Acceso)
-echo   FITNESS LEGENDS GYM - Version Ejecutable Nativa
-echo ============================================================
-start "" "%~dp0release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe" --main
-`;
-  fs.writeFileSync(rootBatERP, batContentERP);
-
-  // Also in gym leyends parent folder
-  const parentBat = path.resolve(__dirname, '../../EJECUTAR_FITNESS_LEGENDS.bat');
-  const parentBatContent = `@echo off
-title FITNESS LEGENDS - Iniciar Sistema
-echo ============================================================
-echo   Iniciando FITNESS LEGENDS GYM
-echo ============================================================
-start "" "%~dp0LEGENDS\\release\\FITNESS_LEGENDS_TERMINAL-win32-x64\\ControlDeAccesoLegends.exe"
-`;
-  try {
-    fs.writeFileSync(parentBat, parentBatContent);
-  } catch {}
-
-  // Create native Windows .lnk shortcuts in root folder and Desktop
-  try {
-    const outIcoPath = path.join(outDir, 'resources', 'app', 'build', 'icon.ico');
-    const finalIco = fs.existsSync(outIcoPath) ? outIcoPath : iconPath;
-    const desktopPath = path.resolve(process.env.USERPROFILE || 'C:\\Users\\DELL', 'Desktop');
-
-    const lnkErpDesktop = path.join(desktopPath, 'FITNESS LEGENDS - Sistema ERP.lnk');
-    const lnkTerminalDesktop = path.join(desktopPath, 'FITNESS LEGENDS - Control de Acceso.lnk');
-    const lnkRoot = path.resolve(__dirname, '../ControlDeAccesoLegends.lnk');
-
-    const psCmd = `
-      $wsh = New-Object -COM WScript.Shell;
-      
-      $sRoot = $wsh.CreateShortcut('${lnkRoot}');
-      $sRoot.TargetPath = '${exePath}';
-      $sRoot.WorkingDirectory = '${outDir}';
-      $sRoot.IconLocation = '${finalIco},0';
-      $sRoot.Description = 'FITNESS LEGENDS - Sistema ERP y Acceso';
-      $sRoot.Save();
-
-      $sErp = $wsh.CreateShortcut('${lnkErpDesktop}');
-      $sErp.TargetPath = '${exePath}';
-      $sErp.Arguments = '--main';
-      $sErp.WorkingDirectory = '${outDir}';
-      $sErp.IconLocation = '${finalIco},0';
-      $sErp.Description = 'FITNESS LEGENDS - Sistema Central ERP (POS, Socios, Caja, Acceso)';
-      $sErp.Save();
-
-      $sTerm = $wsh.CreateShortcut('${lnkTerminalDesktop}');
-      $sTerm.TargetPath = '${exePath}';
-      $sTerm.Arguments = '--terminal';
-      $sTerm.WorkingDirectory = '${outDir}';
-      $sTerm.IconLocation = '${finalIco},0';
-      $sTerm.Description = 'FITNESS LEGENDS - Terminal de Control de Acceso (Torniquete)';
-      $sTerm.Save();
-    `.replace(/\r?\n/g, ' ');
-
-    execSync(`powershell -NoProfile -Command "${psCmd}"`, { stdio: 'ignore' });
-    console.log('   Acceso directo ERP en Escritorio creado: ' + lnkErpDesktop);
-    console.log('   Acceso directo Terminal en Escritorio creado: ' + lnkTerminalDesktop);
-  } catch (lnkErr) {
-    console.warn('   (Aviso sobre accesos directos:', lnkErr.message, ')');
-  }
-
-  console.log('\n¡Proceso de empaquetado finalizado con éxito!\n');
+  console.log('\n¡Proceso de actualización y generación de ejecutables completado con éxito!\n');
 }
 
 main().catch(err => {

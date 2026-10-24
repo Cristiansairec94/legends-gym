@@ -104,11 +104,20 @@ export const TurnstileTerminal: React.FC = () => {
   };
 
   const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+    const electronAPI = (window as any).electronAPI;
+    if (!isFullScreen) {
+      if (electronAPI?.enterFullScreen) {
+        electronAPI.enterFullScreen();
+      } else if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
       setIsFullScreen(true);
     } else {
-      document.exitFullscreen().catch(() => {});
+      if (electronAPI?.exitFullScreen) {
+        electronAPI.exitFullScreen();
+      } else if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
       setIsFullScreen(false);
     }
   };
@@ -121,7 +130,10 @@ export const TurnstileTerminal: React.FC = () => {
         <IndependentTerminalApp 
           isEmbeddedFullScreen={true} 
           onExitFullScreen={() => {
-            if (document.fullscreenElement) {
+            const electronAPI = (window as any).electronAPI;
+            if (electronAPI?.exitFullScreen) {
+              electronAPI.exitFullScreen();
+            } else if (document.fullscreenElement) {
               document.exitFullscreen().catch(() => {});
             }
             setIsFullScreen(false);
