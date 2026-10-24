@@ -148,8 +148,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v8_caminadoras_club_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v8_caminadoras_club_8k');
+    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v9_zoom_caminadoras_8k') {
+      localStorage.setItem('legends_terminal_bg_version', 'v9_zoom_caminadoras_8k');
       localStorage.setItem('legends_terminal_bg', gymBg);
       return gymBg;
     }
@@ -685,10 +685,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           src={bgImage}
           alt="Fitness Legends Gym Background"
           style={{
-            filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
-            objectPosition: 'center 10%',
+            filter: 'brightness(1.05) contrast(1.08) saturate(1.06)',
+            objectPosition: 'center 22%',
           }}
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover"
         />
         {/* Transparent dark vignette so neon sign and photo are 100% visible */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
