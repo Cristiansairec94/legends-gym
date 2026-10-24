@@ -5,7 +5,7 @@ import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
 import posBanner from '../../assets/pos-banner.jpg';
-import { Sale, PaymentMethod, Product, CartItem } from '../../types';
+import { Sale, PaymentMethod, Product } from '../../types';
 import { sounds } from '../../services/audio';
 import { 
   ShoppingBag, 
@@ -34,30 +34,13 @@ import {
   Tag,
   Phone,
   Layers,
-  CheckCircle2,
-  PauseCircle,
-  PlayCircle,
-  Percent,
-  Volume2,
-  VolumeX,
-  Hash,
-  FileText
+  CheckCircle2
 } from 'lucide-react';
 
 interface PosTerminalProps {
   isCartOpen?: boolean;
   setIsCartOpen?: (open: boolean) => void;
   onNavigateToCash?: () => void;
-}
-
-interface ParkedSale {
-  id: string;
-  timestamp: Date;
-  clientId: string;
-  items: CartItem[];
-  discountPercent: number;
-  paymentMethod: PaymentMethod;
-  paymentReference: string;
 }
 
 export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) => {
@@ -72,37 +55,21 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     cartItemsCount, 
     processSale, 
     members, 
-    todayStoreSalesTotal,
-    todaySalesCount
+    currentRole 
   } = useGym();
 
-  // Search & Categories State
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Customer State (ActioLift Pattern)
+  // Customer State (ActioLift pattern)
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [isClientSearchOpen, setIsClientSearchOpen] = useState(false);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
-  // Discount & Promotions State
-  const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [isDiscountOpen, setIsDiscountOpen] = useState(false);
-  const discountRef = useRef<HTMLDivElement>(null);
-
-  // Parked / Held Sales State
-  const [parkedSales, setParkedSales] = useState<ParkedSale[]>([]);
-  const [isParkedOpen, setIsParkedOpen] = useState(false);
-  const parkedRef = useRef<HTMLDivElement>(null);
-
-  // Sound Mute Toggle State
-  const [isSoundMuted, setIsSoundMuted] = useState(false);
-
-  // Payment & Reference State
+  // Payment State
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [amountPaidStr, setAmountPaidStr] = useState<string>('');
-  const [paymentReference, setPaymentReference] = useState<string>('');
   
   // Modals
   const [showMovementsModal, setShowMovementsModal] = useState(false);
@@ -120,17 +87,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     timestamp: number;
   } | null>(null);
 
-  // Sound trigger helper with mute support
-  const playSound = useCallback((soundFn: () => void) => {
-    if (!isSoundMuted) {
-      soundFn();
-    }
-  }, [isSoundMuted]);
-
-  // Categories list with touch icons and dedicated Scoop filter
+  // Categories list with touch icons
   const categories = [
     { id: 'all', label: 'Todos', icon: '🔥' },
-    { id: 'scoop', label: 'Scoops / Tomas', icon: '🥄' },
     { id: 'protein', label: 'Proteínas', icon: '🥛' },
     { id: 'creatine', label: 'Creatinas', icon: '💊' },
     { id: 'preworkout', label: 'Pre-Entreno', icon: '⚡' },
@@ -149,18 +108,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     return () => clearTimeout(timer);
   }, [scanFeedback]);
 
-  // Click outside listener for Popovers (Customer, Discount, Parked Sales)
+  // Click outside listener for Client Search Dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (clientSearchRef.current && !clientSearchRef.current.contains(target)) {
+      if (clientSearchRef.current && !clientSearchRef.current.contains(e.target as Node)) {
         setIsClientSearchOpen(false);
-      }
-      if (discountRef.current && !discountRef.current.contains(target)) {
-        setIsDiscountOpen(false);
-      }
-      if (parkedRef.current && !parkedRef.current.contains(target)) {
-        setIsParkedOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -182,13 +134,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   // Filtered products list for Catalog Grid
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
-      let matchesCat = true;
-      if (selectedCategory === 'scoop') {
-        matchesCat = Boolean(p.soldByScoop);
-      } else if (selectedCategory !== 'all') {
-        matchesCat = p.category === selectedCategory;
-      }
-
+      const matchesCat = selectedCategory === 'all' || p.category === selectedCategory;
       const q = search.trim().toLowerCase();
       if (!q) return matchesCat;
       const matchesQuery = 
@@ -235,7 +181,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
     if (matched) {
       if (matched.stock <= 0) {
-        playSound(sounds.playBarcodeError);
+        sounds.playBarcodeError();
         setScanFeedback({
           type: 'warning',
           message: `"${matched.name}" está agotado (Stock 0 en almacén).`,
@@ -244,7 +190,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         });
       } else {
         addToCart(matched, 1);
-        playSound(sounds.playBarcodeBeep);
+        sounds.playBarcodeBeep();
         setScanFeedback({
           type: 'success',
           message: `+1 ${matched.name} añadido al ticket`,
@@ -261,7 +207,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       setFlashScanner(true);
       setTimeout(() => setFlashScanner(false), 800);
     } else {
-      playSound(sounds.playBarcodeError);
+      sounds.playBarcodeError();
       setScanFeedback({
         type: 'error',
         message: `Código "${cleanCode}" no encontrado en el Catálogo.`,
@@ -271,163 +217,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         sourceInput.select();
       }
     }
-  }, [products, addToCart, playSound]);
-
-  // Calculations with Discounts
-  const rawSubtotal = cartTotal;
-  const discountAmount = discountPercent > 0 ? (rawSubtotal * (discountPercent / 100)) : 0;
-  const finalPayableTotal = Math.max(0, rawSubtotal - discountAmount);
-
-  const cashGiven = parseFloat(amountPaidStr) || 0;
-  const changeDue = paymentMethod === 'cash' ? Math.max(0, cashGiven - finalPayableTotal) : 0;
-  const canCheckout = cart.length > 0 && (paymentMethod !== 'cash' || cashGiven >= finalPayableTotal || amountPaidStr === '');
-
-  // Quick cash bill handler
-  const handleQuickCash = (val: number | 'exact') => {
-    if (val === 'exact') {
-      setAmountPaidStr(finalPayableTotal.toFixed(2));
-    } else {
-      setAmountPaidStr(val.toString());
-    }
-  };
-
-  // Checkout process with client association, discounts & references
-  const handleCheckout = useCallback(() => {
-    if (cart.length === 0) return;
-    const finalAmountPaid = paymentMethod === 'cash' ? (cashGiven > 0 ? cashGiven : finalPayableTotal) : finalPayableTotal;
-    
-    // Build descriptive notes for audit & thermal receipt
-    const noteParts: string[] = [];
-    if (discountPercent > 0) {
-      noteParts.push(`Desc. ${discountPercent}% (-$${discountAmount.toFixed(2)})`);
-    }
-    if (paymentReference.trim()) {
-      noteParts.push(`Ref: ${paymentReference.trim()}`);
-    }
-    const saleNotes = noteParts.length > 0 ? noteParts.join(' | ') : undefined;
-
-    const sale = processSale(paymentMethod, finalAmountPaid, selectedClientId || undefined, saleNotes);
-    setCompletedSale(sale);
-    setAmountPaidStr('');
-    setPaymentReference('');
-    setDiscountPercent(0);
-    playSound(sounds.playCheckoutSuccess);
-  }, [cart, paymentMethod, cashGiven, finalPayableTotal, discountPercent, discountAmount, paymentReference, processSale, selectedClientId, playSound]);
-
-  // Hold / Park Sale Feature
-  const handleParkSale = () => {
-    if (cart.length === 0) return;
-    const newParked: ParkedSale = {
-      id: `HOLD-${Date.now()}`,
-      timestamp: new Date(),
-      clientId: selectedClientId,
-      items: [...cart],
-      discountPercent,
-      paymentMethod,
-      paymentReference
-    };
-    setParkedSales(prev => [newParked, ...prev]);
-    clearCart();
-    setSelectedClientId('');
-    setDiscountPercent(0);
-    setPaymentReference('');
-    setAmountPaidStr('');
-    playSound(sounds.playScanBlip);
-  };
-
-  // Resume Parked Sale
-  const handleResumeSale = (parked: ParkedSale) => {
-    clearCart();
-    parked.items.forEach(item => {
-      addToCart(item.product, item.quantity);
-    });
-    setSelectedClientId(parked.clientId);
-    setDiscountPercent(parked.discountPercent);
-    setPaymentMethod(parked.paymentMethod);
-    setPaymentReference(parked.paymentReference);
-    setParkedSales(prev => prev.filter(p => p.id !== parked.id));
-    setIsParkedOpen(false);
-    playSound(sounds.playBarcodeBeep);
-  };
-
-  // Professional Cashier Hotkeys (F2, F4, F8, F9, F10, Esc)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if blocking modals are currently open
-      if (showMovementsModal || showAddClientModal || completedSale) {
-        return;
-      }
-
-      // F2: Focus Search / Scanner Bar
-      if (e.key === 'F2') {
-        e.preventDefault();
-        barcodeInputRef.current?.focus();
-        barcodeInputRef.current?.select();
-        return;
-      }
-
-      // F4: Toggle Client Selector
-      if (e.key === 'F4') {
-        e.preventDefault();
-        setIsClientSearchOpen(prev => !prev);
-        return;
-      }
-
-      // F8: Cycle Payment Method (Cash -> Card -> Transfer -> Cash)
-      if (e.key === 'F8') {
-        e.preventDefault();
-        setPaymentMethod(prev => {
-          if (prev === 'cash') return 'card';
-          if (prev === 'card') return 'transfer';
-          return 'cash';
-        });
-        return;
-      }
-
-      // F9: Quick Exact Cash
-      if (e.key === 'F9') {
-        e.preventDefault();
-        setPaymentMethod('cash');
-        setAmountPaidStr(finalPayableTotal.toFixed(2));
-        return;
-      }
-
-      // F10: Finalize Sale & Emit Ticket
-      if (e.key === 'F10' || (e.ctrlKey && e.key === 'Enter')) {
-        e.preventDefault();
-        if (canCheckout) {
-          handleCheckout();
-        }
-        return;
-      }
-
-      // Escape: Close popovers or clear search
-      if (e.key === 'Escape') {
-        if (isClientSearchOpen) setIsClientSearchOpen(false);
-        if (isDiscountOpen) setIsDiscountOpen(false);
-        if (isParkedOpen) setIsParkedOpen(false);
-        if (barcodeInput) {
-          setBarcodeInput('');
-          setSearch('');
-        }
-        return;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    showMovementsModal, 
-    showAddClientModal, 
-    completedSale, 
-    isClientSearchOpen, 
-    isDiscountOpen, 
-    isParkedOpen, 
-    barcodeInput, 
-    finalPayableTotal, 
-    canCheckout, 
-    handleCheckout
-  ]);
+  }, [products, addToCart]);
 
   // Global Hardware Barcode Listener (USB / Bluetooth Keyboards & Laser Scanners)
   useEffect(() => {
@@ -436,7 +226,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     let isRapidBurst = false;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showMovementsModal || showAddClientModal || completedSale) return;
+      // Don't intercept if blocking modals are currently open
+      if (showMovementsModal || showAddClientModal || completedSale) {
+        return;
+      }
 
       const activeEl = document.activeElement as HTMLElement | null;
       const isInputFocused = activeEl && (
@@ -448,6 +241,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       const currentTime = performance.now();
       const timeDiff = currentTime - lastKeyTime;
 
+      // Barcode scanners type at superhuman speeds (< 60ms between characters)
       if (timeDiff < 60) {
         isRapidBurst = true;
       } else if (timeDiff > 250) {
@@ -457,6 +251,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
       lastKeyTime = currentTime;
 
+      // Handle barcode termination: Enter or NumpadEnter
       if (e.key === 'Enter' || e.key === 'NumpadEnter') {
         const candidate = buffer.trim();
         if (candidate.length >= 3 && (isRapidBurst || !isInputFocused)) {
@@ -475,13 +270,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         return;
       }
 
+      // Buffer normal printable characters
       if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
         buffer += e.key;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
   }, [showMovementsModal, showAddClientModal, completedSale, handleProductScanned]);
 
   // Barcode handler from manual input or form submit
@@ -491,12 +289,35 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     handleProductScanned(barcodeInput, barcodeInputRef.current);
   };
 
+  // Calculations
+  const cashGiven = parseFloat(amountPaidStr) || 0;
+  const changeDue = paymentMethod === 'cash' ? Math.max(0, cashGiven - cartTotal) : 0;
+  const canCheckout = cart.length > 0 && (paymentMethod !== 'cash' || cashGiven >= cartTotal || amountPaidStr === '');
+
+  // Quick cash bill handler
+  const handleQuickCash = (val: number | 'exact') => {
+    if (val === 'exact') {
+      setAmountPaidStr(cartTotal.toFixed(2));
+    } else {
+      setAmountPaidStr(val.toString());
+    }
+  };
+
+  // Checkout process with client association
+  const handleCheckout = () => {
+    if (cart.length === 0) return;
+    const finalAmountPaid = paymentMethod === 'cash' ? (cashGiven > 0 ? cashGiven : cartTotal) : cartTotal;
+    const sale = processSale(paymentMethod, finalAmountPaid, selectedClientId || undefined);
+    setCompletedSale(sale);
+    setAmountPaidStr('');
+  };
+
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
       
-      {/* 1. TOP UNIFIED HEADER BAR WITH LIVE SHIFT METRICS */}
+      {/* 1. TOP UNIFIED HEADER BAR */}
       <div className="bg-gradient-to-r from-[#14151e] via-[#121319] to-[#14151e] rounded-2xl border border-white/[0.08] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 shadow-md shrink-0 mb-2.5">
         
         {/* Brand Logo & Subtitle */}
@@ -517,23 +338,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </div>
         </div>
 
-        {/* Live Sales & Shift Status Indicators */}
+        {/* Quick Operations Strip */}
         <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           
-          {/* Shift Sales Pill */}
-          <div 
-            className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-bold shadow-sm"
-            title="Total vendido en tienda en el turno de hoy"
-          >
-            <DollarSign className="w-3.5 h-3.5 text-amber-400" />
-            <span>Turno:</span>
-            <span className="font-mono font-black text-amber-400">
-              ${todayStoreSalesTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-300 font-normal">{todaySalesCount} tickets</span>
-          </div>
-
           {/* Lector Activo Pill */}
           <div 
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-bold transition-all shadow-sm shrink-0 cursor-default select-none ${
@@ -541,7 +348,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 ? 'bg-emerald-500 text-black border-emerald-300 scale-105 shadow-glow-gold' 
                 : 'bg-gradient-to-r from-[#14151d] to-[#111218] text-emerald-400 border-emerald-500/30'
             }`}
-            title="Lector de código de barras USB/Bluetooth en línea (Presiona F2 para enfocar)"
+            title="Lector de código de barras USB/Bluetooth en línea"
           >
             <ScanLine className={`w-4 h-4 ${flashScanner ? 'animate-bounce' : 'animate-pulse'}`} />
             <span className="hidden sm:inline">Lector Activo</span>
@@ -552,7 +359,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             type="button"
             onClick={() => setShowMovementsModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/35 hover:border-amber-500/60 text-amber-300 hover:text-amber-200 text-xs sm:text-sm font-extrabold transition-all shadow-sm shrink-0 active:scale-95"
-            title="Registrar entrada o retiro de efectivo de caja"
           >
             <span className="w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-xs shadow-sm">
               $
@@ -568,31 +374,22 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs sm:text-sm font-black shadow-md hover:shadow-glow-gold/40 border border-amber-300/60 transition-all shrink-0 active:scale-[0.98]"
-            title="Realizar arqueo y corte de caja del turno"
           >
             <Lock className="w-4 h-4 stroke-[2.5]" />
             <span>Cerrar Turno</span>
           </button>
 
-          {/* Audio Mute Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsSoundMuted(prev => !prev)}
-            className={`p-2 rounded-xl border transition-all shrink-0 ${
-              isSoundMuted 
-                ? 'bg-red-500/15 border-red-500/30 text-red-400' 
-                : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:text-white'
-            }`}
-            title={isSoundMuted ? 'Sonidos silenciados (Clic para activar)' : 'Sonidos activos (Clic para silenciar)'}
-          >
-            {isSoundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+          {/* Sincronizado Pill */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold text-xs sm:text-sm shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10B981]" />
+            <span className="hidden lg:inline">Sincronizado</span>
+          </div>
 
         </div>
 
       </div>
 
-      {/* 2. UNIFIED WORKSPACE (Catálogo a la Izquierda + Ticket & Cobro a la Derecha) */}
+      {/* 2. UNIFIED WORKSPACE (Catálogo a la Izquierda + Ticket y Cobro a la Derecha) */}
       <div className="flex-1 relative rounded-3xl border border-white/[0.1] overflow-hidden shadow-2xl bg-[#0b0c11] flex flex-col min-h-0">
         
         {/* Ambient 3D Gold Logo Watermark ("LEYENDS GYM • CLUB FITNESS") */}
@@ -609,7 +406,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.12)_0%,rgba(0,0,0,0)_65%)]" />
         </div>
 
-        {/* TWO-COLUMN ENTERPRISE GRID */}
+        {/* TWO-COLUMN GRID WORKSPACE */}
         <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 p-3 sm:p-3.5 min-h-0 overflow-hidden items-stretch">
           
           {/* ============================================================== */}
@@ -617,22 +414,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* ============================================================== */}
           <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col min-h-0 bg-black/45 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3 shadow-inner relative overflow-hidden">
             
-            {/* Top Toolbar: Barcode & Product Search with F2 Hotkey */}
+            {/* Top Toolbar: Barcode & Product Search */}
             <div className="space-y-2 shrink-0 pb-2.5 border-b border-white/[0.06]">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                   <Barcode className="w-4 h-4 text-amber-400" />
                   Escanear o Buscar Producto
                 </span>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded border border-white/[0.08] hidden sm:inline-block">
-                    Atajo: <strong className="text-amber-400">F2</strong>
-                  </span>
-                  <span className="text-[11px] font-mono font-bold text-zinc-400 bg-white/[0.05] px-2.5 py-0.5 rounded-lg border border-white/[0.08]">
-                    {filteredProducts.length} productos
-                  </span>
-                </div>
+                <span className="text-[11px] font-mono font-bold text-zinc-400 bg-white/[0.05] px-2.5 py-0.5 rounded-lg border border-white/[0.08]">
+                  {filteredProducts.length} productos
+                </span>
               </div>
 
               {/* Search Bar Input */}
@@ -652,7 +443,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       handleBarcodeSubmit();
                     }
                   }}
-                  placeholder="Escanea código o escribe producto, marca o sabor (F2)..."
+                  placeholder="Escanea código de barras o escribe producto, marca o sabor (Enter)..."
                   className="w-full pl-10 pr-9 py-2.5 bg-black/60 rounded-xl border border-white/[0.12] text-xs sm:text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/40 transition-all shadow-inner"
                 />
                 {barcodeInput && (
@@ -663,7 +454,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       setSearch('');
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white transition-colors z-10 p-1"
-                    title="Limpiar búsqueda (Esc)"
+                    title="Limpiar búsqueda"
                   >
                     ✕
                   </button>
@@ -727,18 +518,15 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               )}
             </div>
 
-            {/* Footer Quick Hints & Hotkeys Bar */}
-            <div className="shrink-0 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400 flex-wrap gap-2">
+            {/* Footer Quick Hint */}
+            <div className="shrink-0 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Haz clic en una tarjeta para agregar • Usa 🥄 Scoop para tomas</span>
+                <span>Haz clic en cualquier tarjeta para añadir al ticket</span>
               </span>
-              <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-400">
-                <span className="bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/[0.08]">F2 Buscar</span>
-                <span className="bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/[0.08]">F4 Socio</span>
-                <span className="bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/[0.08]">F8 Pago</span>
-                <span className="bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/[0.08]">F10 Cobrar</span>
-              </div>
+              <span className="font-mono text-zinc-500 hidden sm:inline">
+                {products.length} productos en almacén
+              </span>
             </div>
 
           </div>
@@ -748,244 +536,177 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* ============================================================== */}
           <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 flex flex-col justify-between min-h-0 bg-black/65 backdrop-blur-xl rounded-2xl border border-white/[0.1] p-3.5 sm:p-4 shadow-2xl relative overflow-hidden">
             
-            {/* Top Toolbar: Customer Selector & Parked Tickets Pill */}
-            <div className="space-y-2 shrink-0 z-30">
-              
-              {/* Row: Label + Parked Tickets Counter + New Client */}
+            {/* Top: Customer Selection Dropdown (ActioLift Pattern) */}
+            <div ref={clientSearchRef} className="relative shrink-0 space-y-1 z-30">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                    Cliente / Socio
-                  </span>
-                  <span className="text-[9px] font-mono text-amber-400/80 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/20">
-                    F4
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {/* Parked Tickets Popover Button */}
-                  {parkedSales.length > 0 && (
-                    <div ref={parkedRef} className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setIsParkedOpen(prev => !prev)}
-                        className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[10px] font-bold flex items-center gap-1 animate-pulse"
-                        title="Ventas pausadas en espera"
-                      >
-                        <PauseCircle className="w-3 h-3 text-amber-400" />
-                        <span>En Pausa ({parkedSales.length})</span>
-                      </button>
-
-                      {isParkedOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-64 bg-[#141520] border border-amber-500/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] p-2 z-50 space-y-1.5 animate-fade-in text-xs">
-                          <div className="flex items-center justify-between pb-1 border-b border-white/[0.08]">
-                            <span className="font-bold text-white">Tickets en Espera</span>
-                            <span className="text-[10px] text-zinc-400">{parkedSales.length} guardados</span>
-                          </div>
-
-                          <div className="max-h-48 overflow-y-auto space-y-1">
-                            {parkedSales.map(parked => {
-                              const pMember = members.find(m => m.id === parked.clientId);
-                              const pTotal = parked.items.reduce((acc, it) => acc + it.subtotal, 0);
-                              return (
-                                <div 
-                                  key={parked.id}
-                                  className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-400/50 flex items-center justify-between gap-2"
-                                >
-                                  <div className="leading-tight truncate">
-                                    <span className="font-bold text-white block truncate">
-                                      {pMember ? pMember.fullName : 'Público General'}
-                                    </span>
-                                    <span className="text-[10px] text-amber-400 font-mono">
-                                      ${pTotal.toFixed(2)} ({parked.items.length} arts)
-                                    </span>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleResumeSale(parked)}
-                                    className="px-2.5 py-1 rounded-lg bg-amber-400 text-black font-black text-[10px] hover:bg-amber-300 transition-colors shrink-0"
-                                  >
-                                    Reanudar
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowAddClientModal(true)}
-                    className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 hover:underline"
-                  >
-                    <UserPlus className="w-3 h-3" />
-                    <span>+ Nuevo Socio</span>
-                  </button>
-                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                  Cliente / Socio
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowAddClientModal(true)}
+                  className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 hover:underline"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>+ Nuevo Socio</span>
+                </button>
               </div>
 
               {/* Selected Customer Box (Clickable to switch/search) */}
-              <div ref={clientSearchRef} className="relative">
-                <div 
-                  onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
-                    selectedMember 
-                      ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400 text-white' 
-                      : 'bg-white/[0.04] border-white/[0.08] hover:border-white/20 text-zinc-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 truncate">
-                    {selectedMember ? (
-                      selectedMember.avatarUrl ? (
-                        <img 
-                          src={selectedMember.avatarUrl} 
-                          alt={selectedMember.fullName} 
-                          className="w-6 h-6 rounded-full object-cover border border-amber-400/50 shrink-0" 
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px] shrink-0">
-                          {selectedMember.fullName.charAt(0)}
-                        </div>
-                      )
+              <div 
+                onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
+                  selectedMember 
+                    ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400 text-white' 
+                    : 'bg-white/[0.04] border-white/[0.08] hover:border-white/20 text-zinc-200'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  {selectedMember ? (
+                    selectedMember.avatarUrl ? (
+                      <img 
+                        src={selectedMember.avatarUrl} 
+                        alt={selectedMember.fullName} 
+                        className="w-6 h-6 rounded-full object-cover border border-amber-400/50 shrink-0" 
+                      />
                     ) : (
-                      <User className="w-4 h-4 text-amber-400 shrink-0" />
-                    )}
+                      <div className="w-6 h-6 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px] shrink-0">
+                        {selectedMember.fullName.charAt(0)}
+                      </div>
+                    )
+                  ) : (
+                    <User className="w-4 h-4 text-amber-400 shrink-0" />
+                  )}
 
-                    <div className="truncate text-left leading-tight">
-                      <span className="font-bold block truncate">
-                        {selectedMember ? selectedMember.fullName : 'Público en General'}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 block truncate font-normal">
-                        {selectedMember 
-                          ? `${selectedMember.membership?.planName || 'Socio'} • ${selectedMember.phone || selectedMember.documentId}`
-                          : 'Venta de mostrador directa'
-                        }
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {selectedMember && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedClientId('');
-                        }}
-                        className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.1] transition-colors"
-                        title="Quitar socio y volver a Público General"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${isClientSearchOpen ? 'rotate-180' : ''}`} />
+                  <div className="truncate text-left leading-tight">
+                    <span className="font-bold block truncate">
+                      {selectedMember ? selectedMember.fullName : 'Público en General'}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 block truncate font-normal">
+                      {selectedMember 
+                        ? `${selectedMember.membership?.planName || 'Socio'} • ${selectedMember.phone || selectedMember.documentId}`
+                        : 'Venta de mostrador directa'
+                      }
+                    </span>
                   </div>
                 </div>
 
-                {/* Dropdown Popover for Searching Members */}
-                {isClientSearchOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#141520] border border-amber-500/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] p-2 z-50 space-y-1.5 animate-fade-in">
-                    
-                    {/* Search input inside dropdown */}
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        autoFocus
-                        value={clientSearchQuery}
-                        onChange={(e) => setClientSearchQuery(e.target.value)}
-                        placeholder="Buscar por nombre, teléfono o DNI..."
-                        className="w-full pl-8 pr-3 py-1.5 bg-black/60 rounded-lg border border-white/[0.1] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400/80"
-                      />
-                    </div>
-
-                    {/* Options List */}
-                    <div className="max-h-48 overflow-y-auto space-y-1 pr-1 divide-y divide-white/[0.04]">
-                      {/* Option: Público en General */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedClientId('');
-                          setIsClientSearchOpen(false);
-                          setClientSearchQuery('');
-                        }}
-                        className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors ${
-                          !selectedClientId ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <User className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Público en General (Mostrador)</span>
-                        </div>
-                        {!selectedClientId && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />}
-                      </button>
-
-                      {/* Filtered Members List */}
-                      {filteredMembers.map(member => {
-                        const isSelected = selectedClientId === member.id;
-                        return (
-                          <button
-                            key={member.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedClientId(member.id);
-                              setIsClientSearchOpen(false);
-                              setClientSearchQuery('');
-                            }}
-                            className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors ${
-                              isSelected ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 truncate text-left">
-                              <div className="w-5 h-5 rounded-full bg-white/[0.1] flex items-center justify-center text-[9px] font-bold shrink-0">
-                                {member.fullName.charAt(0)}
-                              </div>
-                              <div className="truncate">
-                                <span className="block truncate font-semibold">{member.fullName}</span>
-                                <span className="text-[10px] text-zinc-400 block font-mono">
-                                  {member.phone || member.documentId || 'Socio'}
-                                </span>
-                              </div>
-                            </div>
-                            {member.membership?.status === 'active' && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0 font-bold">
-                                Activo
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Create New Client Action in footer */}
-                    <div className="pt-1.5 border-t border-white/[0.08] text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsClientSearchOpen(false);
-                          setShowAddClientModal(true);
-                        }}
-                        className="w-full py-1 text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1"
-                      >
-                        <UserPlus className="w-3 h-3" />
-                        <span>+ Registrar Nuevo Socio</span>
-                      </button>
-                    </div>
-
-                  </div>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  {selectedMember && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClientId('');
+                      }}
+                      className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.1] transition-colors"
+                      title="Quitar socio y volver a Público General"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${isClientSearchOpen ? 'rotate-180' : ''}`} />
+                </div>
               </div>
 
+              {/* Dropdown Popover for Searching Members */}
+              {isClientSearchOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#141520] border border-amber-500/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] p-2 z-40 space-y-1.5 animate-fade-in">
+                  
+                  {/* Search input inside dropdown */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={clientSearchQuery}
+                      onChange={(e) => setClientSearchQuery(e.target.value)}
+                      placeholder="Buscar por nombre, teléfono o DNI..."
+                      className="w-full pl-8 pr-3 py-1.5 bg-black/60 rounded-lg border border-white/[0.1] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400/80"
+                    />
+                  </div>
+
+                  {/* Options List */}
+                  <div className="max-h-48 overflow-y-auto space-y-1 pr-1 divide-y divide-white/[0.04]">
+                    {/* Option: Público en General */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedClientId('');
+                        setIsClientSearchOpen(false);
+                        setClientSearchQuery('');
+                      }}
+                      className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors ${
+                        !selectedClientId ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Público en General (Mostrador)</span>
+                      </div>
+                      {!selectedClientId && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />}
+                    </button>
+
+                    {/* Filtered Members List */}
+                    {filteredMembers.map(member => {
+                      const isSelected = selectedClientId === member.id;
+                      return (
+                        <button
+                          key={member.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedClientId(member.id);
+                            setIsClientSearchOpen(false);
+                            setClientSearchQuery('');
+                          }}
+                          className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors ${
+                            isSelected ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate text-left">
+                            <div className="w-5 h-5 rounded-full bg-white/[0.1] flex items-center justify-center text-[9px] font-bold shrink-0">
+                              {member.fullName.charAt(0)}
+                            </div>
+                            <div className="truncate">
+                              <span className="block truncate font-semibold">{member.fullName}</span>
+                              <span className="text-[10px] text-zinc-400 block font-mono">
+                                {member.phone || member.documentId || 'Socio'}
+                              </span>
+                            </div>
+                          </div>
+                          {member.membership?.status === 'active' && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0 font-bold">
+                              Activo
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Create New Client Action in footer */}
+                  <div className="pt-1.5 border-t border-white/[0.08] text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsClientSearchOpen(false);
+                        setShowAddClientModal(true);
+                      }}
+                      className="w-full py-1 text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1"
+                    >
+                      <UserPlus className="w-3 h-3" />
+                      <span>+ Registrar Nuevo Socio</span>
+                    </button>
+                  </div>
+
+                </div>
+              )}
             </div>
 
             {/* Middle: Live Ticket Items List */}
             <div className="flex-1 min-h-[140px] flex flex-col justify-between my-2 overflow-hidden">
               
-              {/* Ticket Sub-header with Hold Sale & Clear */}
+              {/* Ticket Sub-header */}
               <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06] text-xs">
                 <span className="font-extrabold text-zinc-300 flex items-center gap-1.5">
                   <Receipt className="w-3.5 h-3.5 text-amber-400" />
@@ -994,31 +715,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     {cartItemsCount} artículos
                   </span>
                 </span>
-                
                 {cart.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    {/* Hold Sale Button */}
-                    <button
-                      type="button"
-                      onClick={handleParkSale}
-                      className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors px-2 py-0.5 rounded-lg bg-amber-400/10 hover:bg-amber-400/20"
-                      title="Pausar venta para atender al siguiente cliente"
-                    >
-                      <PauseCircle className="w-3.5 h-3.5" />
-                      <span>Pausar</span>
-                    </button>
-
-                    {/* Clear Cart Button */}
-                    <button
-                      type="button"
-                      onClick={clearCart}
-                      className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded"
-                      title="Vaciar ticket"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Vaciar</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={clearCart}
+                    className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors"
+                    title="Vaciar ticket"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Vaciar</span>
+                  </button>
                 )}
               </div>
 
@@ -1035,13 +741,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         LEYENDS GYM • CLUB FITNESS
                       </p>
                       <p className="text-[11px] text-zinc-400 leading-relaxed mt-1 max-w-[240px]">
-                        Toca productos del catálogo a la izquierda o escanea con el lector láser para comenzar.
+                        Toca los productos del catálogo o escanea con el lector para agregarlos al ticket.
                       </p>
                     </div>
                   </div>
                 ) : (
                   cart.map((item) => (
-                    <div key={item.product.id} className="py-2 flex items-center justify-between gap-2 rounded-xl hover:bg-white/[0.03] transition-colors px-1.5">
+                    <div key={item.product.id} className="py-2 flex items-center justify-between gap-2.5 rounded-xl hover:bg-white/[0.03] transition-colors px-1.5">
                       
                       {/* Product Thumbnail */}
                       <img
@@ -1059,12 +765,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
                           <span className="font-mono font-bold text-amber-400">${item.unitPrice.toFixed(2)} c/u</span>
                           {item.product.flavor && (
-                            <span className="truncate max-w-[90px] text-zinc-500">• {item.product.flavor}</span>
+                            <span className="truncate max-w-[100px] text-zinc-500">• {item.product.flavor}</span>
                           )}
                         </div>
                       </div>
 
-                      {/* Quantity Stepper with Direct Input */}
+                      {/* Quantity Stepper */}
                       <div className="flex items-center gap-1 bg-[#0b0c10]/90 p-0.5 rounded-lg border border-white/[0.08] shrink-0">
                         <button
                           type="button"
@@ -1073,19 +779,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         >
                           <Minus className="w-3 h-3" />
                         </button>
-                        
-                        <input
-                          type="number"
-                          min="1"
-                          max={item.product.stock}
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value) || 1;
-                            updateCartQuantity(item.product.id, Math.min(item.product.stock, Math.max(1, val)));
-                          }}
-                          className="w-7 text-center font-mono font-black text-xs bg-transparent text-white focus:outline-none focus:bg-white/[0.1] rounded"
-                        />
-
+                        <span className="font-mono font-black text-xs px-1.5 text-white">{item.quantity}</span>
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
@@ -1118,64 +812,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
             </div>
 
-            {/* Bottom: Discounts, Payment Console & Checkout Controls */}
-            <div className="space-y-2 pt-2 border-t border-white/[0.08] shrink-0">
+            {/* Bottom: Payment Console & Checkout Controls */}
+            <div className="space-y-2.5 pt-2 border-t border-white/[0.08] shrink-0">
               
-              {/* Discount Row & Breakdown */}
-              <div className="flex items-center justify-between text-xs text-zinc-400 relative">
-                <div ref={discountRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsDiscountOpen(prev => !prev)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold transition-all ${
-                      discountPercent > 0
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/50'
-                        : 'bg-white/[0.04] text-zinc-400 border-white/[0.08] hover:text-white'
-                    }`}
-                  >
-                    <Percent className="w-3 h-3 text-amber-400" />
-                    <span>{discountPercent > 0 ? `Descuento ${discountPercent}%` : '+ Descuento'}</span>
-                  </button>
-
-                  {/* Quick Discount Selection Popover */}
-                  {isDiscountOpen && (
-                    <div className="absolute bottom-full left-0 mb-1.5 w-52 bg-[#141520] border border-amber-500/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 space-y-2 animate-fade-in">
-                      <span className="font-bold text-white text-xs block">Aplicar Descuento a Ticket</span>
-                      <div className="grid grid-cols-4 gap-1">
-                        {[0, 5, 10, 15, 20, 25, 30, 50].map(pct => (
-                          <button
-                            key={pct}
-                            type="button"
-                            onClick={() => {
-                              setDiscountPercent(pct);
-                              setIsDiscountOpen(false);
-                            }}
-                            className={`py-1 rounded text-[11px] font-bold font-mono transition-colors ${
-                              discountPercent === pct 
-                                ? 'bg-amber-400 text-black font-black' 
-                                : 'bg-white/[0.05] text-zinc-300 hover:bg-white/[0.1]'
-                            }`}
-                          >
-                            {pct === 0 ? '0%' : `${pct}%`}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {discountPercent > 0 && (
-                  <div className="text-right">
-                    <span className="text-[11px] text-zinc-400 line-through mr-2 font-mono">
-                      ${rawSubtotal.toFixed(2)}
-                    </span>
-                    <span className="text-[11px] text-emerald-400 font-bold font-mono">
-                      -${discountAmount.toFixed(2)} ahorro
-                    </span>
-                  </div>
-                )}
-              </div>
-
               {/* Total Display */}
               <div className="bg-black/60 p-3 rounded-2xl border border-white/[0.08] flex items-baseline justify-between shadow-inner">
                 <div>
@@ -1187,11 +826,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   </span>
                 </div>
                 <span className="text-3xl sm:text-4xl lg:text-4xl 2xl:text-5xl font-black font-mono text-amber-400 tracking-tight drop-shadow-[0_2px_10px_rgba(245,158,11,0.35)]">
-                  ${finalPayableTotal.toFixed(2)}
+                  ${cartTotal.toFixed(2)}
                 </span>
               </div>
 
-              {/* Payment Methods (Pills with F8 hotkey hint) */}
+              {/* Payment Methods (Pills) */}
               <div className="grid grid-cols-3 gap-1.5">
                 <button
                   type="button"
@@ -1234,16 +873,15 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               </div>
 
               {/* Cash Denominations & Change Due */}
-              {paymentMethod === 'cash' ? (
-                <div className="space-y-1.5 pt-0.5">
+              {paymentMethod === 'cash' && (
+                <div className="space-y-1.5 pt-1">
                   <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
                     <button
                       type="button"
                       onClick={() => handleQuickCash('exact')}
                       className="px-2 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 font-extrabold text-[10px] border border-amber-400/35 flex items-center gap-1 shrink-0 transition-colors"
-                      title="Atajo F9"
                     >
-                      <span>⚡ Exacto (F9)</span>
+                      <span>⚡ Exacto</span>
                     </button>
                     {[50, 100, 200, 500, 1000].map(bill => (
                       <button
@@ -1279,23 +917,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     )}
                   </div>
                 </div>
-              ) : (
-                /* Card or Transfer Reference Field */
-                <div className="pt-0.5">
-                  <div className="flex items-center gap-2 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/[0.08] focus-within:border-amber-400/50 transition-all">
-                    <FileText className="w-4 h-4 text-amber-400 shrink-0" />
-                    <input
-                      type="text"
-                      value={paymentReference}
-                      onChange={(e) => setPaymentReference(e.target.value)}
-                      placeholder={paymentMethod === 'card' ? "Voucher / Autorización (opcional)..." : "Clave de rastreo SPEI / Ref (opcional)..."}
-                      className="w-full bg-transparent text-xs font-mono text-white placeholder-zinc-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
               )}
 
-              {/* Action Buttons: [Cancelar] [Cobrar & Ticket F10] */}
+              {/* Action Buttons: [Cancelar] [Cobrar & Ticket] */}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   type="button"
@@ -1315,9 +939,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 >
                   <Receipt className="w-4 h-4" />
                   <span>Cobrar & Ticket</span>
-                  <span className="px-1.5 py-0.2 rounded bg-black/25 text-[9px] font-mono font-black text-black">
-                    F10
-                  </span>
                 </button>
               </div>
 
