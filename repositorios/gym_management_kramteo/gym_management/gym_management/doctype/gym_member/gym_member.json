@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:MBR-{YY}{MM}-{###}",
+ "creation": "2023-02-01 11:12:36.233645",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "first_name",
+  "last_name",
+  "gender",
+  "date_of_birth",
+  "date_of_subscription",
+  "date_of_membership_expiry",
+  "membership_type",
+  "column_break_4c98k",
+  "photo"
+ ],
+ "fields": [
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Last Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Gender",
+   "options": "Male\nFemale",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date of Birth",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "date_of_subscription",
+   "fieldname": "membership_type",
+   "fieldtype": "Link",
+   "label": "Membership Type",
+   "options": "Gym Membership",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_subscription",
+   "fieldtype": "Date",
+   "label": "Date of Subscribing to Membership",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_membership_expiry",
+   "fieldtype": "Date",
+   "label": "Date of Membership Expiry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4c98k",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "photo",
+   "fieldtype": "Attach Image",
+   "label": "Photo",
+   "length": 500
+  }
+ ],
+ "image_field": "photo",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-02-17 19:36:43.182301",
+ "modified_by": "Administrator",
+ "module": "Gym Management",
+ "name": "Gym Member",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Trainer",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Member",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest",
+   "select": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

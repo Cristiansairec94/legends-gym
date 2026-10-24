@@ -1,0 +1,19 @@
+th {
+    display: table-cell;
+    vertical-align: inherit;
+    font-weight: bold;
+    text-align: center;
+    background: lightgray;
+}
+
+td {
+    display: table-cell;
+    vertical-align: inherit;
+    font-weight: normal;
+    text-align: center;
+}
+
+.demo_class {
+    font-weight: 500;
+    line-height: 1.2;
+}

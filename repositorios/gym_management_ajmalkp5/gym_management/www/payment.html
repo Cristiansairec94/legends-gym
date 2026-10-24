@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Payment - FitZone</title>
+
+<link rel="stylesheet"
+href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1 class="page-title">
+    Complete Payment
+  </h1>
+
+  <p class="page-subtitle">
+    Secure checkout
+  </p>
+
+  <div class="payment-box">
+
+    <div class="summary">
+
+      <div>
+        <span>Plan</span>
+        <span id="planName">-</span>
+      </div>
+
+      <div>
+        <span>Duration</span>
+        <span id="planDuration">-</span>
+      </div>
+
+      <div class="total">
+        <span>Total</span>
+        <span id="totalAmount">₹0</span>
+      </div>
+
+    </div>
+
+    <form id="paymentForm">
+
+      <div class="form-group">
+        <label>Cardholder Name</label>
+        <input type="text" required />
+      </div>
+
+      <div class="form-group">
+        <label>Card Number</label>
+        <input type="text" required />
+      </div>
+
+      <div style="display:flex;gap:12px;">
+
+        <div class="form-group" style="flex:1;">
+          <label>Expiry</label>
+          <input type="text" required />
+        </div>
+
+        <div class="form-group" style="flex:1;">
+          <label>CVV</label>
+          <input type="text" required />
+        </div>
+
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        id="payBtn"
+      >
+        Pay
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<script>
+
+let selectedPlan = null;
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+    const params =
+        new URLSearchParams(window.location.search);
+
+    selectedPlan = params.get("plan");
+
+    if (!selectedPlan) {
+
+        alert("Invalid Plan");
+
+        window.location.href = "plans.html";
+
+        return;
+    }
+
+    loadPaymentPage();
+
+});
+
+async function loadPaymentPage() {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.get_payment_page_data?plan=${selectedPlan}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+
+        const result = json.message;
+
+        // console.log(result);
+
+        if (result.status === "guest") {
+
+            alert("Login required");
+
+            window.location.href = "/login";
+
+            return;
+        }
+
+        if (result.status !== "success") {
+
+            alert("Something went wrong");
+
+            return;
+        }
+
+        const data = result.data;
+
+        document.getElementById("planName")
+            .innerText = data.plan_name;
+
+        document.getElementById("planDuration")
+            .innerText = data.duration_type;
+
+        document.getElementById("totalAmount")
+            .innerText = `₹${data.amount}`;
+
+        document.getElementById("payBtn")
+            .innerText = `Pay ₹${data.amount}`;
+
+    }
+
+    catch(err) {
+
+        // console.error(err);
+
+        alert("Server Error");
+
+    }
+
+}
+
+document.getElementById("paymentForm")
+.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.create_payment?plan=${selectedPlan}`,
+            {
+                method: "POST",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+
+        const result = json.message;
+
+        // console.log(result);
+
+        if (result.status === "guest") {
+
+            window.location.href = "/login";
+
+            return;
+        }
+
+        if (result.status === "already_active") {
+            alert(result.message);
+            window.location.href = "membership.html";
+            return;
+        }
+
+        if (result.status === "guest") {
+            alert("Login required");
+            window.location.href = "/login";
+            return;
+        }
+
+        if (result.status === "success") {
+
+            alert(
+                `Payment Success: ${result.payment}`
+            );
+
+            window.location.href =
+                "payment_history.html";
+        }
+
+        else {
+
+            alert("Payment Failed");
+
+        }
+
+    }
+
+    catch(err) {
+
+        // console.error(err);
+
+        alert("Server Error");
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

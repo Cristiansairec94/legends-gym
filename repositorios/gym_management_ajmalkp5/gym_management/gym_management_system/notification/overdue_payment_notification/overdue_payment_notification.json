@@ -1,0 +1,32 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "System Notification",
+ "condition": "doc.status == \"Overdue\"",
+ "creation": "2026-05-20 12:22:30.475687",
+ "date_changed": "due_date",
+ "days_in_advance": 1,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Gym Payment",
+ "enabled": 1,
+ "event": "Days After",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Add your message here",
+ "message_type": "Markdown",
+ "modified": "2026-05-20 12:22:30.475687",
+ "modified_by": "Administrator",
+ "module": "Gym Management System",
+ "name": "Overdue Payment Notification",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "owner",
+   "receiver_by_role": "Member"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "subject": "Payment Due Reminder"
+}

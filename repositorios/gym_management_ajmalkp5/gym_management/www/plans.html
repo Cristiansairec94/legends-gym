@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Membership Plans - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html" class="active">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+    <li><a href="notifications.html">🔔</a></li>
+    <li><a href="profiles.html"><div class="avatar"></div></a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <h1 class="page-title">Membership Plans</h1>
+  <p class="page-subtitle">Choose the plan that fits your goals and lifestyle.</p>
+
+  <div class="grid grid-3" id="plansContainer">
+  </div>
+
+  <div class="pagination" style="margin-top:25px;text-align:center;">
+    <button id="prevBtn" class="btn btn-outline">Prev</button>
+    <span id="pageInfo" style="margin:0 10px;"></span>
+    <button id="nextBtn" class="btn btn-outline">Next</button>
+  </div>
+
+</div>
+
+<script>
+
+let currentPage = 1;
+const pageSize = 3;
+let totalRecords = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadPlans(currentPage);
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadPlans(currentPage);
+        }
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+        if (currentPage * pageSize < totalRecords) {
+            currentPage++;
+            loadPlans(currentPage);
+        }
+    });
+});
+
+async function loadPlans(page) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.get_membership_plans?page=${page}&page_length=${pageSize}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+
+        // console.log("API RESPONSE:", json);
+
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            // console.error("API Error:", result);
+            return;
+        }
+
+        const container = document.getElementById("plansContainer");
+        container.innerHTML = "";
+
+        totalRecords = result.total || 0;
+
+        result.data.forEach(plan => {
+
+            const card = document.createElement("div");
+            card.className = "plan-card";
+
+            card.innerHTML = `
+                <h3>${plan.plan_name}</h3>
+
+                <div class="price">
+                    ₹${plan.amount}
+                    <small>/${plan.duration_type}</small>
+                </div>
+
+                <ul>
+                    <li>${plan.duration_days} Days Access</li>
+                    <li>Grace Period: ${plan.grace_period}</li>
+                    <li>Freeze Days: ${plan.allowed_freeze_days}</li>
+                </ul>
+
+                <a href="plan_details.html?plan=${plan.name}" class="btn btn-outline btn-block">
+                    View Details
+                </a>
+            `;
+
+            container.appendChild(card);
+        });
+
+        updatePaginationUI();
+
+    } catch (err) {
+        // console.error("Pagination error:", err);
+    }
+}
+
+function updatePaginationUI() {
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    document.getElementById("pageInfo").innerText =
+        `Page ${currentPage} of ${totalPages}`;
+
+    document.getElementById("prevBtn").disabled = currentPage === 1;
+    document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+}
+
+</script>
+
+</body>
+</html>

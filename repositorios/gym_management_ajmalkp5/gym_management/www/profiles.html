@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile - FitZone</title>
+  <link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="logo">Fit<span>Zone</span></div>
+    <ul class="nav-links">
+      <li><a href="home.html">Home</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="trainers.html">Trainers</a></li>
+      <li><a href="membership.html">My Membership</a></li>
+      <li><a href="payment_history.html">Payments</a></li>
+      <li><a href="notifications.html" class="notif-bell">🔔</a></li>
+      <li><a href="profiles.html" class="active">
+          <div class="big-avatar">J</div>
+        </a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="profile-header">
+      <div class="big-avatar">J</div>
+      <h2>John Doe</h2>
+      <div class="role">Premium Member</div>
+      <div style="margin-top:16px;">
+        <a href="#" class="btn btn-outline btn-sm">Edit Profile</a>
+        <a href="logout.html" class="btn btn-dark btn-sm" style="margin-left:8px;">Logout</a>
+      </div>
+    </div>
+
+    <div class="stats-row">
+
+      <div class="stat-box">
+        <div class="num" id="activeDays">0</div>
+        <div class="label">Days Active</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="num" id="membershipCount">0</div>
+        <div class="label">Memberships</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="num" id="currentPlan">-</div>
+        <div class="label">Current Plan</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="num" id="totalPaid">₹0</div>
+        <div class="label">Total Paid</div>
+      </div>
+
+    </div>
+
+    <div class="detail-body">
+      <h2>Personal Info</h2>
+
+      <form id="profileForm">
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="full_name" />
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="phone" />
+        </div>
+
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" id="date_of_birth" />
+        </div>
+
+        <div class="form-group">
+          <label>Address</label>
+          <textarea rows="2" id="address"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          Save Changes
+        </button>
+
+      </form>
+    </div>
+  </div>
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        loadProfile();
+
+      });
+
+    async function loadProfile() {
+
+      try {
+
+        const res = await fetch(
+          "/api/method/gym_management.web_api.web.get_profile",
+          {
+            method: "GET",
+            credentials: "include"
+          }
+        );
+
+        const json = await res.json();
+
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+          alert("Failed to load profile");
+          return;
+        }
+
+        const data = result.data;
+
+        document.querySelector(".profile-header h2")
+          .innerText = data.full_name;
+
+        document.querySelector(".role")
+          .innerText = data.membership_plan;
+
+        document.getElementById("full_name")
+          .value = data.full_name || "";
+
+        document.getElementById("email")
+          .value = data.email || "";
+
+        document.getElementById("phone")
+          .value = data.phone || "";
+
+        document.getElementById("date_of_birth")
+          .value = data.date_of_birth || "";
+
+        document.getElementById("address")
+          .value = data.address || "";
+
+        document.querySelector(".big-avatar")
+          .innerText =
+          (data.full_name || "U")[0];
+
+        document.getElementById("activeDays")
+          .innerText = data.stats.active_days;
+
+        document.getElementById("membershipCount")
+          .innerText = data.stats.membership_count;
+
+        document.getElementById("currentPlan")
+          .innerText = data.stats.current_plan;
+
+        document.getElementById("totalPaid")
+          .innerText = `₹${data.stats.total_paid}`;
+
+      }
+
+      catch (err) {
+
+        // console.error(err);
+
+      }
+
+    }
+
+    document.getElementById("profileForm")
+      .addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        try {
+
+          const formData = new URLSearchParams();
+
+          formData.append(
+            "full_name",
+            document.getElementById("full_name").value
+          );
+
+          formData.append(
+            "phone",
+            document.getElementById("phone").value
+          );
+
+          formData.append(
+            "date_of_birth",
+            document.getElementById("date_of_birth").value
+          );
+
+          formData.append(
+            "address",
+            document.getElementById("address").value
+          );
+
+          const res = await fetch(
+            "/api/method/gym_management.web_api.web.update_profile",
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type":
+                  "application/x-www-form-urlencoded"
+              },
+              body: formData
+            }
+          );
+
+          const json = await res.json();
+
+          const result = json.message;
+
+          if (result.status === "success") {
+
+            alert("Profile updated");
+
+            loadProfile();
+
+          }
+
+        }
+
+        catch (err) {
+
+          // console.error(err);
+
+        }
+
+      });
+
+  </script>
+</body>
+
+</html>

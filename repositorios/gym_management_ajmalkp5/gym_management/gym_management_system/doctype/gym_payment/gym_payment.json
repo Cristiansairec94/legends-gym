@@ -1,0 +1,173 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-18 13:33:20.443598",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "amended_from",
+  "member",
+  "member_name",
+  "membership",
+  "membership_plan",
+  "column_break_2ftz",
+  "payment_date",
+  "total_amount",
+  "paid_amount",
+  "outstanding_amount",
+  "section_break_ehqr",
+  "due_date",
+  "status",
+  "payment_mode",
+  "payment_history",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_ehqr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Gym Payment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "member",
+   "fieldtype": "Link",
+   "label": "Member",
+   "options": "Gym Member"
+  },
+  {
+   "fieldname": "membership",
+   "fieldtype": "Link",
+   "label": "Membership",
+   "options": "Gym Membership"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Paid\nPartially Paid\nUnpaid\nOverdue"
+  },
+  {
+   "fieldname": "payment_history",
+   "fieldtype": "Table",
+   "label": "Payment History",
+   "options": "Payment History"
+  },
+  {
+   "fetch_from": "member.member_name",
+   "fieldname": "member_name",
+   "fieldtype": "Data",
+   "label": "Member Name"
+  },
+  {
+   "fieldname": "membership_plan",
+   "fieldtype": "Link",
+   "label": "Membership Plan",
+   "options": "Membership Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "Payment Date"
+  },
+  {
+   "fieldname": "payment_mode",
+   "fieldtype": "Select",
+   "label": "Payment Mode",
+   "options": "Cash\nUPI\nCard\nBank Transfer"
+  },
+  {
+   "fieldname": "column_break_2ftz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-05-20 11:57:56.093836",
+ "modified_by": "Administrator",
+ "module": "Gym Management System",
+ "name": "Gym Payment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Receptionist",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

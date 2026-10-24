@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trainer Profile - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="trainers.html" class="active">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="detail-hero" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+
+    <div id="avatar"
+      style="width:120px;height:120px;border-radius:50%;
+      background:#fff;color:#2a9d8f;
+      display:flex;align-items:center;justify-content:center;
+      font-size:48px;font-weight:bold;">
+      ?
+    </div>
+
+    <div>
+      <h1 id="trainerName">Loading...</h1>
+      <p class="meta" id="trainerRole"></p>
+    </div>
+
+  </div>
+
+  <div class="detail-body">
+
+    <h2>About</h2>
+    <p id="about"></p>
+
+    <h2>Specialties</h2>
+    <p id="specialties"></p>
+
+    <h2>Certifications</h2>
+    <p id="certifications"></p>
+
+    <h2>Availability</h2>
+    <p id="availability"></p>
+
+    <h2>Session Rate</h2>
+    <p id="rate"></p>
+
+    <div style="margin-top:24px;">
+      <a href="#" class="btn btn-primary">Book Session</a>
+      <a href="trainers.html" class="btn btn-outline" style="margin-left:10px;">Back</a>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const params = new URLSearchParams(window.location.search);
+    const trainerId = params.get("id");
+
+    if (!trainerId) {
+        alert("Invalid trainer");
+        window.location.href = "trainers.html";
+        return;
+    }
+
+    loadTrainer(trainerId);
+
+});
+
+async function loadTrainer(id) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.get_trainer_details?id=${id}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            alert("Trainer not found");
+            return;
+        }
+
+        const t = result.data;
+
+        document.getElementById("trainerName").innerText = t.trainer_name;
+        document.getElementById("trainerRole").innerText =
+            `${t.specialization} · ${t.experience} years experience`;
+
+        document.getElementById("about").innerText = t.about || "-";
+        document.getElementById("specialties").innerText = t.specialties || "-";
+        document.getElementById("certifications").innerText = t.certifications || "-";
+        document.getElementById("availability").innerText = t.availability || "-";
+        document.getElementById("rate").innerText = `₹${t.session_rate} / hour`;
+
+        document.getElementById("avatar").innerText =
+            t.trainer_name.charAt(0).toUpperCase();
+
+    } catch (err) {
+        // console.error(err);
+        alert("Server error");
+    }
+}
+
+</script>
+
+</body>
+</html>

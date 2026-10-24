@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - FitZone Gym</title>
+
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css">
+</head>
+
+<body>
+
+<div class="auth-wrapper">
+
+  <div class="auth-card">
+
+    <h1>FitZone</h1>
+    <p class="sub">Create your gym account</p>
+<form id="registerForm">
+
+  <div class="form-group">
+    <input type="text" id="member_name" placeholder="Full Name" required>
+  </div>
+
+  <div class="form-group">
+    <input type="email" id="email" placeholder="Email" required>
+  </div>
+
+  <div class="form-group">
+    <input type="text" id="mobile_number" placeholder="Phone" required>
+  </div>
+
+  <div class="form-group">
+    <input type="password" id="password" placeholder="Password" required>
+  </div>
+
+  <div class="form-group">
+    <select id="gender">
+      <option value="">Gender</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <input type="date" id="dob">
+  </div>
+
+  <div class="form-group">
+    <textarea id="address" placeholder="Address"></textarea>
+  </div>
+
+  <div class="form-group">
+    <input type="text" id="emergency_contact" placeholder="Emergency Contact">
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-block">
+    Create Account
+  </button>
+
+</form>
+
+  </div>
+
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function (e) {
+
+  e.preventDefault();
+
+  const payload = {
+    member_name: document.getElementById("member_name").value,
+    email: document.getElementById("email").value,
+    mobile_number: document.getElementById("mobile_number").value,
+    password: document.getElementById("password").value,
+    gender: document.getElementById("gender").value,
+    dob: document.getElementById("dob").value,
+    address: document.getElementById("address").value,
+    emergency_contact: document.getElementById("emergency_contact").value
+  };
+
+  const res = await fetch("/api/method/gym_management.web_api.login.register_user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  const result = data.message || data;
+
+  if (result.status === "success") {
+
+    alert("Account created");
+    window.location.href = "/home";
+
+  } else if (result.status === "exists") {
+
+    alert("User already exists");
+    window.location.href = "/register";
+
+  } else {
+
+    alert(result.message || "Error");
+
+  }
+
+});
+</script>
+
+</body>
+</html>

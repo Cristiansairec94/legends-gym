@@ -1,0 +1,148 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cancel Membership - FitZone</title>
+
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+
+<style>
+.cancel-box{
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    max-width:500px;
+    margin:40px auto;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    text-align:center;
+}
+
+.btn-danger{
+    background:#e63946;
+    color:#fff;
+    border:none;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-danger:hover{
+    opacity:0.9;
+}
+
+.info{
+    margin-top:15px;
+    color:#555;
+    font-size:14px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1 class="page-title">Cancel Membership</h1>
+    <p class="page-subtitle">You can cancel anytime. Refund will be calculated automatically.</p>
+
+    <div class="cancel-box">
+
+        <h2 id="planName">Loading...</h2>
+
+        <p class="info" id="membershipInfo">
+            Fetching membership details...
+        </p>
+
+        <button class="btn-danger" id="cancelBtn">
+            Cancel Membership
+        </button>
+
+        <p class="info" id="resultBox"></p>
+
+    </div>
+
+</div>
+
+<script>
+
+let membershipId = null;
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const params = new URLSearchParams(window.location.search);
+
+    membershipId = params.get("membership");
+
+    if (!membershipId) {
+        alert("Invalid Membership");
+        return;
+    }
+
+    document.getElementById("planName").innerText =
+        "Your Membership";
+
+    document.getElementById("membershipInfo").innerText =
+        "Click cancel to stop membership and get refund (if eligible).";
+
+});
+
+document.getElementById("cancelBtn")
+.addEventListener("click", async function () {
+
+    if (!confirm("Are you sure you want to cancel membership?")) {
+        return;
+    }
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.cancel_membership?membership_id=${membershipId}`,
+            {
+                method: "POST",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+        const result = json.message;
+
+        console.log(result);
+
+        if (result.status === "guest") {
+
+            window.location.href = "/login";
+            return;
+        }
+
+        if (result.status === "success") {
+
+            document.getElementById("resultBox").innerHTML =
+                `✅ Cancelled successfully <br>
+                 💰 Refund: ₹${result.refund_amount}`;
+
+            document.getElementById("cancelBtn").disabled = true;
+            document.getElementById("cancelBtn").innerText = "Cancelled";
+
+        } else {
+
+            document.getElementById("resultBox").innerText =
+                result.message || "Error cancelling membership";
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert("Server Error");
+
+    }
+
+});
+
+</script>
+
+</body>
+</html> -->
