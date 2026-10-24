@@ -26,8 +26,6 @@ import {
   User,
   Lock,
   Sparkles,
-  LayoutGrid,
-  List
 } from 'lucide-react';
 
 export const EmployeesManager: React.FC = () => {
@@ -35,7 +33,6 @@ export const EmployeesManager: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
@@ -334,33 +331,6 @@ export const EmployeesManager: React.FC = () => {
             ))}
           </div>
 
-          {/* Selector de Vista: Cuadros vs Tabla */}
-          <div className="flex items-center bg-gym-surface p-1 rounded-xl border border-gym-border shrink-0">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Vista en Cuadros / Tarjetas"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Cuadros</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'table'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Vista en Tabla"
-            >
-              <List className="w-3.5 h-3.5" />
-              <span>Tabla</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -375,8 +345,8 @@ export const EmployeesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Vista 1: Cuadros / Tarjetas (Grid View) */}
-      {viewMode === 'grid' && filteredEmployees.length > 0 && (
+      {/* Vista: Cuadros / Tarjetas */}
+      {filteredEmployees.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredEmployees.map((emp) => (
             <div
@@ -523,131 +493,6 @@ export const EmployeesManager: React.FC = () => {
 
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Vista 2: Tabla (Table View) */}
-      {viewMode === 'table' && filteredEmployees.length > 0 && (
-        <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
-                  <th className="p-4">Empleado</th>
-                  <th className="p-4">Puesto / Cargo</th>
-                  <th className="p-4">Rol & Usuario</th>
-                  <th className="p-4">Turno Asignado</th>
-                  <th className="p-4">Sueldo Base</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gym-border/40 text-sm">
-                {filteredEmployees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-gym-surface/40 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
-                          alt={emp.fullName}
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
-                          }}
-                          className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0 bg-gym-surface"
-                        />
-                        <div>
-                          <div 
-                            onClick={() => handleOpenEditModal(emp)}
-                            className="font-bold text-white text-xs hover:text-amber-400 cursor-pointer transition-colors"
-                            title="Clic para editar"
-                          >
-                            {emp.fullName}
-                          </div>
-                          <div className="text-[11px] text-gym-muted font-mono">{emp.id} • {emp.phone}</div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="p-4">
-                      <span className="font-semibold text-white text-xs block">{emp.jobTitle}</span>
-                      <span className="text-[10px] text-gym-muted">Desde {emp.hireDate}</span>
-                    </td>
-
-                    <td className="p-4">
-                      <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border inline-block ${
-                        emp.role === 'admin'
-                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                          : emp.role === 'receptionist'
-                          ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                          : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                      }`}>
-                        {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
-                      </span>
-                      {emp.username ? (
-                        <div className="text-[11px] text-gray-300 font-mono mt-1 flex items-center gap-1">
-                          <KeyRound className="w-3 h-3 text-amber-400/80 shrink-0" />
-                          <span className="text-amber-400 font-bold">@{emp.username}</span>
-                        </div>
-                      ) : (
-                        <div className="text-[10px] text-gym-muted italic mt-0.5">Sin usuario</div>
-                      )}
-                    </td>
-
-                    <td className="p-4 text-xs text-gray-300">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-gym-muted" />
-                        <span>{emp.shift}</span>
-                      </div>
-                    </td>
-
-                    <td className="p-4 font-mono font-bold text-xs text-amber-400">
-                      ${emp.salaryMonthly.toLocaleString()} MXN
-                    </td>
-
-                    <td className="p-4">
-                      <button
-                        onClick={() => {
-                          updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' });
-                        }}
-                        className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
-                          emp.status === 'active'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
-                        }`}
-                        title="Clic para cambiar estado"
-                      >
-                        {emp.status === 'active' ? 'Activo' : 'Inactivo'}
-                      </button>
-                    </td>
-
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenEditModal(emp)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-bold transition-all shadow-sm group cursor-pointer"
-                          title="Editar empleado, rol y credenciales"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                          <span>Editar</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
-                              deleteEmployee(emp.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
-                          title="Eliminar empleado"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       )}
 
