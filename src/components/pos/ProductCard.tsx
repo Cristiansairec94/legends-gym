@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product } from '../../types';
 import { useGym } from '../../context/GymContext';
 import { Barcode, Package } from 'lucide-react';
+import { sounds } from '../../services/audio';
 
 interface ProductCardProps {
   product: Product;
@@ -16,9 +17,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const isOutOfStock = product.stock <= 0;
   const isLowStock = product.stock <= product.minStock && !isOutOfStock;
 
+  const handleCardClick = () => {
+    if (!isOutOfStock) {
+      addToCart(product, 1);
+      sounds.playBarcodeBeep();
+    }
+  };
+
   return (
     <div 
-      onClick={() => !isOutOfStock && addToCart(product, 1)}
+      onClick={handleCardClick}
       className={`bg-gradient-to-b from-[#161720] to-[#101117] rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between cursor-pointer select-none group relative shadow-md ${
         isOutOfStock 
           ? 'opacity-50 border-white/[0.06] cursor-not-allowed' 
