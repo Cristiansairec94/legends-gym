@@ -24,6 +24,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
+  const handleAddScoop = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (product.soldByScoop && product.scoopPrice) {
+      const scoopProduct: Product = {
+        ...product,
+        id: `${product.id}-scoop`,
+        name: `🥄 Scoop: ${product.name}`,
+        price: product.scoopPrice,
+        description: `Toma individual servida de ${product.flavor || product.name}`,
+        stock: 999,
+      };
+      addToCart(scoopProduct, 1);
+      sounds.playBarcodeBeep();
+    }
+  };
+
   return (
     <div 
       onClick={handleCardClick}
@@ -101,17 +117,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </p>
         </div>
 
+        {/* Scoop Quick-Add Action (if supported) */}
+        {product.soldByScoop && product.scoopPrice && (
+          <button
+            type="button"
+            onClick={handleAddScoop}
+            className="mt-2 w-full py-1 px-2 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 hover:border-amber-400 text-amber-300 font-extrabold text-[10px] flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+            title="Añadir una sola toma o cucharada servida al ticket"
+          >
+            <span>🥄 Scoop Individual: ${product.scoopPrice.toFixed(2)}</span>
+          </button>
+        )}
+
         {/* Footer row: Price on left, Barcode pill on right */}
         <div className="mt-2 pt-1.5 border-t border-white/[0.06] flex items-center justify-between gap-1">
           <div>
             <span className="font-bold text-xs font-mono text-white block">
               ${product.price.toFixed(2)} <span className="text-[9px] text-zinc-500 font-normal">/pz</span>
             </span>
-            {product.soldByScoop && product.scoopPrice && (
-              <span className="text-[9px] text-amber-400 font-bold font-mono block">
-                🥄 Scoop: ${product.scoopPrice.toFixed(2)}
-              </span>
-            )}
           </div>
 
           {/* Barcode pill */}
