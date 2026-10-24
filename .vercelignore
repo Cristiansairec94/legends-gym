@@ -1,4 +1,8 @@
+repositorios
 REPOSITORIOS
 release
 electron
 build
+tools
+*.exe
+*.bat
