@@ -382,7 +382,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       </div>
 
       {/* 2. UNIFIED WORKSPACE (Catálogo a la Izquierda + Ticket y Cobro a la Derecha) */}
-      <div className="flex-1 relative rounded-3xl border border-white/[0.1] overflow-hidden shadow-2xl bg-[#0b0c11] flex flex-col min-h-0">
+      <div className="flex-1 relative rounded-3xl border border-white/[0.1] overflow-hidden shadow-2xl bg-[#0a0b10] flex flex-col min-h-0">
         
         {/* Ambient 3D Gold Logo Watermark ("LEYENDS GYM • CLUB FITNESS") */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
@@ -392,7 +392,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/pos-banner.jpg';
             }}
-            className="w-full h-full object-cover object-center opacity-25 filter brightness-75 contrast-125 scale-105"
+            className="w-full h-full object-cover object-center opacity-20 filter brightness-75 contrast-125 scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#090a0e] via-[#090a0e]/85 to-[#0b0c12]/90" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.12)_0%,rgba(0,0,0,0)_65%)]" />
@@ -404,12 +404,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* ============================================================== */}
           {/* LEFT COLUMN: Catálogo Visual & Escáner (Touch POS) (7 de 12)   */}
           {/* ============================================================== */}
-          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col min-h-0 bg-black/45 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3.5 shadow-inner relative overflow-hidden">
+          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col min-h-0 bg-black/50 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3.5 shadow-inner relative overflow-hidden">
             
             {/* Top Toolbar: Barcode & Product Search */}
             <div className="space-y-2.5 shrink-0 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
                   <Barcode className="w-4 h-4 text-amber-400" />
                   Escanear o Buscar Producto
                 </span>
@@ -436,7 +436,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     }
                   }}
                   placeholder="Escanea código de barras o escribe producto, marca o sabor (Enter)..."
-                  className="w-full pl-10 pr-9 py-2.5 bg-black/60 rounded-xl border border-white/[0.12] text-xs sm:text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/40 transition-all shadow-inner"
+                  className="w-full pl-10 pr-9 py-2.5 bg-black/70 rounded-xl border border-white/[0.14] text-xs sm:text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition-all shadow-inner"
                 />
                 {barcodeInput && (
                   <button 
@@ -462,9 +462,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
+                      className={`flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
                         isActive
-                          ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black shadow-glow-gold border border-amber-300'
+                          ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black shadow-glow-gold/40 border border-amber-300 scale-[1.02]'
                           : 'bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] hover:text-white border border-white/[0.08]'
                       }`}
                     >
@@ -526,7 +526,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* ============================================================== */}
           {/* RIGHT COLUMN: Ticket de Venta & Caja de Cobro (5 de 12)        */}
           {/* ============================================================== */}
-          <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 flex flex-col justify-between min-h-0 bg-black/65 backdrop-blur-xl rounded-2xl border border-white/[0.1] p-3.5 sm:p-4 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#11121b]/98 via-[#0c0d15]/98 to-[#0a0b12]/98 backdrop-blur-2xl rounded-2xl border border-white/[0.1] p-3.5 sm:p-4 shadow-2xl relative overflow-hidden">
             
             {/* Top: Customer Selection Dropdown (ActioLift Pattern) */}
             <div ref={clientSearchRef} className="relative shrink-0 space-y-1.5 z-30">
@@ -547,31 +547,33 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               {/* Selected Customer Box (Clickable to switch/search) */}
               <div 
                 onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
                   selectedMember 
-                    ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400 text-white' 
+                    ? 'bg-gradient-to-r from-amber-500/15 via-white/[0.04] to-transparent border-amber-500/40 hover:border-amber-400 text-white shadow-sm' 
                     : 'bg-white/[0.04] border-white/[0.08] hover:border-white/20 text-zinc-200'
                 }`}
               >
-                <div className="flex items-center gap-2.5 truncate">
+                <div className="flex items-center gap-3 truncate">
                   {selectedMember ? (
                     selectedMember.avatarUrl ? (
                       <img 
                         src={selectedMember.avatarUrl} 
                         alt={selectedMember.fullName} 
-                        className="w-6 h-6 rounded-full object-cover border border-amber-400/50 shrink-0" 
+                        className="w-7 h-7 rounded-full object-cover border border-amber-400/50 shrink-0" 
                       />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px] shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
                         {selectedMember.fullName.charAt(0)}
                       </div>
                     )
                   ) : (
-                    <User className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div className="w-7 h-7 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-amber-400 shrink-0">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
                   )}
 
                   <div className="truncate text-left leading-tight">
-                    <span className="font-bold block truncate">
+                    <span className="font-extrabold text-white block truncate">
                       {selectedMember ? selectedMember.fullName : 'Público en General'}
                     </span>
                     <span className="text-[10px] text-zinc-400 block truncate font-normal">
@@ -603,7 +605,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
               {/* Dropdown Popover for Searching Members */}
               {isClientSearchOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#141520] border border-amber-500/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] p-2.5 z-40 space-y-2 animate-fade-in">
+                <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#141520]/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-40 space-y-2 animate-fade-in">
                   
                   {/* Search input inside dropdown */}
                   <div className="relative">
@@ -614,7 +616,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       value={clientSearchQuery}
                       onChange={(e) => setClientSearchQuery(e.target.value)}
                       placeholder="Buscar por nombre, teléfono o DNI..."
-                      className="w-full pl-8 pr-3 py-2 bg-black/60 rounded-xl border border-white/[0.1] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400/80"
+                      className="w-full pl-8 pr-3 py-2 bg-black/70 rounded-xl border border-white/[0.12] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400/80"
                     />
                   </div>
 
@@ -628,11 +630,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         setIsClientSearchOpen(false);
                         setClientSearchQuery('');
                       }}
-                      className={`w-full px-2.5 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
+                      className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
                         !selectedClientId ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <User className="w-3.5 h-3.5 text-amber-400" />
                         <span>Público en General (Mostrador)</span>
                       </div>
@@ -651,23 +653,23 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                             setIsClientSearchOpen(false);
                             setClientSearchQuery('');
                           }}
-                          className={`w-full px-2.5 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
+                          className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
                             isSelected ? 'bg-amber-400/15 text-amber-300 font-bold' : 'text-zinc-300 hover:bg-white/[0.06]'
                           }`}
                         >
-                          <div className="flex items-center gap-2 truncate text-left">
-                            <div className="w-6 h-6 rounded-full bg-white/[0.1] flex items-center justify-center text-[9px] font-bold shrink-0">
+                          <div className="flex items-center gap-2.5 truncate text-left">
+                            <div className="w-6 h-6 rounded-full bg-white/[0.1] flex items-center justify-center text-[10px] font-bold shrink-0">
                               {member.fullName.charAt(0)}
                             </div>
                             <div className="truncate">
-                              <span className="block truncate font-semibold">{member.fullName}</span>
+                              <span className="block truncate font-bold text-white">{member.fullName}</span>
                               <span className="text-[10px] text-zinc-400 block font-mono">
                                 {member.phone || member.documentId || 'Socio'}
                               </span>
                             </div>
                           </div>
                           {member.membership?.status === 'active' && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0 font-bold">
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0 font-black">
                               Activo
                             </span>
                           )}
@@ -684,9 +686,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         setIsClientSearchOpen(false);
                         setShowAddClientModal(true);
                       }}
-                      className="w-full py-1 text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1"
+                      className="w-full py-1.5 text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1.5 hover:bg-amber-400/10 rounded-xl transition-colors"
                     >
-                      <UserPlus className="w-3 h-3" />
+                      <UserPlus className="w-3.5 h-3.5" />
                       <span>+ Registrar Nuevo Socio</span>
                     </button>
                   </div>
@@ -700,10 +702,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               
               {/* Ticket Sub-header */}
               <div className="flex items-center justify-between pb-2 border-b border-white/[0.06] text-xs">
-                <span className="font-extrabold text-zinc-300 flex items-center gap-1.5">
-                  <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-black text-zinc-200 flex items-center gap-1.5">
+                  <Receipt className="w-4 h-4 text-amber-400" />
                   <span>Ticket de Venta</span>
-                  <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                  <span className="text-[10px] font-mono font-black text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/25">
                     {cartItemsCount} artículos
                   </span>
                 </span>
@@ -711,10 +713,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   <button
                     type="button"
                     onClick={clearCart}
-                    className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded"
+                    className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors px-2 py-0.5 rounded-lg hover:bg-red-500/10"
                     title="Vaciar ticket"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="w-3.5 h-3.5" />
                     <span>Vaciar</span>
                   </button>
                 )}
@@ -723,9 +725,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               {/* Ticket Items Scroll Area */}
               <div className="flex-1 overflow-y-auto divide-y divide-white/[0.05] pr-1 py-1">
                 {cart.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-2.5">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-glow-gold/15">
-                      <img src="/logo.png" alt="LEYENDS GYM" className="w-10 h-10 object-contain filter drop-shadow" />
+                  <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-3">
+                    <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-glow-gold/15">
+                      <img src="/logo.png" alt="LEYENDS GYM" className="w-11 h-11 object-contain filter drop-shadow" />
                     </div>
                     <div>
                       <h4 className="font-black text-sm text-white">Ticket Listo para Cobro</h4>
@@ -739,7 +741,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   </div>
                 ) : (
                   cart.map((item) => (
-                    <div key={item.product.id} className="py-2.5 flex items-center justify-between gap-2.5 rounded-xl hover:bg-white/[0.03] transition-colors px-1.5">
+                    <div key={item.product.id} className="py-2.5 flex items-center justify-between gap-3 rounded-xl hover:bg-white/[0.03] transition-colors px-2">
                       
                       {/* Product Thumbnail */}
                       <img
@@ -748,13 +750,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = '/logo.png';
                         }}
-                        className="w-10 h-10 rounded-xl object-cover border border-white/[0.08] bg-[#1a1b24] shrink-0 shadow-sm"
+                        className="w-11 h-11 rounded-xl object-cover border border-white/[0.08] bg-[#161722] shrink-0 shadow-sm"
                       />
                       
                       {/* Product Info */}
                       <div className="flex-1 min-w-0 leading-snug">
-                        <h5 className="font-extrabold text-xs text-white truncate">{item.product.name}</h5>
-                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+                        <h5 className="font-extrabold text-xs sm:text-sm text-white truncate">{item.product.name}</h5>
+                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5">
                           <span className="font-mono font-bold text-amber-400">${item.unitPrice.toFixed(2)} c/u</span>
                           {item.product.flavor && (
                             <span className="truncate max-w-[100px] text-zinc-500">• {item.product.flavor}</span>
@@ -763,13 +765,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       </div>
 
                       {/* Quantity Stepper */}
-                      <div className="flex items-center gap-1 bg-[#0b0c10]/90 p-0.5 rounded-xl border border-white/[0.08] shrink-0">
+                      <div className="flex items-center gap-1 bg-[#0a0b10] p-1 rounded-xl border border-white/[0.08] shrink-0">
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
                           className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3.5 h-3.5" />
                         </button>
                         <span className="font-mono font-black text-xs px-2 text-white">{item.quantity}</span>
                         <button
@@ -778,7 +780,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                           disabled={item.quantity >= item.product.stock}
                           className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.08] disabled:opacity-25 transition-colors"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
@@ -793,7 +795,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                           className="p-1 text-zinc-500 hover:text-red-400 transition-colors inline-flex items-center"
                           title="Eliminar artículo"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
@@ -805,29 +807,29 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
 
             {/* Bottom: Payment Console & Checkout Controls */}
-            <div className="space-y-2.5 pt-2.5 border-t border-white/[0.08] shrink-0">
+            <div className="space-y-3 pt-3 border-t border-white/[0.08] shrink-0">
               
               {/* Total Display */}
-              <div className="bg-black/60 p-3.5 rounded-2xl border border-white/[0.08] flex items-baseline justify-between shadow-inner">
+              <div className="bg-gradient-to-r from-[#090a10] to-[#0c0d14] p-4 rounded-2xl border border-white/[0.1] shadow-inner flex items-baseline justify-between">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block">
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 block">
                     TOTAL A COBRAR
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-mono">
-                    {cartItemsCount} {cartItemsCount === 1 ? 'artículo' : 'artículos'}
+                  <span className="text-[10px] text-zinc-500 font-mono mt-0.5 block">
+                    {cartItemsCount} {cartItemsCount === 1 ? 'artículo en orden' : 'artículos en orden'}
                   </span>
                 </div>
-                <span className="text-3xl sm:text-4xl lg:text-4xl 2xl:text-5xl font-black font-mono text-amber-400 tracking-tight drop-shadow-[0_2px_10px_rgba(245,158,11,0.35)]">
+                <span className="text-4xl sm:text-5xl font-black font-mono text-amber-400 tracking-tight drop-shadow-[0_2px_14px_rgba(245,158,11,0.4)]">
                   ${cartTotal.toFixed(2)}
                 </span>
               </div>
 
               {/* Payment Methods (Pills) */}
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cash')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
+                  className={`py-2.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                     paymentMethod === 'cash'
                       ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-300 shadow-glow-gold/40 scale-[1.01]'
                       : 'bg-white/[0.03] text-zinc-400 border-white/[0.07] hover:text-white hover:bg-white/[0.06]'
@@ -840,7 +842,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('card')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
+                  className={`py-2.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                     paymentMethod === 'card'
                       ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-300 shadow-glow-gold/40 scale-[1.01]'
                       : 'bg-white/[0.03] text-zinc-400 border-white/[0.07] hover:text-white hover:bg-white/[0.06]'
@@ -853,7 +855,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('transfer')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
+                  className={`py-2.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                     paymentMethod === 'transfer'
                       ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-300 shadow-glow-gold/40 scale-[1.01]'
                       : 'bg-white/[0.03] text-zinc-400 border-white/[0.07] hover:text-white hover:bg-white/[0.06]'
@@ -866,12 +868,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
               {/* Cash Denominations & Change Due */}
               {paymentMethod === 'cash' && (
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                     <button
                       type="button"
                       onClick={() => handleQuickCash('exact')}
-                      className="px-2.5 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 font-extrabold text-[10px] border border-amber-400/35 flex items-center gap-1 shrink-0 transition-colors"
+                      className="px-3 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 font-black text-[11px] border border-amber-400/35 flex items-center gap-1 shrink-0 transition-colors shadow-sm"
                     >
                       <span>⚡ Exacto</span>
                     </button>
@@ -880,7 +882,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         key={bill}
                         type="button"
                         onClick={() => handleQuickCash(bill)}
-                        className="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 hover:text-white font-bold font-mono text-[10px] border border-white/[0.08] hover:border-white/20 shrink-0 transition-all"
+                        className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 hover:text-white font-bold font-mono text-[11px] border border-white/[0.08] hover:border-white/20 shrink-0 transition-all shadow-sm"
                       >
                         ${bill}
                       </button>
@@ -888,7 +890,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   </div>
 
                   {/* Tender Input */}
-                  <div className="flex items-center justify-between gap-2 bg-white/[0.03] px-3 py-2 rounded-xl border border-white/[0.08] focus-within:border-emerald-500/50 transition-all">
+                  <div className="flex items-center justify-between gap-2 bg-white/[0.03] px-3.5 py-2 rounded-xl border border-white/[0.08] focus-within:border-emerald-500/50 transition-all shadow-inner">
                     <div className="flex items-center gap-2 flex-1">
                       <Banknote className="w-4 h-4 text-emerald-400 shrink-0" />
                       <input
@@ -896,13 +898,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                         value={amountPaidStr}
                         onChange={(e) => setAmountPaidStr(e.target.value)}
                         placeholder="Paga con... ($)"
-                        className="w-full bg-transparent text-xs sm:text-sm font-mono font-bold text-white placeholder-zinc-500 focus:outline-none"
+                        className="w-full bg-transparent text-sm font-mono font-bold text-white placeholder-zinc-500 focus:outline-none"
                       />
                     </div>
                     {cashGiven > 0 && (
                       <div className="text-right shrink-0">
-                        <span className="text-[9px] text-zinc-400 mr-1.5 font-bold uppercase">Cambio:</span>
-                        <span className="text-xs sm:text-sm font-mono font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/30">
+                        <span className="text-[10px] text-zinc-400 mr-1.5 font-bold uppercase">Cambio:</span>
+                        <span className="text-sm font-mono font-black text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-lg border border-emerald-500/30 shadow-sm">
                           ${changeDue.toFixed(2)}
                         </span>
                       </div>
@@ -912,14 +914,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               )}
 
               {/* Action Buttons: [Cancelar] [Cobrar & Ticket] */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <button
                   type="button"
                   onClick={clearCart}
                   disabled={cart.length === 0}
-                  className="py-2.5 px-3 rounded-xl bg-white/[0.03] hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-white/[0.08] hover:border-red-500/30 disabled:opacity-30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                  className="h-11 sm:h-12 px-3 rounded-xl bg-white/[0.03] hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-white/[0.08] hover:border-red-500/30 disabled:opacity-30 text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                   <span>Cancelar</span>
                 </button>
 
@@ -927,9 +929,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   type="button"
                   onClick={handleCheckout}
                   disabled={!canCheckout}
-                  className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 disabled:opacity-35 text-black font-black text-xs sm:text-sm shadow-glow-gold border border-amber-300/60 flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] disabled:cursor-not-allowed"
+                  className="h-11 sm:h-12 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 disabled:opacity-35 text-black font-black text-xs sm:text-sm shadow-glow-gold border border-amber-300/60 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:cursor-not-allowed"
                 >
-                  <Receipt className="w-4 h-4" />
+                  <Receipt className="w-4.5 h-4.5" />
                   <span>Cobrar & Ticket</span>
                 </button>
               </div>
