@@ -1,0 +1,181 @@
+﻿import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useCallback } from 'react';
+import { Search, Printer, Loader2, FileText, Download } from 'lucide-react';
+import { ventasService } from '../../services/ventas.service';
+import toast from 'react-hot-toast';
+import type { Venta } from '../../types/venta';
+import { configuracionService } from '../../services/configuracion.service';
+
+export default function ComprobantesVentasPage() {
+  const [searchParams] = useSearchParams();
+  const idParam = searchParams.get('id');
+  
+  const [comprobanteId, setComprobanteId] = useState(idParam || '');
+  const [comprobante, setComprobante] = useState<Venta | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [gimnasio, setGimnasio] = useState<any>({ nombre: 'TEMPLO GYM TU GIMNASIO', ruc: '10218015412', direccion: '' });
+
+  const buscarComprobante = useCallback(async (idToSearch?: string) => {
+    const targetId = idToSearch || comprobanteId;
+    if (!targetId) return;
+    try {
+      setCargando(true);
+      const data = await ventasService.obtenerComprobantePorId(Number(targetId));
+      setComprobante(data);
+    } catch {
+      toast.error('Comprobante no encontrado');
+      setComprobante(null);
+    } finally {
+      setCargando(false);
+    }
+  }, [comprobanteId]);
+
+  const descargarPdf = async () => {
+    if (!comprobante) return;
+    const [{ jsPDF }, autoTableModule, QRCode] = await Promise.all([import('jspdf'), import('jspdf-autotable'), import('qrcode')]);
+    const doc = new jsPDF();
+    doc.setFontSize(16); doc.text(gimnasio.nombre, 14, 18);
+    doc.setFontSize(9); doc.text(`Documento interno de operación ${comprobante.codigo}`, 14, 26);
+    doc.text(`RUC: ${gimnasio.ruc}`, 140, 18);
+    doc.text(`Fecha: ${new Date(comprobante.createdAt).toLocaleString()}`, 14, 32);
+    doc.text(`Cliente: ${comprobante.cliente || 'Público General'}`, 14, 38);
+    autoTableModule.default(doc, {
+      startY: 45,
+      head: [['Producto', 'Cantidad', 'P. unitario', 'Subtotal']],
+      body: comprobante.detalles.map((d) => [d.producto?.nombre || String(d.productoId), d.cantidad, `S/ ${Number(d.precioUnit).toFixed(2)}`, `S/ ${Number(d.subtotal).toFixed(2)}`]),
+      theme: 'grid', headStyles: { fillColor: [230, 176, 16] },
+    });
+    const finalY = (doc as any).lastAutoTable.finalY + 8;
+    doc.text(`Subtotal: S/ ${Number(comprobante.subtotal ?? comprobante.total).toFixed(2)}`, 140, finalY);
+    doc.text(`Descuento: S/ ${Number(comprobante.descuento ?? 0).toFixed(2)}`, 140, finalY + 6);
+    doc.setFontSize(12); doc.text(`Total: S/ ${Number(comprobante.total).toFixed(2)}`, 140, finalY + 13);
+    const qr = await QRCode.default.toDataURL(`${comprobante.codigo}|${comprobante.total}|${comprobante.createdAt}`);
+    doc.addImage(qr, 'PNG', 14, finalY, 28, 28);
+    doc.setFontSize(8); doc.setTextColor(180, 80, 0); doc.text('DOCUMENTO INTERNO — NO CONSTITUYE COMPROBANTE DE PAGO ELECTRÓNICO SUNAT', 14, finalY + 38);
+    doc.save(`${comprobante.codigo}.pdf`);
+  };
+
+  useEffect(() => {
+    configuracionService.obtenerDatos().then(setGimnasio).catch(() => undefined);
+    if (idParam) {
+      buscarComprobante(idParam);
+    }
+  }, [idParam, buscarComprobante]);
+
+  return (
+    <div className="p-4 md:p-6 max-w-[1600px] mx-auto space-y-4 text-gray-900">
+
+      <div className="module-header bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="p-2.5 bg-yellow-50 rounded-lg border border-yellow-100 text-[#e6b010]">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold text-gray-900 tracking-wide">Comprobante de Venta</h1>
+            <p className="text-[11px] text-gray-500 mt-0.5">Visualiza documentos internos y su referencia fiscal registrada.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <input
+            type="number"
+            placeholder="ID de Venta..."
+            value={comprobanteId}
+            onChange={(e) => setComprobanteId(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:border-gray-900 outline-none w-full sm:w-40"
+          />
+          <button
+            onClick={() => buscarComprobante()}
+            className="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg text-xs transition-colors flex items-center gap-1.5 shrink-0"
+          >
+            <Search className="w-3.5 h-3.5" /> Buscar
+          </button>
+        </div>
+      </div>
+
+      {cargando ? (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-14 flex justify-center items-center">
+          <Loader2 className="w-5 h-5 animate-spin text-[#e6b010]" />
+        </div>
+      ) : comprobante ? (
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4 w-full">
+          <div className="flex justify-between items-start border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">{gimnasio.nombre}</h2>
+              <p className="text-[10px] text-gray-500">RUC: {gimnasio.ruc}</p>
+              <p className="text-[10px] text-gray-500">{gimnasio.tipoEmpresa}</p>
+              {gimnasio.direccion && <p className="text-[10px] text-gray-500">{gimnasio.direccion}</p>}
+            </div>
+            <div className="text-right">
+              <span className="px-2.5 py-0.5 bg-yellow-50 text-[#e6b010] border border-yellow-200 rounded-md font-mono font-bold text-xs">
+                {comprobante.codigo}
+              </span>
+              <p className="text-[10px] text-gray-500 mt-1">{new Date(comprobante.createdAt).toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className="text-xs space-y-1 bg-gray-50/50 p-3 rounded-lg border border-gray-100">
+            <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[10px] font-bold text-amber-900 uppercase tracking-wide">Documento interno de operación — no constituye comprobante de pago electrónico SUNAT.</div>
+            <p><strong className="text-gray-700">Cliente:</strong> {comprobante.cliente || 'Público General'}</p>
+            <p><strong className="text-gray-700">Método de Pago:</strong> {comprobante.pagos && comprobante.pagos.length > 1 ? 'Pago mixto' : comprobante.metodoPago?.nombre || 'No especificado'}</p>
+            {comprobante.pagos && comprobante.pagos.length > 1 && <div className="mt-2 space-y-1 border-t border-gray-200 pt-2">{comprobante.pagos.map((pago) => <p key={pago.id}><strong>{pago.metodo.nombre}:</strong> S/ {Number(pago.monto).toFixed(2)} {pago.numeroOperacion ? `· Op. ${pago.numeroOperacion}` : ''}</p>)}</div>}
+            
+            {(!comprobante.pagos || comprobante.pagos.length <= 1) && comprobante.metodoPago?.nombre === 'Efectivo' ? (
+              <>
+                <p><strong className="text-gray-700">Monto Entregado:</strong> S/ {Number(comprobante.montoRecibido || 0).toFixed(2)}</p>
+                <p><strong className="text-gray-700">Vuelto:</strong> S/ {Number(comprobante.vuelto || 0).toFixed(2)}</p>
+              </>
+            ) : (!comprobante.pagos || comprobante.pagos.length <= 1) ? (
+              <p><strong className="text-gray-700">N° Operación:</strong> {comprobante.numeroOperacion || 'N/A'}</p>
+            ) : null}
+
+            <p><strong className="text-gray-700">Estado:</strong> {comprobante.estado}</p>
+            {comprobante.comprobanteFiscal?.serie && <p><strong className="text-gray-700">Referencia SUNAT registrada:</strong> {comprobante.comprobanteFiscal.serie}-{comprobante.comprobanteFiscal.correlativo} · {comprobante.comprobanteFiscal.estado}</p>}
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                  <th className="py-2.5 px-3">Producto</th>
+                  <th className="py-2.5 px-3 text-center">Cant.</th>
+                  <th className="py-2.5 px-3 text-right">P. Unit</th>
+                  <th className="py-2.5 px-3 text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {comprobante.detalles?.map((det: any) => (
+                  <tr key={det.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="py-2.5 px-3 text-gray-900 font-medium">{det.producto?.nombre || `Prod ID: ${det.productoId}`}</td>
+                    <td className="py-2.5 px-3 text-center text-gray-600">{det.cantidad}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-600">S/ {Number(det.precioUnit).toFixed(2)}</td>
+                    <td className="py-2.5 px-3 text-right font-semibold text-gray-900">S/ {Number(det.subtotal).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="border-t border-gray-100 pt-3 flex justify-between items-center text-xs font-bold text-gray-900">
+            <div className="space-y-1 font-medium text-gray-600"><p>Subtotal: S/ {Number(comprobante.subtotal ?? comprobante.total).toFixed(2)}</p><p>Descuento: S/ {Number(comprobante.descuento ?? 0).toFixed(2)}</p></div>
+            <div className="text-right"><p>Total Cancelado:</p><span className="text-sm font-extrabold text-[#e6b010]">S/ {Number(comprobante.total).toFixed(2)}</span></div>
+          </div>
+
+          <div className="pt-2 flex justify-end border-t border-gray-100">
+            <button onClick={descargarPdf} className="mr-2 px-3.5 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors"><Download className="w-3.5 h-3.5" /> Descargar PDF</button>
+            <button
+              onClick={() => window.print()}
+              className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <Printer className="w-3.5 h-3.5" /> Imprimir Comprobante
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white p-14 text-center rounded-xl border border-gray-200 shadow-sm text-gray-400 text-xs w-full">
+          Selecciona o busca una venta para visualizar su documento interno.
+        </div>
+      )}
+    </div>
+  );
+}

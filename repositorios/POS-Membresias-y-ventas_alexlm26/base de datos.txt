@@ -1,0 +1,320 @@
+﻿-- MySQL Workbench Forward Engineering Mejorado
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
+USE `mydb` ;
+
+-- Tabla Rango
+CREATE TABLE IF NOT EXISTS `mydb`.`Rango` (
+  `idRango` INT NOT NULL AUTO_INCREMENT,
+  `Nombre` VARCHAR(45) NOT NULL,
+  `Descripcion` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`idRango`)
+) ENGINE = InnoDB;
+
+-- Tabla Usuario
+CREATE TABLE IF NOT EXISTS `mydb`.`Usuario` (
+  `idUsuario` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NOT NULL,
+  `password` TEXT NOT NULL,
+  `nombre_completo` VARCHAR(100) NOT NULL,
+  `Rango_idRango` INT NOT NULL,
+  `celular` VARCHAR(13) NULL,
+  `correoElectronico` VARCHAR(60) NULL,
+  `domicilio` VARCHAR(45) NULL,
+  PRIMARY KEY (`idUsuario`),
+  INDEX `fk_Usuario_Rango_idx` (`Rango_idRango` ASC),
+  CONSTRAINT `fk_Usuario_Rango`
+    FOREIGN KEY (`Rango_idRango`)
+    REFERENCES `mydb`.`Rango` (`idRango`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+-- Tabla Producto
+CREATE TABLE IF NOT EXISTS `mydb`.`Producto` (
+  `idProducto` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NULL,
+  `descripcion` VARCHAR(100) NULL,
+  `precio` DECIMAL(10,2) NULL,
+  `cantidad` INT NULL,
+  PRIMARY KEY (`idProducto`)
+) ENGINE = InnoDB;
+
+-- Tabla Membresia
+CREATE TABLE IF NOT EXISTS `mydb`.`Membresia` (
+  `idMembresia` INT NOT NULL AUTO_INCREMENT,
+  `Nombre` VARCHAR(45) NULL,
+  `descripcion` VARCHAR(100) NULL,
+  `precio` DECIMAL(10,2) NULL,
+  PRIMARY KEY (`idMembresia`)
+) ENGINE = InnoDB;
+
+-- Tabla Cliente
+CREATE TABLE IF NOT EXISTS `mydb`.`Cliente` (
+  `idCliente` INT NOT NULL AUTO_INCREMENT,
+  `Nombre` VARCHAR(30) NOT NULL,
+  `Apellidos` VARCHAR(45) NOT NULL,
+  `direccion` VARCHAR(45) NOT NULL,
+  `celular` VARCHAR(13) NOT NULL,
+  `correo` VARCHAR(45) NOT NULL,
+  `activo` TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (`idCliente`)
+) ENGINE = InnoDB;
+
+-- Tabla Ventas_producto
+CREATE TABLE IF NOT EXISTS `mydb`.`Ventas_producto` (
+  `idVentas` INT NOT NULL AUTO_INCREMENT,
+  `fecha` DATETIME NULL,
+  `Total` DECIMAL(10,2) NULL,
+  `Usuario_idUsuario` INT NOT NULL,
+  `Cliente_idCliente` INT NULL,
+  PRIMARY KEY (`idVentas`),
+  INDEX `fk_Ventas_Usuario1_idx` (`Usuario_idUsuario` ASC),
+  INDEX `fk_Ventas_Cliente1_idx` (`Cliente_idCliente` ASC),
+  CONSTRAINT `fk_Ventas_Usuario1`
+    FOREIGN KEY (`Usuario_idUsuario`)
+    REFERENCES `mydb`.`Usuario` (`idUsuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Ventas_Cliente1`
+    FOREIGN KEY (`Cliente_idCliente`)
+    REFERENCES `mydb`.`Cliente` (`idCliente`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+-- Tabla detalles_ventas_productos
+CREATE TABLE IF NOT EXISTS `mydb`.`detalles_ventas_productos` (
+  `Producto_idProducto` INT NOT NULL,
+  `Ventas_idVentas` INT NOT NULL,
+  PRIMARY KEY (`Producto_idProducto`, `Ventas_idVentas`),
+  INDEX `fk_Producto_has_Ventas_Ventas1_idx` (`Ventas_idVentas` ASC),
+  INDEX `fk_Producto_has_Ventas_Producto1_idx` (`Producto_idProducto` ASC),
+  CONSTRAINT `fk_Producto_has_Ventas_Producto1`
+    FOREIGN KEY (`Producto_idProducto`)
+    REFERENCES `mydb`.`Producto` (`idProducto`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Producto_has_Ventas_Ventas1`
+    FOREIGN KEY (`Ventas_idVentas`)
+    REFERENCES `mydb`.`Ventas_producto` (`idVentas`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+-- Tabla ventas_membresia
+CREATE TABLE IF NOT EXISTS `mydb`.`ventas_membresia` (
+  `idventas_membresia` INT NOT NULL AUTO_INCREMENT,
+  `fecha` DATETIME NULL,
+  `total` DECIMAL(10,2) NULL,
+  `Cliente_idCliente` INT NOT NULL,
+  `Membresia_idMembresia` INT NOT NULL,
+  `Usuario_idUsuario` INT NOT NULL,
+  PRIMARY KEY (`idventas_membresia`),
+  INDEX `fk_ventas_membresia_Cliente1_idx` (`Cliente_idCliente` ASC),
+  INDEX `fk_ventas_membresia_Membresia1_idx` (`Membresia_idMembresia` ASC),
+  INDEX `fk_ventas_membresia_Usuario1_idx` (`Usuario_idUsuario` ASC),
+  CONSTRAINT `fk_ventas_membresia_Cliente1`
+    FOREIGN KEY (`Cliente_idCliente`)
+    REFERENCES `mydb`.`Cliente` (`idCliente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ventas_membresia_Membresia1`
+    FOREIGN KEY (`Membresia_idMembresia`)
+    REFERENCES `mydb`.`Membresia` (`idMembresia`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ventas_membresia_Usuario1`
+    FOREIGN KEY (`Usuario_idUsuario`)
+    REFERENCES `mydb`.`Usuario` (`idUsuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+ALTER TABLE Cliente ADD COLUMN foto LONGBLOB; -- Para la imagen
+ALTER TABLE Usuario ADD COLUMN foto LONGBLOB; -- Para la imagen
+ALTER TABLE Producto ADD COLUMN foto LONGBLOB;
+alter table mydb.producto add codigo varchar(20);
+alter table detalles_ventas_productos add cantidad int;
+alter table membresias add duracion int
+SET GLOBAL event_scheduler = ON;
+ALTER TABLE Cliente ADD COLUMN fecha_inactivacion DATETIME NULL;
+alter table Producto add column precioReal decimal(10,2);
+alter table Membresia add column Duracion int;
+alter table ventas_producto add column tipo bool;
+alter table ventas_membresia add column tipo bool;
+
+
+
+CREATE TABLE sesion (
+    idSesion INT AUTO_INCREMENT PRIMARY KEY, -- IDENTIFICADOR UNICO 🔑
+    idUsuario INT NOT NULL, -- RELACION CON CLIENTE 👤
+    fechaInicio DATETIME NOT NULL, -- INICIO DE SESION 📥🕒
+    dineroInicial decimal(10,2) null,
+    dineroFinal decimal(10,2)  null,
+    fechaCierre DATETIME NULL, -- CIERRE DE SESION 📤🕓
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario) -- RELACION FK 🧩
+);
+ALTER TABLE ventas_membresia
+ADD COLUMN idSesion INT, -- 💾 NUEVA CO
+|   |   >LUMNA
+ADD CONSTRAINT fk_ventas_sesion -- 🔐 NOMBRE DEL FOREIGN KEY
+FOREIGN KEY (idSesion) REFERENCES sesion(idSesion); -- 🔗 RELACION
+ALTER TABLE ventas_producto
+ADD COLUMN idSesion INT, -- 💾 NUEVA COLUMNA
+ADD CONSTRAINT fk_ventassesion -- 🔐 NOMBRE DEL FOREIGN KEY
+FOREIGN KEY (idSesion) REFERENCES sesion(idSesion); -- 🔗 RELACION
+
+
+-- CAMBIO PARA GENERAR TRIGGERS Y AUDITORIAS
+
+-- AUDITORÍA CLIENTE
+CREATE TABLE auditoria_cliente (
+  idAuditoria INT NOT NULL AUTO_INCREMENT,
+  idCliente INT,
+  accion VARCHAR(10),
+  nombreAnterior VARCHAR(30),
+  apellidosAnteriores VARCHAR(45),
+  direccionAnterior VARCHAR(45),
+  celularAnterior VARCHAR(13),
+  correoAnterior VARCHAR(45),
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (idAuditoria)
+);
+
+-- AUDITORÍA PRODUCTO
+CREATE TABLE auditoria_producto (
+  idAuditoria INT NOT NULL AUTO_INCREMENT,
+  idProducto INT,
+  accion VARCHAR(10),
+  nombreAnterior VARCHAR(45),
+  descripcionAnterior VARCHAR(100),
+  precioAnterior DECIMAL(10,2),
+  cantidadAnterior INT,
+  codigoAnterior VARCHAR(20),
+  precioRealAnterior DECIMAL(10,2),
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (idAuditoria)
+);
+
+-- AUDITORÍA USUARIO
+CREATE TABLE auditoria_usuario (
+  idAuditoria INT NOT NULL AUTO_INCREMENT,
+  idUsuario INT,
+  accion VARCHAR(10),
+  usernameAnterior VARCHAR(45),
+  nombreCompletoAnterior VARCHAR(100),
+  rangoAnterior INT,
+  celularAnterior VARCHAR(13),
+  correoAnterior VARCHAR(60),
+  domicilioAnterior VARCHAR(45),
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (idAuditoria)
+);
+
+-- AUDITORÍA MEMBRESIA
+CREATE TABLE auditoria_membresia (
+  idAuditoria INT NOT NULL AUTO_INCREMENT,
+  idMembresia INT,
+  accion VARCHAR(10),
+  nombreAnterior VARCHAR(45),
+  descripcionAnterior VARCHAR(100),
+  precioAnterior DECIMAL(10,2),
+  duracionAnterior INT,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (idAuditoria)
+);
+
+
+-- TRIGGERS CLIENTE
+DELIMITER //
+CREATE TRIGGER trg_insert_cliente
+AFTER INSERT ON cliente
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_cliente (idCliente, accion, nombreAnterior, apellidosAnteriores, direccionAnterior, celularAnterior, correoAnterior)
+  VALUES (NEW.idCliente, 'INSERT', NEW.Nombre, NEW.Apellidos, NEW.direccion, NEW.celular, NEW.correo);
+END;
+//
+
+CREATE TRIGGER trg_update_cliente
+BEFORE UPDATE ON cliente
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_cliente (idCliente, accion, nombreAnterior, apellidosAnteriores, direccionAnterior, celularAnterior, correoAnterior)
+  VALUES (OLD.idCliente, 'UPDATE', OLD.Nombre, OLD.Apellidos, OLD.direccion, OLD.celular, OLD.correo);
+END;
+//
+DELIMITER ;
+
+-- TRIGGERS PRODUCTO
+DELIMITER //
+CREATE TRIGGER trg_insert_producto
+AFTER INSERT ON producto
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_producto (idProducto, accion, nombreAnterior, descripcionAnterior, precioAnterior, cantidadAnterior, codigoAnterior, precioRealAnterior)
+  VALUES (NEW.idProducto, 'INSERT', NEW.nombre, NEW.descripcion, NEW.precio, NEW.cantidad, NEW.codigo, NEW.precioReal);
+END;
+//
+
+CREATE TRIGGER trg_update_producto
+BEFORE UPDATE ON producto
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_producto (idProducto, accion, nombreAnterior, descripcionAnterior, precioAnterior, cantidadAnterior, codigoAnterior, precioRealAnterior)
+  VALUES (OLD.idProducto, 'UPDATE', OLD.nombre, OLD.descripcion, OLD.precio, OLD.cantidad, OLD.codigo, OLD.precioReal);
+END;
+//
+DELIMITER ;
+
+-- TRIGGERS USUARIO
+DELIMITER //
+CREATE TRIGGER trg_insert_usuario
+AFTER INSERT ON usuario
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_usuario (idUsuario, accion, usernameAnterior, nombreCompletoAnterior, rangoAnterior, celularAnterior, correoAnterior, domicilioAnterior)
+  VALUES (NEW.idUsuario, 'INSERT', NEW.username, NEW.nombre_completo, NEW.Rango_idRango, NEW.celular, NEW.correoElectronico, NEW.domicilio);
+END;
+//
+
+CREATE TRIGGER trg_update_usuario
+BEFORE UPDATE ON usuario
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_usuario (idUsuario, accion, usernameAnterior, nombreCompletoAnterior, rangoAnterior, celularAnterior, correoAnterior, domicilioAnterior)
+  VALUES (OLD.idUsuario, 'UPDATE', OLD.username, OLD.nombre_completo, OLD.Rango_idRango, OLD.celular, OLD.correoElectronico, OLD.domicilio);
+END;
+//
+DELIMITER ;
+
+-- TRIGGERS MEMBRESIA
+DELIMITER //
+CREATE TRIGGER trg_insert_membresia
+AFTER INSERT ON membresia
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_membresia (idMembresia, accion, nombreAnterior, descripcionAnterior, precioAnterior, duracionAnterior)
+  VALUES (NEW.idMembresia, 'INSERT', NEW.Nombre, NEW.descripcion, NEW.precio, NEW.Duracion);
+END;
+//
+
+CREATE TRIGGER trg_update_membresia
+BEFORE UPDATE ON membresia
+FOR EACH ROW
+BEGIN
+  INSERT INTO auditoria_membresia (idMembresia, accion, nombreAnterior, descripcionAnterior, precioAnterior, duracionAnterior)
+  VALUES (OLD.idMembresia, 'UPDATE', OLD.Nombre, OLD.descripcion, OLD.precio, OLD.Duracion);
+END;
+//
+DELIMITER ;

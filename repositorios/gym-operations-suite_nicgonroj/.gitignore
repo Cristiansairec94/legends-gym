@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+vendor/
+
+# Entorno y secretos (solo se versionan los ejemplos)
+.env*
+!.env.example
+.dev.vars*
+config/private-environment.php
+payments-recurring/config/private-environment.php
+*.secret
+*.pem
+
+# Artefactos de build y herramientas
+dist/
+build/
+out/
+.next/
+.wrangler/
+.vinext/
+*.tsbuildinfo
+coverage/
+
+# Bases de datos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Residuos
+*.log
+.DS_Store

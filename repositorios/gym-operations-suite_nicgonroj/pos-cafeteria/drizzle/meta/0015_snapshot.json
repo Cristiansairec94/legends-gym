@@ -1,0 +1,3838 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "5ca788f0-0b4e-431d-aa41-70d5967948e1",
+  "prevId": "07965a3f-016f-4fb1-b25a-fe2c1930767a",
+  "tables": {
+    "app_meta": {
+      "name": "app_meta",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cash_closure_debts": {
+      "name": "cash_closure_debts",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debt_type": {
+          "name": "debt_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debt_note": {
+          "name": "debt_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debtor_collaborator": {
+          "name": "debtor_collaborator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "amount_clp": {
+          "name": "amount_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_cash_closure_debts_type": {
+          "name": "idx_cash_closure_debts_type",
+          "columns": [
+            "closure_id",
+            "debt_type"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_debts_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_debts_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_debts",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_debts_closure_id_sale_id_pk": {
+          "columns": [
+            "closure_id",
+            "sale_id"
+          ],
+          "name": "cash_closure_debts_closure_id_sale_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_debts_shape_valid": {
+          "name": "cash_closure_debts_shape_valid",
+          "value": "\"cash_closure_debts\".\"debt_type\" IN ('pendiente', 'colaborador')\n        AND \"cash_closure_debts\".\"amount_clp\" > 0\n        AND (\n          (\n            \"cash_closure_debts\".\"debt_type\" = 'pendiente'\n            AND \"cash_closure_debts\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"cash_closure_debts\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"cash_closure_debts\".\"debtor_collaborator\" IS NULL\n          ) OR (\n            \"cash_closure_debts\".\"debt_type\" = 'colaborador'\n            AND \"cash_closure_debts\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"cash_closure_debts\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"cash_closure_debts\".\"debt_note\" IS NULL\n              OR length(trim(\"cash_closure_debts\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n          )\n        )"
+        }
+      }
+    },
+    "cash_closure_expenses": {
+      "name": "cash_closure_expenses",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_clp": {
+          "name": "amount_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cash_closure_expenses_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_expenses_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_expenses",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_expenses_closure_id_id_pk": {
+          "columns": [
+            "closure_id",
+            "id"
+          ],
+          "name": "cash_closure_expenses_closure_id_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_expenses_shape_valid": {
+          "name": "cash_closure_expenses_shape_valid",
+          "value": "length(trim(\"cash_closure_expenses\".\"id\")) BETWEEN 1 AND 100\n        AND length(trim(\"cash_closure_expenses\".\"description\")) BETWEEN 1 AND 200\n        AND \"cash_closure_expenses\".\"amount_clp\" > 0"
+        }
+      }
+    },
+    "cash_closure_inventory": {
+      "name": "cash_closure_inventory",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_key": {
+          "name": "item_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_version_token": {
+          "name": "expected_version_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_quantity": {
+          "name": "expected_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_quantity": {
+          "name": "counted_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_quantity": {
+          "name": "difference_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reason_category": {
+          "name": "reason_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "incident_comment": {
+          "name": "incident_comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_cash_closure_inventory_item": {
+          "name": "idx_cash_closure_inventory_item",
+          "columns": [
+            "item_type",
+            "item_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_inventory_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_inventory_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_inventory",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_inventory_closure_id_item_key_pk": {
+          "columns": [
+            "closure_id",
+            "item_key"
+          ],
+          "name": "cash_closure_inventory_closure_id_item_key_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_inventory_shape_valid": {
+          "name": "cash_closure_inventory_shape_valid",
+          "value": "\"cash_closure_inventory\".\"item_type\" IN ('product', 'ingredient')\n        AND \"cash_closure_inventory\".\"location\" IN ('simple', 'vitrina', 'bodega', 'ingredient')\n        AND length(\"cash_closure_inventory\".\"expected_version_token\") BETWEEN 1 AND 100\n        AND \"cash_closure_inventory\".\"expected_quantity\" >= 0\n        AND \"cash_closure_inventory\".\"counted_quantity\" >= 0\n        AND \"cash_closure_inventory\".\"difference_quantity\" = \"cash_closure_inventory\".\"counted_quantity\" - \"cash_closure_inventory\".\"expected_quantity\"\n        AND (\n          (\"cash_closure_inventory\".\"difference_quantity\" = 0 AND \"cash_closure_inventory\".\"reason\" IS NULL)\n          OR (\n            \"cash_closure_inventory\".\"difference_quantity\" <> 0\n            AND \"cash_closure_inventory\".\"reason\" IS NOT NULL\n            AND length(trim(\"cash_closure_inventory\".\"reason\")) BETWEEN 1 AND 500\n          )\n        )"
+        }
+      }
+    },
+    "cash_closure_revision_inventory": {
+      "name": "cash_closure_revision_inventory",
+      "columns": {
+        "revision_id": {
+          "name": "revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_key": {
+          "name": "item_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_expected_quantity": {
+          "name": "previous_expected_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_quantity": {
+          "name": "expected_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_consumption_quantity": {
+          "name": "sale_consumption_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_counted_quantity": {
+          "name": "previous_counted_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_quantity": {
+          "name": "counted_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_delta_quantity": {
+          "name": "counted_delta_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_quantity": {
+          "name": "difference_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "live_quantity_before": {
+          "name": "live_quantity_before",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "live_version_token_before": {
+          "name": "live_version_token_before",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "live_quantity_after": {
+          "name": "live_quantity_after",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "live_version_token_after": {
+          "name": "live_version_token_after",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_cash_closure_revision_inventory_item": {
+          "name": "idx_cash_closure_revision_inventory_item",
+          "columns": [
+            "item_type",
+            "item_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_revision_inventory_revision_id_cash_closure_revisions_id_fk": {
+          "name": "cash_closure_revision_inventory_revision_id_cash_closure_revisions_id_fk",
+          "tableFrom": "cash_closure_revision_inventory",
+          "tableTo": "cash_closure_revisions",
+          "columnsFrom": [
+            "revision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_revision_inventory_revision_id_item_key_pk": {
+          "columns": [
+            "revision_id",
+            "item_key"
+          ],
+          "name": "cash_closure_revision_inventory_revision_id_item_key_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_revision_inventory_shape_valid": {
+          "name": "cash_closure_revision_inventory_shape_valid",
+          "value": "\"cash_closure_revision_inventory\".\"item_type\" IN ('product', 'ingredient')\n        AND \"cash_closure_revision_inventory\".\"location\" IN ('simple', 'vitrina', 'ingredient')\n        AND \"cash_closure_revision_inventory\".\"previous_expected_quantity\" >= 0\n        AND \"cash_closure_revision_inventory\".\"expected_quantity\" >= 0\n        AND \"cash_closure_revision_inventory\".\"sale_consumption_quantity\" >= 0\n        AND \"cash_closure_revision_inventory\".\"expected_quantity\" = \"cash_closure_revision_inventory\".\"previous_expected_quantity\" - \"cash_closure_revision_inventory\".\"sale_consumption_quantity\"\n        AND \"cash_closure_revision_inventory\".\"previous_counted_quantity\" >= 0\n        AND \"cash_closure_revision_inventory\".\"counted_quantity\" >= 0\n        AND \"cash_closure_revision_inventory\".\"counted_delta_quantity\" = \"cash_closure_revision_inventory\".\"counted_quantity\" - \"cash_closure_revision_inventory\".\"previous_counted_quantity\"\n        AND \"cash_closure_revision_inventory\".\"difference_quantity\" = \"cash_closure_revision_inventory\".\"counted_quantity\" - \"cash_closure_revision_inventory\".\"expected_quantity\"\n        AND (\n          (\"cash_closure_revision_inventory\".\"counted_delta_quantity\" = 0\n            AND \"cash_closure_revision_inventory\".\"live_quantity_before\" IS NULL\n            AND \"cash_closure_revision_inventory\".\"live_version_token_before\" IS NULL\n            AND \"cash_closure_revision_inventory\".\"live_quantity_after\" IS NULL\n            AND \"cash_closure_revision_inventory\".\"live_version_token_after\" IS NULL)\n          OR\n          (\"cash_closure_revision_inventory\".\"counted_delta_quantity\" <> 0\n            AND \"cash_closure_revision_inventory\".\"live_quantity_before\" >= 0\n            AND length(\"cash_closure_revision_inventory\".\"live_version_token_before\") BETWEEN 1 AND 100\n            AND \"cash_closure_revision_inventory\".\"live_quantity_after\" = \"cash_closure_revision_inventory\".\"live_quantity_before\" + \"cash_closure_revision_inventory\".\"counted_delta_quantity\"\n            AND \"cash_closure_revision_inventory\".\"live_quantity_after\" >= 0\n            AND length(\"cash_closure_revision_inventory\".\"live_version_token_after\") BETWEEN 1 AND 100)\n        )"
+        }
+      }
+    },
+    "cash_closure_revision_sales": {
+      "name": "cash_closure_revision_sales",
+      "columns": {
+        "revision_id": {
+          "name": "revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_clp": {
+          "name": "total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_cash_closure_revision_sales_sale": {
+          "name": "uq_cash_closure_revision_sales_sale",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_revision_sales_revision_id_cash_closure_revisions_id_fk": {
+          "name": "cash_closure_revision_sales_revision_id_cash_closure_revisions_id_fk",
+          "tableFrom": "cash_closure_revision_sales",
+          "tableTo": "cash_closure_revisions",
+          "columnsFrom": [
+            "revision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "cash_closure_revision_sales_sale_id_sales_id_fk": {
+          "name": "cash_closure_revision_sales_sale_id_sales_id_fk",
+          "tableFrom": "cash_closure_revision_sales",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_revision_sales_revision_id_sale_id_pk": {
+          "columns": [
+            "revision_id",
+            "sale_id"
+          ],
+          "name": "cash_closure_revision_sales_revision_id_sale_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_revision_sales_shape_valid": {
+          "name": "cash_closure_revision_sales_shape_valid",
+          "value": "\"cash_closure_revision_sales\".\"payment_method\" IN ('efectivo', 'tarjeta', 'transferencia')\n        AND \"cash_closure_revision_sales\".\"total_clp\" > 0"
+        }
+      }
+    },
+    "cash_closure_revision_seals": {
+      "name": "cash_closure_revision_seals",
+      "columns": {
+        "revision_id": {
+          "name": "revision_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sealed_at": {
+          "name": "sealed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cash_closure_revision_seals_revision_id_cash_closure_revisions_id_fk": {
+          "name": "cash_closure_revision_seals_revision_id_cash_closure_revisions_id_fk",
+          "tableFrom": "cash_closure_revision_seals",
+          "tableTo": "cash_closure_revisions",
+          "columnsFrom": [
+            "revision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_revision_seals_fingerprint_valid": {
+          "name": "cash_closure_revision_seals_fingerprint_valid",
+          "value": "length(\"cash_closure_revision_seals\".\"request_fingerprint\") = 64"
+        }
+      }
+    },
+    "cash_closure_revisions": {
+      "name": "cash_closure_revisions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision_number": {
+          "name": "revision_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_revision_number": {
+          "name": "expected_revision_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_added_sales_count": {
+          "name": "expected_added_sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_inventory_line_count": {
+          "name": "expected_inventory_line_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "included_sales_clp": {
+          "name": "included_sales_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "included_sales_count": {
+          "name": "included_sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opening_cash_clp": {
+          "name": "opening_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cash_collected_clp": {
+          "name": "cash_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "card_collected_clp": {
+          "name": "card_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "transfer_collected_clp": {
+          "name": "transfer_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_collected_clp": {
+          "name": "total_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_cash_clp": {
+          "name": "expected_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_collected_clp": {
+          "name": "expected_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expenses_clp": {
+          "name": "expenses_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "adjusted_expected_cash_clp": {
+          "name": "adjusted_expected_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_cash_clp": {
+          "name": "counted_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_card_clp": {
+          "name": "counted_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_transfer_clp": {
+          "name": "counted_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_collected_clp": {
+          "name": "counted_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_cash_clp": {
+          "name": "difference_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_card_clp": {
+          "name": "difference_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_transfer_clp": {
+          "name": "difference_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_collected_clp": {
+          "name": "difference_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_cash_closure_revisions_number": {
+          "name": "uq_cash_closure_revisions_number",
+          "columns": [
+            "closure_id",
+            "revision_number"
+          ],
+          "isUnique": true
+        },
+        "idx_cash_closure_revisions_closure": {
+          "name": "idx_cash_closure_revisions_closure",
+          "columns": [
+            "closure_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_revisions_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_revisions_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_revisions",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_revisions_shape_valid": {
+          "name": "cash_closure_revisions_shape_valid",
+          "value": "\"cash_closure_revisions\".\"revision_number\" = \"cash_closure_revisions\".\"expected_revision_number\" + 1\n        AND \"cash_closure_revisions\".\"revision_number\" BETWEEN 1 AND 50\n        AND \"cash_closure_revisions\".\"expected_revision_number\" >= 0\n        AND \"cash_closure_revisions\".\"expected_added_sales_count\" BETWEEN 0 AND 5\n        AND \"cash_closure_revisions\".\"expected_inventory_line_count\" BETWEEN 0 AND 90\n        AND length(\"cash_closure_revisions\".\"request_fingerprint\") = 64\n        AND length(trim(\"cash_closure_revisions\".\"reason\")) BETWEEN 1 AND 1000\n        AND \"cash_closure_revisions\".\"included_sales_clp\" >= 0\n        AND \"cash_closure_revisions\".\"included_sales_count\" >= 0\n        AND \"cash_closure_revisions\".\"opening_cash_clp\" >= 0\n        AND \"cash_closure_revisions\".\"cash_collected_clp\" >= 0\n        AND \"cash_closure_revisions\".\"card_collected_clp\" >= 0\n        AND \"cash_closure_revisions\".\"transfer_collected_clp\" >= 0\n        AND \"cash_closure_revisions\".\"total_collected_clp\" = \"cash_closure_revisions\".\"cash_collected_clp\" + \"cash_closure_revisions\".\"card_collected_clp\" + \"cash_closure_revisions\".\"transfer_collected_clp\"\n        AND \"cash_closure_revisions\".\"expected_cash_clp\" = \"cash_closure_revisions\".\"opening_cash_clp\" + \"cash_closure_revisions\".\"cash_collected_clp\"\n        AND \"cash_closure_revisions\".\"expected_collected_clp\" = \"cash_closure_revisions\".\"opening_cash_clp\" + \"cash_closure_revisions\".\"total_collected_clp\"\n        AND \"cash_closure_revisions\".\"expenses_clp\" >= 0\n        AND \"cash_closure_revisions\".\"adjusted_expected_cash_clp\" = \"cash_closure_revisions\".\"expected_cash_clp\" - \"cash_closure_revisions\".\"expenses_clp\"\n        AND \"cash_closure_revisions\".\"adjusted_expected_cash_clp\" >= 0\n        AND \"cash_closure_revisions\".\"counted_cash_clp\" >= 0\n        AND \"cash_closure_revisions\".\"counted_card_clp\" >= 0\n        AND \"cash_closure_revisions\".\"counted_transfer_clp\" >= 0\n        AND \"cash_closure_revisions\".\"counted_collected_clp\" = \"cash_closure_revisions\".\"counted_cash_clp\" + \"cash_closure_revisions\".\"counted_card_clp\" + \"cash_closure_revisions\".\"counted_transfer_clp\"\n        AND \"cash_closure_revisions\".\"difference_cash_clp\" = \"cash_closure_revisions\".\"counted_cash_clp\" - \"cash_closure_revisions\".\"adjusted_expected_cash_clp\"\n        AND \"cash_closure_revisions\".\"difference_card_clp\" = \"cash_closure_revisions\".\"counted_card_clp\" - \"cash_closure_revisions\".\"card_collected_clp\"\n        AND \"cash_closure_revisions\".\"difference_transfer_clp\" = \"cash_closure_revisions\".\"counted_transfer_clp\" - \"cash_closure_revisions\".\"transfer_collected_clp\"\n        AND \"cash_closure_revisions\".\"difference_collected_clp\" = \"cash_closure_revisions\".\"counted_collected_clp\" - (\"cash_closure_revisions\".\"expected_collected_clp\" - \"cash_closure_revisions\".\"expenses_clp\")"
+        }
+      }
+    },
+    "cash_closure_validations": {
+      "name": "cash_closure_validations",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "validated_at": {
+          "name": "validated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revision_number": {
+          "name": "revision_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cash_closure_validations_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_validations_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_validations",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_validations_comment_valid": {
+          "name": "cash_closure_validations_comment_valid",
+          "value": "\"cash_closure_validations\".\"comment\" IS NULL OR length(trim(\"cash_closure_validations\".\"comment\")) BETWEEN 1 AND 1000"
+        }
+      }
+    },
+    "cash_closures": {
+      "name": "cash_closures",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "session_activity_revision": {
+          "name": "session_activity_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "expected_cash_clp": {
+          "name": "expected_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opening_cash_clp": {
+          "name": "opening_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cash_movements_clp": {
+          "name": "cash_movements_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expected_card_clp": {
+          "name": "expected_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_transfer_clp": {
+          "name": "expected_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_collected_clp": {
+          "name": "expected_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_sales_clp": {
+          "name": "total_sales_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sales_count": {
+          "name": "sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pending_customer_clp": {
+          "name": "pending_customer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pending_customer_count": {
+          "name": "pending_customer_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collaborator_clp": {
+          "name": "collaborator_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collaborator_count": {
+          "name": "collaborator_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_cash_clp": {
+          "name": "counted_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_clp": {
+          "name": "difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_card_clp": {
+          "name": "counted_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_card_clp": {
+          "name": "difference_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_transfer_clp": {
+          "name": "counted_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_transfer_clp": {
+          "name": "difference_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_collected_clp": {
+          "name": "counted_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_collected_clp": {
+          "name": "difference_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "financial_difference_reason": {
+          "name": "financial_difference_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closure_contract_version": {
+          "name": "closure_contract_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expenses_clp": {
+          "name": "expenses_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "adjusted_expected_cash_clp": {
+          "name": "adjusted_expected_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "adjusted_difference_clp": {
+          "name": "adjusted_difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "adjusted_difference_collected_clp": {
+          "name": "adjusted_difference_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "handoff_financial_difference_reason": {
+          "name": "handoff_financial_difference_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "handoff_comments": {
+          "name": "handoff_comments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cash_reconciled": {
+          "name": "cash_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "card_reconciled": {
+          "name": "card_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transfer_reconciled": {
+          "name": "transfer_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pending_customer_reviewed": {
+          "name": "pending_customer_reviewed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collaborator_reviewed": {
+          "name": "collaborator_reviewed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inventory_count_confirmed": {
+          "name": "inventory_count_confirmed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "checklist_version": {
+          "name": "checklist_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "unassigned_sales_clp": {
+          "name": "unassigned_sales_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_sales_count": {
+          "name": "unassigned_sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_payments_clp": {
+          "name": "unassigned_payments_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_payments_count": {
+          "name": "unassigned_payments_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_cash_closures_session_id": {
+          "name": "uq_cash_closures_session_id",
+          "columns": [
+            "session_id"
+          ],
+          "isUnique": true
+        },
+        "idx_cash_closures_created_at": {
+          "name": "idx_cash_closures_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closures_session_id_shift_sessions_id_fk": {
+          "name": "cash_closures_session_id_shift_sessions_id_fk",
+          "tableFrom": "cash_closures",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closures_context_valid": {
+          "name": "cash_closures_context_valid",
+          "value": "\"cash_closures\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"cash_closures\".\"shift\" IN ('am', 'pm')\n        AND length(trim(\"cash_closures\".\"responsible\")) BETWEEN 1 AND 100"
+        },
+        "cash_closures_nonnegative": {
+          "name": "cash_closures_nonnegative",
+          "value": "\"cash_closures\".\"expected_cash_clp\" >= 0\n        AND \"cash_closures\".\"expected_card_clp\" >= 0\n        AND \"cash_closures\".\"expected_transfer_clp\" >= 0\n        AND \"cash_closures\".\"expected_collected_clp\" >= 0\n        AND \"cash_closures\".\"total_sales_clp\" >= 0\n        AND \"cash_closures\".\"sales_count\" >= 0\n        AND \"cash_closures\".\"pending_customer_clp\" >= 0\n        AND \"cash_closures\".\"collaborator_clp\" >= 0\n        AND \"cash_closures\".\"counted_cash_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_sales_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_sales_count\" >= 0\n        AND \"cash_closures\".\"unassigned_payments_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_payments_count\" >= 0"
+        },
+        "cash_closures_collected_total_valid": {
+          "name": "cash_closures_collected_total_valid",
+          "value": "\"cash_closures\".\"expected_collected_clp\" = \"cash_closures\".\"expected_cash_clp\" + \"cash_closures\".\"expected_card_clp\" + \"cash_closures\".\"expected_transfer_clp\""
+        },
+        "cash_closures_difference_valid": {
+          "name": "cash_closures_difference_valid",
+          "value": "\"cash_closures\".\"difference_clp\" = \"cash_closures\".\"counted_cash_clp\" - \"cash_closures\".\"expected_cash_clp\""
+        },
+        "cash_closures_formal_state_valid": {
+          "name": "cash_closures_formal_state_valid",
+          "value": "(\n        \"cash_closures\".\"session_id\" IS NULL\n        AND \"cash_closures\".\"session_activity_revision\" IS NULL\n        AND \"cash_closures\".\"request_fingerprint\" IS NULL\n        AND \"cash_closures\".\"opening_cash_clp\" IS NULL\n        AND \"cash_closures\".\"cash_movements_clp\" IS NULL\n        AND \"cash_closures\".\"pending_customer_count\" IS NULL\n        AND \"cash_closures\".\"collaborator_count\" IS NULL\n        AND \"cash_closures\".\"counted_card_clp\" IS NULL\n        AND \"cash_closures\".\"difference_card_clp\" IS NULL\n        AND \"cash_closures\".\"counted_transfer_clp\" IS NULL\n        AND \"cash_closures\".\"difference_transfer_clp\" IS NULL\n        AND \"cash_closures\".\"counted_collected_clp\" IS NULL\n        AND \"cash_closures\".\"difference_collected_clp\" IS NULL\n        AND \"cash_closures\".\"financial_difference_reason\" IS NULL\n        AND \"cash_closures\".\"cash_reconciled\" IS NULL\n        AND \"cash_closures\".\"card_reconciled\" IS NULL\n        AND \"cash_closures\".\"transfer_reconciled\" IS NULL\n        AND \"cash_closures\".\"pending_customer_reviewed\" IS NULL\n        AND \"cash_closures\".\"collaborator_reviewed\" IS NULL\n        AND \"cash_closures\".\"inventory_count_confirmed\" IS NULL\n        AND \"cash_closures\".\"checklist_version\" IS NULL\n      ) OR (\n        \"cash_closures\".\"session_id\" IS NOT NULL\n        AND \"cash_closures\".\"session_activity_revision\" >= 0\n        AND length(\"cash_closures\".\"request_fingerprint\") = 64\n        AND \"cash_closures\".\"opening_cash_clp\" >= 0\n        AND \"cash_closures\".\"cash_movements_clp\" >= 0\n        AND \"cash_closures\".\"expected_cash_clp\" = \"cash_closures\".\"opening_cash_clp\" + \"cash_closures\".\"cash_movements_clp\"\n        AND \"cash_closures\".\"pending_customer_count\" >= 0\n        AND \"cash_closures\".\"collaborator_count\" >= 0\n        AND \"cash_closures\".\"counted_card_clp\" >= 0\n        AND \"cash_closures\".\"difference_card_clp\" = \"cash_closures\".\"counted_card_clp\" - \"cash_closures\".\"expected_card_clp\"\n        AND \"cash_closures\".\"counted_transfer_clp\" >= 0\n        AND \"cash_closures\".\"difference_transfer_clp\" = \"cash_closures\".\"counted_transfer_clp\" - \"cash_closures\".\"expected_transfer_clp\"\n        AND \"cash_closures\".\"counted_collected_clp\" = \"cash_closures\".\"counted_cash_clp\" + \"cash_closures\".\"counted_card_clp\" + \"cash_closures\".\"counted_transfer_clp\"\n        AND \"cash_closures\".\"difference_collected_clp\" = \"cash_closures\".\"counted_collected_clp\" - \"cash_closures\".\"expected_collected_clp\"\n        AND \"cash_closures\".\"difference_collected_clp\" = \"cash_closures\".\"difference_clp\" + \"cash_closures\".\"difference_card_clp\" + \"cash_closures\".\"difference_transfer_clp\"\n        AND \"cash_closures\".\"cash_reconciled\" = 1\n        AND \"cash_closures\".\"card_reconciled\" = 1\n        AND \"cash_closures\".\"transfer_reconciled\" = 1\n        AND \"cash_closures\".\"pending_customer_reviewed\" = 1\n        AND \"cash_closures\".\"collaborator_reviewed\" = 1\n        AND \"cash_closures\".\"inventory_count_confirmed\" = 1\n        AND \"cash_closures\".\"checklist_version\" = 1\n        AND (\n          (\n            \"cash_closures\".\"difference_clp\" = 0\n            AND \"cash_closures\".\"difference_card_clp\" = 0\n            AND \"cash_closures\".\"difference_transfer_clp\" = 0\n            AND \"cash_closures\".\"financial_difference_reason\" IS NULL\n          ) OR (\n            (\n              \"cash_closures\".\"difference_clp\" <> 0\n              OR \"cash_closures\".\"difference_card_clp\" <> 0\n              OR \"cash_closures\".\"difference_transfer_clp\" <> 0\n            )\n            AND \"cash_closures\".\"financial_difference_reason\" IS NOT NULL\n            AND length(trim(\"cash_closures\".\"financial_difference_reason\")) BETWEEN 1 AND 500\n          )\n        )\n      )"
+        }
+      }
+    },
+    "closure_incident_events": {
+      "name": "closure_incident_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "incident_id": {
+          "name": "incident_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_closure_incident_events_incident_created": {
+          "name": "idx_closure_incident_events_incident_created",
+          "columns": [
+            "incident_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_incident_events_incident_id_closure_incidents_id_fk": {
+          "name": "closure_incident_events_incident_id_closure_incidents_id_fk",
+          "tableFrom": "closure_incident_events",
+          "tableTo": "closure_incidents",
+          "columnsFrom": [
+            "incident_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_incident_events_shape_valid": {
+          "name": "closure_incident_events_shape_valid",
+          "value": "\"closure_incident_events\".\"event_type\" IN (\n          'created', 'clarification_requested', 'comment_added', 'clarified',\n          'validated', 'requires_correction', 'correction_applied',\n          'notification_retry'\n        )\n        AND (\n          \"closure_incident_events\".\"status\" IS NULL OR \"closure_incident_events\".\"status\" IN (\n            'pending_clarification', 'clarified', 'validated',\n            'requires_correction'\n          )\n        )\n        AND \"closure_incident_events\".\"actor_role\" IN ('system', 'admin', 'sales')\n        AND length(trim(\"closure_incident_events\".\"actor_name\")) BETWEEN 1 AND 100\n        AND (\"closure_incident_events\".\"comment\" IS NULL OR length(trim(\"closure_incident_events\".\"comment\")) BETWEEN 1 AND 1000)\n        AND length(\"closure_incident_events\".\"request_fingerprint\") = 64"
+        }
+      }
+    },
+    "closure_incident_items": {
+      "name": "closure_incident_items",
+      "columns": {
+        "incident_id": {
+          "name": "incident_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_key": {
+          "name": "item_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_quantity": {
+          "name": "expected_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_quantity": {
+          "name": "counted_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_quantity": {
+          "name": "difference_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason_category": {
+          "name": "reason_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "initial_comment": {
+          "name": "initial_comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "adjustment_applied": {
+          "name": "adjustment_applied",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_value_clp": {
+          "name": "unit_value_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimated_value_clp": {
+          "name": "estimated_value_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "high_value": {
+          "name": "high_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_closure_incident_items_product": {
+          "name": "idx_closure_incident_items_product",
+          "columns": [
+            "item_type",
+            "item_id",
+            "incident_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_incident_items_incident_id_closure_incidents_id_fk": {
+          "name": "closure_incident_items_incident_id_closure_incidents_id_fk",
+          "tableFrom": "closure_incident_items",
+          "tableTo": "closure_incidents",
+          "columnsFrom": [
+            "incident_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "closure_incident_items_incident_id_item_key_pk": {
+          "columns": [
+            "incident_id",
+            "item_key"
+          ],
+          "name": "closure_incident_items_incident_id_item_key_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_incident_items_shape_valid": {
+          "name": "closure_incident_items_shape_valid",
+          "value": "\"closure_incident_items\".\"item_type\" IN ('product', 'ingredient')\n        AND \"closure_incident_items\".\"location\" IN ('simple', 'vitrina', 'ingredient')\n        AND \"closure_incident_items\".\"expected_quantity\" >= 0\n        AND \"closure_incident_items\".\"counted_quantity\" >= 0\n        AND \"closure_incident_items\".\"difference_quantity\" <> 0\n        AND \"closure_incident_items\".\"difference_quantity\" = \"closure_incident_items\".\"counted_quantity\" - \"closure_incident_items\".\"expected_quantity\"\n        AND \"closure_incident_items\".\"reason_category\" IN (\n          'venta_no_registrada', 'consumo_no_registrado', 'merma',\n          'error_conteo', 'reposicion_no_registrada', 'otro'\n        )\n        AND length(trim(\"closure_incident_items\".\"initial_comment\")) BETWEEN 1 AND 1000\n        AND (\"closure_incident_items\".\"unit_value_clp\" IS NULL OR \"closure_incident_items\".\"unit_value_clp\" > 0)\n        AND (\"closure_incident_items\".\"estimated_value_clp\" IS NULL OR \"closure_incident_items\".\"estimated_value_clp\" >= 0)"
+        }
+      }
+    },
+    "closure_incident_settings": {
+      "name": "closure_incident_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "money_red_threshold_clp": {
+          "name": "money_red_threshold_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "multiple_product_red_count": {
+          "name": "multiple_product_red_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 2
+        },
+        "high_value_product_clp": {
+          "name": "high_value_product_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 10000
+        },
+        "recurrence_window_days": {
+          "name": "recurrence_window_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 30
+        },
+        "recurrence_red_count": {
+          "name": "recurrence_red_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 2
+        },
+        "reminder_hours": {
+          "name": "reminder_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 24
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_incident_settings_shape_valid": {
+          "name": "closure_incident_settings_shape_valid",
+          "value": "\"closure_incident_settings\".\"id\" = 'default'\n        AND \"closure_incident_settings\".\"money_red_threshold_clp\" >= 1\n        AND \"closure_incident_settings\".\"multiple_product_red_count\" BETWEEN 1 AND 90\n        AND \"closure_incident_settings\".\"high_value_product_clp\" >= 1\n        AND \"closure_incident_settings\".\"recurrence_window_days\" BETWEEN 1 AND 365\n        AND \"closure_incident_settings\".\"recurrence_red_count\" BETWEEN 2 AND 100\n        AND \"closure_incident_settings\".\"reminder_hours\" BETWEEN 1 AND 720"
+        }
+      }
+    },
+    "closure_incidents": {
+      "name": "closure_incidents",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "level": {
+          "name": "level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "classification_reason": {
+          "name": "classification_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cash_difference_clp": {
+          "name": "cash_difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "card_difference_clp": {
+          "name": "card_difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "transfer_difference_clp": {
+          "name": "transfer_difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_difference_clp": {
+          "name": "total_difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_difference_count": {
+          "name": "inventory_difference_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_value_clp": {
+          "name": "estimated_value_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unvalued_item_count": {
+          "name": "unvalued_item_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prior_responsible_incident_count": {
+          "name": "prior_responsible_incident_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "highest_prior_product_incident_count": {
+          "name": "highest_prior_product_incident_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "money_red_threshold_clp": {
+          "name": "money_red_threshold_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "multiple_product_red_count": {
+          "name": "multiple_product_red_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "high_value_product_clp": {
+          "name": "high_value_product_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recurrence_window_days": {
+          "name": "recurrence_window_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recurrence_red_count": {
+          "name": "recurrence_red_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_closure_incidents_closure_id": {
+          "name": "uq_closure_incidents_closure_id",
+          "columns": [
+            "closure_id"
+          ],
+          "isUnique": true
+        },
+        "idx_closure_incidents_created_at": {
+          "name": "idx_closure_incidents_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_closure_incidents_responsible_created": {
+          "name": "idx_closure_incidents_responsible_created",
+          "columns": [
+            "responsible",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_closure_incidents_level_created": {
+          "name": "idx_closure_incidents_level_created",
+          "columns": [
+            "level",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_incidents_closure_id_cash_closures_id_fk": {
+          "name": "closure_incidents_closure_id_cash_closures_id_fk",
+          "tableFrom": "closure_incidents",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_incidents_shape_valid": {
+          "name": "closure_incidents_shape_valid",
+          "value": "\"closure_incidents\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"closure_incidents\".\"shift\" IN ('am', 'pm')\n        AND length(trim(\"closure_incidents\".\"responsible\")) BETWEEN 1 AND 100\n        AND \"closure_incidents\".\"level\" IN ('yellow', 'red')\n        AND length(trim(\"closure_incidents\".\"classification_reason\")) BETWEEN 1 AND 500\n        AND \"closure_incidents\".\"total_difference_clp\" = \"closure_incidents\".\"cash_difference_clp\"\n          + \"closure_incidents\".\"card_difference_clp\" + \"closure_incidents\".\"transfer_difference_clp\"\n        AND \"closure_incidents\".\"inventory_difference_count\" >= 0\n        AND \"closure_incidents\".\"estimated_value_clp\" >= 0\n        AND \"closure_incidents\".\"unvalued_item_count\" >= 0\n        AND \"closure_incidents\".\"prior_responsible_incident_count\" >= 0\n        AND \"closure_incidents\".\"highest_prior_product_incident_count\" >= 0\n        AND \"closure_incidents\".\"money_red_threshold_clp\" >= 1\n        AND \"closure_incidents\".\"multiple_product_red_count\" BETWEEN 1 AND 90\n        AND \"closure_incidents\".\"high_value_product_clp\" >= 1\n        AND \"closure_incidents\".\"recurrence_window_days\" BETWEEN 1 AND 365\n        AND \"closure_incidents\".\"recurrence_red_count\" BETWEEN 2 AND 100\n        AND (\n          \"closure_incidents\".\"cash_difference_clp\" <> 0\n          OR \"closure_incidents\".\"card_difference_clp\" <> 0\n          OR \"closure_incidents\".\"transfer_difference_clp\" <> 0\n          OR \"closure_incidents\".\"inventory_difference_count\" > 0\n        )"
+        }
+      }
+    },
+    "closure_notification_attempt_results": {
+      "name": "closure_notification_attempt_results",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_id": {
+          "name": "attempt_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_key": {
+          "name": "event_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "provider_message_id": {
+          "name": "provider_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "response_status": {
+          "name": "response_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provider_response": {
+          "name": "provider_response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_code": {
+          "name": "error_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_closure_notification_attempt_result_event": {
+          "name": "uq_closure_notification_attempt_result_event",
+          "columns": [
+            "attempt_id",
+            "event_key"
+          ],
+          "isUnique": true
+        },
+        "idx_closure_notification_attempt_result_attempt": {
+          "name": "idx_closure_notification_attempt_result_attempt",
+          "columns": [
+            "attempt_id",
+            "finished_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_notification_attempt_results_attempt_id_closure_notification_attempts_id_fk": {
+          "name": "closure_notification_attempt_results_attempt_id_closure_notification_attempts_id_fk",
+          "tableFrom": "closure_notification_attempt_results",
+          "tableTo": "closure_notification_attempts",
+          "columnsFrom": [
+            "attempt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_notification_attempt_results_shape_valid": {
+          "name": "closure_notification_attempt_results_shape_valid",
+          "value": "length(\"closure_notification_attempt_results\".\"id\") BETWEEN 1 AND 200\n        AND length(\"closure_notification_attempt_results\".\"event_key\") BETWEEN 1 AND 50\n        AND \"closure_notification_attempt_results\".\"outcome\" IN ('accepted', 'failed', 'ambiguous')\n        AND (\"closure_notification_attempt_results\".\"provider_message_id\" IS NULL\n          OR length(\"closure_notification_attempt_results\".\"provider_message_id\") BETWEEN 1 AND 500)\n        AND (\"closure_notification_attempt_results\".\"response_status\" IS NULL\n          OR \"closure_notification_attempt_results\".\"response_status\" BETWEEN 100 AND 599)\n        AND (\"closure_notification_attempt_results\".\"provider_response\" IS NULL\n          OR length(\"closure_notification_attempt_results\".\"provider_response\") BETWEEN 1 AND 10000)\n        AND (\"closure_notification_attempt_results\".\"error_code\" IS NULL\n          OR length(\"closure_notification_attempt_results\".\"error_code\") BETWEEN 1 AND 200)\n        AND (\"closure_notification_attempt_results\".\"error_message\" IS NULL\n          OR length(\"closure_notification_attempt_results\".\"error_message\") BETWEEN 1 AND 1000)\n        AND (\n          (\"closure_notification_attempt_results\".\"outcome\" = 'accepted'\n            AND \"closure_notification_attempt_results\".\"provider_message_id\" IS NOT NULL\n            AND \"closure_notification_attempt_results\".\"error_code\" IS NULL\n            AND \"closure_notification_attempt_results\".\"error_message\" IS NULL)\n          OR (\"closure_notification_attempt_results\".\"outcome\" IN ('failed', 'ambiguous')\n            AND \"closure_notification_attempt_results\".\"error_code\" IS NOT NULL\n            AND \"closure_notification_attempt_results\".\"error_message\" IS NOT NULL)\n        )"
+        }
+      }
+    },
+    "closure_notification_attempts": {
+      "name": "closure_notification_attempts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "delivery_id": {
+          "name": "delivery_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_number": {
+          "name": "attempt_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "initiated_by": {
+          "name": "initiated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "uq_closure_notification_attempt_number": {
+          "name": "uq_closure_notification_attempt_number",
+          "columns": [
+            "delivery_id",
+            "attempt_number"
+          ],
+          "isUnique": true
+        },
+        "idx_closure_notification_attempt_delivery": {
+          "name": "idx_closure_notification_attempt_delivery",
+          "columns": [
+            "delivery_id",
+            "started_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_notification_attempts_delivery_id_closure_notification_deliveries_id_fk": {
+          "name": "closure_notification_attempts_delivery_id_closure_notification_deliveries_id_fk",
+          "tableFrom": "closure_notification_attempts",
+          "tableTo": "closure_notification_deliveries",
+          "columnsFrom": [
+            "delivery_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_notification_attempts_shape_valid": {
+          "name": "closure_notification_attempts_shape_valid",
+          "value": "length(\"closure_notification_attempts\".\"id\") BETWEEN 1 AND 160\n        AND \"closure_notification_attempts\".\"attempt_number\" BETWEEN 1 AND 100\n        AND \"closure_notification_attempts\".\"initiated_by\" IN ('automatic', 'manual', 'recovery')\n        AND length(\"closure_notification_attempts\".\"request_fingerprint\") = 64"
+        }
+      }
+    },
+    "closure_notification_deliveries": {
+      "name": "closure_notification_deliveries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "incident_id": {
+          "name": "incident_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipient_type": {
+          "name": "recipient_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipient": {
+          "name": "recipient",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "template_name": {
+          "name": "template_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "template_payload_json": {
+          "name": "template_payload_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_preview": {
+          "name": "message_preview",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "active_attempt_id": {
+          "name": "active_attempt_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_attempt_at": {
+          "name": "last_attempt_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provider_message_id": {
+          "name": "provider_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "response_status": {
+          "name": "response_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "provider_response": {
+          "name": "provider_response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_code": {
+          "name": "error_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "uq_closure_notification_idempotency": {
+          "name": "uq_closure_notification_idempotency",
+          "columns": [
+            "idempotency_key"
+          ],
+          "isUnique": true
+        },
+        "idx_closure_notification_incident": {
+          "name": "idx_closure_notification_incident",
+          "columns": [
+            "incident_id",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_closure_notification_status": {
+          "name": "idx_closure_notification_status",
+          "columns": [
+            "status",
+            "updated_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_notification_deliveries_incident_id_closure_incidents_id_fk": {
+          "name": "closure_notification_deliveries_incident_id_closure_incidents_id_fk",
+          "tableFrom": "closure_notification_deliveries",
+          "tableTo": "closure_incidents",
+          "columnsFrom": [
+            "incident_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "closure_notification_deliveries_closure_id_cash_closures_id_fk": {
+          "name": "closure_notification_deliveries_closure_id_cash_closures_id_fk",
+          "tableFrom": "closure_notification_deliveries",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_notification_deliveries_shape_valid": {
+          "name": "closure_notification_deliveries_shape_valid",
+          "value": "\"closure_notification_deliveries\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"closure_notification_deliveries\".\"kind\" IN ('immediate_alert', 'reminder', 'daily_summary')\n        AND \"closure_notification_deliveries\".\"recipient_type\" IN ('individual', 'group', 'configuration')\n        AND length(trim(\"closure_notification_deliveries\".\"recipient\")) BETWEEN 1 AND 100\n        AND length(\"closure_notification_deliveries\".\"idempotency_key\") BETWEEN 1 AND 300\n        AND length(\"closure_notification_deliveries\".\"template_payload_json\") BETWEEN 2 AND 10000\n        AND length(trim(\"closure_notification_deliveries\".\"message_preview\")) BETWEEN 1 AND 4000\n        AND \"closure_notification_deliveries\".\"status\" IN (\n          'queued', 'sending', 'accepted', 'sent', 'delivered', 'read',\n          'failed', 'superseded', 'configuration_required'\n        )\n        AND (\n          (\"closure_notification_deliveries\".\"status\" = 'sending' AND \"closure_notification_deliveries\".\"active_attempt_id\" IS NOT NULL)\n          OR (\"closure_notification_deliveries\".\"status\" <> 'sending' AND \"closure_notification_deliveries\".\"active_attempt_id\" IS NULL)\n        )\n        AND \"closure_notification_deliveries\".\"attempt_count\" BETWEEN 0 AND 100"
+        }
+      }
+    },
+    "closure_notification_webhook_links": {
+      "name": "closure_notification_webhook_links",
+      "columns": {
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "delivery_id": {
+          "name": "delivery_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "match_source": {
+          "name": "match_source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "linked_at": {
+          "name": "linked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_closure_notification_webhook_link_delivery": {
+          "name": "idx_closure_notification_webhook_link_delivery",
+          "columns": [
+            "delivery_id",
+            "linked_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "closure_notification_webhook_links_webhook_id_closure_notification_webhooks_id_fk": {
+          "name": "closure_notification_webhook_links_webhook_id_closure_notification_webhooks_id_fk",
+          "tableFrom": "closure_notification_webhook_links",
+          "tableTo": "closure_notification_webhooks",
+          "columnsFrom": [
+            "webhook_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "closure_notification_webhook_links_delivery_id_closure_notification_deliveries_id_fk": {
+          "name": "closure_notification_webhook_links_delivery_id_closure_notification_deliveries_id_fk",
+          "tableFrom": "closure_notification_webhook_links",
+          "tableTo": "closure_notification_deliveries",
+          "columnsFrom": [
+            "delivery_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_notification_webhook_links_shape_valid": {
+          "name": "closure_notification_webhook_links_shape_valid",
+          "value": "\"closure_notification_webhook_links\".\"match_source\" IN (\n          'provider_message_id', 'callback_data', 'reconciliation'\n        )"
+        }
+      }
+    },
+    "closure_notification_webhooks": {
+      "name": "closure_notification_webhooks",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_message_id": {
+          "name": "provider_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_status": {
+          "name": "provider_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_timestamp": {
+          "name": "provider_timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "callback_data": {
+          "name": "callback_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_code": {
+          "name": "error_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payload_fingerprint": {
+          "name": "payload_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_closure_notification_webhook_message": {
+          "name": "idx_closure_notification_webhook_message",
+          "columns": [
+            "provider_message_id",
+            "provider_timestamp"
+          ],
+          "isUnique": false
+        },
+        "idx_closure_notification_webhook_callback": {
+          "name": "idx_closure_notification_webhook_callback",
+          "columns": [
+            "callback_data",
+            "received_at"
+          ],
+          "isUnique": false
+        },
+        "idx_closure_notification_webhook_received": {
+          "name": "idx_closure_notification_webhook_received",
+          "columns": [
+            "received_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "closure_notification_webhooks_shape_valid": {
+          "name": "closure_notification_webhooks_shape_valid",
+          "value": "length(\"closure_notification_webhooks\".\"id\") BETWEEN 1 AND 100\n        AND length(\"closure_notification_webhooks\".\"provider_message_id\") BETWEEN 1 AND 500\n        AND \"closure_notification_webhooks\".\"provider_status\" IN ('sent', 'delivered', 'read', 'failed')\n        AND (\"closure_notification_webhooks\".\"provider_timestamp\" IS NULL OR \"closure_notification_webhooks\".\"provider_timestamp\" >= 0)\n        AND (\"closure_notification_webhooks\".\"callback_data\" IS NULL\n          OR length(\"closure_notification_webhooks\".\"callback_data\") BETWEEN 1 AND 100)\n        AND (\"closure_notification_webhooks\".\"error_code\" IS NULL\n          OR length(\"closure_notification_webhooks\".\"error_code\") BETWEEN 1 AND 200)\n        AND (\"closure_notification_webhooks\".\"error_message\" IS NULL\n          OR length(\"closure_notification_webhooks\".\"error_message\") BETWEEN 1 AND 1000)\n        AND length(\"closure_notification_webhooks\".\"payload_fingerprint\") = 64"
+        }
+      }
+    },
+    "ingredients": {
+      "name": "ingredients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_ingredients_name": {
+          "name": "idx_ingredients_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "ingredients_stock_nonnegative": {
+          "name": "ingredients_stock_nonnegative",
+          "value": "\"ingredients\".\"stock\" >= 0"
+        },
+        "ingredients_revision_nonnegative": {
+          "name": "ingredients_revision_nonnegative",
+          "value": "\"ingredients\".\"revision\" >= 0"
+        }
+      }
+    },
+    "inventory_stock_entries": {
+      "name": "inventory_stock_entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_before": {
+          "name": "quantity_before",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_added": {
+          "name": "quantity_added",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_after": {
+          "name": "quantity_after",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "operation_token": {
+          "name": "operation_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_inventory_stock_entries_item_created": {
+          "name": "idx_inventory_stock_entries_item_created",
+          "columns": [
+            "item_type",
+            "item_id",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_inventory_stock_entries_created_at": {
+          "name": "idx_inventory_stock_entries_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_stock_entries_shape_valid": {
+          "name": "inventory_stock_entries_shape_valid",
+          "value": "(\n          (\"inventory_stock_entries\".\"item_type\" = 'product'\n            AND \"inventory_stock_entries\".\"location\" IN ('simple', 'vitrina', 'bodega'))\n          OR (\"inventory_stock_entries\".\"item_type\" = 'ingredient'\n            AND \"inventory_stock_entries\".\"location\" = 'ingredient')\n        )\n        AND length(trim(\"inventory_stock_entries\".\"item_id\")) BETWEEN 1 AND 100\n        AND length(trim(\"inventory_stock_entries\".\"item_name\")) BETWEEN 1 AND 120\n        AND \"inventory_stock_entries\".\"quantity_before\" BETWEEN 0 AND 9007199254740991\n        AND \"inventory_stock_entries\".\"quantity_added\" BETWEEN 1 AND 1000000\n        AND \"inventory_stock_entries\".\"quantity_after\" = \"inventory_stock_entries\".\"quantity_before\" + \"inventory_stock_entries\".\"quantity_added\"\n        AND \"inventory_stock_entries\".\"quantity_after\" BETWEEN 1 AND 9007199254740991\n        AND \"inventory_stock_entries\".\"actor_role\" = 'admin'\n        AND length(\"inventory_stock_entries\".\"operation_token\") BETWEEN 1 AND 100"
+        }
+      }
+    },
+    "product_ingredients": {
+      "name": "product_ingredients",
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_product_ingredients_ingredient_id": {
+          "name": "idx_product_ingredients_ingredient_id",
+          "columns": [
+            "ingredient_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "product_ingredients_product_id_products_id_fk": {
+          "name": "product_ingredients_product_id_products_id_fk",
+          "tableFrom": "product_ingredients",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "product_ingredients_ingredient_id_ingredients_id_fk": {
+          "name": "product_ingredients_ingredient_id_ingredients_id_fk",
+          "tableFrom": "product_ingredients",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "product_ingredients_product_id_ingredient_id_pk": {
+          "columns": [
+            "product_id",
+            "ingredient_id"
+          ],
+          "name": "product_ingredients_product_id_ingredient_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "product_ingredients_quantity_positive": {
+          "name": "product_ingredients_quantity_positive",
+          "value": "\"product_ingredients\".\"quantity\" > 0"
+        }
+      }
+    },
+    "products": {
+      "name": "products",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "price_clp": {
+          "name": "price_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock_mode": {
+          "name": "stock_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'untracked'"
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stock_vitrina": {
+          "name": "stock_vitrina",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stock_bodega": {
+          "name": "stock_bodega",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "catalog_managed": {
+          "name": "catalog_managed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "needs_price_review": {
+          "name": "needs_price_review",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "uq_products_sku": {
+          "name": "uq_products_sku",
+          "columns": [
+            "sku"
+          ],
+          "isUnique": true
+        },
+        "idx_products_active_category": {
+          "name": "idx_products_active_category",
+          "columns": [
+            "active",
+            "category",
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "products_price_clp_positive": {
+          "name": "products_price_clp_positive",
+          "value": "\"products\".\"price_clp\" > 0"
+        },
+        "products_stock_mode_allowed": {
+          "name": "products_stock_mode_allowed",
+          "value": "\"products\".\"stock_mode\" IN ('untracked', 'simple', 'split')"
+        },
+        "products_stock_shape_valid": {
+          "name": "products_stock_shape_valid",
+          "value": "(\n        \"products\".\"stock_mode\" = 'untracked'\n        AND \"products\".\"stock\" IS NULL\n        AND \"products\".\"stock_vitrina\" IS NULL\n        AND \"products\".\"stock_bodega\" IS NULL\n      ) OR (\n        \"products\".\"stock_mode\" = 'simple'\n        AND \"products\".\"stock\" IS NOT NULL\n        AND \"products\".\"stock\" >= 0\n        AND \"products\".\"stock_vitrina\" IS NULL\n        AND \"products\".\"stock_bodega\" IS NULL\n      ) OR (\n        \"products\".\"stock_mode\" = 'split'\n        AND \"products\".\"stock\" IS NULL\n        AND \"products\".\"stock_vitrina\" IS NOT NULL\n        AND \"products\".\"stock_vitrina\" >= 0\n        AND \"products\".\"stock_bodega\" IS NOT NULL\n        AND \"products\".\"stock_bodega\" >= 0\n      )"
+        }
+      }
+    },
+    "sale_inventory_consumptions": {
+      "name": "sale_inventory_consumptions",
+      "columns": {
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_sale_inventory_consumptions_sale_id": {
+          "name": "idx_sale_inventory_consumptions_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_inventory_consumptions_sale_id_sales_id_fk": {
+          "name": "sale_inventory_consumptions_sale_id_sales_id_fk",
+          "tableFrom": "sale_inventory_consumptions",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "sale_inventory_consumptions_sale_id_item_type_item_id_location_pk": {
+          "columns": [
+            "sale_id",
+            "item_type",
+            "item_id",
+            "location"
+          ],
+          "name": "sale_inventory_consumptions_sale_id_item_type_item_id_location_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_inventory_consumptions_shape_valid": {
+          "name": "sale_inventory_consumptions_shape_valid",
+          "value": "(\n          (\"sale_inventory_consumptions\".\"item_type\" = 'product'\n            AND \"sale_inventory_consumptions\".\"location\" IN ('simple', 'vitrina'))\n          OR (\"sale_inventory_consumptions\".\"item_type\" = 'ingredient'\n            AND \"sale_inventory_consumptions\".\"location\" = 'ingredient')\n        )\n        AND length(trim(\"sale_inventory_consumptions\".\"item_id\")) BETWEEN 1 AND 100\n        AND length(trim(\"sale_inventory_consumptions\".\"item_name\")) BETWEEN 1 AND 120\n        AND \"sale_inventory_consumptions\".\"quantity\" BETWEEN 1 AND 1000000"
+        }
+      }
+    },
+    "sale_inventory_snapshots": {
+      "name": "sale_inventory_snapshots",
+      "columns": {
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sale_inventory_snapshots_sale_id_sales_id_fk": {
+          "name": "sale_inventory_snapshots_sale_id_sales_id_fk",
+          "tableFrom": "sale_inventory_snapshots",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_inventory_snapshots_version_valid": {
+          "name": "sale_inventory_snapshots_version_valid",
+          "value": "\"sale_inventory_snapshots\".\"version\" = 1"
+        }
+      }
+    },
+    "sale_items": {
+      "name": "sale_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_name": {
+          "name": "product_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price_clp": {
+          "name": "unit_price_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line_total_clp": {
+          "name": "line_total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_sale_items_sale_id": {
+          "name": "idx_sale_items_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_items_sale_id_sales_id_fk": {
+          "name": "sale_items_sale_id_sales_id_fk",
+          "tableFrom": "sale_items",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_items_unit_price_positive": {
+          "name": "sale_items_unit_price_positive",
+          "value": "\"sale_items\".\"unit_price_clp\" > 0"
+        },
+        "sale_items_quantity_allowed": {
+          "name": "sale_items_quantity_allowed",
+          "value": "\"sale_items\".\"quantity\" BETWEEN 1 AND 99"
+        },
+        "sale_items_line_total_valid": {
+          "name": "sale_items_line_total_valid",
+          "value": "\"sale_items\".\"line_total_clp\" = \"sale_items\".\"unit_price_clp\" * \"sale_items\".\"quantity\""
+        }
+      }
+    },
+    "sale_payments": {
+      "name": "sale_payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift_session_id": {
+          "name": "shift_session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_clp": {
+          "name": "amount_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "received_by": {
+          "name": "received_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_sale_payments_sale_id": {
+          "name": "idx_sale_payments_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": false
+        },
+        "idx_sale_payments_created_at": {
+          "name": "idx_sale_payments_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "uq_sale_payments_direct_sale_id": {
+          "name": "uq_sale_payments_direct_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": true,
+          "where": "\"sale_payments\".\"kind\" = 'direct'"
+        },
+        "idx_sale_payments_business_date_shift": {
+          "name": "idx_sale_payments_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": false
+        },
+        "idx_sale_payments_shift_session_id": {
+          "name": "idx_sale_payments_shift_session_id",
+          "columns": [
+            "shift_session_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_payments_sale_id_sales_id_fk": {
+          "name": "sale_payments_sale_id_sales_id_fk",
+          "tableFrom": "sale_payments",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sale_payments_shift_session_id_shift_sessions_id_fk": {
+          "name": "sale_payments_shift_session_id_shift_sessions_id_fk",
+          "tableFrom": "sale_payments",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "shift_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_payments_context_valid": {
+          "name": "sale_payments_context_valid",
+          "value": "(\n        \"sale_payments\".\"business_date\" IS NULL\n        AND \"sale_payments\".\"shift\" IS NULL\n        AND \"sale_payments\".\"received_by\" IS NULL\n      ) OR (\n        \"sale_payments\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"sale_payments\".\"shift\" IN ('am', 'pm')\n        AND \"sale_payments\".\"received_by\" IS NOT NULL\n        AND length(trim(\"sale_payments\".\"received_by\")) BETWEEN 1 AND 100\n      )"
+        },
+        "sale_payments_method_allowed": {
+          "name": "sale_payments_method_allowed",
+          "value": "\"sale_payments\".\"payment_method\" IN ('efectivo', 'tarjeta', 'transferencia')"
+        },
+        "sale_payments_amount_positive": {
+          "name": "sale_payments_amount_positive",
+          "value": "\"sale_payments\".\"amount_clp\" > 0"
+        },
+        "sale_payments_kind_allowed": {
+          "name": "sale_payments_kind_allowed",
+          "value": "\"sale_payments\".\"kind\" IN ('direct', 'settlement')"
+        }
+      }
+    },
+    "sale_voids": {
+      "name": "sale_voids",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift_session_id": {
+          "name": "shift_session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_activity_revision": {
+          "name": "expected_activity_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "original_total_clp": {
+          "name": "original_total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "original_paid_clp": {
+          "name": "original_paid_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "original_balance_clp": {
+          "name": "original_balance_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_source": {
+          "name": "inventory_source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_restoration_json": {
+          "name": "inventory_restoration_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_snapshot_json": {
+          "name": "payment_snapshot_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_sale_voids_sale_id": {
+          "name": "uq_sale_voids_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": true
+        },
+        "idx_sale_voids_created_at": {
+          "name": "idx_sale_voids_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_sale_voids_shift_session_id": {
+          "name": "idx_sale_voids_shift_session_id",
+          "columns": [
+            "shift_session_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_voids_sale_id_sales_id_fk": {
+          "name": "sale_voids_sale_id_sales_id_fk",
+          "tableFrom": "sale_voids",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sale_voids_shift_session_id_shift_sessions_id_fk": {
+          "name": "sale_voids_shift_session_id_shift_sessions_id_fk",
+          "tableFrom": "sale_voids",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "shift_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_voids_shape_valid": {
+          "name": "sale_voids_shape_valid",
+          "value": "\"sale_voids\".\"actor_role\" = 'admin'\n        AND length(trim(\"sale_voids\".\"actor_name\")) BETWEEN 1 AND 100\n        AND length(trim(\"sale_voids\".\"reason\")) BETWEEN 1 AND 500\n        AND \"sale_voids\".\"expected_activity_revision\" >= 0\n        AND length(\"sale_voids\".\"request_fingerprint\") BETWEEN 1 AND 1000\n        AND \"sale_voids\".\"original_total_clp\" > 0\n        AND \"sale_voids\".\"original_paid_clp\" >= 0\n        AND \"sale_voids\".\"original_paid_clp\" <= \"sale_voids\".\"original_total_clp\"\n        AND \"sale_voids\".\"original_balance_clp\" = \"sale_voids\".\"original_total_clp\" - \"sale_voids\".\"original_paid_clp\"\n        AND \"sale_voids\".\"inventory_source\" IN ('snapshot', 'derived_legacy')\n        AND json_valid(\"sale_voids\".\"inventory_restoration_json\")\n        AND json_valid(\"sale_voids\".\"payment_snapshot_json\")"
+        }
+      }
+    },
+    "sales": {
+      "name": "sales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift_session_id": {
+          "name": "shift_session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_status": {
+          "name": "payment_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'paid'"
+        },
+        "checkout_method": {
+          "name": "checkout_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debt_note": {
+          "name": "debt_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debtor_collaborator": {
+          "name": "debtor_collaborator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "settlement_id": {
+          "name": "settlement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seller": {
+          "name": "seller",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "total_clp": {
+          "name": "total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_sales_created_at": {
+          "name": "idx_sales_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_business_date_shift": {
+          "name": "idx_sales_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_shift_session_id": {
+          "name": "idx_sales_shift_session_id",
+          "columns": [
+            "shift_session_id"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_paid_at": {
+          "name": "idx_sales_paid_at",
+          "columns": [
+            "paid_at"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_pending_created_at": {
+          "name": "idx_sales_pending_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false,
+          "where": "\"sales\".\"payment_status\" = 'pending'"
+        },
+        "uq_sales_settlement_id": {
+          "name": "uq_sales_settlement_id",
+          "columns": [
+            "settlement_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "sales_shift_session_id_shift_sessions_id_fk": {
+          "name": "sales_shift_session_id_shift_sessions_id_fk",
+          "tableFrom": "sales",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "shift_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sales_payment_status_allowed": {
+          "name": "sales_payment_status_allowed",
+          "value": "\"sales\".\"payment_status\" IN ('paid', 'pending')"
+        },
+        "sales_shift_context_valid": {
+          "name": "sales_shift_context_valid",
+          "value": "(\n        \"sales\".\"business_date\" IS NULL AND \"sales\".\"shift\" IS NULL\n      ) OR (\n        \"sales\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"sales\".\"shift\" IN ('am', 'pm')\n      )"
+        },
+        "sales_checkout_method_allowed": {
+          "name": "sales_checkout_method_allowed",
+          "value": "\"sales\".\"checkout_method\" IN ('efectivo', 'tarjeta', 'transferencia', 'pendiente', 'colaborador')"
+        },
+        "sales_payment_state_valid": {
+          "name": "sales_payment_state_valid",
+          "value": "(\n        \"sales\".\"payment_status\" = 'pending'\n        AND \"sales\".\"payment_method\" IS NULL\n        AND \"sales\".\"paid_at\" IS NULL\n        AND \"sales\".\"settlement_id\" IS NULL\n        AND (\n          (\n            \"sales\".\"checkout_method\" = 'pendiente'\n            AND \"sales\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n          ) OR (\n            \"sales\".\"checkout_method\" = 'colaborador'\n            AND \"sales\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"sales\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"sales\".\"debt_note\" IS NULL\n              OR length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n          )\n        )\n      ) OR (\n        \"sales\".\"payment_status\" = 'paid'\n        AND \"sales\".\"payment_method\" IS NOT NULL\n        AND \"sales\".\"payment_method\" IN ('efectivo', 'tarjeta', 'debito', 'credito', 'transferencia')\n        AND \"sales\".\"paid_at\" IS NOT NULL\n        AND (\n          (\n            \"sales\".\"checkout_method\" IN ('efectivo', 'tarjeta', 'transferencia')\n            AND \"sales\".\"debt_note\" IS NULL\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n            AND \"sales\".\"settlement_id\" IS NULL\n          )\n          OR (\n            \"sales\".\"checkout_method\" = 'pendiente'\n            AND \"sales\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n            AND \"sales\".\"settlement_id\" IS NOT NULL\n          )\n          OR (\n            \"sales\".\"checkout_method\" = 'colaborador'\n            AND \"sales\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"sales\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"sales\".\"debt_note\" IS NULL\n              OR length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n            AND \"sales\".\"settlement_id\" IS NOT NULL\n          )\n        )\n      )"
+        },
+        "sales_total_clp_positive": {
+          "name": "sales_total_clp_positive",
+          "value": "\"sales\".\"total_clp\" > 0"
+        }
+      }
+    },
+    "shift_sessions": {
+      "name": "shift_sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opening_cash_clp": {
+          "name": "opening_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_revision": {
+          "name": "activity_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "active_slot": {
+          "name": "active_slot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "opened_at": {
+          "name": "opened_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_shift_sessions_active_slot": {
+          "name": "uq_shift_sessions_active_slot",
+          "columns": [
+            "active_slot"
+          ],
+          "isUnique": true
+        },
+        "idx_shift_sessions_opened_at": {
+          "name": "idx_shift_sessions_opened_at",
+          "columns": [
+            "opened_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "shift_sessions_context_valid": {
+          "name": "shift_sessions_context_valid",
+          "value": "\"shift_sessions\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"shift_sessions\".\"shift\" IN ('am', 'pm')\n        AND length(trim(\"shift_sessions\".\"responsible\")) BETWEEN 1 AND 100"
+        },
+        "shift_sessions_counters_valid": {
+          "name": "shift_sessions_counters_valid",
+          "value": "\"shift_sessions\".\"opening_cash_clp\" >= 0 AND \"shift_sessions\".\"activity_revision\" >= 0"
+        },
+        "shift_sessions_state_valid": {
+          "name": "shift_sessions_state_valid",
+          "value": "(\n        \"shift_sessions\".\"status\" = 'open'\n        AND \"shift_sessions\".\"active_slot\" = 1\n        AND \"shift_sessions\".\"closed_at\" IS NULL\n        AND \"shift_sessions\".\"closure_id\" IS NULL\n      ) OR (\n        \"shift_sessions\".\"status\" = 'closed'\n        AND \"shift_sessions\".\"active_slot\" IS NULL\n        AND \"shift_sessions\".\"closed_at\" IS NOT NULL\n        AND \"shift_sessions\".\"closure_id\" IS NOT NULL\n      )"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

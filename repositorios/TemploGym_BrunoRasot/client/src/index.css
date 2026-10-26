@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .module-header {
+    background: linear-gradient(90deg, #fff 0%, #fff 68%, rgb(254 252 232 / 0.72) 100%);
+    border-color: rgb(254 240 138 / 0.9) !important;
+  }
+
+  .module-header > :first-child > :first-child {
+    background: rgb(254 252 232) !important;
+    border-color: rgb(254 240 138) !important;
+    color: rgb(180 131 0) !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  }
+
+  .module-header > button {
+    background: #e6b010 !important;
+    border-color: #d5a20a !important;
+    color: #111827 !important;
+    font-weight: 700;
+  }
+
+  .module-header > button:hover {
+    background: #d5a20a !important;
+  }
+}
+
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #111111;
+  color: #ffffff;
+}
+
+.theme-dark {
+  --app-background: #1c1c1b;
+  --app-foreground: #ffffff;
+  --sidebar-background: #141414;
+  --card-background: #1a1a1a;
+  --app-border: rgb(255 255 255 / 0.1);
+  --input-border: rgb(255 255 255 / 0.2);
+  --muted-foreground: #9ca3af;
+  --sidebar-hover: rgb(255 255 255 / 0.05);
+}
+
+.theme-light {
+  --app-background: #f6f7f5;
+  --app-foreground: #1f2937;
+  --sidebar-background: #ffffff;
+  --card-background: #ffffff;
+  --app-border: #e5e7eb;
+  --input-border: #d1d5db;
+  --muted-foreground: #6b7280;
+  --sidebar-hover: #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@layer components {
+  .input { @apply w-full border border-gray-200 rounded-lg p-2 text-xs outline-none focus:border-gray-900; }
+}

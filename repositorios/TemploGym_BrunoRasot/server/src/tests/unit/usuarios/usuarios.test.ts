@@ -1,0 +1,89 @@
+import 'dotenv/config';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import request from 'supertest';
+import app from '../../../app.js';
+import { prisma } from '../../../database/prisma.js';
+import { obtenerTokenAdminActivo } from '../../helpers/testAdmin.js';
+
+describe('Pruebas del módulo de Usuarios', () => {
+  let tokenAdmin: string;
+  let usuarioId: number;
+
+  beforeAll(async () => {
+    await prisma.usuario.deleteMany({ where: { dni: '99887766' } });
+    tokenAdmin = await obtenerTokenAdminActivo();
+  });
+
+  afterAll(async () => {
+    await prisma.usuario.deleteMany({ where: { dni: '99887766' } });
+  });
+
+  it('Debería crear un usuario nuevo', async () => {
+    const response = await request(app)
+      .post('/api/usuarios')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({
+        nombres: 'Test',
+        apellidos: 'User',
+        dni: '99887766',
+        fechaNacimiento: '1995-04-23',
+        sexo: 'Masculino',
+        direccion: 'Av. Principal 123',
+        email: 'test@gym.com',
+        password: 'Password-123!',
+        nombreUsuario: 'testuser',
+        rol: 'USER',
+      });
+
+    expect(response.status).toBe(201);
+    usuarioId = response.body.id;
+    expect(response.body).toMatchObject({
+      fechaNacimiento: '1995-04-23T00:00:00.000Z',
+      sexo: 'Masculino',
+      direccion: 'Av. Principal 123',
+    });
+
+    const guardado = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+    expect(guardado).toMatchObject({
+      sexo: 'Masculino',
+      direccion: 'Av. Principal 123',
+    });
+    expect(guardado?.fechaNacimiento?.toISOString()).toBe('1995-04-23T00:00:00.000Z');
+  });
+
+  it('Debería obtener usuarios paginados', async () => {
+    const response = await request(app)
+      .get('/api/usuarios')
+      .set('Authorization', `Bearer ${tokenAdmin}`);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toBeDefined();
+    expect(Array.isArray(response.body.data)).toBe(true);
+  });
+
+  it('Debería rechazar un DNI duplicado', async () => {
+    const response = await request(app)
+      .post('/api/usuarios')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({
+        nombres: 'Test 2',
+        apellidos: 'User 2',
+        dni: '99887766',
+        email: 'test2@gym.com',
+        password: 'Password-123!',
+        nombreUsuario: 'testuser2',
+        rol: 'USER',
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('Debería desactivar un usuario sin borrar su historial', async () => {
+    const response = await request(app)
+      .delete(`/api/usuarios/${usuarioId}`)
+      .set('Authorization', `Bearer ${tokenAdmin}`);
+    expect(response.status).toBe(200);
+
+    const verificacion = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+    expect(verificacion).toMatchObject({ activo: false, estadoLaboral: 'Inactivo' });
+  });
+});

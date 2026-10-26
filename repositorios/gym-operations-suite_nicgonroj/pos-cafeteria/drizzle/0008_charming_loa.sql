@@ -1,0 +1,1 @@
+CREATE INDEX `idx_sale_payments_created_at` ON `sale_payments` (`created_at`);

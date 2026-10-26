@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { verificarToken } from '../../middlewares/auth.middleware.js';
+import { verificarPermiso } from '../../middlewares/permisos.middleware.js';
+import { validarSchema } from '../../middlewares/validacion.middleware.js';
+import { ajusteInventarioSchema } from '../../schemas/index.js';
+import { ajustarStock, obtenerKardex } from './inventario.controller.js';
+import { auditar } from '../../middlewares/auditoria.middleware.js';
+const router = Router();
+router.get('/kardex', verificarToken, verificarPermiso('inventario', 'ver'), obtenerKardex);
+router.post('/ajustes', verificarToken, verificarPermiso('inventario', 'editar'), auditar('Inventario'), validarSchema(ajusteInventarioSchema), ajustarStock);
+export default router;

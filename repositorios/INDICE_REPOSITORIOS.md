@@ -45,6 +45,32 @@ Ideales para instalarse sobre **ERPNext** si necesitas contabilidad fiscal compl
 9. **`Gym-Management-System_anwarpatelnoori`** — https://github.com/anwarpatelnoori/Gym-Management-System
 10. **`gym_management_kramteo`** — https://github.com/kramteo/gym_management
 
+### D. Sistemas de Gimnasio Especializados en Punto de Venta (POS), Tienda e Inventario
+11. **`TemploGym_BrunoRasot`**
+    - **Repositorio:** https://github.com/BrunoRasot/Sistema-de-Gimnasio
+    - **Stack:** React + TypeScript + Tailwind CSS + Node.js
+    - **Descripción:** Sistema completo con módulos de Caja (`CajaPage`, `HistorialCajaPage`), **Kardex de Inventario**, Catálogo de **Proveedores**, Alertas de Stock y **Cuentas por Cobrar / Fiados**.
+12. **`gym-operations-suite_nicgonroj`**
+    - **Repositorio:** https://github.com/nicgonroj/gym-operations-suite
+    - **Stack:** TypeScript / Next.js
+    - **Descripción:** Suite operativa con módulo dedicado **`pos-cafeteria`** (barra de batidos y suplementos), cortes de caja con revisiones (`cash-closures`), pagos recurrentes con Mercado Pago y registro QR.
+13. **`GymApp_POS_dahlanGale`**
+    - **Repositorio:** https://github.com/dahlanGale/GymApp
+    - **Stack:** Electron + React + TypeScript
+    - **Descripción:** Aplicación de escritorio con Punto de Venta unificado para productos de tienda (`Sales.tsx`, `Products.tsx`) y venta de membresías (`MembershipSales.tsx`).
+14. **`FitData_GYM_ArturoSantos06`**
+    - **Repositorio:** https://github.com/ArturoSantos06/FitData_GYM
+    - **Stack:** React + Django REST Framework
+    - **Descripción:** Gestión integral con Punto de Venta, folios de venta, entradas de almacén en tiempo real, fichas médicas y alertas por correo.
+15. **`FitMax_Wallet_POS_mehmetgorer`**
+    - **Repositorio:** https://github.com/mehmetgorer/FitMax
+    - **Stack:** C# (ASP.NET Core MVC)
+    - **Descripción:** Automatización de gimnasio con tienda de productos, carrito de compras y **Monedero / Billetera Virtual del Socio (*Wallet*)** para compras sin efectivo.
+16. **`POS-Membresias-y-ventas_alexlm26`**
+    - **Repositorio:** https://github.com/alexlm26/POS-Membresias-y-ventas
+    - **Stack:** C# (.NET)
+    - **Descripción:** Punto de venta de productos y membresías con integración directa para apertura y monitoreo de torniquetes HikVision.
+
 ---
 
 ## 2. Ideas de Módulos para un ERP de Gimnasio Propio

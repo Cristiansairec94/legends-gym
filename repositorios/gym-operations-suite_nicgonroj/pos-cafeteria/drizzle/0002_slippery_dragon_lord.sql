@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `catalog_managed` integer DEFAULT false NOT NULL;

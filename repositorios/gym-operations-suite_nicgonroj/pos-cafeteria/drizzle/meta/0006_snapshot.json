@@ -1,0 +1,1483 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "723277dd-1779-4b43-9b19-4294a8e46bfa",
+  "prevId": "6d086d57-eba6-4cae-a4cc-3a4c69b7011b",
+  "tables": {
+    "app_meta": {
+      "name": "app_meta",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cash_closure_debts": {
+      "name": "cash_closure_debts",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debt_type": {
+          "name": "debt_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debt_note": {
+          "name": "debt_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debtor_collaborator": {
+          "name": "debtor_collaborator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "amount_clp": {
+          "name": "amount_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_cash_closure_debts_type": {
+          "name": "idx_cash_closure_debts_type",
+          "columns": [
+            "closure_id",
+            "debt_type"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_debts_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_debts_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_debts",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_debts_closure_id_sale_id_pk": {
+          "columns": [
+            "closure_id",
+            "sale_id"
+          ],
+          "name": "cash_closure_debts_closure_id_sale_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_debts_shape_valid": {
+          "name": "cash_closure_debts_shape_valid",
+          "value": "\"cash_closure_debts\".\"debt_type\" IN ('pendiente', 'colaborador')\n        AND \"cash_closure_debts\".\"amount_clp\" > 0\n        AND (\n          (\n            \"cash_closure_debts\".\"debt_type\" = 'pendiente'\n            AND \"cash_closure_debts\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"cash_closure_debts\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"cash_closure_debts\".\"debtor_collaborator\" IS NULL\n          ) OR (\n            \"cash_closure_debts\".\"debt_type\" = 'colaborador'\n            AND \"cash_closure_debts\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"cash_closure_debts\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"cash_closure_debts\".\"debt_note\" IS NULL\n              OR length(trim(\"cash_closure_debts\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n          )\n        )"
+        }
+      }
+    },
+    "cash_closure_inventory": {
+      "name": "cash_closure_inventory",
+      "columns": {
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_key": {
+          "name": "item_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_type": {
+          "name": "item_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_name": {
+          "name": "item_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_version_token": {
+          "name": "expected_version_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_quantity": {
+          "name": "expected_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_quantity": {
+          "name": "counted_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_quantity": {
+          "name": "difference_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_cash_closure_inventory_item": {
+          "name": "idx_cash_closure_inventory_item",
+          "columns": [
+            "item_type",
+            "item_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closure_inventory_closure_id_cash_closures_id_fk": {
+          "name": "cash_closure_inventory_closure_id_cash_closures_id_fk",
+          "tableFrom": "cash_closure_inventory",
+          "tableTo": "cash_closures",
+          "columnsFrom": [
+            "closure_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cash_closure_inventory_closure_id_item_key_pk": {
+          "columns": [
+            "closure_id",
+            "item_key"
+          ],
+          "name": "cash_closure_inventory_closure_id_item_key_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closure_inventory_shape_valid": {
+          "name": "cash_closure_inventory_shape_valid",
+          "value": "\"cash_closure_inventory\".\"item_type\" IN ('product', 'ingredient')\n        AND \"cash_closure_inventory\".\"location\" IN ('simple', 'vitrina', 'bodega', 'ingredient')\n        AND length(\"cash_closure_inventory\".\"expected_version_token\") BETWEEN 1 AND 100\n        AND \"cash_closure_inventory\".\"expected_quantity\" >= 0\n        AND \"cash_closure_inventory\".\"counted_quantity\" >= 0\n        AND \"cash_closure_inventory\".\"difference_quantity\" = \"cash_closure_inventory\".\"counted_quantity\" - \"cash_closure_inventory\".\"expected_quantity\"\n        AND (\n          (\"cash_closure_inventory\".\"difference_quantity\" = 0 AND \"cash_closure_inventory\".\"reason\" IS NULL)\n          OR (\n            \"cash_closure_inventory\".\"difference_quantity\" <> 0\n            AND \"cash_closure_inventory\".\"reason\" IS NOT NULL\n            AND length(trim(\"cash_closure_inventory\".\"reason\")) BETWEEN 1 AND 500\n          )\n        )"
+        }
+      }
+    },
+    "cash_closures": {
+      "name": "cash_closures",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "session_activity_revision": {
+          "name": "session_activity_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "request_fingerprint": {
+          "name": "request_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "expected_cash_clp": {
+          "name": "expected_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opening_cash_clp": {
+          "name": "opening_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cash_movements_clp": {
+          "name": "cash_movements_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expected_card_clp": {
+          "name": "expected_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_transfer_clp": {
+          "name": "expected_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_collected_clp": {
+          "name": "expected_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_sales_clp": {
+          "name": "total_sales_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sales_count": {
+          "name": "sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pending_customer_clp": {
+          "name": "pending_customer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pending_customer_count": {
+          "name": "pending_customer_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collaborator_clp": {
+          "name": "collaborator_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collaborator_count": {
+          "name": "collaborator_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_cash_clp": {
+          "name": "counted_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "difference_clp": {
+          "name": "difference_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "counted_card_clp": {
+          "name": "counted_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_card_clp": {
+          "name": "difference_card_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_transfer_clp": {
+          "name": "counted_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_transfer_clp": {
+          "name": "difference_transfer_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "counted_collected_clp": {
+          "name": "counted_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference_collected_clp": {
+          "name": "difference_collected_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "financial_difference_reason": {
+          "name": "financial_difference_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cash_reconciled": {
+          "name": "cash_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "card_reconciled": {
+          "name": "card_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transfer_reconciled": {
+          "name": "transfer_reconciled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pending_customer_reviewed": {
+          "name": "pending_customer_reviewed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collaborator_reviewed": {
+          "name": "collaborator_reviewed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inventory_count_confirmed": {
+          "name": "inventory_count_confirmed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "checklist_version": {
+          "name": "checklist_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "unassigned_sales_clp": {
+          "name": "unassigned_sales_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_sales_count": {
+          "name": "unassigned_sales_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_payments_clp": {
+          "name": "unassigned_payments_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unassigned_payments_count": {
+          "name": "unassigned_payments_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_cash_closures_business_date_shift": {
+          "name": "uq_cash_closures_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": true
+        },
+        "uq_cash_closures_session_id": {
+          "name": "uq_cash_closures_session_id",
+          "columns": [
+            "session_id"
+          ],
+          "isUnique": true
+        },
+        "idx_cash_closures_created_at": {
+          "name": "idx_cash_closures_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_closures_session_id_shift_sessions_id_fk": {
+          "name": "cash_closures_session_id_shift_sessions_id_fk",
+          "tableFrom": "cash_closures",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cash_closures_context_valid": {
+          "name": "cash_closures_context_valid",
+          "value": "\"cash_closures\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"cash_closures\".\"shift\" IN ('am', 'pm')\n        AND length(trim(\"cash_closures\".\"responsible\")) BETWEEN 1 AND 100"
+        },
+        "cash_closures_nonnegative": {
+          "name": "cash_closures_nonnegative",
+          "value": "\"cash_closures\".\"expected_cash_clp\" >= 0\n        AND \"cash_closures\".\"expected_card_clp\" >= 0\n        AND \"cash_closures\".\"expected_transfer_clp\" >= 0\n        AND \"cash_closures\".\"expected_collected_clp\" >= 0\n        AND \"cash_closures\".\"total_sales_clp\" >= 0\n        AND \"cash_closures\".\"sales_count\" >= 0\n        AND \"cash_closures\".\"pending_customer_clp\" >= 0\n        AND \"cash_closures\".\"collaborator_clp\" >= 0\n        AND \"cash_closures\".\"counted_cash_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_sales_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_sales_count\" >= 0\n        AND \"cash_closures\".\"unassigned_payments_clp\" >= 0\n        AND \"cash_closures\".\"unassigned_payments_count\" >= 0"
+        },
+        "cash_closures_collected_total_valid": {
+          "name": "cash_closures_collected_total_valid",
+          "value": "\"cash_closures\".\"expected_collected_clp\" = \"cash_closures\".\"expected_cash_clp\" + \"cash_closures\".\"expected_card_clp\" + \"cash_closures\".\"expected_transfer_clp\""
+        },
+        "cash_closures_difference_valid": {
+          "name": "cash_closures_difference_valid",
+          "value": "\"cash_closures\".\"difference_clp\" = \"cash_closures\".\"counted_cash_clp\" - \"cash_closures\".\"expected_cash_clp\""
+        },
+        "cash_closures_formal_state_valid": {
+          "name": "cash_closures_formal_state_valid",
+          "value": "(\n        \"cash_closures\".\"session_id\" IS NULL\n        AND \"cash_closures\".\"session_activity_revision\" IS NULL\n        AND \"cash_closures\".\"request_fingerprint\" IS NULL\n        AND \"cash_closures\".\"opening_cash_clp\" IS NULL\n        AND \"cash_closures\".\"cash_movements_clp\" IS NULL\n        AND \"cash_closures\".\"pending_customer_count\" IS NULL\n        AND \"cash_closures\".\"collaborator_count\" IS NULL\n        AND \"cash_closures\".\"counted_card_clp\" IS NULL\n        AND \"cash_closures\".\"difference_card_clp\" IS NULL\n        AND \"cash_closures\".\"counted_transfer_clp\" IS NULL\n        AND \"cash_closures\".\"difference_transfer_clp\" IS NULL\n        AND \"cash_closures\".\"counted_collected_clp\" IS NULL\n        AND \"cash_closures\".\"difference_collected_clp\" IS NULL\n        AND \"cash_closures\".\"financial_difference_reason\" IS NULL\n        AND \"cash_closures\".\"cash_reconciled\" IS NULL\n        AND \"cash_closures\".\"card_reconciled\" IS NULL\n        AND \"cash_closures\".\"transfer_reconciled\" IS NULL\n        AND \"cash_closures\".\"pending_customer_reviewed\" IS NULL\n        AND \"cash_closures\".\"collaborator_reviewed\" IS NULL\n        AND \"cash_closures\".\"inventory_count_confirmed\" IS NULL\n        AND \"cash_closures\".\"checklist_version\" IS NULL\n      ) OR (\n        \"cash_closures\".\"session_id\" IS NOT NULL\n        AND \"cash_closures\".\"session_activity_revision\" >= 0\n        AND length(\"cash_closures\".\"request_fingerprint\") = 64\n        AND \"cash_closures\".\"opening_cash_clp\" >= 0\n        AND \"cash_closures\".\"cash_movements_clp\" >= 0\n        AND \"cash_closures\".\"expected_cash_clp\" = \"cash_closures\".\"opening_cash_clp\" + \"cash_closures\".\"cash_movements_clp\"\n        AND \"cash_closures\".\"pending_customer_count\" >= 0\n        AND \"cash_closures\".\"collaborator_count\" >= 0\n        AND \"cash_closures\".\"counted_card_clp\" >= 0\n        AND \"cash_closures\".\"difference_card_clp\" = \"cash_closures\".\"counted_card_clp\" - \"cash_closures\".\"expected_card_clp\"\n        AND \"cash_closures\".\"counted_transfer_clp\" >= 0\n        AND \"cash_closures\".\"difference_transfer_clp\" = \"cash_closures\".\"counted_transfer_clp\" - \"cash_closures\".\"expected_transfer_clp\"\n        AND \"cash_closures\".\"counted_collected_clp\" = \"cash_closures\".\"counted_cash_clp\" + \"cash_closures\".\"counted_card_clp\" + \"cash_closures\".\"counted_transfer_clp\"\n        AND \"cash_closures\".\"difference_collected_clp\" = \"cash_closures\".\"counted_collected_clp\" - \"cash_closures\".\"expected_collected_clp\"\n        AND \"cash_closures\".\"difference_collected_clp\" = \"cash_closures\".\"difference_clp\" + \"cash_closures\".\"difference_card_clp\" + \"cash_closures\".\"difference_transfer_clp\"\n        AND \"cash_closures\".\"cash_reconciled\" = 1\n        AND \"cash_closures\".\"card_reconciled\" = 1\n        AND \"cash_closures\".\"transfer_reconciled\" = 1\n        AND \"cash_closures\".\"pending_customer_reviewed\" = 1\n        AND \"cash_closures\".\"collaborator_reviewed\" = 1\n        AND \"cash_closures\".\"inventory_count_confirmed\" = 1\n        AND \"cash_closures\".\"checklist_version\" = 1\n        AND (\n          (\n            \"cash_closures\".\"difference_clp\" = 0\n            AND \"cash_closures\".\"difference_card_clp\" = 0\n            AND \"cash_closures\".\"difference_transfer_clp\" = 0\n            AND \"cash_closures\".\"financial_difference_reason\" IS NULL\n          ) OR (\n            (\n              \"cash_closures\".\"difference_clp\" <> 0\n              OR \"cash_closures\".\"difference_card_clp\" <> 0\n              OR \"cash_closures\".\"difference_transfer_clp\" <> 0\n            )\n            AND \"cash_closures\".\"financial_difference_reason\" IS NOT NULL\n            AND length(trim(\"cash_closures\".\"financial_difference_reason\")) BETWEEN 1 AND 500\n          )\n        )\n      )"
+        }
+      }
+    },
+    "ingredients": {
+      "name": "ingredients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "idx_ingredients_name": {
+          "name": "idx_ingredients_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "ingredients_stock_nonnegative": {
+          "name": "ingredients_stock_nonnegative",
+          "value": "\"ingredients\".\"stock\" >= 0"
+        },
+        "ingredients_revision_nonnegative": {
+          "name": "ingredients_revision_nonnegative",
+          "value": "\"ingredients\".\"revision\" >= 0"
+        }
+      }
+    },
+    "product_ingredients": {
+      "name": "product_ingredients",
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_product_ingredients_ingredient_id": {
+          "name": "idx_product_ingredients_ingredient_id",
+          "columns": [
+            "ingredient_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "product_ingredients_product_id_products_id_fk": {
+          "name": "product_ingredients_product_id_products_id_fk",
+          "tableFrom": "product_ingredients",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "product_ingredients_ingredient_id_ingredients_id_fk": {
+          "name": "product_ingredients_ingredient_id_ingredients_id_fk",
+          "tableFrom": "product_ingredients",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "product_ingredients_product_id_ingredient_id_pk": {
+          "columns": [
+            "product_id",
+            "ingredient_id"
+          ],
+          "name": "product_ingredients_product_id_ingredient_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "product_ingredients_quantity_positive": {
+          "name": "product_ingredients_quantity_positive",
+          "value": "\"product_ingredients\".\"quantity\" > 0"
+        }
+      }
+    },
+    "products": {
+      "name": "products",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "price_clp": {
+          "name": "price_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock_mode": {
+          "name": "stock_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'untracked'"
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stock_vitrina": {
+          "name": "stock_vitrina",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stock_bodega": {
+          "name": "stock_bodega",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "catalog_managed": {
+          "name": "catalog_managed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "needs_price_review": {
+          "name": "needs_price_review",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "uq_products_sku": {
+          "name": "uq_products_sku",
+          "columns": [
+            "sku"
+          ],
+          "isUnique": true
+        },
+        "idx_products_active_category": {
+          "name": "idx_products_active_category",
+          "columns": [
+            "active",
+            "category",
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "products_price_clp_positive": {
+          "name": "products_price_clp_positive",
+          "value": "\"products\".\"price_clp\" > 0"
+        },
+        "products_stock_mode_allowed": {
+          "name": "products_stock_mode_allowed",
+          "value": "\"products\".\"stock_mode\" IN ('untracked', 'simple', 'split')"
+        },
+        "products_stock_shape_valid": {
+          "name": "products_stock_shape_valid",
+          "value": "(\n        \"products\".\"stock_mode\" = 'untracked'\n        AND \"products\".\"stock\" IS NULL\n        AND \"products\".\"stock_vitrina\" IS NULL\n        AND \"products\".\"stock_bodega\" IS NULL\n      ) OR (\n        \"products\".\"stock_mode\" = 'simple'\n        AND \"products\".\"stock\" IS NOT NULL\n        AND \"products\".\"stock\" >= 0\n        AND \"products\".\"stock_vitrina\" IS NULL\n        AND \"products\".\"stock_bodega\" IS NULL\n      ) OR (\n        \"products\".\"stock_mode\" = 'split'\n        AND \"products\".\"stock\" IS NULL\n        AND \"products\".\"stock_vitrina\" IS NOT NULL\n        AND \"products\".\"stock_vitrina\" >= 0\n        AND \"products\".\"stock_bodega\" IS NOT NULL\n        AND \"products\".\"stock_bodega\" >= 0\n      )"
+        }
+      }
+    },
+    "sale_items": {
+      "name": "sale_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_name": {
+          "name": "product_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price_clp": {
+          "name": "unit_price_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line_total_clp": {
+          "name": "line_total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_sale_items_sale_id": {
+          "name": "idx_sale_items_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_items_sale_id_sales_id_fk": {
+          "name": "sale_items_sale_id_sales_id_fk",
+          "tableFrom": "sale_items",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_items_unit_price_positive": {
+          "name": "sale_items_unit_price_positive",
+          "value": "\"sale_items\".\"unit_price_clp\" > 0"
+        },
+        "sale_items_quantity_allowed": {
+          "name": "sale_items_quantity_allowed",
+          "value": "\"sale_items\".\"quantity\" BETWEEN 1 AND 99"
+        },
+        "sale_items_line_total_valid": {
+          "name": "sale_items_line_total_valid",
+          "value": "\"sale_items\".\"line_total_clp\" = \"sale_items\".\"unit_price_clp\" * \"sale_items\".\"quantity\""
+        }
+      }
+    },
+    "sale_payments": {
+      "name": "sale_payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sale_id": {
+          "name": "sale_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift_session_id": {
+          "name": "shift_session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_clp": {
+          "name": "amount_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "received_by": {
+          "name": "received_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_sale_payments_sale_id": {
+          "name": "uq_sale_payments_sale_id",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": true
+        },
+        "idx_sale_payments_business_date_shift": {
+          "name": "idx_sale_payments_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": false
+        },
+        "idx_sale_payments_shift_session_id": {
+          "name": "idx_sale_payments_shift_session_id",
+          "columns": [
+            "shift_session_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sale_payments_sale_id_sales_id_fk": {
+          "name": "sale_payments_sale_id_sales_id_fk",
+          "tableFrom": "sale_payments",
+          "tableTo": "sales",
+          "columnsFrom": [
+            "sale_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sale_payments_shift_session_id_shift_sessions_id_fk": {
+          "name": "sale_payments_shift_session_id_shift_sessions_id_fk",
+          "tableFrom": "sale_payments",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "shift_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sale_payments_context_valid": {
+          "name": "sale_payments_context_valid",
+          "value": "(\n        \"sale_payments\".\"business_date\" IS NULL\n        AND \"sale_payments\".\"shift\" IS NULL\n        AND \"sale_payments\".\"received_by\" IS NULL\n      ) OR (\n        \"sale_payments\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"sale_payments\".\"shift\" IN ('am', 'pm')\n        AND \"sale_payments\".\"received_by\" IS NOT NULL\n        AND length(trim(\"sale_payments\".\"received_by\")) BETWEEN 1 AND 100\n      )"
+        },
+        "sale_payments_method_allowed": {
+          "name": "sale_payments_method_allowed",
+          "value": "\"sale_payments\".\"payment_method\" IN ('efectivo', 'tarjeta', 'transferencia')"
+        },
+        "sale_payments_amount_positive": {
+          "name": "sale_payments_amount_positive",
+          "value": "\"sale_payments\".\"amount_clp\" > 0"
+        },
+        "sale_payments_kind_allowed": {
+          "name": "sale_payments_kind_allowed",
+          "value": "\"sale_payments\".\"kind\" IN ('direct', 'settlement')"
+        }
+      }
+    },
+    "sales": {
+      "name": "sales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shift_session_id": {
+          "name": "shift_session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_status": {
+          "name": "payment_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'paid'"
+        },
+        "checkout_method": {
+          "name": "checkout_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debt_note": {
+          "name": "debt_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "debtor_collaborator": {
+          "name": "debtor_collaborator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "settlement_id": {
+          "name": "settlement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seller": {
+          "name": "seller",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "total_clp": {
+          "name": "total_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_sales_created_at": {
+          "name": "idx_sales_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_business_date_shift": {
+          "name": "idx_sales_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_shift_session_id": {
+          "name": "idx_sales_shift_session_id",
+          "columns": [
+            "shift_session_id"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_paid_at": {
+          "name": "idx_sales_paid_at",
+          "columns": [
+            "paid_at"
+          ],
+          "isUnique": false
+        },
+        "idx_sales_pending_created_at": {
+          "name": "idx_sales_pending_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false,
+          "where": "\"sales\".\"payment_status\" = 'pending'"
+        },
+        "uq_sales_settlement_id": {
+          "name": "uq_sales_settlement_id",
+          "columns": [
+            "settlement_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "sales_shift_session_id_shift_sessions_id_fk": {
+          "name": "sales_shift_session_id_shift_sessions_id_fk",
+          "tableFrom": "sales",
+          "tableTo": "shift_sessions",
+          "columnsFrom": [
+            "shift_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sales_payment_status_allowed": {
+          "name": "sales_payment_status_allowed",
+          "value": "\"sales\".\"payment_status\" IN ('paid', 'pending')"
+        },
+        "sales_shift_context_valid": {
+          "name": "sales_shift_context_valid",
+          "value": "(\n        \"sales\".\"business_date\" IS NULL AND \"sales\".\"shift\" IS NULL\n      ) OR (\n        \"sales\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"sales\".\"shift\" IN ('am', 'pm')\n      )"
+        },
+        "sales_checkout_method_allowed": {
+          "name": "sales_checkout_method_allowed",
+          "value": "\"sales\".\"checkout_method\" IN ('efectivo', 'tarjeta', 'transferencia', 'pendiente', 'colaborador')"
+        },
+        "sales_payment_state_valid": {
+          "name": "sales_payment_state_valid",
+          "value": "(\n        \"sales\".\"payment_status\" = 'pending'\n        AND \"sales\".\"payment_method\" IS NULL\n        AND \"sales\".\"paid_at\" IS NULL\n        AND \"sales\".\"settlement_id\" IS NULL\n        AND (\n          (\n            \"sales\".\"checkout_method\" = 'pendiente'\n            AND \"sales\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n          ) OR (\n            \"sales\".\"checkout_method\" = 'colaborador'\n            AND \"sales\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"sales\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"sales\".\"debt_note\" IS NULL\n              OR length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n          )\n        )\n      ) OR (\n        \"sales\".\"payment_status\" = 'paid'\n        AND \"sales\".\"payment_method\" IS NOT NULL\n        AND \"sales\".\"payment_method\" IN ('efectivo', 'tarjeta', 'debito', 'credito', 'transferencia')\n        AND \"sales\".\"paid_at\" IS NOT NULL\n        AND (\n          (\n            \"sales\".\"checkout_method\" IN ('efectivo', 'tarjeta', 'transferencia')\n            AND \"sales\".\"debt_note\" IS NULL\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n            AND \"sales\".\"settlement_id\" IS NULL\n          )\n          OR (\n            \"sales\".\"checkout_method\" = 'pendiente'\n            AND \"sales\".\"debt_note\" IS NOT NULL\n            AND length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            AND \"sales\".\"debtor_collaborator\" IS NULL\n            AND \"sales\".\"settlement_id\" IS NOT NULL\n          )\n          OR (\n            \"sales\".\"checkout_method\" = 'colaborador'\n            AND \"sales\".\"debtor_collaborator\" IS NOT NULL\n            AND length(trim(\"sales\".\"debtor_collaborator\")) BETWEEN 1 AND 100\n            AND (\n              \"sales\".\"debt_note\" IS NULL\n              OR length(trim(\"sales\".\"debt_note\")) BETWEEN 1 AND 500\n            )\n            AND \"sales\".\"settlement_id\" IS NOT NULL\n          )\n        )\n      )"
+        },
+        "sales_total_clp_positive": {
+          "name": "sales_total_clp_positive",
+          "value": "\"sales\".\"total_clp\" > 0"
+        }
+      }
+    },
+    "shift_sessions": {
+      "name": "shift_sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "business_date": {
+          "name": "business_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shift": {
+          "name": "shift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opening_cash_clp": {
+          "name": "opening_cash_clp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_revision": {
+          "name": "activity_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "active_slot": {
+          "name": "active_slot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "opened_at": {
+          "name": "opened_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closure_id": {
+          "name": "closure_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_shift_sessions_business_date_shift": {
+          "name": "uq_shift_sessions_business_date_shift",
+          "columns": [
+            "business_date",
+            "shift"
+          ],
+          "isUnique": true
+        },
+        "uq_shift_sessions_active_slot": {
+          "name": "uq_shift_sessions_active_slot",
+          "columns": [
+            "active_slot"
+          ],
+          "isUnique": true
+        },
+        "idx_shift_sessions_opened_at": {
+          "name": "idx_shift_sessions_opened_at",
+          "columns": [
+            "opened_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "shift_sessions_context_valid": {
+          "name": "shift_sessions_context_valid",
+          "value": "\"shift_sessions\".\"business_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n        AND \"shift_sessions\".\"shift\" IN ('am', 'pm')\n        AND length(trim(\"shift_sessions\".\"responsible\")) BETWEEN 1 AND 100"
+        },
+        "shift_sessions_counters_valid": {
+          "name": "shift_sessions_counters_valid",
+          "value": "\"shift_sessions\".\"opening_cash_clp\" >= 0 AND \"shift_sessions\".\"activity_revision\" >= 0"
+        },
+        "shift_sessions_state_valid": {
+          "name": "shift_sessions_state_valid",
+          "value": "(\n        \"shift_sessions\".\"status\" = 'open'\n        AND \"shift_sessions\".\"active_slot\" = 1\n        AND \"shift_sessions\".\"closed_at\" IS NULL\n        AND \"shift_sessions\".\"closure_id\" IS NULL\n      ) OR (\n        \"shift_sessions\".\"status\" = 'closed'\n        AND \"shift_sessions\".\"active_slot\" IS NULL\n        AND \"shift_sessions\".\"closed_at\" IS NOT NULL\n        AND \"shift_sessions\".\"closure_id\" IS NOT NULL\n      )"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

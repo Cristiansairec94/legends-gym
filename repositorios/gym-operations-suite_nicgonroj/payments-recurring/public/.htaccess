@@ -1,0 +1,35 @@
+Options -Indexes
+
+# Rutas privadas de ejemplo (fuera de public_html). No contienen credenciales.
+SetEnv DGYM_APP_ROOT /home/demo/apps/dgym-app
+SetEnv DGYM_PRIVATE_CONFIG_FILE /home/demo/private/dgym.php
+SetEnv DGYM_IDENTITY_HMAC_SECRET_FILE /home/demo/dgym-secrets/dgym-identity-hmac.secret
+
+# Seguro por defecto: exige alcance test declarado y mantiene cerrado el checkout.
+# Solo se cambia temporalmente a true durante una prueba sandbox supervisada.
+SetEnv APP_ENV development
+SetEnv DGYM_CHECKOUT_ENABLED false
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.demogym\.example(?::[0-9]+)?$ [NC]
+  RewriteRule ^ https://demogym.example%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  <Files "index.html">
+    Header always set Cache-Control "no-cache, max-age=0, must-revalidate"
+  </Files>
+</IfModule>
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+</IfModule>
