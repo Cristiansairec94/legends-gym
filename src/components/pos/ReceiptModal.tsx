@@ -261,6 +261,24 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
               <span style={{ fontFamily: 'monospace' }}>${sale.total.toFixed(2)} MXN</span>
             </div>
 
+            {sale.refundedAmount && sale.refundedAmount > 0 ? (
+              <div style={{ marginTop: '3px', padding: '3px', border: '1px dashed #000000', backgroundColor: '#f5f5f5' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', fontSize: '10.5px', color: '#000000' }}>
+                  <span>{sale.status === 'voided' ? 'ESTADO: ANULADO' : 'DEVOLUCIÓN PARCIAL:'}</span>
+                  <span style={{ fontFamily: 'monospace' }}>-${sale.refundedAmount.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10.5px', color: '#000000', marginTop: '1px' }}>
+                  <span>TOTAL NETO:</span>
+                  <span style={{ fontFamily: 'monospace' }}>${Math.max(0, sale.total - sale.refundedAmount).toFixed(2)} MXN</span>
+                </div>
+                {sale.voidReason && (
+                  <div style={{ fontSize: '8.5px', color: '#333333', marginTop: '1px' }}>
+                    Motivo: {sale.voidReason}
+                  </div>
+                )}
+              </div>
+            ) : null}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#333333', fontSize: '10px', marginTop: '2px' }}>
               <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod}):</span>
               <span style={{ fontFamily: 'monospace' }}>${sale.amountPaid.toFixed(2)}</span>

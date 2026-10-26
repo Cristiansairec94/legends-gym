@@ -111,6 +111,11 @@ interface GymContextType {
 
   // Sales History
   sales: Sale[];
+  refundSale: (
+    saleIdOrFolio: string,
+    reason: string,
+    itemsToRefund?: { productId: string; quantity: number }[]
+  ) => { success: boolean; message: string; refundedAmount: number; restoredUnits: number; updatedSale?: Sale };
   todaySalesTotal: number;
   todaySalesCount: number;
   todayStoreSalesTotal: number;
@@ -363,7 +368,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       } else if (msg.type === 'SALE_ADDED' && msg.sale) {
         setSales(prev => {
-          if (prev.some(s => s.id === msg.sale!.id)) return prev;
+          const exists = prev.some(s => s.id === msg.sale!.id);
+          if (exists) {
+            return prev.map(s => s.id === msg.sale!.id ? msg.sale! : s);
+          }
           return [msg.sale!, ...prev];
         });
       } else if (msg.type === 'EXPENSE_ADDED' && msg.expense) {
@@ -1458,6 +1466,216 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return newSale;
   };
 
+  // Devolución parcial o anulación total con restauración automática de stock (TemploGym + gym-operations-suite)
+  const refundSale = (
+    saleIdOrFolio: string,
+    reason: string,
+    itemsToRefund?: { productId: string; quantity: number }[]
+  ): { success: boolean; message: string; refundedAmount: number; restoredUnits: number; updatedSale?: Sale } => {
+    const cleanQuery = saleIdOrFolio.trim().toLowerCase();
+    const targetSale = sales.find(
+      s => s.id.toLowerCase() === cleanQuery || s.folio.toLowerCase() === cleanQuery
+    );
+
+    if (!targetSale) {
+      sounds.playBarcodeError();
+      return {
+        success: false,
+        message: `No se encontró ninguna venta con el folio o código "${saleIdOrFolio}".`,
+        refundedAmount: 0,
+        restoredUnits: 0,
+      };
+    }
+
+    if (targetSale.status === 'voided') {
+      sounds.playBarcodeError();
+      return {
+        success: false,
+        message: `El ticket ${targetSale.folio} ya fue anulado / devuelto en su totalidad.`,
+        refundedAmount: 0,
+        restoredUnits: 0,
+      };
+    }
+
+    const prevRefundedMap = new Map<string, number>();
+    (targetSale.refundedItems || []).forEach(ri => {
+      prevRefundedMap.set(ri.productId, (prevRefundedMap.get(ri.productId) || 0) + ri.quantity);
+    });
+
+    // Determine exact items to refund in this operation
+    const effectiveRefunds: {
+      productId: string;
+      productName: string;
+      quantity: number;
+      unitPrice: number;
+      subtotal: number;
+    }[] = [];
+
+    for (const item of targetSale.items) {
+      const alreadyRefunded = prevRefundedMap.get(item.product.id) || 0;
+      const maxRemaining = Math.max(0, item.quantity - alreadyRefunded);
+      if (maxRemaining <= 0) continue;
+
+      let requestedQty = maxRemaining;
+      if (itemsToRefund && itemsToRefund.length > 0) {
+        const matchReq = itemsToRefund.find(r => r.productId === item.product.id);
+        requestedQty = matchReq ? Math.min(maxRemaining, Math.max(0, Math.floor(matchReq.quantity))) : 0;
+      }
+
+      if (requestedQty > 0) {
+        effectiveRefunds.push({
+          productId: item.product.id,
+          productName: item.product.name,
+          quantity: requestedQty,
+          unitPrice: item.unitPrice,
+          subtotal: Math.round(requestedQty * item.unitPrice * 100) / 100,
+        });
+      }
+    }
+
+    if (effectiveRefunds.length === 0) {
+      sounds.playBarcodeError();
+      return {
+        success: false,
+        message: 'Selecciona al menos 1 artículo con cantidad disponible para devolver.',
+        refundedAmount: 0,
+        restoredUnits: 0,
+      };
+    }
+
+    const refundAmountThisOp =
+      Math.round(effectiveRefunds.reduce((sum, r) => sum + r.subtotal, 0) * 100) / 100;
+    let restoredUnits = 0;
+
+    // 1. Restaurar unidades al stock de almacén automáticamente
+    effectiveRefunds.forEach(refItem => {
+      if (!refItem.productId.startsWith('PLAN-')) {
+        adjustStock(refItem.productId, refItem.quantity);
+        restoredUnits += refItem.quantity;
+      }
+    });
+
+    // 2. Combinar historial de artículos devueltos en la venta
+    const combinedRefundsMap = new Map<
+      string,
+      { productId: string; productName: string; quantity: number; unitPrice: number; subtotal: number }
+    >();
+    (targetSale.refundedItems || []).forEach(ri => {
+      combinedRefundsMap.set(ri.productId, { ...ri });
+    });
+    effectiveRefunds.forEach(ri => {
+      const existing = combinedRefundsMap.get(ri.productId);
+      if (existing) {
+        const nextQty = existing.quantity + ri.quantity;
+        combinedRefundsMap.set(ri.productId, {
+          ...existing,
+          quantity: nextQty,
+          subtotal: Math.round(nextQty * existing.unitPrice * 100) / 100,
+        });
+      } else {
+        combinedRefundsMap.set(ri.productId, { ...ri });
+      }
+    });
+
+    const mergedRefundedItems = Array.from(combinedRefundsMap.values());
+    const totalOriginalQty = targetSale.items.reduce((sum, i) => sum + i.quantity, 0);
+    const totalRefundedQty = mergedRefundedItems.reduce((sum, i) => sum + i.quantity, 0);
+    const isFullyVoided = totalRefundedQty >= totalOriginalQty;
+    const totalRefundedAmount =
+      Math.round(((targetSale.refundedAmount || 0) + refundAmountThisOp) * 100) / 100;
+
+    const authorizedBy = currentUser
+      ? currentUser.fullName
+      : currentRole === 'admin'
+      ? 'Gerente / Admin'
+      : 'Cajero Recepción';
+    const cleanReason = reason.trim() || 'Devolución de productos en Punto de Venta';
+
+    const updatedSale: Sale = {
+      ...targetSale,
+      status: isFullyVoided ? 'voided' : 'partial_refund',
+      voidedAt: new Date().toISOString(),
+      voidedBy: authorizedBy,
+      voidReason: cleanReason,
+      refundedAmount: Math.min(targetSale.total, totalRefundedAmount),
+      refundedItems: mergedRefundedItems,
+    };
+
+    // 3. Actualizar lista de ventas y sincronizar
+    setSales(prev => prev.map(s => (s.id === updatedSale.id ? updatedSale : s)));
+    broadcastLocalSync({ type: 'SALE_ADDED', sale: updatedSale });
+    pushEntityChangeToServer('sales', 'update', updatedSale).catch(() => {});
+
+    // 4. Ajustar gasto acumulado del socio si aplica
+    if (targetSale.clientId) {
+      setMembers(prev =>
+        prev.map(m =>
+          m.id === targetSale.clientId
+            ? { ...m, totalSpentInStore: Math.max(0, (m.totalSpentInStore || 0) - refundAmountThisOp) }
+            : m
+        )
+      );
+    }
+
+    // 5. Descontar de la sesión de caja activa según el método de pago original
+    setCashSession(prev => {
+      const pm = targetSale.paymentMethod;
+      const isMembership = targetSale.saleType === 'membership';
+      const next: CashRegisterSession = {
+        ...prev,
+        totalSalesCash:
+          !isMembership && pm === 'cash'
+            ? Math.max(0, prev.totalSalesCash - refundAmountThisOp)
+            : prev.totalSalesCash,
+        totalSalesCard:
+          !isMembership && pm === 'card'
+            ? Math.max(0, prev.totalSalesCard - refundAmountThisOp)
+            : prev.totalSalesCard,
+        totalSalesTransfer:
+          !isMembership && pm === 'transfer'
+            ? Math.max(0, prev.totalSalesTransfer - refundAmountThisOp)
+            : prev.totalSalesTransfer,
+        totalMembershipsCash:
+          isMembership && pm === 'cash'
+            ? Math.max(0, prev.totalMembershipsCash - refundAmountThisOp)
+            : prev.totalMembershipsCash,
+        totalMembershipsCard:
+          isMembership && pm === 'card'
+            ? Math.max(0, prev.totalMembershipsCard - refundAmountThisOp)
+            : prev.totalMembershipsCard,
+        totalMembershipsTransfer:
+          isMembership && pm === 'transfer'
+            ? Math.max(0, (prev.totalMembershipsTransfer || 0) - refundAmountThisOp)
+            : prev.totalMembershipsTransfer || 0,
+        expectedCash:
+          pm === 'cash' ? Math.max(0, prev.expectedCash - refundAmountThisOp) : prev.expectedCash,
+      };
+      broadcastLocalSync({ type: 'CASH_SESSION_UPDATED', cashSession: next });
+      pushEntityChangeToServer('cashSession', 'update', next).catch(() => {});
+      return next;
+    });
+
+    // 6. Notificación de auditoría en el sistema
+    addNotification({
+      title: isFullyVoided ? `Ticket Anulado (${targetSale.folio})` : `Devolución Parcial (${targetSale.folio})`,
+      message: `Se reembolsaron $${refundAmountThisOp.toFixed(2)} (${restoredUnits} pza(s) devueltas al almacén). Motivo: ${cleanReason}.`,
+      type: 'warning',
+      targetTab: 'pos',
+      actionLabel: 'Ver POS',
+    });
+
+    sounds.playCheckoutSuccess();
+    return {
+      success: true,
+      message: isFullyVoided
+        ? `Venta ${targetSale.folio} anulada y ${restoredUnits} unidad(es) restauradas al stock.`
+        : `Devolución parcial en ${targetSale.folio} procesada ($${refundAmountThisOp.toFixed(2)}) y ${restoredUnits} unidad(es) restauradas al stock.`,
+      refundedAmount: refundAmountThisOp,
+      restoredUnits,
+      updatedSale,
+    };
+  };
+
   // Biometric Turnstile Access
   const verifyBiometricAccess = (biometricQuery: string): { 
     granted: boolean; 
@@ -1928,16 +2146,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const lowStockProductsCount = products.filter(p => p.stock <= p.minStock).length;
   
   const todaySales = sales.filter(s => s.timestamp.startsWith(todayStr));
-  const todaySalesTotal = todaySales.reduce((acc, s) => acc + s.total, 0);
-  const todaySalesCount = todaySales.length;
+  const todaySalesTotal = todaySales.reduce(
+    (acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)),
+    0
+  );
+  const todaySalesCount = todaySales.filter(s => s.status !== 'voided').length;
 
   const todayStoreSalesTotal = todaySales
     .filter(s => s.saleType !== 'membership')
-    .reduce((acc, s) => acc + s.total, 0);
+    .reduce((acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)), 0);
 
   const todayMembershipsSalesTotal = todaySales
     .filter(s => s.saleType === 'membership')
-    .reduce((acc, s) => acc + s.total, 0);
+    .reduce((acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)), 0);
 
   return (
     <GymContext.Provider value={{
@@ -1987,6 +2208,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       cartItemsCount,
       processSale,
       sales,
+      refundSale,
       todaySalesTotal,
       todaySalesCount,
       todayStoreSalesTotal,

@@ -3,6 +3,7 @@ import { useGym } from '../../context/GymContext';
 import { ProductCard } from './ProductCard';
 import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
+import { PosSalesHistoryModal } from './PosSalesHistoryModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
 import posBanner from '../../assets/pos-banner.jpg';
 import { Sale, PaymentMethod, Product } from '../../types';
@@ -27,7 +28,8 @@ import {
   Package,
   X,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  RotateCcw
 } from 'lucide-react';
 
 interface PosTerminalProps {
@@ -47,7 +49,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     cartTotal, 
     cartItemsCount, 
     processSale, 
-    members
+    members,
+    todaySalesCount
   } = useGym();
 
   const [search, setSearch] = useState('');
@@ -66,6 +69,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   // Modals
   const [showMovementsModal, setShowMovementsModal] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [salesHistoryModalTab, setSalesHistoryModalTab] = useState<'today' | 'returns' | null>(null);
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
 
   // Barcode Scanner & Real-time Feedback State
@@ -219,7 +223,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't intercept if blocking modals are currently open
-      if (showMovementsModal || showAddClientModal || completedSale) {
+      if (showMovementsModal || showAddClientModal || completedSale || salesHistoryModalTab !== null) {
         return;
       }
 
@@ -272,7 +276,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [showMovementsModal, showAddClientModal, completedSale, handleProductScanned]);
+  }, [showMovementsModal, showAddClientModal, completedSale, salesHistoryModalTab, handleProductScanned]);
 
   // Barcode handler from manual input or form submit
   const handleBarcodeSubmit = (e?: React.FormEvent) => {
@@ -356,6 +360,22 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               $
             </span>
             <span>Movimientos</span>
+          </button>
+
+          {/* 🔄 Tickets / Devoluciones Button (TemploGym + gym-operations-suite) */}
+          <button
+            type="button"
+            onClick={() => setSalesHistoryModalTab('today')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/35 hover:border-amber-500/60 text-amber-300 hover:text-amber-200 text-xs sm:text-sm font-extrabold transition-all shadow-sm shrink-0 active:scale-95"
+            title="Ver tickets cobrados hoy, reimprimir recibos o procesar devoluciones con restauración de stock"
+          >
+            <RotateCcw className="w-4 h-4 text-amber-400 stroke-[2.5]" />
+            <span>Tickets / Devoluciones</span>
+            {todaySalesCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-black font-mono font-black text-[10px] leading-none">
+                {todaySalesCount}
+              </span>
+            )}
           </button>
 
           {/* 🔒 Cerrar Turno Button */}
@@ -947,6 +967,18 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       {/* Cash Movements Modal */}
       {showMovementsModal && (
         <CashMovementsModal onClose={() => setShowMovementsModal(false)} />
+      )}
+
+      {/* Sales History & Returns Modal (TemploGym + gym-operations-suite) */}
+      {salesHistoryModalTab !== null && (
+        <PosSalesHistoryModal
+          initialTab={salesHistoryModalTab}
+          onClose={() => setSalesHistoryModalTab(null)}
+          onReprintSale={(sale) => {
+            setSalesHistoryModalTab(null);
+            setCompletedSale(sale);
+          }}
+        />
       )}
 
       {/* Quick Add Client Modal */}
