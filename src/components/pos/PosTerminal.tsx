@@ -5,7 +5,7 @@ import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
 import { PosSalesHistoryModal } from './PosSalesHistoryModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
-import posBanner from '../../assets/pos-banner.jpg';
+import gymBg from '../../assets/gym-background.jpg';
 import { Sale, PaymentMethod, Product } from '../../types';
 import { sounds } from '../../services/audio';
 import { 
@@ -311,10 +311,28 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
-    <div className="h-full flex flex-col min-h-0 overflow-hidden space-y-2.5">
+    <div className="h-full relative rounded-3xl border border-white/[0.12] overflow-hidden shadow-2xl flex flex-col min-h-0 p-2.5 sm:p-3.5 space-y-2.5">
       
+      {/* Real Gym Background Wallpaper ("LEYENDS GYM • CLUB FITNESS" + Caminadoras) */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none rounded-3xl">
+        <img
+          src={gymBg}
+          alt="LEYENDS GYM CLUB FITNESS Background"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = '/gym-background.jpg';
+          }}
+          style={{
+            filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
+            objectPosition: 'center center',
+          }}
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/35 pointer-events-none" />
+        <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] pointer-events-none" />
+      </div>
+
       {/* 1. TOP UNIFIED HEADER BAR */}
-      <div className="bg-gradient-to-r from-[#14151e] via-[#121319] to-[#14151e] rounded-2xl border border-white/[0.08] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md shrink-0">
+      <div className="relative z-10 bg-[#14151e]/75 backdrop-blur-md rounded-2xl border border-white/[0.12] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg shrink-0">
         
         {/* Brand Logo & Subtitle */}
         <div className="flex items-center gap-3">
@@ -402,29 +420,15 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
       </div>
 
       {/* 2. UNIFIED WORKSPACE (Catálogo a la Izquierda + Ticket y Cobro a la Derecha) */}
-      <div className="flex-1 relative rounded-3xl border border-white/[0.1] overflow-hidden shadow-2xl bg-[#0a0b10] flex flex-col min-h-0">
-        
-        {/* Ambient 3D Gold Logo Watermark ("LEYENDS GYM • CLUB FITNESS") */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
-          <img 
-            src={posBanner} 
-            alt="LEYENDS GYM CLUB FITNESS"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = '/pos-banner.jpg';
-            }}
-            className="w-full h-full object-cover object-center opacity-20 filter brightness-75 contrast-125 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#090a0e] via-[#090a0e]/85 to-[#0b0c12]/90" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.12)_0%,rgba(0,0,0,0)_65%)]" />
-        </div>
+      <div className="relative z-10 flex-1 rounded-3xl overflow-hidden flex flex-col min-h-0">
 
         {/* TWO-COLUMN GRID WORKSPACE */}
-        <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3.5 p-3.5 sm:p-4 min-h-0 overflow-hidden items-stretch">
+        <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3.5 min-h-0 overflow-hidden items-stretch">
           
           {/* ============================================================== */}
           {/* LEFT COLUMN: Catálogo Visual & Escáner (Touch POS) (7 de 12)   */}
           {/* ============================================================== */}
-          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col min-h-0 bg-black/50 backdrop-blur-md rounded-2xl border border-white/[0.08] p-3.5 shadow-inner relative overflow-hidden">
+          <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 flex flex-col min-h-0 bg-black/45 backdrop-blur-sm rounded-2xl border border-white/[0.12] p-3.5 shadow-xl relative overflow-hidden">
             
             {/* Top Toolbar: Barcode & Product Search */}
             <div className="space-y-2.5 shrink-0 pb-3 border-b border-white/[0.06]">
@@ -546,7 +550,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* ============================================================== */}
           {/* RIGHT COLUMN: Ticket de Venta & Caja de Cobro (5 de 12)        */}
           {/* ============================================================== */}
-          <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#11121b]/98 via-[#0c0d15]/98 to-[#0a0b12]/98 backdrop-blur-2xl rounded-2xl border border-white/[0.1] p-3.5 sm:p-4 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#11121b]/75 via-[#0c0d15]/75 to-[#0a0b12]/80 backdrop-blur-md rounded-2xl border border-white/[0.14] p-3.5 sm:p-4 shadow-2xl relative overflow-hidden">
             
             {/* Top: Customer Selection Dropdown (ActioLift Pattern) */}
             <div ref={clientSearchRef} className="relative shrink-0 space-y-1.5 z-30">
