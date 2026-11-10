@@ -38,8 +38,6 @@ export const LoginScreen: React.FC = () => {
   const [showPinPad, setShowPinPad] = useState(false);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showDemoHints, setShowDemoHints] = useState(false);
-  const [requiresSupervisorOverride, setRequiresSupervisorOverride] = useState(false);
-  const [supervisorOverridePin, setSupervisorOverridePin] = useState('');
 
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,44 +77,33 @@ export const LoginScreen: React.FC = () => {
       return;
     }
 
-    if (requiresSupervisorOverride && !supervisorOverridePin.trim()) {
-      setErrorMessage('Ingresa el PIN o contraseña del Supervisor/Administrador para autorizar el ingreso fuera de turno.');
-      return;
-    }
-
     setIsLoading(true);
 
     setTimeout(() => {
-      const result = login(
-        identifier,
-        password,
-        requiresSupervisorOverride ? supervisorOverridePin : undefined
-      );
-      setIsLoading(false);
+      try {
+        const result = login(identifier, password);
+        setIsLoading(false);
 
-      if (result.success) {
-        setIsSuccess(true);
-        setRequiresSupervisorOverride(false);
-        setSupervisorOverridePin('');
-        confetti({
-          particleCount: 50,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#FFFFFF', '#E4E4E7', '#A1A1AA', '#71717A'],
-        });
-      } else {
-        setErrorMessage(result.message || 'Credenciales incorrectas');
-        if (result.requiresSupervisorOverride) {
-          setRequiresSupervisorOverride(true);
-          setSupervisorOverridePin('');
+        if (result.success) {
+          clearSecurityAlert();
+          setIsSuccess(true);
+          confetti({
+            particleCount: 50,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#FFFFFF', '#E4E4E7', '#A1A1AA', '#71717A'],
+          });
         } else {
-          setRequiresSupervisorOverride(false);
-          setSupervisorOverridePin('');
+          setErrorMessage(result.message || 'Credenciales incorrectas');
           setPassword('');
+          if (result.lockedOut && result.lockoutUntil) {
+            setLockoutSeconds(Math.ceil((result.lockoutUntil - Date.now()) / 1000));
+          }
         }
-        if (result.lockedOut && result.lockoutUntil) {
-          setLockoutSeconds(Math.ceil((result.lockoutUntil - Date.now()) / 1000));
-        }
+      } catch (err: any) {
+        setIsLoading(false);
+        setErrorMessage('Error al procesar el inicio de sesión. Por favor reintenta.');
+        console.error('Error during login:', err);
       }
     }, 350);
   };
@@ -126,8 +113,6 @@ export const LoginScreen: React.FC = () => {
     setSelectedEmpId(empId);
     setIdentifier(empEmail);
     setPassword('');
-    setRequiresSupervisorOverride(false);
-    setSupervisorOverridePin('');
     setErrorMessage('');
     setTimeout(() => {
       passwordInputRef.current?.focus();
@@ -136,13 +121,6 @@ export const LoginScreen: React.FC = () => {
 
   const handlePinPadDigit = (digit: string) => {
     if (isLoading || isSuccess || lockoutSeconds > 0) return;
-    if (requiresSupervisorOverride) {
-      if (supervisorOverridePin.length < 12) {
-        setSupervisorOverridePin((prev) => prev + digit);
-        setErrorMessage('');
-      }
-      return;
-    }
     if (password.length < 12) {
       setPassword((prev) => prev + digit);
       setErrorMessage('');
@@ -150,10 +128,6 @@ export const LoginScreen: React.FC = () => {
   };
 
   const handlePinPadBackspace = () => {
-    if (requiresSupervisorOverride) {
-      setSupervisorOverridePin((prev) => prev.slice(0, -1));
-      return;
-    }
     setPassword((prev) => prev.slice(0, -1));
   };
 
@@ -286,12 +260,8 @@ export const LoginScreen: React.FC = () => {
 
               {/* Error Message Alert */}
               {errorMessage && lockoutSeconds === 0 && (
-                <div className={`mb-5 p-3.5 rounded-xl border text-xs flex items-center gap-2.5 animate-shake ${
-                  requiresSupervisorOverride
-                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
-                    : 'bg-red-500/15 border-red-500/40 text-red-300'
-                }`}>
-                  <AlertCircle className={`w-4 h-4 shrink-0 ${requiresSupervisorOverride ? 'text-amber-400' : 'text-red-400'}`} />
+                <div className="mb-5 p-3.5 rounded-xl border border-red-500/40 bg-red-500/15 text-red-300 text-xs flex items-center gap-2.5 animate-shake">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
                   <span className="font-semibold">{errorMessage}</span>
                 </div>
               )}
@@ -322,8 +292,6 @@ export const LoginScreen: React.FC = () => {
                       onChange={(e) => {
                         setIdentifier(e.target.value);
                         setSelectedEmpId(null);
-                        setRequiresSupervisorOverride(false);
-                        setSupervisorOverridePin('');
                       }}
                       placeholder="ej. roberto.garza@legendsgym.com"
                       autoFocus
@@ -386,54 +354,11 @@ export const LoginScreen: React.FC = () => {
                   )}
                 </div>
 
-                {/* Shift-Based Access Control: Supervisor Override Input */}
-                {requiresSupervisorOverride && (
-                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 space-y-2.5 animate-fade-in">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-amber-400 font-black text-xs uppercase tracking-wider">
-                        <ShieldAlert className="w-4 h-4" />
-                        <span>Autorización de Turno por Supervisor</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRequiresSupervisorOverride(false);
-                          setSupervisorOverridePin('');
-                          setErrorMessage('');
-                        }}
-                        className="text-[10px] text-zinc-400 hover:text-white underline"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-amber-200/80 leading-relaxed">
-                      Este operador intenta ingresar fuera de su horario asignado. Ingresa el <strong>PIN o Contraseña de un Administrador</strong> para autorizar el acceso extraordinario:
-                    </p>
-                    <div className="relative">
-                      <KeyRound className="w-4 h-4 text-amber-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="password"
-                        value={supervisorOverridePin}
-                        onChange={(e) => setSupervisorOverridePin(e.target.value)}
-                        onCopy={(e) => e.preventDefault()}
-                        onPaste={(e) => e.preventDefault()}
-                        placeholder="PIN de Administrador / Gerente (ej. 1234)"
-                        autoFocus
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-amber-500/40 text-white text-xs font-mono tracking-widest focus:outline-none focus:border-amber-400"
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {/* Optional On-Screen Numeric PIN Pad */}
                 {showPinPad && (
                   <div className="p-3.5 rounded-2xl bg-gym-surface/60 border border-gym-border space-y-2">
                     <div className="flex items-center justify-between text-[11px] text-gym-muted mb-1">
-                      <span>
-                        {requiresSupervisorOverride
-                          ? 'Teclado Táctil (Capturando PIN de Supervisor)'
-                          : 'Teclado Táctil de Seguridad'}
-                      </span>
+                      <span>Teclado Táctil de Seguridad</span>
                       <span>Copia/Pega bloqueado</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -450,9 +375,7 @@ export const LoginScreen: React.FC = () => {
                       ))}
                       <button
                         type="button"
-                        onClick={() =>
-                          requiresSupervisorOverride ? setSupervisorOverridePin('') : setPassword('')
-                        }
+                        onClick={() => setPassword('')}
                         disabled={lockoutSeconds > 0}
                         className="py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-xs font-bold text-red-300 transition-all"
                       >
@@ -493,11 +416,6 @@ export const LoginScreen: React.FC = () => {
                     <>
                       <Lock className="w-4 h-4" />
                       <span>Terminal Bloqueada ({lockoutSeconds}s)</span>
-                    </>
-                  ) : requiresSupervisorOverride ? (
-                    <>
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>Autorizar Turno con PIN de Supervisor</span>
                     </>
                   ) : (
                     <>
@@ -629,7 +547,7 @@ export const LoginScreen: React.FC = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    <span><strong className="text-gray-200">Control de Turno & PIN Supervisor:</strong> Validación horaria y aval gerencial en bajas.</span>
+                    <span><strong className="text-gray-200">PIN de Supervisor:</strong> Autorización requerida para operaciones críticas (bajas y reseteos).</span>
                   </li>
                 </ul>
 

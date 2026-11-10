@@ -44,14 +44,31 @@ const KEYS = {
   EXPENSES: 'legends_expenses_v1',
   NOTIFICATIONS: 'legends_notifications_v1',
   LAST_SYNC: 'legends_last_sync_v1',
-  CURRENT_USER: 'legends_current_user_v1',
-  TAB_SESSION_USER: 'legends_tab_session_user_v1',
-  TAB_SESSION_TOKEN: 'legends_tab_session_token_v1',
-  ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v1',
-  SECURITY_ALERT: 'legends_security_alert_v1',
-  SECURITY_AUDIT: 'legends_security_audit_v1',
-  LOGIN_LOCKOUT: 'legends_login_lockout_v1'
+  CURRENT_USER: 'legends_current_user_v3',
+  TAB_SESSION_USER: 'legends_tab_session_user_v3',
+  TAB_SESSION_TOKEN: 'legends_tab_session_token_v3',
+  ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v3',
+  SECURITY_ALERT: 'legends_security_alert_v3',
+  SECURITY_AUDIT: 'legends_security_audit_v3',
+  LOGIN_LOCKOUT: 'legends_login_lockout_v3'
 };
+
+// Purge any legacy session/alert keys so stale alerts never persist
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('legends_security_alert_v1');
+    localStorage.removeItem('legends_security_alert_v2');
+    localStorage.removeItem('legends_security_alert_v3');
+    localStorage.removeItem('legends_active_session_lock_v1');
+    localStorage.removeItem('legends_active_session_lock_v2');
+    localStorage.removeItem('legends_current_user_v1');
+    localStorage.removeItem('legends_login_lockout_v1');
+    sessionStorage.removeItem('legends_tab_session_user_v1');
+    sessionStorage.removeItem('legends_tab_session_token_v1');
+  } catch {
+    // ignore
+  }
+}
 
 
 export const storage = {
@@ -294,80 +311,11 @@ export const storage = {
         return null;
       }
 
-      const rawLock = localStorage.getItem(KEYS.ACTIVE_SESSION_LOCK);
-      const legacyUser = localStorage.getItem(KEYS.CURRENT_USER);
-      const tabToken = sessionStorage.getItem(KEYS.TAB_SESSION_TOKEN);
       const tabUserRaw = sessionStorage.getItem(KEYS.TAB_SESSION_USER);
-      const winName = window.name || '';
-
-      // If legacy localStorage session exists without a valid tab lock, kill it immediately
-      if (legacyUser && !rawLock) {
-        localStorage.removeItem(KEYS.CURRENT_USER);
+      if (tabUserRaw) {
+        return JSON.parse(tabUserRaw);
       }
 
-      if (rawLock) {
-        const lock = JSON.parse(rawLock);
-        const isSameTab =
-          Boolean(tabToken) &&
-          Boolean(tabUserRaw) &&
-          tabToken === lock.token &&
-          winName === lock.token;
-
-        if (!isSameTab) {
-          // Security Violation: URL was copied & pasted into a new tab or duplicated!
-          const breachMsg =
-            '⚠️ Sesión cerrada por seguridad: Se detectó el intento de copiar y abrir el enlace en otra pestaña o ventana. Por protección del sistema, debes iniciar sesión nuevamente.';
-          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
-          localStorage.removeItem(KEYS.CURRENT_USER);
-          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
-          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
-          window.name = '';
-          this.setSecurityAlert(breachMsg);
-          this.addSecurityAuditLog({
-            type: 'MULTI_TAB_BREACH',
-            userName: lock.userName || 'Usuario Activo',
-            role: lock.role,
-            details: 'Cierre forzoso: Intento de abrir enlace copiado en nueva pestaña/ventana.'
-          });
-          return null;
-        }
-
-        const tabUser: Employee = JSON.parse(tabUserRaw!);
-        const isSignatureValid = verifySessionSignature(
-          tabUser.id,
-          tabUser.role,
-          tabUser.email,
-          lock.token,
-          lock.signature
-        );
-
-        if (!isSignatureValid || tabUser.role !== lock.role || tabUser.id !== lock.userId) {
-          const tamperMsg =
-            '🚨 Alerta Crítica: Se detectó manipulación de sesión o intento de alteración de permisos en el navegador (DevTools). La sesión ha sido revocada.';
-          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
-          localStorage.removeItem(KEYS.CURRENT_USER);
-          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
-          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
-          window.name = '';
-          this.setSecurityAlert(tamperMsg);
-          this.addSecurityAuditLog({
-            type: 'SESSION_TAMPER',
-            userName: lock.userName || tabUser.fullName,
-            role: lock.role,
-            details: 'Firma criptográfica inválida: Intento de alterar sesión o rol desde consola F12.'
-          });
-          return null;
-        }
-
-        return tabUser;
-      }
-
-      // Clean any orphan tab storage if global lock was cleared
-      if (tabToken || tabUserRaw) {
-        sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
-        sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
-        window.name = '';
-      }
       return null;
     } catch {
       return null;
@@ -383,7 +331,7 @@ export const storage = {
       if (typeof window === 'undefined') return;
       if (user) {
         let token = sessionStorage.getItem(KEYS.TAB_SESSION_TOKEN);
-        if (!token || window.name !== token) {
+        if (!token) {
           token = `SESS_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
         }
         const signature = signSessionPayload(user.id, user.role, user.email, token);
@@ -394,7 +342,6 @@ export const storage = {
         };
         sessionStorage.setItem(KEYS.TAB_SESSION_USER, JSON.stringify(sanitizedSessionUser));
         sessionStorage.setItem(KEYS.TAB_SESSION_TOKEN, token);
-        window.name = token;
         localStorage.setItem(
           KEYS.ACTIVE_SESSION_LOCK,
           JSON.stringify({
@@ -406,11 +353,10 @@ export const storage = {
             issuedAt: Date.now()
           })
         );
-        localStorage.removeItem(KEYS.CURRENT_USER);
+        localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(sanitizedSessionUser));
       } else {
         sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
         sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
-        window.name = '';
         localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
         localStorage.removeItem(KEYS.CURRENT_USER);
       }
