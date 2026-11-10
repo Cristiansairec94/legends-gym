@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGym } from '../../context/GymContext';
 import { storage } from '../../services/storage';
 import { 
-  ShieldCheck, 
   Lock, 
   Mail, 
   Eye, 
@@ -13,7 +12,6 @@ import {
   CheckCircle2, 
   Users, 
   Shield,
-  KeyRound,
   ShieldAlert,
   Timer,
   History,
@@ -37,7 +35,6 @@ export const LoginScreen: React.FC = () => {
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const [showPinPad, setShowPinPad] = useState(false);
   const [showAuditModal, setShowAuditModal] = useState(false);
-  const [showDemoHints, setShowDemoHints] = useState(false);
 
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
@@ -513,52 +510,6 @@ export const LoginScreen: React.FC = () => {
                     );
                   })}
                 </div>
-              </div>
-
-              {/* Active Security Shields Summary Card */}
-              <div className="p-4 rounded-2xl bg-gym-card/60 border border-gym-border text-xs space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-white font-bold">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>Blindaje de Seguridad Activo</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowDemoHints(!showDemoHints)}
-                    className="text-[10px] text-gym-muted hover:text-white underline flex items-center gap-1"
-                  >
-                    <KeyRound className="w-3 h-3" />
-                    <span>{showDemoHints ? 'Ocultar ayuda' : 'Ayuda de prueba'}</span>
-                  </button>
-                </div>
-
-                <ul className="space-y-1.5 text-[11px] text-gym-muted">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    <span><strong className="text-gray-200">Anti-Copia de Enlace:</strong> Abrir el link en otra pestaña cierra la sesión en ambas.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    <span><strong className="text-gray-200">Hash & Anti-DevTools (F12):</strong> Claves cifradas y firma criptográfica contra cambio de rol.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    <span><strong className="text-gray-200">Anti-Fuerza Bruta:</strong> Bloqueo de 30s al 3er intento fallido.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    <span><strong className="text-gray-200">PIN de Supervisor:</strong> Autorización requerida para operaciones críticas (bajas y reseteos).</span>
-                  </li>
-                </ul>
-
-                {showDemoHints && (
-                  <div className="mt-2 pt-2.5 border-t border-gym-border/80 text-[11px] text-gym-muted space-y-1">
-                    <p className="font-bold text-gray-300">Credenciales para entorno de evaluación:</p>
-                    <p>• Admin (Roberto): Clave <code className="text-white font-mono">admin123</code> | PIN <code className="text-white font-mono">1234</code></p>
-                    <p>• Recepción (Camila): Clave <code className="text-white font-mono">camila123</code> | PIN <code className="text-white font-mono">2222</code></p>
-                    <p>• Coach (Marcos): Clave <code className="text-white font-mono">coach123</code> | PIN <code className="text-white font-mono">3333</code></p>
-                  </div>
-                )}
               </div>
 
             </div>
