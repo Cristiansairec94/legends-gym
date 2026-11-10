@@ -480,9 +480,9 @@ export const storage = {
         }));
       }
       const parsed: Employee[] = JSON.parse(data);
-      return parsed.map((emp) => {
+      const mapped = parsed.map((emp) => {
         const initial = INITIAL_EMPLOYEES.find(
-          (ie) => ie.id === emp.id || ie.email.toLowerCase() === emp.email.toLowerCase()
+          (ie) => ie.id === emp.id || ie.email.toLowerCase() === emp.email.toLowerCase() || (emp.username && ie.username?.toLowerCase() === emp.username.toLowerCase())
         );
         return {
           ...emp,
@@ -491,6 +491,36 @@ export const storage = {
           username: emp.username || initial?.username || emp.email.split('@')[0],
         };
       });
+
+      // Ensure the master admin account (username: admin / password: admin) is ALWAYS present in the list
+      const hasAdminUser = mapped.some((e) => e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000');
+      if (!hasAdminUser) {
+        const adminFromInitial = INITIAL_EMPLOYEES.find((e) => e.username === 'admin') || INITIAL_EMPLOYEES[0];
+        mapped.unshift({
+          ...adminFromInitial,
+          username: adminFromInitial.username || 'admin',
+          password: hashSecret(adminFromInitial.password || 'admin'),
+          pin: hashSecret(adminFromInitial.pin || 'admin')
+        });
+        try {
+          localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(mapped));
+        } catch {}
+      } else {
+        // Guarantee admin user credentials and active status
+        const adminIndex = mapped.findIndex((e) => e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000');
+        if (adminIndex !== -1) {
+          mapped[adminIndex].role = 'admin';
+          mapped[adminIndex].status = 'active';
+          if (!mapped[adminIndex].password || mapped[adminIndex].password === '1234') {
+            mapped[adminIndex].password = hashSecret('admin');
+          }
+          if (!mapped[adminIndex].pin) {
+            mapped[adminIndex].pin = hashSecret('admin');
+          }
+        }
+      }
+
+      return mapped;
     } catch {
       return INITIAL_EMPLOYEES;
     }

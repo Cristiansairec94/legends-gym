@@ -524,6 +524,23 @@ let store = {
   },
   "employees": [
     {
+      "id": "EMP-000",
+      "fullName": "Administrador Principal",
+      "documentId": "10000001",
+      "email": "admin@legendsgym.com",
+      "phone": "+52 55 1234 5678",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+      "role": "admin",
+      "username": "admin",
+      "password": "lg_hash$f44bd0d6e103381f03b7ac16960057eb",
+      "pin": "lg_hash$f44bd0d6e103381f03b7ac16960057eb",
+      "jobTitle": "Super Administrador del Sistema",
+      "shift": "Turno Completo",
+      "status": "active",
+      "hireDate": "2023-01-01",
+      "salaryMonthly": 35000
+    },
+    {
       "id": "EMP-001",
       "fullName": "Roberto Garza Vega",
       "documentId": "29810452",

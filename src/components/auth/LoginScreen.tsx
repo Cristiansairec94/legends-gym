@@ -114,10 +114,10 @@ export const LoginScreen: React.FC = () => {
     }, 350);
   };
 
-  const handleSelectOperator = (empId: string, empEmail: string) => {
+  const handleSelectOperator = (empId: string, empIdentifier: string) => {
     if (isLoading || isSuccess || lockoutSeconds > 0) return;
     setSelectedEmpId(empId);
-    setIdentifier(empEmail);
+    setIdentifier(empIdentifier);
     setPassword('');
     setErrorMessage('');
     setTimeout(() => {
@@ -155,6 +155,7 @@ export const LoginScreen: React.FC = () => {
       selectedEmpId === emp.id ||
       (identifier.trim() !== '' &&
         (identifier.toLowerCase() === emp.email.toLowerCase() ||
+          identifier.trim().toLowerCase().replace(/^@/, '') === (emp.username || '').toLowerCase() ||
           (emp.username && identifier.toLowerCase() === emp.username.toLowerCase())))
   );
 
@@ -391,7 +392,7 @@ export const LoginScreen: React.FC = () => {
                             setIdentifier(e.target.value);
                             setSelectedEmpId(null);
                           }}
-                          placeholder="ej. admin.roberto o correo electrónico"
+                          placeholder="ej. admin o correo electrónico"
                           autoFocus
                           autoComplete="off"
                           disabled={isLoading || isSuccess || lockoutSeconds > 0}
@@ -608,7 +609,7 @@ export const LoginScreen: React.FC = () => {
                         <button
                           key={emp.id}
                           type="button"
-                          onClick={() => handleSelectOperator(emp.id, emp.email)}
+                          onClick={() => handleSelectOperator(emp.id, emp.username || emp.email)}
                           disabled={isLoading || isSuccess || lockoutSeconds > 0}
                           className={`w-full text-left p-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 group cursor-pointer ${
                             isSelected

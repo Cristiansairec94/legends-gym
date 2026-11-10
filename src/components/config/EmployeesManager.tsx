@@ -480,6 +480,10 @@ export const EmployeesManager: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
+                    if (emp.id === 'EMP-000' || emp.username?.toLowerCase() === 'admin') {
+                      alert('El usuario Administrador Principal no puede ser eliminado ya que es la cuenta maestra de acceso.');
+                      return;
+                    }
                     if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
                       deleteEmployee(emp.id);
                     }
