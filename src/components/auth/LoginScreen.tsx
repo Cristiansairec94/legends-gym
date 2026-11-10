@@ -11,18 +11,16 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Users, 
-  Shield,
-  ShieldAlert,
-  Timer,
-  History,
-  X,
-  Delete,
-  Check
+  ShieldAlert, 
+  Timer, 
+  X, 
+  Delete, 
+  Check 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const LoginScreen: React.FC = () => {
-  const { login, employees, securityAlert, clearSecurityAlert, securityAuditLogs } = useGym();
+  const { login, employees, securityAlert, clearSecurityAlert } = useGym();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +32,6 @@ export const LoginScreen: React.FC = () => {
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const [showPinPad, setShowPinPad] = useState(false);
-  const [showAuditModal, setShowAuditModal] = useState(false);
 
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,28 +156,6 @@ export const LoginScreen: React.FC = () => {
               </span>
             </div>
             <p className="text-[10px] text-gym-muted font-medium">Sistema Integral de Operaciones & Control</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setShowAuditModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-card/80 hover:bg-gym-surface border border-gym-border text-xs text-gray-300 transition-colors"
-            title="Ver bitácora de auditoría de seguridad"
-          >
-            <History className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Bitácora de Seguridad</span>
-            {securityAuditLogs.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px] font-bold text-white">
-                {securityAuditLogs.length}
-              </span>
-            )}
-          </button>
-
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 font-semibold">
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Blindaje Anti-Multitab & Firma Activos</span>
           </div>
         </div>
       </header>
@@ -517,82 +492,6 @@ export const LoginScreen: React.FC = () => {
           </div>
         </div>
       </main>
-
-      {/* Security Audit Log Modal */}
-      {showAuditModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-gym-card border border-gym-border rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-gym-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <History className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-black text-white uppercase tracking-wide">
-                  Bitácora de Auditoría de Seguridad
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAuditModal(false)}
-                className="p-1 rounded-lg text-gym-muted hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-4 max-h-96 overflow-y-auto space-y-2.5">
-              {securityAuditLogs.length === 0 ? (
-                <p className="text-xs text-gym-muted text-center py-8">
-                  No hay eventos de seguridad registrados todavía.
-                </p>
-              ) : (
-                securityAuditLogs.map((log) => {
-                  const isDanger =
-                    log.type === 'MULTI_TAB_BREACH' ||
-                    log.type === 'SESSION_TAMPER' ||
-                    log.type === 'BRUTE_FORCE_LOCK' ||
-                    log.type === 'SHIFT_BLOCKED' ||
-                    log.type === 'LOGIN_FAILED';
-                  const isSuccessLog =
-                    log.type === 'LOGIN_SUCCESS' || log.type === 'SUPERVISOR_AUTH';
-
-                  return (
-                    <div
-                      key={log.id}
-                      className={`p-3 rounded-xl border text-xs ${
-                        isDanger
-                          ? 'bg-red-500/10 border-red-500/30 text-red-200'
-                          : isSuccessLog
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-                          : 'bg-gym-surface border-gym-border text-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-black text-[10px] uppercase tracking-wider">
-                          {log.type === 'MULTI_TAB_BREACH' && '🚨 Violación Multi-Pestaña'}
-                          {log.type === 'SESSION_TAMPER' && '🚨 Manipulación DevTools (F12)'}
-                          {log.type === 'BRUTE_FORCE_LOCK' && '🔒 Bloqueo Fuerza Bruta'}
-                          {log.type === 'SHIFT_BLOCKED' && '⏰ Bloqueo Fuera de Turno'}
-                          {log.type === 'SUPERVISOR_AUTH' && '🛡️ Aval de Supervisor'}
-                          {log.type === 'LOGIN_FAILED' && '⚠️ Intento Fallido'}
-                          {log.type === 'LOGIN_SUCCESS' && '✅ Acceso Autorizado'}
-                          {log.type === 'MANUAL_LOGOUT' && '👋 Cierre de Sesión Manual'}
-                        </span>
-                        <span className="text-[10px] opacity-75 font-mono">
-                          {new Date(log.timestamp).toLocaleTimeString('es-MX')}
-                        </span>
-                      </div>
-                      <p className="text-[11px] leading-snug">{log.details}</p>
-                      {(log.userName || log.userIdentifier) && (
-                        <p className="text-[10px] opacity-75 mt-1 font-mono">
-                          Usuario: {log.userName || log.userIdentifier}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="relative z-10 px-6 py-4 border-t border-white/5 text-center text-xs text-gym-muted">
