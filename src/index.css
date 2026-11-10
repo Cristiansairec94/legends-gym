@@ -40,6 +40,31 @@
   background: #ffffff;
 }
 
+/* Hide scrollbars cleanly on horizontal chip strips */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Ultra-refined dark gold scrollbar for POS catalog & ticket panels */
+.pos-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.pos-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pos-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+}
+.pos-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.55);
+}
+
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
