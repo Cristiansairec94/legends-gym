@@ -203,43 +203,57 @@ export const LoginScreen: React.FC = () => {
         }}
       />
 
-      {/* Top Executive Header */}
-      <header className="relative z-10 px-6 sm:px-10 py-4 flex items-center justify-between border-b border-white/[0.06] bg-black/25 backdrop-blur-md">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-black/95 border border-amber-500/40 p-1.5 flex items-center justify-center shadow-[0_0_24px_rgba(245,158,11,0.2)] ring-1 ring-white/5">
-            <img src="/logo.png" alt="LEYENDS Logo" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-lg sm:text-xl tracking-wider text-white">
+      {/* Floating Live Terminal Clock (Top-Right on Desktop, keeps Brand Crown 100% centered) */}
+      <div className="hidden lg:flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-inner absolute top-5 right-7 z-20">
+        <Clock className="w-3.5 h-3.5 text-amber-400" />
+        <span className="text-xs font-black text-white font-mono tabular-nums tracking-wider">
+          {formattedTime}
+        </span>
+        <span className="w-1 h-1 rounded-full bg-white/20" />
+        <span className="text-[11px] font-semibold text-zinc-400 capitalize">
+          {formattedDate}
+        </span>
+      </div>
+
+      {/* Main Centered Portal */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-8">
+        <div className="w-full max-w-[980px] space-y-6">
+          {/* Centered Luxury Brand Crown */}
+          <div className="flex flex-col items-center text-center relative">
+            {/* Warm Gold Halo Behind Emblem */}
+            <div className="absolute -top-3 w-32 h-28 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Obsidian & Metallic Gold Crest Medallion */}
+            <div className="relative p-[1.5px] rounded-2xl bg-gradient-to-b from-amber-300/80 via-amber-500/35 to-white/10 shadow-[0_12px_38px_-6px_rgba(245,158,11,0.45)] transition-transform duration-300 hover:scale-105">
+              <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-[15px] bg-black flex items-center justify-center p-1.5 overflow-hidden relative">
+                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
+                <img
+                  src="/logo.png"
+                  alt="LEYENDS FITNESS GYM"
+                  className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.22)]"
+                />
+              </div>
+            </div>
+
+            {/* Centered Brand Wordmark & Gold Badge */}
+            <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2.5">
+              <span className="font-black text-2xl sm:text-3xl tracking-[0.16em] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-zinc-300 drop-shadow-[0_2px_12px_rgba(255,255,255,0.12)]">
                 LEYENDS
               </span>
-              <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-amber-400/10 text-amber-400 border border-amber-500/30 tracking-widest">
+              <span className="text-[10px] sm:text-[11px] uppercase font-black tracking-[0.18em] px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/25 via-amber-400/15 to-amber-500/25 text-amber-300 border border-amber-400/45 shadow-[0_0_22px_-4px_rgba(245,158,11,0.35)]">
                 FITNESS GYM
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400 font-medium tracking-wide">
-              Sistema Integral de Operaciones & Control
-            </p>
+
+            {/* Ornamental Gold Hairlines + Subtitle */}
+            <div className="mt-2 flex items-center justify-center gap-3">
+              <span className="h-[1px] w-8 sm:w-14 bg-gradient-to-r from-transparent via-amber-500/50 to-amber-400/85" />
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-zinc-300/90 font-bold">
+                Sistema Integral de Operaciones &amp; Control
+              </p>
+              <span className="h-[1px] w-8 sm:w-14 bg-gradient-to-l from-transparent via-amber-500/50 to-amber-400/85" />
+            </div>
           </div>
-        </div>
-
-        {/* Live Terminal Clock Pill */}
-        <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-inner">
-          <Clock className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-xs font-black text-white font-mono tabular-nums tracking-wider">
-            {formattedTime}
-          </span>
-          <span className="w-1 h-1 rounded-full bg-white/20" />
-          <span className="text-[11px] font-semibold text-zinc-400 capitalize">
-            {formattedDate}
-          </span>
-        </div>
-      </header>
-
-      {/* Main Centered Portal */}
-      <main className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-[980px] space-y-4">
           {/* Security Alert Banner (Only visible if an active multi-tab violation occurs) */}
           {securityAlert && (
             <div className="p-4 rounded-2xl bg-red-950/70 backdrop-blur-xl border border-red-500/50 text-red-100 shadow-[0_12px_40px_rgba(239,68,68,0.25)] flex items-start justify-between gap-3 animate-shake">
