@@ -204,15 +204,19 @@ export const LoginScreen: React.FC = () => {
       />
 
       {/* Floating Live Terminal Clock (Top-Right on Desktop, keeps Brand Crown 100% centered) */}
-      <div className="hidden lg:flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-inner absolute top-5 right-7 z-20">
-        <Clock className="w-3.5 h-3.5 text-amber-400" />
-        <span className="text-xs font-black text-white font-mono tabular-nums tracking-wider">
-          {formattedTime}
-        </span>
-        <span className="w-1 h-1 rounded-full bg-white/20" />
-        <span className="text-[11px] font-semibold text-zinc-400 capitalize">
-          {formattedDate}
-        </span>
+      <div className="hidden lg:flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-[#101016]/85 border border-amber-500/25 backdrop-blur-xl shadow-[0_14px_36px_-8px_rgba(0,0,0,0.85),0_0_24px_-6px_rgba(245,158,11,0.18)] absolute top-6 right-8 z-20">
+        <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+          <Clock className="w-5 h-5 text-amber-400" />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xl font-black text-white font-mono tabular-nums tracking-wider leading-none">
+            {formattedTime}
+          </span>
+          <span className="h-5 w-[1px] bg-white/15" />
+          <span className="text-sm font-bold text-zinc-300 capitalize tracking-wide leading-none">
+            {formattedDate}
+          </span>
+        </div>
       </div>
 
       {/* Main Centered Portal */}
