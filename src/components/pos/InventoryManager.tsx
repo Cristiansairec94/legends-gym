@@ -355,7 +355,7 @@ export const InventoryManager: React.FC = () => {
               )}
             </div>
             <p className="text-[11px] text-zinc-400 hidden sm:block">
-              Existencias en vivo, costos, márgenes y ajuste rápido sin desplazamientos largos.
+              Existencias en vivo, costos, precios y ajuste rápido sin desplazamientos largos.
             </p>
           </div>
         </div>
@@ -413,7 +413,7 @@ export const InventoryManager: React.FC = () => {
               Valor Precio Venta
             </span>
             <span className="text-[11px] text-zinc-400 block truncate">
-              Margen prom. <strong className="text-amber-300 font-mono">{metrics.avgMarginPct}%</strong>
+              Ingreso proyectado
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -567,7 +567,6 @@ export const InventoryManager: React.FC = () => {
               <option value="name_asc">Nombre (A-Z)</option>
               <option value="stock_asc">Menor Stock</option>
               <option value="stock_desc">Mayor Stock</option>
-              <option value="margin_desc">Mayor Margen</option>
               <option value="price_desc">Mayor Precio</option>
             </select>
           </div>
@@ -598,7 +597,7 @@ export const InventoryManager: React.FC = () => {
               <tr>
                 <th className="py-2.5 px-3.5">Producto / Especificación</th>
                 <th className="py-2.5 px-3">Categoría</th>
-                <th className="py-2.5 px-3">Venta / Costo & Margen</th>
+                <th className="py-2.5 px-3">Costo / Venta</th>
                 <th className="py-2.5 px-3">Nivel de Stock</th>
                 <th className="py-2.5 px-3 text-center">Ajuste Rápido</th>
                 {currentRole === 'admin' && <th className="py-2.5 px-3.5 text-right">Acciones</th>}
@@ -635,9 +634,6 @@ export const InventoryManager: React.FC = () => {
                     badgeClass: 'bg-gym-surface text-zinc-300 border-gym-border',
                     dotClass: 'bg-zinc-400',
                   };
-
-                  const profit = p.price - p.costPrice;
-                  const marginPct = p.price > 0 ? Math.round((profit / p.price) * 100) : 0;
 
                   const targetHealthy = Math.max(p.minStock * 3, 15);
                   const stockBarPct = Math.min(
@@ -705,20 +701,11 @@ export const InventoryManager: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* Col 3: Compact Price / Cost / Margin / Scoop */}
+                      {/* Col 3: Compact Price / Cost / Scoop */}
                       <td className="py-2 px-3 font-mono">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-amber-400 font-black text-xs sm:text-[13px]">
-                            ${p.price.toLocaleString()}
-                          </span>
-                          <span
-                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                              marginPct >= 25
-                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
-                                : 'bg-zinc-500/15 text-zinc-300 border border-zinc-500/25'
-                            }`}
-                          >
-                            +{marginPct}%
+                            Venta: ${p.price.toLocaleString()} MXN
                           </span>
                           {p.soldByScoop && p.scoopPrice && (
                             <span className="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded font-bold">
@@ -727,8 +714,7 @@ export const InventoryManager: React.FC = () => {
                           )}
                         </div>
                         <div className="text-[10px] text-zinc-400 leading-tight mt-0.5">
-                          Costo: ${p.costPrice.toLocaleString()}{' '}
-                          <span className="text-emerald-400/90">(+${profit.toLocaleString()})</span>
+                          Costo: ${p.costPrice.toLocaleString()} MXN
                         </div>
                       </td>
 
