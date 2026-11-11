@@ -89,11 +89,11 @@ const MainLayout: React.FC = () => {
 
         {/* Dynamic Main Workspace View */}
         <main className={`flex-1 ${
-          activeTab === 'pos' 
+          activeTab === 'pos' || activeTab === 'inventory'
             ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col min-h-0 h-[calc(100vh-61px)]' 
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
         } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
-          <div className={activeTab === 'pos' ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto' : 'max-w-7xl mx-auto'}>
+          <div className={activeTab === 'pos' || activeTab === 'inventory' ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto' : 'max-w-7xl mx-auto'}>
             {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
             {activeTab === 'access' && <TurnstileTerminal />}
             {activeTab === 'pos' && (
