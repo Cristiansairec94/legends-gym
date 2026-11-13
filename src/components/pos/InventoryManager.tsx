@@ -76,6 +76,41 @@ const ALL_CATEGORIES: ProductCategory[] = [
   'gear',
 ];
 
+const ProductThumbnail: React.FC<{ src?: string; alt: string; isOut: boolean }> = ({
+  src,
+  alt,
+  isOut,
+}) => {
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div className="relative shrink-0">
+      {!src || hasError ? (
+        <div
+          className={`w-12 h-12 rounded-xl bg-gym-surface border flex items-center justify-center ${
+            isOut ? 'border-red-500/50 opacity-70' : 'border-gym-border'
+          }`}
+          title={alt}
+        >
+          <Package className="w-5 h-5 text-amber-400/75" />
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setHasError(true)}
+          className={`w-12 h-12 rounded-xl object-cover border ${
+            isOut ? 'border-red-500/50 grayscale opacity-70' : 'border-gym-border'
+          }`}
+        />
+      )}
+      {isOut && (
+        <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 ring-2 ring-gym-card" />
+      )}
+    </div>
+  );
+};
+
 export const InventoryManager: React.FC = () => {
   const { products, addProduct, updateProduct, adjustStock, deleteProduct, currentRole } = useGym();
 
@@ -330,33 +365,28 @@ export const InventoryManager: React.FC = () => {
   const unitMarginPct = Number(price) > 0 ? Math.round((unitProfit / Number(price)) * 100) : 0;
 
   return (
-    <div className="h-full min-h-0 flex flex-col gap-2 overflow-hidden">
+    <div className="h-full min-h-0 flex flex-col gap-1.5 overflow-hidden">
       {/* 1. COMPACT KIOSK HEADER BAR (shrink-0) */}
-      <div className="relative bg-gradient-to-r from-zinc-900/95 via-[#131318] to-zinc-900/95 px-3.5 py-2 rounded-2xl border border-white/[0.12] shadow-lg flex flex-wrap items-center justify-between gap-2.5 shrink-0 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-zinc-900/95 via-[#131318] to-zinc-900/95 px-3.5 py-2 rounded-2xl border border-white/[0.12] shadow-lg flex flex-wrap items-center justify-between gap-2 shrink-0 overflow-hidden">
         <div className="absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent pointer-events-none" />
 
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.3)] border border-amber-200/60 shrink-0">
-            <Package className="w-4.5 h-4.5 text-black stroke-[2.5]" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.3)] border border-amber-200/60 shrink-0">
+            <Package className="w-4 h-4 text-black stroke-[2.5]" />
           </div>
-          <div className="leading-tight">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-sm sm:text-base font-black text-white tracking-tight uppercase">
-                Control de Inventario & Almacén
-              </h1>
-              <span className="text-[10px] font-mono text-zinc-300 bg-white/[0.06] px-2 py-0.5 rounded-md border border-white/[0.1]">
-                {products.length} SKUs
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-sm sm:text-base font-black text-white tracking-tight uppercase">
+              Control de Inventario & Almacén
+            </h1>
+            <span className="text-[10px] font-mono text-zinc-300 bg-white/[0.06] px-2 py-0.5 rounded-md border border-white/[0.1]">
+              {products.length} SKUs
+            </span>
+            {metrics.scoopProductsCount > 0 && (
+              <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/25 font-bold">
+                <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                {metrics.scoopProductsCount} Scoop
               </span>
-              {metrics.scoopProductsCount > 0 && (
-                <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/25 font-bold">
-                  <Sparkles className="w-2.5 h-2.5 text-amber-400" />
-                  {metrics.scoopProductsCount} Scoop
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-zinc-400 hidden sm:block">
-              Existencias en vivo, costos, precios y ajuste rápido sin desplazamientos largos.
-            </p>
+            )}
           </div>
         </div>
 
@@ -589,35 +619,35 @@ export const InventoryManager: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. INTERNAL-SCROLL COMPACT DATA TABLE (flex-1 min-h-0) */}
+      {/* 4. INTERNAL-SCROLL EXPANDED DATA TABLE (flex-1 min-h-0) */}
       <div className="flex-1 min-h-0 bg-gym-card rounded-2xl border border-gym-border flex flex-col overflow-hidden shadow-xl">
         <div className="flex-1 min-h-0 overflow-auto pos-scroll">
           <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-20 bg-[#141419] border-b border-gym-border text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 shadow-sm">
+            <thead className="sticky top-0 z-20 bg-[#141419] border-b border-gym-border text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-zinc-300 shadow-sm">
               <tr>
-                <th className="py-2.5 px-3.5">Producto / Especificación</th>
-                <th className="py-2.5 px-3">Categoría</th>
-                <th className="py-2.5 px-3">Costo / Venta</th>
-                <th className="py-2.5 px-3">Nivel de Stock</th>
-                <th className="py-2.5 px-3 text-center">Ajuste Rápido</th>
-                {currentRole === 'admin' && <th className="py-2.5 px-3.5 text-right">Acciones</th>}
+                <th className="py-3 px-4">Producto / Especificación</th>
+                <th className="py-3 px-3.5">Categoría</th>
+                <th className="py-3 px-3.5">Costo / Venta</th>
+                <th className="py-3 px-3.5">Nivel de Stock</th>
+                <th className="py-3 px-3.5 text-center">Ajuste Rápido</th>
+                {currentRole === 'admin' && <th className="py-3 px-4 text-right">Acciones</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gym-border/40 text-xs">
+            <tbody className="divide-y divide-gym-border/45 text-sm">
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={currentRole === 'admin' ? 6 : 5} className="py-12 px-6 text-center">
-                    <div className="w-10 h-10 rounded-xl bg-gym-surface border border-gym-border flex items-center justify-center mx-auto text-zinc-500 mb-2">
-                      <Package className="w-5 h-5" />
+                    <div className="w-12 h-12 rounded-xl bg-gym-surface border border-gym-border flex items-center justify-center mx-auto text-zinc-500 mb-3">
+                      <Package className="w-6 h-6" />
                     </div>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-base font-bold text-white">
                       No se encontraron suplementos con los filtros actuales
                     </p>
                     {hasActiveFilters && (
                       <button
                         type="button"
                         onClick={resetFilters}
-                        className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-xs hover:bg-amber-400 transition-colors"
+                        className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs hover:bg-amber-400 transition-colors"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Restablecer filtros</span>
@@ -646,38 +676,27 @@ export const InventoryManager: React.FC = () => {
                           : 'hover:bg-gym-surface/50'
                       }`}
                     >
-                      {/* Col 1: Compact Product Info */}
-                      <td className="py-2 px-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="relative shrink-0">
-                            <img
-                              src={p.image}
-                              alt={p.name}
-                              className={`w-9 h-9 rounded-lg object-cover border ${
-                                isOut ? 'border-red-500/50 grayscale opacity-70' : 'border-gym-border'
-                              }`}
-                            />
-                            {isOut && (
-                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-gym-card" />
-                            )}
-                          </div>
+                      {/* Col 1: Enlarged Product Info */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3.5">
+                          <ProductThumbnail key={p.image} src={p.image} alt={p.name} isOut={isOut} />
 
                           <div className="min-w-0">
-                            <div className="font-bold text-white text-xs flex items-center gap-1.5 flex-wrap leading-tight">
-                              <span className="truncate max-w-[230px]">{p.name}</span>
+                            <div className="font-extrabold text-white text-sm sm:text-[15px] flex items-center gap-2 flex-wrap leading-snug">
+                              <span className="truncate max-w-[320px]">{p.name}</span>
                               {p.soldByScoop && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold">
-                                  <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Scoop
+                                <span className="inline-flex items-center gap-1 text-[11px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold">
+                                  <Sparkles className="w-3 h-3 text-amber-400" /> Scoop
                                 </span>
                               )}
                             </div>
 
-                            <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-zinc-400 truncate">
-                              <span className="text-zinc-300 font-medium">{p.brand}</span>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-zinc-400 truncate">
+                              <span className="text-zinc-200 font-semibold">{p.brand}</span>
                               <span>•</span>
-                              <span className="truncate max-w-[160px]">{p.flavor || 'Original'}</span>
-                              <span className="hidden 2xl:inline-flex items-center gap-0.5 font-mono text-[10px] text-zinc-500 ml-1">
-                                <Barcode className="w-2.5 h-2.5" />
+                              <span className="truncate max-w-[220px]">{p.flavor || 'Original'}</span>
+                              <span className="hidden 2xl:inline-flex items-center gap-1 font-mono text-[11px] text-zinc-500 ml-1">
+                                <Barcode className="w-3 h-3" />
                                 {p.barcode}
                               </span>
                             </div>
@@ -686,37 +705,37 @@ export const InventoryManager: React.FC = () => {
                       </td>
 
                       {/* Col 2: Category */}
-                      <td className="py-2 px-3">
+                      <td className="py-3 px-3.5">
                         <span
-                          className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md border whitespace-nowrap ${catMeta.badgeClass}`}
+                          className={`inline-flex items-center gap-2 text-xs sm:text-[13px] font-bold px-3 py-1 rounded-lg border whitespace-nowrap ${catMeta.badgeClass}`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${catMeta.dotClass}`} />
+                          <span className={`w-2 h-2 rounded-full ${catMeta.dotClass}`} />
                           {catMeta.label}
                         </span>
                       </td>
 
-                      {/* Col 3: Compact Price / Cost / Scoop */}
-                      <td className="py-2 px-3 font-mono">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-amber-400 font-black text-xs sm:text-[13px]">
+                      {/* Col 3: Enlarged Price / Cost / Scoop */}
+                      <td className="py-3 px-3.5 font-mono">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-amber-400 font-black text-sm sm:text-[15px]">
                             Venta: ${p.price.toLocaleString()} MXN
                           </span>
                           {p.soldByScoop && p.scoopPrice && (
-                            <span className="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded font-bold">
+                            <span className="text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md font-bold">
                               🥄 ${p.scoopPrice}
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-zinc-400 leading-tight mt-0.5">
+                        <div className="text-xs text-zinc-400 leading-tight mt-1">
                           Costo: ${p.costPrice.toLocaleString()} MXN
                         </div>
                       </td>
 
-                      {/* Col 4: Clean Executive Stock Pill & Status */}
-                      <td className="py-2 px-3">
-                        <div className="inline-flex items-center gap-2.5">
+                      {/* Col 4: Enlarged Stock Pill & Status */}
+                      <td className="py-3 px-3.5">
+                        <div className="inline-flex items-center gap-3">
                           <div
-                            className={`min-w-[38px] h-8 px-2 rounded-lg border flex items-center justify-center font-mono text-xs sm:text-sm font-black shrink-0 ${
+                            className={`min-w-[46px] h-10 px-2.5 rounded-xl border flex items-center justify-center font-mono text-sm sm:text-base font-black shrink-0 ${
                               isOut
                                 ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.18)]'
                                 : isLow
@@ -729,56 +748,56 @@ export const InventoryManager: React.FC = () => {
 
                           <div className="leading-tight whitespace-nowrap">
                             {isOut ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-red-400">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                              <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-extrabold text-red-400">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
                                 Agotado
                               </span>
                             ) : isLow ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400">
-                                <AlertTriangle className="w-3 h-3 shrink-0" />
+                              <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-bold text-amber-400">
+                                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                                 Stock bajo
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-bold text-emerald-400">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400" />
                                 Disponible
                               </span>
                             )}
-                            <span className="block text-[10px] font-mono text-zinc-400 mt-0.5">
+                            <span className="block text-[11px] font-mono text-zinc-400 mt-0.5">
                               Mín. {p.minStock} pzas
                             </span>
                           </div>
                         </div>
                       </td>
 
-                      {/* Col 5: Quick Stock Adjust */}
-                      <td className="py-2 px-3 text-center">
-                        <div className="inline-flex items-center gap-0.5 bg-gym-surface p-0.5 rounded-lg border border-gym-border">
+                      {/* Col 5: Enlarged Quick Stock Adjust */}
+                      <td className="py-3 px-3.5 text-center">
+                        <div className="inline-flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
                           <button
                             type="button"
                             disabled={p.stock <= 0}
                             onClick={() => adjustStock(p.id, -1)}
-                            className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-300 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-300 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                             title="Restar 1 unidad"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-4 h-4" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => adjustStock(p.id, 1)}
-                            className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                             title="Sumar 1 unidad"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-4 h-4" />
                           </button>
 
-                          <div className="w-px h-3.5 bg-gym-border mx-0.5" />
+                          <div className="w-px h-5 bg-gym-border mx-0.5" />
 
                           <button
                             type="button"
                             onClick={() => adjustStock(p.id, 5)}
-                            className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-extrabold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 transition-colors"
+                            className="h-8 px-2.5 rounded-lg text-xs font-mono font-extrabold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 transition-colors"
                             title="Sumar +5 unidades"
                           >
                             +5
@@ -787,7 +806,7 @@ export const InventoryManager: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => adjustStock(p.id, 10)}
-                            className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+                            className="h-8 px-2.5 rounded-lg text-xs font-mono font-bold text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
                             title="Sumar +10 unidades"
                           >
                             +10
@@ -795,17 +814,17 @@ export const InventoryManager: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Col 6: Admin Actions */}
+                      {/* Col 6: Enlarged Admin Actions */}
                       {currentRole === 'admin' && (
-                        <td className="py-2 px-3.5 text-right">
-                          <div className="inline-flex items-center justify-end gap-1">
+                        <td className="py-3 px-4 text-right">
+                          <div className="inline-flex items-center justify-end gap-1.5">
                             <button
                               type="button"
                               onClick={() => openEditModal(p)}
-                              className="p-1.5 rounded-lg bg-gym-surface hover:bg-amber-500/15 text-zinc-400 hover:text-amber-400 border border-gym-border hover:border-amber-500/30 transition-all"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center bg-gym-surface hover:bg-amber-500/15 text-zinc-400 hover:text-amber-400 border border-gym-border hover:border-amber-500/30 transition-all"
                               title="Editar suplemento"
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
@@ -814,10 +833,10 @@ export const InventoryManager: React.FC = () => {
                                   deleteProduct(p.id);
                                 }
                               }}
-                              className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-gym-border hover:border-red-500/30 transition-all"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center bg-gym-surface hover:bg-red-500/15 text-zinc-400 hover:text-red-400 border border-gym-border hover:border-red-500/30 transition-all"
                               title="Eliminar producto"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
