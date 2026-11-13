@@ -360,50 +360,49 @@ export const IncomeHistoryView: React.FC = () => {
       </div>
 
       {/* Resumen del periodo activo y contador de cobros */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 text-xs">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-white">Detalle de Cobros:</span>
-          <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold text-[11px] inline-flex items-center gap-1">
-            <Clock className="w-3 h-3 text-amber-400" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 text-sm">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="font-extrabold text-white text-sm sm:text-base">Detalle de Cobros:</span>
+          <span className="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm inline-flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-amber-400" />
             {periodLabel}
           </span>
-          <span className="text-gym-muted">
+          <span className="text-gym-muted text-xs sm:text-sm font-medium">
             ({filteredSales.length} {filteredSales.length === 1 ? 'cobro encontrado' : 'cobros encontrados'})
           </span>
         </div>
-        <div className="flex items-center gap-2 text-gym-muted">
+        <div className="flex items-center gap-2.5 text-gym-muted text-xs sm:text-sm">
           <span>Total en vista:</span>
-          <span className="text-emerald-400 font-mono font-black text-sm">
+          <span className="text-emerald-400 font-mono font-black text-base sm:text-lg">
             ${filteredSales.reduce((acc, s) => acc + s.total, 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
           </span>
         </div>
       </div>
 
       {/* Tabla de Ingresos */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden">
+      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gym-surface/80 border-b border-gym-border text-gym-muted uppercase font-bold text-[10px] tracking-wider">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gym-surface/80 border-b border-gym-border text-zinc-300 uppercase font-extrabold text-xs tracking-wider">
               <tr>
-                <th className="py-3 px-4">Folio / Fecha</th>
-                <th className="py-3 px-4">Tipo</th>
-                <th className="py-3 px-4">Cliente / Socio</th>
-                <th className="py-3 px-4">Detalle de Cobro</th>
-                <th className="py-3 px-4">Método de Pago</th>
-                <th className="py-3 px-4">Cajero</th>
-                <th className="py-3 px-4 text-right">Total Cobrado</th>
-                <th className="py-3 px-4 text-center">Ticket</th>
+                <th className="py-4 px-5 whitespace-nowrap">Fecha</th>
+                <th className="py-4 px-5 whitespace-nowrap">Tipo</th>
+                <th className="py-4 px-5 whitespace-nowrap">Detalle de Cobro</th>
+                <th className="py-4 px-5 whitespace-nowrap">Método de Pago</th>
+                <th className="py-4 px-5 whitespace-nowrap">Cajero</th>
+                <th className="py-4 px-5 text-right whitespace-nowrap">Total Cobrado</th>
+                <th className="py-4 px-5 text-center whitespace-nowrap">Ticket</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gym-border/40">
+            <tbody className="divide-y divide-gym-border/50">
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gym-muted">
-                    <Clock className="w-8 h-8 mx-auto text-gym-muted/40 mb-2" />
-                    <p className="font-semibold text-gray-300 text-sm">
+                  <td colSpan={7} className="py-16 text-center text-gym-muted">
+                    <Clock className="w-10 h-10 mx-auto text-gym-muted/40 mb-3" />
+                    <p className="font-bold text-gray-300 text-base">
                       No se encontraron cobros registrados en {periodLabel.toLowerCase()}.
                     </p>
-                    <p className="text-[11px] text-gym-muted mt-1">
+                    <p className="text-xs sm:text-sm text-gym-muted mt-1.5">
                       Puedes cambiar el filtro de tiempo a &quot;Todo&quot; o seleccionar otro periodo (Hoy, Semana, Mes, Año).
                     </p>
                   </td>
@@ -416,78 +415,67 @@ export const IncomeHistoryView: React.FC = () => {
 
                   return (
                     <tr key={sale.id} className="hover:bg-gym-surface/40 transition-colors">
-                      <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-white block">
-                          {sale.folio}
-                        </span>
-                        <span className="text-[11px] text-gym-muted">
-                          {dateObj.toLocaleDateString('es-MX')} {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <div className="font-bold text-sm sm:text-[15px] text-white">
+                          {dateObj.toLocaleDateString('es-MX')}
+                        </div>
+                        <span className="text-xs sm:text-[13px] text-gym-muted">
+                          {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-5 whitespace-nowrap">
                         {isMembership ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
-                            <Dumbbell className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                            <Dumbbell className="w-3.5 h-3.5" />
                             Membresía
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
-                            <ShoppingBag className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
+                            <ShoppingBag className="w-3.5 h-3.5" />
                             Punto Venta
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-gray-200">
-                          {sale.clientName}
-                        </div>
-                        {sale.clientId && (
-                          <span className="text-[10px] text-gym-muted font-mono">
-                            ID: {sale.clientId}
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <div className="text-gray-300">
+                      <td className="py-4 px-5">
+                        <div className="font-semibold text-sm sm:text-[15px] text-gray-200">
                           {itemsCount} artículo(s)
                         </div>
-                        <p className="text-[10px] text-gym-muted truncate max-w-xs" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
+                        <p className="text-xs sm:text-[13px] text-zinc-400 truncate max-w-md xl:max-w-xl mt-0.5" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
                           {sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
                         </p>
                       </td>
 
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5">
-                          {sale.paymentMethod === 'cash' && <Banknote className="w-3.5 h-3.5 text-emerald-400" />}
-                          {sale.paymentMethod === 'card' && <CreditCard className="w-3.5 h-3.5 text-blue-400" />}
-                          {sale.paymentMethod === 'transfer' && <DollarSign className="w-3.5 h-3.5 text-purple-400" />}
-                          <span className="capitalize font-medium text-gray-300">
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {sale.paymentMethod === 'cash' && <Banknote className="w-4 h-4 text-emerald-400" />}
+                          {sale.paymentMethod === 'card' && <CreditCard className="w-4 h-4 text-blue-400" />}
+                          {sale.paymentMethod === 'transfer' && <DollarSign className="w-4 h-4 text-purple-400" />}
+                          <span className="capitalize font-semibold text-sm text-gray-200">
                             {sale.paymentMethod === 'cash' ? 'Efectivo' : sale.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
                           </span>
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 text-gym-muted font-medium">
+                      <td className="py-4 px-5 text-zinc-300 font-medium text-sm whitespace-nowrap">
                         {sale.cashierName}
                       </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <span className="font-black text-sm text-emerald-400">
+                      <td className="py-4 px-5 text-right whitespace-nowrap">
+                        <span className="font-mono font-black text-base sm:text-lg text-emerald-400">
                           ${sale.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-5 text-center whitespace-nowrap">
                         <button
                           onClick={() => setSelectedSaleForReceipt(sale)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-emerald-500/20 text-gym-muted hover:text-emerald-400 transition-colors inline-flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-emerald-500/20 text-zinc-300 hover:text-emerald-400 border border-gym-border hover:border-emerald-500/30 transition-all inline-flex items-center gap-1.5"
                           title="Reimprimir o ver ticket"
                         >
-                          <Printer className="w-3.5 h-3.5" />
-                          <span className="text-[10px] font-bold">Ticket</span>
+                          <Printer className="w-4 h-4" />
+                          <span className="text-xs font-bold">Ticket</span>
                         </button>
                       </td>
                     </tr>

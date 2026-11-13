@@ -96,6 +96,8 @@ const MainLayout: React.FC = () => {
           <div className={
             activeTab === 'pos' || activeTab === 'inventory' || activeTab === 'cash'
               ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto'
+              : activeTab === 'incomes'
+              ? 'max-w-[1800px] mx-auto'
               : 'max-w-7xl mx-auto'
           }>
             {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
