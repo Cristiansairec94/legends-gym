@@ -530,8 +530,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </button>
           </div>
 
-          {/* 2. Middle: Live Ticket Items List (Flex-1 with Zero-Clip Proportions) */}
-          <div className="flex-1 min-h-0 flex flex-col mt-1 mb-2 overflow-hidden">
+          {/* 2. Middle: Live Ticket Items List (Compact Empty State, Scrollable Flex-1 When Active) */}
+          <div
+            className={`${
+              cart.length === 0 ? 'shrink-0' : 'flex-1 min-h-0'
+            } flex flex-col mt-1 mb-2 overflow-hidden`}
+          >
             {/* Ticket Sub-header */}
             <div className="flex items-center justify-between pb-1.5 border-b border-white/15 text-xs shrink-0">
               <span className="font-black text-white flex items-center gap-1.5">
@@ -555,23 +559,29 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
 
             {/* Ticket Items Scroll Area */}
-            <div className="flex-1 min-h-0 overflow-y-auto pos-scroll pr-1 py-1.5">
+            <div
+              className={
+                cart.length === 0
+                  ? 'pt-1.5'
+                  : 'flex-1 min-h-0 overflow-y-auto pos-scroll pr-1 py-1.5'
+              }
+            >
               {cart.length === 0 ? (
-                <div className="h-full min-h-[110px] flex flex-col items-center justify-center text-center px-3 py-2 rounded-2xl bg-white/[0.07] border border-dashed border-white/25">
-                  <div className="w-11 h-11 rounded-2xl bg-[#161a26] border border-amber-400/50 flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(245,158,11,0.25)] shrink-0 mb-2">
+                <div className="flex flex-col items-center justify-center text-center px-3 py-2.5 rounded-2xl bg-white/[0.06] border border-dashed border-white/20">
+                  <div className="w-7 h-7 rounded-lg bg-[#161a26] border border-amber-400/50 flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(245,158,11,0.2)] shrink-0 mb-1">
                     <img
                       src="/logo.png"
                       alt="LEYENDS GYM"
                       className="w-full h-full object-contain drop-shadow"
                     />
                   </div>
-                  <h4 className="font-black text-xs sm:text-sm text-white leading-tight">
+                  <h4 className="font-black text-[11.5px] text-white leading-tight">
                     Ticket Listo para Cobro
                   </h4>
-                  <p className="text-[9.5px] text-amber-300 font-black uppercase tracking-widest mt-0.5">
+                  <p className="text-[8.5px] text-amber-300 font-black uppercase tracking-widest mt-0.5">
                     LEYENDS GYM • CLUB FITNESS
                   </p>
-                  <p className="text-[10.5px] text-zinc-200 leading-snug mt-1 max-w-[230px]">
+                  <p className="text-[9.5px] text-zinc-300 leading-snug mt-0.5 max-w-[235px]">
                     Selecciona artículos del catálogo o escanea un código para iniciar la orden.
                   </p>
                 </div>
@@ -652,135 +662,147 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             </div>
           </div>
 
-          {/* 3. Bottom: Precision Payment Console & Checkout Controls (Zero Clipping) */}
-          <div className="space-y-2 pt-2.5 border-t border-white/15 shrink-0">
+          {/* 3. Bottom: Expanded Payment Console & Checkout Controls (Zero Clipping) */}
+          <div
+            className={`${
+              cart.length === 0
+                ? 'flex-1 min-h-0 flex flex-col justify-between gap-2.5'
+                : 'shrink-0 space-y-2.5'
+            } pt-3 border-t border-white/15`}
+          >
             
             {/* Digital Total Readout */}
-            <div className="bg-gradient-to-r from-[#141824]/85 via-[#1c2234]/85 to-[#141824]/85 px-3.5 py-2.5 rounded-xl border border-amber-400/45 shadow-inner flex items-center justify-between">
+            <div
+              className={`${
+                cart.length === 0 ? 'flex-1 min-h-[82px] max-h-[220px]' : 'py-3.5 sm:py-4'
+              } bg-gradient-to-r from-[#141824]/90 via-[#1c2234]/90 to-[#141824]/90 px-4 rounded-2xl border border-amber-400/50 shadow-inner flex items-center justify-between`}
+            >
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-100 block">
+                <span className="text-[11px] font-black uppercase tracking-widest text-zinc-100 block">
                   TOTAL A COBRAR
                 </span>
-                <span className="text-[10px] text-zinc-300 font-mono block">
+                <span className="text-[11px] text-zinc-300 font-mono block mt-0.5">
                   {cartItemsCount} {cartItemsCount === 1 ? 'artículo en orden' : 'artículos en orden'}
                 </span>
               </div>
-              <span className="text-3xl sm:text-4xl font-black font-mono text-amber-400 tracking-tight leading-none drop-shadow-[0_2px_16px_rgba(245,158,11,0.45)]">
+              <span className="text-4xl sm:text-[42px] xl:text-[46px] font-black font-mono text-amber-400 tracking-tight leading-none drop-shadow-[0_2px_18px_rgba(245,158,11,0.45)]">
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
 
-            {/* Payment Methods (3 Precision Pills) */}
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cash')}
-                className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
-                  paymentMethod === 'cash'
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
-                }`}
-              >
-                <Banknote className="w-3.5 h-3.5" />
-                <span>$ Efectivo</span>
-              </button>
+            <div className="space-y-2.5 shrink-0">
+              {/* Payment Methods (3 Precision Pills) */}
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cash')}
+                  className={`h-11 sm:h-12 px-2.5 rounded-xl text-xs sm:text-[13px] font-black flex items-center justify-center gap-1.5 border transition-all ${
+                    paymentMethod === 'cash'
+                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
+                      : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
+                  }`}
+                >
+                  <Banknote className="w-4 h-4" />
+                  <span>$ Efectivo</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
-                  paymentMethod === 'card'
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
-                }`}
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>Tarjeta</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`h-11 sm:h-12 px-2.5 rounded-xl text-xs sm:text-[13px] font-black flex items-center justify-center gap-1.5 border transition-all ${
+                    paymentMethod === 'card'
+                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
+                      : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Tarjeta</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('transfer')}
-                className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
-                  paymentMethod === 'transfer'
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
-                }`}
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5" />
-                <span>Transfer</span>
-              </button>
-            </div>
-
-            {/* Cash Denominations & Tender Input */}
-            {paymentMethod === 'cash' && (
-              <div className="space-y-1.5">
-                <div className="grid grid-cols-6 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickCash('exact')}
-                    className="h-7 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-black text-[10px] border border-amber-400/50 flex items-center justify-center transition-colors"
-                    title="Pago exacto"
-                  >
-                    ⚡ Exacto
-                  </button>
-                  {[50, 100, 200, 500, 1000].map(bill => (
-                    <button
-                      key={bill}
-                      type="button"
-                      onClick={() => handleQuickCash(bill)}
-                      className="h-7 rounded-lg bg-white/[0.1] hover:bg-white/[0.18] text-zinc-100 hover:text-white font-bold font-mono text-[10.5px] border border-white/20 hover:border-amber-400/50 transition-all"
-                    >
-                      ${bill}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Tender Input */}
-                <div className="h-9 flex items-center justify-between gap-2 bg-[#1c2233]/85 px-3 rounded-xl border border-white/20 focus-within:border-emerald-400/70 transition-all shadow-inner">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Banknote className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <input
-                      type="number"
-                      value={amountPaidStr}
-                      onChange={(e) => setAmountPaidStr(e.target.value)}
-                      placeholder="Paga con... ($)"
-                      className="w-full bg-transparent text-xs sm:text-sm font-mono font-bold text-white placeholder-zinc-300/80 focus:outline-none"
-                    />
-                  </div>
-                  {cashGiven > 0 && (
-                    <div className="text-right shrink-0 flex items-center gap-1.5">
-                      <span className="text-[9.5px] text-zinc-300 font-black uppercase">Cambio:</span>
-                      <span className="text-xs font-mono font-black text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-400/45">
-                        ${changeDue.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('transfer')}
+                  className={`h-11 sm:h-12 px-2.5 rounded-xl text-xs sm:text-[13px] font-black flex items-center justify-center gap-1.5 border transition-all ${
+                    paymentMethod === 'transfer'
+                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
+                      : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
+                  }`}
+                >
+                  <ArrowRightLeft className="w-4 h-4" />
+                  <span>Transfer</span>
+                </button>
               </div>
-            )}
 
-            {/* Primary Action Buttons: [Cancelar] [Cobrar & Ticket] */}
-            <div className="grid grid-cols-2 gap-2 pt-0.5">
-              <button
-                type="button"
-                onClick={clearCart}
-                disabled={cart.length === 0}
-                className="h-10 sm:h-11 px-3 rounded-xl bg-white/[0.1] hover:bg-red-500/20 text-zinc-100 hover:text-red-300 border border-white/20 hover:border-red-400/50 disabled:opacity-40 text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Cancelar</span>
-              </button>
+              {/* Cash Denominations & Tender Input */}
+              {paymentMethod === 'cash' && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-6 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickCash('exact')}
+                      className="h-9 sm:h-10 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-black text-[11px] border border-amber-400/50 flex items-center justify-center transition-colors"
+                      title="Pago exacto"
+                    >
+                      ⚡ Exacto
+                    </button>
+                    {[50, 100, 200, 500, 1000].map(bill => (
+                      <button
+                        key={bill}
+                        type="button"
+                        onClick={() => handleQuickCash(bill)}
+                        className="h-9 sm:h-10 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] text-zinc-100 hover:text-white font-bold font-mono text-[11px] sm:text-xs border border-white/20 hover:border-amber-400/50 transition-all"
+                      >
+                        ${bill}
+                      </button>
+                    ))}
+                  </div>
 
-              <button
-                type="button"
-                onClick={handleCheckout}
-                disabled={!canCheckout}
-                className="h-10 sm:h-11 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 disabled:opacity-45 text-black font-black text-xs sm:text-sm shadow-[0_0_22px_rgba(245,158,11,0.4)] border border-amber-200/80 flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] disabled:cursor-not-allowed"
-              >
-                <Receipt className="w-4 h-4 stroke-[2.5]" />
-                <span>Cobrar &amp; Ticket</span>
-              </button>
+                  {/* Tender Input */}
+                  <div className="h-11 sm:h-12 flex items-center justify-between gap-2 bg-[#1c2233]/85 px-3.5 rounded-xl border border-white/20 focus-within:border-emerald-400/70 transition-all shadow-inner">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <Banknote className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <input
+                        type="number"
+                        value={amountPaidStr}
+                        onChange={(e) => setAmountPaidStr(e.target.value)}
+                        placeholder="Paga con... ($)"
+                        className="w-full bg-transparent text-sm font-mono font-bold text-white placeholder-zinc-300/80 focus:outline-none"
+                      />
+                    </div>
+                    {cashGiven > 0 && (
+                      <div className="text-right shrink-0 flex items-center gap-1.5">
+                        <span className="text-[10px] text-zinc-300 font-black uppercase">Cambio:</span>
+                        <span className="text-xs font-mono font-black text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-md border border-emerald-400/45">
+                          ${changeDue.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Primary Action Buttons: [Cancelar] [Cobrar & Ticket] */}
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                <button
+                  type="button"
+                  onClick={clearCart}
+                  disabled={cart.length === 0}
+                  className="h-12 sm:h-[52px] px-4 rounded-xl bg-white/[0.1] hover:bg-red-500/20 text-zinc-100 hover:text-red-300 border border-white/20 hover:border-red-400/50 disabled:opacity-40 text-sm font-extrabold flex items-center justify-center gap-2 transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Cancelar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  disabled={!canCheckout}
+                  className="h-12 sm:h-[52px] px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 disabled:opacity-45 text-black font-black text-sm shadow-[0_0_22px_rgba(245,158,11,0.4)] border border-amber-200/80 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:cursor-not-allowed"
+                >
+                  <Receipt className="w-[18px] h-[18px] stroke-[2.5]" />
+                  <span>Cobrar &amp; Ticket</span>
+                </button>
+              </div>
             </div>
 
           </div>
