@@ -11,7 +11,6 @@ import {
   Unlock,
   CheckCircle2,
   FileSpreadsheet,
-  Calculator,
   Clock,
   User,
   Sparkles,
@@ -20,9 +19,6 @@ import {
   Dumbbell,
   Printer,
   DollarSign,
-  Plus,
-  Minus,
-  RotateCcw,
   FileText,
   Receipt,
   Eye
@@ -31,11 +27,9 @@ import { exportShiftReportToExcel } from '../../utils/excelExport';
 import { CashMovementsModal } from '../pos/CashMovementsModal';
 import { ReceiptModal } from '../pos/ReceiptModal';
 
-const BILL_DENOMINATIONS = [1000, 500, 200, 100, 50, 20] as const;
-const COIN_DENOMINATIONS = [10, 5, 2, 1] as const;
 const REMANENT_PRESETS = [500, 1000, 1500, 2000] as const;
 
-type LeftPanelTab = 'breakdown' | 'operations' | 'counter';
+type LeftPanelTab = 'breakdown' | 'operations';
 type OpFilter = 'all' | 'cash' | 'card' | 'transfer';
 
 export const CashRegisterView: React.FC = () => {
@@ -51,21 +45,6 @@ export const CashRegisterView: React.FC = () => {
   const [confirmCloseInput, setConfirmCloseInput] = useState('');
   const [closeNotes, setCloseNotes] = useState('');
   const [showMovementsModal, setShowMovementsModal] = useState(false);
-
-  // Bill & Coin Denominations Counter State
-  const [billCounts, setBillCounts] = useState<Record<number, number>>({
-    1000: 0,
-    500: 0,
-    200: 0,
-    100: 0,
-    50: 0,
-    20: 0,
-    10: 0,
-    5: 0,
-    2: 0,
-    1: 0,
-  });
-  const [extraCoinsStr, setExtraCoinsStr] = useState('');
 
   const [initialCashStr, setInitialCashStr] = useState<string>(() => {
     if (cashSession.status === 'closed') {
@@ -85,66 +64,6 @@ export const CashRegisterView: React.FC = () => {
       }
     }
   }, [cashSession.status, cashSession.leaveCashInDrawer, cashSession.remanentCash]);
-
-  // Calculate total from bill/coin counter whenever denominations change
-  const updateFromBillCounter = (
-    nextCounts: Record<number, number>,
-    nextExtraStr: string
-  ) => {
-    const billsSum = BILL_DENOMINATIONS.reduce(
-      (acc, denom) => acc + denom * (nextCounts[denom] || 0),
-      0
-    );
-    const coinsSum = COIN_DENOMINATIONS.reduce(
-      (acc, denom) => acc + denom * (nextCounts[denom] || 0),
-      0
-    );
-    const extraSum = parseFloat(nextExtraStr) || 0;
-    const total = billsSum + coinsSum + extraSum;
-    setCountedCashStr(total > 0 ? total.toFixed(2).replace(/\.00$/, '') : '');
-  };
-
-  const handleDenomCountChange = (denom: number, delta: number) => {
-    setBillCounts((prev) => {
-      const nextCount = Math.max(0, (prev[denom] || 0) + delta);
-      const next = { ...prev, [denom]: nextCount };
-      updateFromBillCounter(next, extraCoinsStr);
-      return next;
-    });
-  };
-
-  const handleDenomInputDirect = (denom: number, valStr: string) => {
-    const parsed = parseInt(valStr, 10);
-    const nextCount = isNaN(parsed) || parsed < 0 ? 0 : parsed;
-    setBillCounts((prev) => {
-      const next = { ...prev, [denom]: nextCount };
-      updateFromBillCounter(next, extraCoinsStr);
-      return next;
-    });
-  };
-
-  const handleExtraCoinsChange = (valStr: string) => {
-    setExtraCoinsStr(valStr);
-    updateFromBillCounter(billCounts, valStr);
-  };
-
-  const handleResetBillCounter = () => {
-    const empty: Record<number, number> = {
-      1000: 0,
-      500: 0,
-      200: 0,
-      100: 0,
-      50: 0,
-      20: 0,
-      10: 0,
-      5: 0,
-      2: 0,
-      1: 0,
-    };
-    setBillCounts(empty);
-    setExtraCoinsStr('');
-    setCountedCashStr('');
-  };
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayCashExpensesList = useMemo(
@@ -638,19 +557,6 @@ export const CashRegisterView: React.FC = () => {
                   {shiftSales.length}
                 </span>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveLeftTab('counter')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
-                  activeLeftTab === 'counter'
-                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-black shadow-sm'
-                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.06]'
-                }`}
-              >
-                <Calculator className="w-3.5 h-3.5" />
-                <span>Contador de Billetes</span>
-              </button>
             </div>
 
             <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono bg-white/[0.08] px-2.5 py-1 rounded-xl border border-white/15 text-zinc-100">
@@ -1066,160 +972,6 @@ export const CashRegisterView: React.FC = () => {
                 )}
               </div>
             )}
-
-            {/* ============================================================= */}
-            {/* TAB 3: CONTADOR VISUAL DE BILLETES Y MONEDAS                  */}
-            {/* ============================================================= */}
-            {activeLeftTab === 'counter' && (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-[#101522]/90 to-amber-500/20 border border-emerald-400/45 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block">
-                      Total Calculado por Denominaciones
-                    </span>
-                    <span className="text-2xl font-black font-mono text-white">
-                      ${countedCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleResetBillCounter}
-                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-extrabold text-zinc-200 flex items-center gap-1.5 transition-all"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Reiniciar</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Bills Grid */}
-                <div className="rounded-xl bg-[#101522]/80 border border-white/15 p-3 space-y-2">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 block">
-                    💵 Billetes (MXN) — Se sincroniza automáticamente con el Corte Z
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {BILL_DENOMINATIONS.map((denom) => {
-                      const count = billCounts[denom] || 0;
-                      const subtotal = count * denom;
-                      return (
-                        <div
-                          key={denom}
-                          className={`p-2.5 rounded-xl border transition-all ${
-                            count > 0
-                              ? 'bg-emerald-500/15 border-emerald-400/50 shadow-sm'
-                              : 'bg-white/[0.04] border-white/15'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="font-mono font-black text-sm text-emerald-300">
-                              ${denom}
-                            </span>
-                            <span className="font-mono font-bold text-[11px] text-zinc-200">
-                              =${subtotal.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-1 bg-[#0b0e17] p-1 rounded-lg border border-white/15">
-                            <button
-                              type="button"
-                              onClick={() => handleDenomCountChange(denom, -1)}
-                              className="w-6 h-6 rounded-md bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
-                            >
-                              <Minus className="w-3.5 h-3.5" />
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              value={count || ''}
-                              placeholder="0"
-                              onChange={(e) => handleDenomInputDirect(denom, e.target.value)}
-                              className="w-12 text-center bg-transparent font-mono font-black text-xs text-white focus:outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDenomCountChange(denom, 1)}
-                              className="w-6 h-6 rounded-md bg-amber-400 hover:bg-amber-300 text-black flex items-center justify-center font-bold"
-                            >
-                              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Coins Grid */}
-                <div className="rounded-xl bg-[#101522]/80 border border-white/15 p-3 space-y-2">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 block">
-                    🪙 Monedas ($10, $5, $2, $1 y morralla)
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {COIN_DENOMINATIONS.map((denom) => {
-                      const count = billCounts[denom] || 0;
-                      return (
-                        <div
-                          key={denom}
-                          className={`p-2 rounded-xl border transition-all ${
-                            count > 0
-                              ? 'bg-amber-500/15 border-amber-400/50'
-                              : 'bg-white/[0.04] border-white/15'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-mono font-black text-xs text-amber-300">
-                              ${denom}
-                            </span>
-                            <span className="font-mono text-[10px] text-zinc-300">
-                              =${count * denom}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-1 bg-[#0b0e17] p-0.5 rounded-lg border border-white/15">
-                            <button
-                              type="button"
-                              onClick={() => handleDenomCountChange(denom, -1)}
-                              className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              value={count || ''}
-                              placeholder="0"
-                              onChange={(e) => handleDenomInputDirect(denom, e.target.value)}
-                              className="w-9 text-center bg-transparent font-mono font-black text-xs text-white focus:outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDenomCountChange(denom, 1)}
-                              className="w-5 h-5 rounded bg-amber-400 text-black flex items-center justify-center"
-                            >
-                              <Plus className="w-3 h-3 stroke-[2.5]" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
-                    <span className="text-xs text-zinc-200 font-semibold">
-                      Otra morralla / centavos ($):
-                    </span>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      value={extraCoinsStr}
-                      onChange={(e) => handleExtraCoinsChange(e.target.value)}
-                      placeholder="0.00"
-                      className="w-32 px-3 py-1.5 rounded-xl bg-[#0b0e17] border border-white/20 font-mono font-bold text-xs text-white text-right focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -1289,35 +1041,17 @@ export const CashRegisterView: React.FC = () => {
                     <label className="text-xs font-black text-white">
                       Efectivo Total Contado en Caja ($) *
                     </label>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCountedCashStr(expectedCashInDrawer.toFixed(2).replace(/\.00$/, ''))
-                        }
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/55 text-emerald-200 text-[11px] font-black transition-all active:scale-95 shadow-sm"
-                        title="Autocompletar con el efectivo físico esperado en cajón"
-                      >
-                        <Sparkles className="w-3 h-3 text-emerald-300" />
-                        <span>⚡ Cuadre Exacto (${expectedCashInDrawer.toLocaleString()})</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setActiveLeftTab(activeLeftTab === 'counter' ? 'breakdown' : 'counter')
-                        }
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px] font-extrabold transition-all ${
-                          activeLeftTab === 'counter'
-                            ? 'bg-amber-400 text-black border-amber-200'
-                            : 'bg-white/10 hover:bg-white/20 text-zinc-200 border-white/20'
-                        }`}
-                        title="Abrir calculadora de billetes y monedas en el panel izquierdo"
-                      >
-                        <Calculator className="w-3 h-3" />
-                        <span>Billetes</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCountedCashStr(expectedCashInDrawer.toFixed(2).replace(/\.00$/, ''))
+                      }
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/55 text-emerald-200 text-[11px] font-black transition-all active:scale-95 shadow-sm"
+                      title="Autocompletar con el efectivo físico esperado en cajón"
+                    >
+                      <Sparkles className="w-3 h-3 text-emerald-300" />
+                      <span>⚡ Cuadre Exacto (${expectedCashInDrawer.toLocaleString()})</span>
+                    </button>
                   </div>
 
                   {/* Digital Readout Input */}
