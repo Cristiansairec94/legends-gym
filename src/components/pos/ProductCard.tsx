@@ -105,10 +105,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <h3 className="font-extrabold text-xs sm:text-[13px] text-white line-clamp-1 group-hover:text-amber-300 transition-colors leading-snug mt-0.5">
             {product.name}
           </h3>
-          <p className="text-[10.5px] text-zinc-300/85 line-clamp-1 mt-0.5">
-            {product.flavor ? `${product.flavor} • ` : ''}
-            {product.description}
-          </p>
         </div>
 
         {/* Clean Single-Row Footer: Barcode Chip + Tactile Add Pill */}
