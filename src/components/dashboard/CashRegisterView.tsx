@@ -491,11 +491,11 @@ export const CashRegisterView: React.FC = () => {
       {/* ===================================================================== */}
       {/* 3. TWO-COLUMN KIOSK WORKSPACE (ZERO OUTER CLIPPING)                   */}
       {/* ===================================================================== */}
-      <div className="relative z-10 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2.5 overflow-hidden items-stretch">
+      <div className="relative z-10 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1.12fr_1fr] gap-2.5 overflow-hidden items-stretch">
         {/* ================================================================= */}
-        {/* LEFT COLUMN (7/12): DESGLOSE DEL TURNO Y OPERACIONES              */}
+        {/* LEFT COLUMN (~53%): DESGLOSE DEL TURNO Y OPERACIONES              */}
         {/* ================================================================= */}
-        <div className="lg:col-span-7 flex flex-col min-h-0 bg-[#151b2b]/88 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
+        <div className="flex flex-col min-h-0 bg-[#151b2b]/88 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
           {/* Top Navigation Tabs Inside Left Panel */}
@@ -940,71 +940,71 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* ================================================================= */}
-        {/* RIGHT COLUMN (5/12): CONSOLA DE CORTE DE CAJA (CORTE Z)           */}
+        {/* RIGHT COLUMN (~47%): CONSOLA DE CORTE DE CAJA                     */}
         {/* ================================================================= */}
-        <div className="lg:col-span-5 flex flex-col min-h-0 bg-[#161c2c]/78 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative overflow-hidden">
+        <div className="flex flex-col min-h-0 bg-[#161c2c]/85 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative overflow-hidden">
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/75 to-transparent pointer-events-none" />
 
           {cashSession.status === 'open' ? (
-            <form onSubmit={handleCloseSession} className="flex-1 min-h-0 flex flex-col justify-between gap-1 overflow-y-auto pos-scroll pr-0.5">
-              {/* Top Header + 3-Step Visual Progress (Compact Single-Window Row) */}
-              <div className="flex flex-wrap items-center justify-between gap-1.5 shrink-0 border-b border-white/15 pb-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.35)] border border-amber-200/70 shrink-0">
-                    <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+            <form onSubmit={handleCloseSession} className="flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-y-auto pos-scroll pr-0.5">
+              {/* Top Header + 3-Step Visual Progress */}
+              <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-b border-white/15 pb-1.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.35)] border border-amber-200/70 shrink-0">
+                    <Lock className="w-4 h-4 stroke-[2.5]" />
                   </div>
-                  <h3 className="font-black text-xs sm:text-sm text-white tracking-tight">
+                  <h3 className="font-black text-sm sm:text-base text-white tracking-tight">
                     Realizar Corte de Caja
                   </h3>
                 </div>
 
                 {/* 3-Step Progress Pills */}
-                <div className="flex items-center gap-1 text-[9.5px] font-black uppercase tracking-wider">
+                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider">
                   <div
-                    className={`px-1.5 py-0.5 rounded-md border flex items-center gap-1 ${
+                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
                       hasCountedInput
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
                         : 'bg-white/[0.06] text-amber-300 border-amber-400/40'
                     }`}
                   >
-                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    <CheckCircle2 className="w-3 h-3" />
                     <span>1. Conteo</span>
                   </div>
                   <div
-                    className={`px-1.5 py-0.5 rounded-md border flex items-center gap-1 ${
+                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
                       hasCountedInput && isRemanentValid
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
                         : 'bg-white/[0.05] text-zinc-400 border-white/15'
                     }`}
                   >
-                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    <CheckCircle2 className="w-3 h-3" />
                     <span>2. Retiro</span>
                   </div>
                   <div
-                    className={`px-1.5 py-0.5 rounded-md border flex items-center gap-1 ${
+                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
                       isConfirmedYes
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
                         : 'bg-white/[0.05] text-zinc-400 border-white/15'
                     }`}
                   >
-                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    <CheckCircle2 className="w-3 h-3" />
                     <span>3. Autorizar</span>
                   </div>
                 </div>
               </div>
 
               {/* Middle Controls */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {/* STEP 1: Efectivo Total Contado */}
-                <div className="space-y-1">
-                  <label className="text-[11.5px] font-black text-white block">
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-[13px] font-black text-white block">
                     Efectivo Total Contado en Caja ($) *
                   </label>
 
                   {/* Digital Readout Input */}
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <DollarSign className="w-4 h-4 text-amber-400 stroke-[2.5]" />
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <DollarSign className="w-5 h-5 text-amber-400 stroke-[2.5]" />
                     </div>
                     <input
                       type="number"
@@ -1014,35 +1014,35 @@ export const CashRegisterView: React.FC = () => {
                       onChange={(e) => setCountedCashStr(e.target.value)}
                       onWheel={(e) => e.currentTarget.blur()}
                       placeholder="Ingresa el efectivo físico contado..."
-                      className="w-full h-8 pl-9 pr-14 bg-[#0e1320]/90 rounded-xl border border-amber-400/45 text-sm sm:text-base font-mono font-black text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:text-xs placeholder:font-semibold focus:outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-400/30 transition-all shadow-inner"
+                      className="w-full h-10 pl-10 pr-16 bg-[#0e1320]/90 rounded-xl border border-amber-400/50 text-lg sm:text-xl font-mono font-black text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:text-xs sm:placeholder:text-sm placeholder:font-semibold focus:outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-400/30 transition-all shadow-inner"
                     />
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9.5px] font-mono font-black text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-400/35 pointer-events-none">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-black text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-400/40 pointer-events-none">
                       MXN
                     </span>
                   </div>
 
                   {/* 3-Column Live Comparison Gauge */}
-                  <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#0e1320]/80 border border-white/15 text-center font-mono">
-                    <div className="p-1 rounded-lg bg-white/[0.03]">
-                      <span className="text-[9.5px] font-sans font-bold uppercase text-zinc-300 block">
+                  <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-[#0e1320]/85 border border-white/15 text-center font-mono">
+                    <div className="py-1 px-1.5 rounded-lg bg-white/[0.04]">
+                      <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 block">
                         Esperado
                       </span>
-                      <span className="text-xs font-black text-white">
+                      <span className="text-sm font-black text-white">
                         ${expectedCashInDrawer.toFixed(2)}
                       </span>
                     </div>
-                    <div className="p-1 rounded-lg bg-white/[0.03]">
-                      <span className="text-[9.5px] font-sans font-bold uppercase text-zinc-300 block">
+                    <div className="py-1 px-1.5 rounded-lg bg-white/[0.04]">
+                      <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 block">
                         Contado
                       </span>
-                      <span className="text-xs font-black text-amber-300">
+                      <span className="text-sm font-black text-amber-300">
                         ${countedCash.toFixed(2)}
                       </span>
                     </div>
                     <div
-                      className={`p-1 rounded-lg border ${
+                      className={`py-1 px-1.5 rounded-lg border ${
                         !hasCountedInput
-                          ? 'bg-white/[0.03] border-white/10 text-zinc-400'
+                          ? 'bg-white/[0.04] border-white/10 text-zinc-400'
                           : cashDifference === 0
                           ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
                           : cashDifference > 0
@@ -1050,7 +1050,7 @@ export const CashRegisterView: React.FC = () => {
                           : 'bg-rose-500/20 border-rose-400/50 text-rose-300'
                       }`}
                     >
-                      <span className="text-[9.5px] font-sans font-bold uppercase block">
+                      <span className="text-[10px] font-sans font-bold uppercase block">
                         {!hasCountedInput
                           ? 'Diferencia'
                           : cashDifference === 0
@@ -1059,7 +1059,7 @@ export const CashRegisterView: React.FC = () => {
                           ? '▲ Sobrante'
                           : '▼ Faltante'}
                       </span>
-                      <span className="text-xs font-black">
+                      <span className="text-sm font-black">
                         {!hasCountedInput
                           ? '—'
                           : cashDifference > 0
@@ -1073,13 +1073,13 @@ export const CashRegisterView: React.FC = () => {
                 </div>
 
                 {/* STEP 2: Fondo en Caja y Desglose de Retiro */}
-                <div className="p-1.5 sm:p-2 rounded-xl bg-[#101522]/85 border border-white/15 space-y-1">
+                <div className="p-2 rounded-xl bg-[#101522]/90 border border-white/15 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="leading-tight">
-                      <label className="text-[11.5px] font-black text-white block">
+                      <label className="text-xs sm:text-[13px] font-black text-white block">
                         ¿Se dejará fondo en caja?
                       </label>
-                      <span className="text-[10px] text-zinc-300 block">
+                      <span className="text-[10.5px] text-zinc-300 block">
                         Efectivo reservado para el siguiente turno
                       </span>
                     </div>
@@ -1091,7 +1091,7 @@ export const CashRegisterView: React.FC = () => {
                           setLeaveCashInDrawer(false);
                           setRemanentCashStr('');
                         }}
-                        className={`px-3 py-1 text-xs font-black rounded-lg transition-all ${
+                        className={`px-3.5 py-1 text-xs font-black rounded-lg transition-all ${
                           !leaveCashInDrawer
                             ? 'bg-rose-500 text-white shadow-sm'
                             : 'text-zinc-300 hover:text-white'
@@ -1102,7 +1102,7 @@ export const CashRegisterView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setLeaveCashInDrawer(true)}
-                        className={`px-3 py-1 text-xs font-black rounded-lg transition-all ${
+                        className={`px-3.5 py-1 text-xs font-black rounded-lg transition-all ${
                           leaveCashInDrawer
                             ? 'bg-emerald-400 text-black shadow-sm'
                             : 'text-zinc-300 hover:text-white'
@@ -1116,7 +1116,7 @@ export const CashRegisterView: React.FC = () => {
                   {leaveCashInDrawer && (
                     <div className="pt-1.5 border-t border-white/10 space-y-1">
                       <div className="flex items-center justify-between flex-wrap gap-1">
-                        <label className="text-[11px] font-bold text-amber-300">
+                        <label className="text-[11.5px] font-bold text-amber-300">
                           Monto que se queda en caja ($) *
                         </label>
                         <div className="flex items-center gap-1">
@@ -1125,7 +1125,7 @@ export const CashRegisterView: React.FC = () => {
                               key={preset}
                               type="button"
                               onClick={() => setRemanentCashStr(preset.toString())}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-black border transition-all ${
+                              className={`px-2 py-0.5 rounded text-[10.5px] font-mono font-black border transition-all ${
                                 remanentCashStr === preset.toString()
                                   ? 'bg-amber-400 text-black border-amber-200'
                                   : 'bg-white/10 hover:bg-white/20 text-zinc-200 border-white/15'
@@ -1138,7 +1138,7 @@ export const CashRegisterView: React.FC = () => {
                       </div>
 
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 font-mono font-bold text-xs">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 font-mono font-bold text-sm">
                           $
                         </span>
                         <input
@@ -1150,11 +1150,11 @@ export const CashRegisterView: React.FC = () => {
                           onChange={(e) => setRemanentCashStr(e.target.value)}
                           onWheel={(e) => e.currentTarget.blur()}
                           placeholder="Ej. 1000.00"
-                          className="w-full h-8 pl-7 pr-3 bg-[#0b0e17] rounded-lg border border-white/20 text-xs sm:text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full h-9 pl-7 pr-3 bg-[#0b0e17] rounded-lg border border-white/20 text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
                         />
                       </div>
                       {remanentCash > countedCash && countedCash > 0 && (
-                        <p className="text-[10.5px] text-rose-300 font-bold leading-tight">
+                        <p className="text-[11px] text-rose-300 font-bold leading-tight">
                           ⚠️ El fondo no puede superar el efectivo contado (${countedCash.toFixed(2)}).
                         </p>
                       )}
@@ -1162,20 +1162,20 @@ export const CashRegisterView: React.FC = () => {
                   )}
 
                   {/* Side-by-side Retiro & Fondo Readout */}
-                  <div className="grid grid-cols-2 gap-1.5 font-mono">
-                    <div className="px-2 py-1 rounded-lg bg-black/40 border border-white/10 flex items-center justify-between gap-1">
-                      <span className="text-[9.5px] font-sans font-bold uppercase text-zinc-300 shrink-0">
+                  <div className="grid grid-cols-2 gap-2 font-mono">
+                    <div className="px-2.5 py-1.5 rounded-lg bg-black/45 border border-white/15 flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 shrink-0">
                         Fondo:
                       </span>
-                      <span className="text-xs font-black text-amber-300 truncate">
+                      <span className="text-xs sm:text-sm font-black text-amber-300 truncate">
                         ${(leaveCashInDrawer ? remanentCash : 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
                       </span>
                     </div>
-                    <div className="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-between gap-1">
-                      <span className="text-[9.5px] font-sans font-bold uppercase text-emerald-200 shrink-0">
+                    <div className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-400/45 flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-sans font-bold uppercase text-emerald-200 shrink-0">
                         Retiro:
                       </span>
-                      <span className="text-xs font-black text-emerald-300 truncate">
+                      <span className="text-xs sm:text-sm font-black text-emerald-300 truncate">
                         ${(leaveCashInDrawer ? cashToWithdraw : countedCash).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
                       </span>
                     </div>
@@ -1188,45 +1188,45 @@ export const CashRegisterView: React.FC = () => {
                   value={closeNotes}
                   onChange={(e) => setCloseNotes(e.target.value)}
                   placeholder="Observaciones o notas del turno (opcional)..."
-                  className="w-full h-8 px-2.5 bg-[#101522]/85 rounded-xl border border-white/15 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+                  className="w-full h-9 px-3 bg-[#101522]/90 rounded-xl border border-white/15 text-xs sm:text-[13px] text-white placeholder-zinc-400 focus:outline-none focus:border-amber-400"
                 />
 
                 {/* STEP 3: Confirmación de Cierre */}
-                <div className="p-1.5 sm:p-2 rounded-xl bg-[#101522]/90 border border-amber-400/40 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                <div className="p-2 rounded-xl bg-[#101522]/95 border border-amber-400/45 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
                   <div className="leading-tight shrink-0">
-                    <label className="text-[11.5px] font-black text-white block">
+                    <label className="text-xs sm:text-[13px] font-black text-white block">
                       Confirmar Cierre de Turno *
                     </label>
-                    <span className="text-[9px] text-amber-300 uppercase tracking-wider font-extrabold block">
+                    <span className="text-[9.5px] text-amber-300 uppercase tracking-wider font-extrabold block">
                       Escribe o pulsa "SÍ"
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-[190px]">
                     <input
                       type="text"
                       maxLength={4}
                       value={confirmCloseInput}
                       onChange={(e) => setConfirmCloseInput(e.target.value.toUpperCase())}
                       placeholder="SI O NO..."
-                      className="flex-1 min-w-0 h-7 px-2 bg-[#0b0e17] rounded-lg border border-white/20 text-center font-black tracking-widest text-xs text-white uppercase placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+                      className="flex-1 min-w-0 h-8 px-2.5 bg-[#0b0e17] rounded-lg border border-white/20 text-center font-black tracking-widest text-xs sm:text-sm text-white uppercase placeholder-zinc-400 focus:outline-none focus:border-amber-400"
                     />
                     <button
                       type="button"
                       onClick={() => setConfirmCloseInput('SI')}
-                      className={`h-7 px-2.5 rounded-lg font-black text-xs border transition-all flex items-center justify-center gap-1 shrink-0 ${
+                      className={`h-8 px-3 rounded-lg font-black text-xs sm:text-sm border transition-all flex items-center justify-center gap-1 shrink-0 ${
                         isConfirmedYes
                           ? 'bg-emerald-400 text-black border-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
                           : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 border-emerald-400/40'
                       }`}
                     >
-                      <CheckCircle2 className="w-3 h-3" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>SÍ</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmCloseInput('NO')}
-                      className={`h-7 px-2.5 rounded-lg font-black text-xs border transition-all flex items-center justify-center gap-1 shrink-0 ${
+                      className={`h-8 px-3 rounded-lg font-black text-xs sm:text-sm border transition-all flex items-center justify-center gap-1 shrink-0 ${
                         isConfirmedNo
                           ? 'bg-rose-500 text-white border-rose-300'
                           : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border-rose-400/40'
@@ -1242,7 +1242,7 @@ export const CashRegisterView: React.FC = () => {
               <button
                 type="submit"
                 disabled={!canSubmitClose}
-                className={`w-full h-9 shrink-0 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+                className={`w-full h-10 shrink-0 rounded-xl font-black text-sm sm:text-base transition-all flex items-center justify-center gap-2 ${
                   canSubmitClose
                     ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.45)] border border-amber-200/80 cursor-pointer active:scale-[0.99]'
                     : 'bg-white/[0.06] text-zinc-400 border border-white/15 cursor-not-allowed'
