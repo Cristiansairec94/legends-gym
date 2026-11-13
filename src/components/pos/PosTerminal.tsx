@@ -5,7 +5,7 @@ import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
 import { PosSalesHistoryModal } from './PosSalesHistoryModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
-import gymBg from '../../assets/gym-background.jpg';
+import posBg from '../../assets/pos-luxury-bg.jpg';
 import { Sale, PaymentMethod, Product } from '../../types';
 import { sounds } from '../../services/audio';
 import {
@@ -312,33 +312,33 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
-    <div className="h-full min-h-0 relative rounded-3xl border border-white/20 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2.5 sm:p-3 gap-2.5">
+    <div className="h-full min-h-0 relative rounded-3xl border border-white/25 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col p-2.5 sm:p-3 gap-2.5">
       
-      {/* Real Gym Architectural Background Wallpaper ("LEYENDS GYM • CLUB FITNESS" + Caminadoras) */}
+      {/* High-Definition Color-Matched Luxury Supplement Bar & Gym Background */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none rounded-3xl">
         <img
-          src={gymBg}
-          alt="LEYENDS GYM CLUB FITNESS Background"
+          src={posBg}
+          alt="LEYENDS GYM Supplement Bar & Fitness Lounge"
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = '/gym-background.jpg';
+            (e.currentTarget as HTMLImageElement).src = '/pos-luxury-bg.jpg';
           }}
           style={{
-            filter: 'brightness(1.1) contrast(1.05) saturate(1.08)',
-            objectPosition: 'center 25%',
+            filter: 'brightness(1.06) contrast(1.04) saturate(1.06)',
+            objectPosition: 'center center',
           }}
           className="w-full h-full object-cover"
         />
-        {/* Light Airy Vignette (Matches Control de Acceso so the Gym Wall & Treadmills Shine Clearly) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-900/10 to-slate-950/20 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_45%_28%,rgba(251,191,36,0.16)_0%,rgba(0,0,0,0)_65%)] pointer-events-none" />
+        {/* Ultra-Light Crystal Vignette so High-Res Architectural Details & Warm Gold Lighting Shine Through */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111522]/35 via-transparent to-[#111522]/15 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(251,191,36,0.12)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
       </div>
 
       {/* ===================================================================== */}
       {/* 1. TOP UNIFIED COMMAND HEADER BAR                                     */}
       {/* ===================================================================== */}
-      <div className="relative z-20 bg-[#1a1f2e]/70 backdrop-blur-xl rounded-2xl border border-white/20 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.45)] shrink-0">
+      <div className="relative z-20 bg-[#1a2030]/65 backdrop-blur-xl rounded-2xl border border-white/25 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
         {/* Top Specular Hairline */}
-        <div className="absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/65 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/70 to-transparent pointer-events-none" />
 
         {/* Brand Logo & Subtitle */}
         <div className="flex items-center gap-3">
@@ -430,9 +430,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         {/* ================================================================ */}
         {/* LEFT COLUMN: Catálogo Visual & Escáner (7 / 8 de 12)             */}
         {/* ================================================================ */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 bg-[#181d2c]/48 backdrop-blur-md rounded-2xl border border-white/20 p-3 sm:p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
+        <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 bg-[#181e2e]/42 backdrop-blur-md rounded-2xl border border-white/25 p-3 sm:p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.4)] relative overflow-hidden">
           {/* Subtle Top Specular Hairline */}
-          <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
           {/* Top Toolbar: Barcode & Product Search */}
           <div className="space-y-2 shrink-0 pb-2.5 border-b border-white/15">
@@ -441,7 +441,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 <Barcode className="w-4 h-4 text-amber-400" />
                 Escanear o Buscar Producto
               </span>
-              <span className="text-[11px] font-mono font-extrabold text-zinc-100 bg-white/[0.1] px-2.5 py-0.5 rounded-full border border-white/20">
+              <span className="text-[11px] font-mono font-extrabold text-zinc-100 bg-white/[0.12] px-2.5 py-0.5 rounded-full border border-white/25">
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
               </span>
             </div>
@@ -464,7 +464,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   }
                 }}
                 placeholder="Escanea código de barras o escribe producto, marca o sabor..."
-                className="w-full h-10 pl-10 pr-16 bg-[#1f2537]/75 rounded-xl border border-white/20 text-xs sm:text-sm text-white placeholder-zinc-300/75 font-mono focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition-all shadow-inner"
+                className="w-full h-10 pl-10 pr-16 bg-[#1f2638]/75 rounded-xl border border-white/25 text-xs sm:text-sm text-white placeholder-zinc-200/75 font-mono focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition-all shadow-inner"
               />
               {barcodeInput ? (
                 <button
@@ -479,7 +479,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   ✕
                 </button>
               ) : (
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md bg-white/[0.1] border border-white/20 text-[9.5px] font-mono font-bold text-zinc-200 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md bg-white/[0.12] border border-white/20 text-[9.5px] font-mono font-bold text-zinc-100 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   ENTER
                 </span>
               )}
@@ -497,7 +497,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                     className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all shrink-0 ${
                       isActive
                         ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black shadow-[0_0_18px_rgba(245,158,11,0.42)] border border-amber-200/80'
-                        : 'bg-white/[0.09] text-zinc-100 hover:bg-white/[0.16] hover:text-white border border-white/20 hover:border-amber-400/50'
+                        : 'bg-[#1f2638]/70 text-zinc-100 hover:bg-[#283147]/85 hover:text-white border border-white/20 hover:border-amber-400/50'
                     }`}
                   >
                     <span className="text-xs leading-none">{cat.icon}</span>
@@ -546,14 +546,14 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         {/* ================================================================ */}
         {/* RIGHT COLUMN: Ticket de Venta & Caja de Cobro (5 / 4 de 12)      */}
         {/* ================================================================ */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#1e2436]/74 via-[#181d2c]/78 to-[#141825]/82 backdrop-blur-xl rounded-2xl border border-amber-400/45 p-3 sm:p-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.55),0_0_24px_rgba(245,158,11,0.12)] relative overflow-hidden">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#1e2538]/70 via-[#181e2e]/74 to-[#141927]/78 backdrop-blur-xl rounded-2xl border border-amber-400/50 p-3 sm:p-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.5),0_0_24px_rgba(245,158,11,0.14)] relative overflow-hidden">
           {/* Kiosk Gold Top Specular Highlight */}
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none" />
 
           {/* 1. Customer Selection Box (Compact & Crisp) */}
           <div ref={clientSearchRef} className="relative shrink-0 space-y-1 z-30">
             <div className="flex items-center justify-between px-0.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-200">
                 Cliente / Socio
               </span>
               <button
@@ -570,8 +570,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
               onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
                 selectedMember
-                  ? 'bg-gradient-to-r from-amber-500/20 via-white/[0.08] to-white/[0.06] border-amber-400/60 hover:border-amber-300 text-white shadow-sm'
-                  : 'bg-white/[0.08] hover:bg-white/[0.12] border-white/20 hover:border-amber-400/45 text-zinc-100'
+                  ? 'bg-gradient-to-r from-amber-500/20 via-white/[0.1] to-white/[0.08] border-amber-400/60 hover:border-amber-300 text-white shadow-sm'
+                  : 'bg-white/[0.09] hover:bg-white/[0.14] border-white/20 hover:border-amber-400/50 text-zinc-100'
               }`}
             >
               <div className="flex items-center gap-2.5 truncate">
@@ -747,7 +747,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
             {/* Ticket Items Scroll Area */}
             <div className="flex-1 min-h-0 overflow-y-auto pos-scroll pr-1 py-1.5">
               {cart.length === 0 ? (
-                <div className="h-full min-h-[110px] flex flex-col items-center justify-center text-center px-3 py-2 rounded-2xl bg-white/[0.06] border border-dashed border-white/20">
+                <div className="h-full min-h-[110px] flex flex-col items-center justify-center text-center px-3 py-2 rounded-2xl bg-white/[0.07] border border-dashed border-white/25">
                   <div className="w-11 h-11 rounded-2xl bg-[#161a26] border border-amber-400/50 flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(245,158,11,0.25)] shrink-0 mb-2">
                     <img
                       src="/logo.png"
@@ -761,7 +761,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   <p className="text-[9.5px] text-amber-300 font-black uppercase tracking-widest mt-0.5">
                     LEYENDS GYM • CLUB FITNESS
                   </p>
-                  <p className="text-[10.5px] text-zinc-300 leading-snug mt-1 max-w-[230px]">
+                  <p className="text-[10.5px] text-zinc-200 leading-snug mt-1 max-w-[230px]">
                     Selecciona artículos del catálogo o escanea un código para iniciar la orden.
                   </p>
                 </div>
@@ -770,7 +770,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   {cart.map((item) => (
                     <div
                       key={item.product.id}
-                      className="p-2 flex items-center justify-between gap-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 transition-colors"
+                      className="p-2 flex items-center justify-between gap-2.5 rounded-xl bg-white/[0.09] hover:bg-white/[0.14] border border-white/20 transition-colors"
                     >
                       {/* Product Thumbnail */}
                       <img
@@ -792,7 +792,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                             ${item.unitPrice.toFixed(2)}
                           </span>
                           {item.product.flavor && (
-                            <span className="truncate max-w-[90px] text-zinc-300/80">
+                            <span className="truncate max-w-[90px] text-zinc-200/80">
                               • {item.product.flavor}
                             </span>
                           )}
@@ -846,12 +846,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           <div className="space-y-2 pt-2.5 border-t border-white/15 shrink-0">
             
             {/* Digital Total Readout */}
-            <div className="bg-gradient-to-r from-[#141824]/90 via-[#1a2030]/90 to-[#141824]/90 px-3.5 py-2.5 rounded-xl border border-amber-400/40 shadow-inner flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#141824]/85 via-[#1c2234]/85 to-[#141824]/85 px-3.5 py-2.5 rounded-xl border border-amber-400/45 shadow-inner flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-200 block">
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-100 block">
                   TOTAL A COBRAR
                 </span>
-                <span className="text-[10px] text-zinc-300/80 font-mono block">
+                <span className="text-[10px] text-zinc-300 font-mono block">
                   {cartItemsCount} {cartItemsCount === 1 ? 'artículo en orden' : 'artículos en orden'}
                 </span>
               </div>
@@ -868,7 +868,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'cash'
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.08] text-zinc-200 border-white/20 hover:bg-white/[0.14] hover:text-white hover:border-white/30'
+                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
                 }`}
               >
                 <Banknote className="w-3.5 h-3.5" />
@@ -881,7 +881,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'card'
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.08] text-zinc-200 border-white/20 hover:bg-white/[0.14] hover:text-white hover:border-white/30'
+                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
                 }`}
               >
                 <CreditCard className="w-3.5 h-3.5" />
@@ -894,7 +894,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 className={`h-9 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border transition-all ${
                   paymentMethod === 'transfer'
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black border-amber-200/80 shadow-[0_0_16px_rgba(245,158,11,0.35)]'
-                    : 'bg-white/[0.08] text-zinc-200 border-white/20 hover:bg-white/[0.14] hover:text-white hover:border-white/30'
+                    : 'bg-white/[0.09] text-zinc-100 border-white/20 hover:bg-white/[0.15] hover:text-white hover:border-white/30'
                 }`}
               >
                 <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -919,7 +919,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       key={bill}
                       type="button"
                       onClick={() => handleQuickCash(bill)}
-                      className="h-7 rounded-lg bg-white/[0.09] hover:bg-white/[0.16] text-zinc-100 hover:text-white font-bold font-mono text-[10.5px] border border-white/20 hover:border-amber-400/50 transition-all"
+                      className="h-7 rounded-lg bg-white/[0.1] hover:bg-white/[0.18] text-zinc-100 hover:text-white font-bold font-mono text-[10.5px] border border-white/20 hover:border-amber-400/50 transition-all"
                     >
                       ${bill}
                     </button>
@@ -935,7 +935,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                       value={amountPaidStr}
                       onChange={(e) => setAmountPaidStr(e.target.value)}
                       placeholder="Paga con... ($)"
-                      className="w-full bg-transparent text-xs sm:text-sm font-mono font-bold text-white placeholder-zinc-300/75 focus:outline-none"
+                      className="w-full bg-transparent text-xs sm:text-sm font-mono font-bold text-white placeholder-zinc-300/80 focus:outline-none"
                     />
                   </div>
                   {cashGiven > 0 && (
@@ -956,7 +956,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 type="button"
                 onClick={clearCart}
                 disabled={cart.length === 0}
-                className="h-10 sm:h-11 px-3 rounded-xl bg-white/[0.09] hover:bg-red-500/20 text-zinc-100 hover:text-red-300 border border-white/20 hover:border-red-400/50 disabled:opacity-40 text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all"
+                className="h-10 sm:h-11 px-3 rounded-xl bg-white/[0.1] hover:bg-red-500/20 text-zinc-100 hover:text-red-300 border border-white/20 hover:border-red-400/50 disabled:opacity-40 text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition-all"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Cancelar</span>
