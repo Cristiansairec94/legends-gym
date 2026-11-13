@@ -66,7 +66,6 @@ export const ProductsCatalog: React.FC = () => {
   const [formMinStock, setFormMinStock] = useState(4);
   const [formBarcode, setFormBarcode] = useState('');
   const [formSku, setFormSku] = useState('');
-  const [formTaxRate, setFormTaxRate] = useState<'IVA 16%' | 'Tasa 0%' | 'IEPS 8%' | 'Exento'>('IVA 16%');
   const [formImage, setFormImage] = useState('');
   const [formFlavor, setFormFlavor] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -132,7 +131,6 @@ export const ProductsCatalog: React.FC = () => {
     setFormMinStock(3);
     setFormBarcode('');
     setFormSku(`#PROD-${String(products.length + 1).padStart(3, '0')}`);
-    setFormTaxRate('IVA 16%');
     setFormImage('');
     setFormFlavor('');
     setFormDescription('');
@@ -155,7 +153,6 @@ export const ProductsCatalog: React.FC = () => {
     setFormMinStock(p.minStock);
     setFormBarcode(p.barcode);
     setFormSku(p.sku || `#${p.id}`);
-    setFormTaxRate(p.taxRate || 'IVA 16%');
     setFormImage(p.image);
     setFormFlavor(p.flavor || '');
     setFormDescription(p.description);
@@ -233,7 +230,6 @@ export const ProductsCatalog: React.FC = () => {
         minStock: Number(formMinStock),
         barcode: formBarcode.trim() || editingProduct.barcode,
         sku: formSku.trim() || `#${editingProduct.id}`,
-        taxRate: formTaxRate,
         image: formImage.trim() || editingProduct.image,
         flavor: formFlavor.trim() || undefined,
         description: formDescription.trim(),
@@ -252,7 +248,6 @@ export const ProductsCatalog: React.FC = () => {
         minStock: Number(formMinStock),
         barcode: formBarcode.trim() || `${Math.floor(100000000000 + Math.random() * 900000000000)}`,
         sku: formSku.trim() || `#PROD-${String(products.length + 1).padStart(3, '0')}`,
-        taxRate: formTaxRate,
         image: formImage.trim() || 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=400&q=80',
         flavor: formFlavor.trim() || undefined,
         description: formDescription.trim() || 'Suplemento de alto valor biológico para entrenamiento.',
@@ -530,7 +525,6 @@ export const ProductsCatalog: React.FC = () => {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredProducts.map((p) => {
-            const tax = p.taxRate || 'IVA 16%';
             const sku = p.sku || `#${p.id}`;
 
             return (
@@ -581,7 +575,7 @@ export const ProductsCatalog: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Second row: [ Barcode Box ] on left, [ /pz IVA 16% ] on right */}
+                  {/* Second row: [ Barcode Box ] on left, [ /pz ] on right */}
                   <div className="flex items-center justify-between gap-1 text-[11px]">
                     <div className="flex items-center gap-1 text-gym-muted font-mono bg-gym-surface/60 px-1.5 py-0.5 rounded border border-gym-border/60 text-[10px]">
                       <Barcode className="w-3 h-3 text-amber-400" />
@@ -595,9 +589,6 @@ export const ProductsCatalog: React.FC = () => {
                         </span>
                       )}
                       <span className="text-gym-muted font-bold text-xs">/pz</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                        {tax}
-                      </span>
                     </div>
                   </div>
 
