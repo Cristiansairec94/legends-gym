@@ -479,7 +479,7 @@ export const ExpensesManager: React.FC = () => {
               <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input 
                 type="text"
-                placeholder="Buscar por folio, concepto o factura..."
+                placeholder="Buscar por concepto o factura..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-gym-surface border border-gym-border hover:border-zinc-600 focus:border-red-400 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors shadow-sm"
@@ -544,7 +544,7 @@ export const ExpensesManager: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-gym-surface/80 border-b border-gym-border text-gym-muted uppercase font-bold text-[10px] tracking-wider">
               <tr>
-                <th className="py-3 px-4">Folio / Fecha</th>
+                <th className="py-3 px-4">Fecha</th>
                 <th className="py-3 px-4">Categoría</th>
                 <th className="py-3 px-4">Descripción del Gasto</th>
                 <th className="py-3 px-4">Método de Pago</th>
@@ -568,11 +568,11 @@ export const ExpensesManager: React.FC = () => {
                   return (
                     <tr key={expense.id} className="hover:bg-gym-surface/40 transition-colors">
                       <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-white block">
-                          {expense.folio}
+                        <span className="font-bold text-white block">
+                          {dateObj.toLocaleDateString('es-MX')}
                         </span>
                         <span className="text-[11px] text-gym-muted">
-                          {dateObj.toLocaleDateString('es-MX')} {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                          {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </td>
 
