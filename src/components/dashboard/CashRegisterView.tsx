@@ -13,7 +13,6 @@ import {
   FileSpreadsheet,
   Clock,
   User,
-  Sparkles,
   TrendingUp,
   ShoppingBag,
   Dumbbell,
@@ -1033,22 +1032,9 @@ export const CashRegisterView: React.FC = () => {
               <div className="space-y-1.5">
                 {/* STEP 1: Efectivo Total Contado */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between flex-wrap gap-1">
-                    <label className="text-[11.5px] font-black text-white">
-                      Efectivo Total Contado en Caja ($) *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCountedCashStr(expectedCashInDrawer.toFixed(2).replace(/\.00$/, ''))
-                      }
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/55 text-emerald-200 text-[10.5px] font-black transition-all active:scale-95 shadow-sm"
-                      title="Autocompletar con el efectivo físico esperado en cajón"
-                    >
-                      <Sparkles className="w-3 h-3 text-emerald-300" />
-                      <span>⚡ Cuadre Exacto (${expectedCashInDrawer.toLocaleString()})</span>
-                    </button>
-                  </div>
+                  <label className="text-[11.5px] font-black text-white block">
+                    Efectivo Total Contado en Caja ($) *
+                  </label>
 
                   {/* Digital Readout Input */}
                   <div className="relative">
