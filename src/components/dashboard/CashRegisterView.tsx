@@ -230,7 +230,7 @@ export const CashRegisterView: React.FC = () => {
               <div class="bold" style="font-size:14px;">${gymSettings.gymName}</div>
               <div>CORTE DE CAJA Y ARQUEO DE TURNO</div>
               <div>Folio: ${cashSession.id}</div>
-              <div>Estado: ${cashSession.status === 'open' ? 'ARQUEO EN VIVO' : 'CORTE Z CERRADO'}</div>
+              <div>Estado: ${cashSession.status === 'open' ? 'ARQUEO EN VIVO' : 'CORTE CERRADO'}</div>
             </div>
             <hr />
             <div>Apertura: ${new Date(cashSession.openedAt).toLocaleString('es-MX')}</div>
@@ -333,7 +333,7 @@ export const CashRegisterView: React.FC = () => {
                       : 'bg-rose-400'
                   }`}
                 />
-                {cashSession.status === 'open' ? 'Caja Abierta' : 'Caja Cerrada (Corte Z)'}
+                {cashSession.status === 'open' ? 'Caja Abierta' : 'Caja Cerrada'}
               </span>
             </div>
 
@@ -363,7 +363,7 @@ export const CashRegisterView: React.FC = () => {
             type="button"
             onClick={handlePrintShiftReport}
             className="h-8.5 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/25 hover:border-white/40 text-white text-xs font-extrabold transition-all active:scale-95"
-            title="Imprimir tirilla térmica de Arqueo / Corte Z (80mm)"
+            title="Imprimir tirilla térmica de Arqueo / Corte (80mm)"
           >
             <Printer className="w-3.5 h-3.5 text-amber-300" />
             <span>Imprimir Corte</span>
@@ -792,7 +792,7 @@ export const CashRegisterView: React.FC = () => {
                     <div className="flex items-center justify-between border-b border-white/15 pb-2">
                       <span className="text-xs font-black text-amber-300 uppercase tracking-wider font-sans flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5" />
-                        Resultado Auditado del Cierre (Corte Z)
+                        Resultado Auditado del Cierre
                       </span>
                       <span className="text-[11px] text-zinc-300">
                         {cashSession.closedAt ? new Date(cashSession.closedAt).toLocaleString('es-MX') : ''}
@@ -975,7 +975,7 @@ export const CashRegisterView: React.FC = () => {
                     <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
                   <h3 className="font-black text-xs sm:text-sm text-white tracking-tight">
-                    Realizar Corte de Caja (Corte Z)
+                    Realizar Corte de Caja
                   </h3>
                 </div>
 
@@ -1270,7 +1270,7 @@ export const CashRegisterView: React.FC = () => {
                 }`}
               >
                 <Lock className="w-4 h-4 stroke-[2.5]" />
-                <span>Cerrar Turno y Guardar Corte Z</span>
+                <span>Cerrar Turno y Guardar Corte</span>
               </button>
             </form>
           ) : (

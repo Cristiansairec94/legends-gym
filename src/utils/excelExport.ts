@@ -48,7 +48,7 @@ export const exportShiftReportToExcel = (
   // HOJA 1: RESUMEN DE CORTE DE CAJA (CORTE Z)
   // ==========================================
   const summaryData: (string | number)[][] = [
-    ['FITNESS LEGENDS GYM - REPORTE DE CORTE DE CAJA (CORTE Z)'],
+    ['FITNESS LEGENDS GYM - REPORTE DE CORTE DE CAJA'],
     ['Gimnasio:', gymSettings?.gymName || 'Fitness Legends Gym', 'Fecha de Emisión:', new Date().toLocaleString('es-MX')],
     ['Folio de Turno:', cashSession.id, 'Estado:', cashSession.status === 'open' ? 'ABIERTO / EN CURSO' : 'CERRADO / CORTE REALIZADO'],
     ['Cajero Responsable:', cashSession.openedBy, 'Fecha Apertura:', openedDateStr],
