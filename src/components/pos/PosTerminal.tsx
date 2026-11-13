@@ -49,7 +49,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   } = useGym();
 
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Optional Customer Association (via + Nuevo Socio)
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -75,18 +74,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     timestamp: number;
   } | null>(null);
 
-  // Categories list with touch icons
-  const categories = [
-    { id: 'all', label: 'Todos', icon: '🔥' },
-    { id: 'protein', label: 'Proteínas', icon: '🥛' },
-    { id: 'creatine', label: 'Creatinas', icon: '💊' },
-    { id: 'preworkout', label: 'Pre-Entreno', icon: '⚡' },
-    { id: 'aminoacids', label: 'Aminoácidos', icon: '🧪' },
-    { id: 'beverage', label: 'Bebidas', icon: '🥤' },
-    { id: 'snack', label: 'Snacks', icon: '🍫' },
-    { id: 'gear', label: 'Accesorios', icon: '🎒' },
-  ];
-
   // Auto-dismiss scan feedback after 3.2 seconds
   useEffect(() => {
     if (!scanFeedback) return;
@@ -98,19 +85,15 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
 
   // Filtered products list for Catalog Grid
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      const matchesCat = selectedCategory === 'all' || p.category === selectedCategory;
-      const q = search.trim().toLowerCase();
-      if (!q) return matchesCat;
-      const matchesQuery =
-        p.name.toLowerCase().includes(q) ||
-        (p.brand && p.brand.toLowerCase().includes(q)) ||
-        (p.barcode && p.barcode.includes(q)) ||
-        (p.flavor && p.flavor.toLowerCase().includes(q));
-
-      return matchesCat && matchesQuery;
-    });
-  }, [products, selectedCategory, search]);
+    const q = search.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      (p.barcode && p.barcode.includes(q)) ||
+      (p.flavor && p.flavor.toLowerCase().includes(q))
+    );
+  }, [products, search]);
 
   // Main Barcode Matcher & Cart Insertion
   const handleProductScanned = useCallback(
@@ -433,28 +416,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 </span>
               )}
             </div>
-
-            {/* Category Filter Pills (Clean No-Scrollbar Touch Strip) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-              {categories.map(cat => {
-                const isActive = selectedCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all shrink-0 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black shadow-[0_0_18px_rgba(245,158,11,0.42)] border border-amber-200/80'
-                        : 'bg-[#1f2638]/70 text-zinc-100 hover:bg-[#283147]/85 hover:text-white border border-white/20 hover:border-amber-400/50'
-                    }`}
-                  >
-                    <span className="text-xs leading-none">{cat.icon}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Products Grid (Smooth Custom Scrollbar, Full Breathing Room) */}
@@ -467,7 +428,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 <div>
                   <h4 className="font-black text-sm text-white">No se encontraron productos</h4>
                   <p className="text-xs text-zinc-300 mt-1 max-w-xs">
-                    No hay artículos que coincidan con "{search}". Prueba con otra categoría o código.
+                    No hay artículos que coincidan con "{search}". Prueba con otro nombre o código.
                   </p>
                 </div>
                 <button
@@ -475,11 +436,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                   onClick={() => {
                     setSearch('');
                     setBarcodeInput('');
-                    setSelectedCategory('all');
                   }}
                   className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 text-xs font-extrabold transition-colors"
                 >
-                  Restablecer Filtros
+                  Limpiar Búsqueda
                 </button>
               </div>
             ) : (
