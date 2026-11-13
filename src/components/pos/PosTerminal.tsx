@@ -12,8 +12,6 @@ import {
   Search,
   Barcode,
   Lock,
-  ChevronDown,
-  User,
   Plus,
   Minus,
   Trash2,
@@ -26,7 +24,6 @@ import {
   AlertCircle,
   Package,
   X,
-  CheckCircle2,
   RotateCcw
 } from 'lucide-react';
 
@@ -54,11 +51,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Customer State (ActioLift Pattern)
+  // Optional Customer Association (via + Nuevo Socio)
   const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [isClientSearchOpen, setIsClientSearchOpen] = useState(false);
-  const [clientSearchQuery, setClientSearchQuery] = useState('');
-  const clientSearchRef = useRef<HTMLDivElement>(null);
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
@@ -101,32 +95,6 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     }, 3200);
     return () => clearTimeout(timer);
   }, [scanFeedback]);
-
-  // Click outside listener for Client Search Dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(e.target as Node)) {
-        setIsClientSearchOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Filtered members list based on search query (ActioLift style)
-  const filteredMembers = useMemo(() => {
-    if (!clientSearchQuery.trim()) return members.slice(0, 8);
-    const q = clientSearchQuery.toLowerCase();
-    return members
-      .filter(
-        m =>
-          m.fullName.toLowerCase().includes(q) ||
-          (m.phone && m.phone.includes(q)) ||
-          (m.documentId && m.documentId.toLowerCase().includes(q)) ||
-          (m.membership && m.membership.planName.toLowerCase().includes(q))
-      )
-      .slice(0, 12);
-  }, [members, clientSearchQuery]);
 
   // Filtered products list for Catalog Grid
   const filteredProducts = useMemo(() => {
@@ -298,7 +266,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     }
   };
 
-  // Checkout process with client association
+  // Checkout process with optional newly registered client association
   const handleCheckout = () => {
     if (cart.length === 0) return;
     const finalAmountPaid =
@@ -306,6 +274,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     const sale = processSale(paymentMethod, finalAmountPaid, selectedClientId || undefined);
     setCompletedSale(sale);
     setAmountPaidStr('');
+    setSelectedClientId('');
   };
 
   const selectedMember = members.find(m => m.id === selectedClientId);
@@ -530,178 +499,39 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           {/* Kiosk Gold Top Specular Highlight */}
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none" />
 
-          {/* 1. Customer Selection Box (Compact & Crisp) */}
-          <div ref={clientSearchRef} className="relative shrink-0 space-y-1 z-30">
-            <div className="flex items-center justify-between px-0.5">
+          {/* 1. Customer Quick Header (+ Nuevo Socio, without search selector/dropdown) */}
+          <div className="relative shrink-0 flex items-center justify-between gap-2 pb-1">
+            {selectedMember ? (
+              <div className="flex items-center gap-1.5 min-w-0 bg-amber-400/15 border border-amber-400/45 rounded-lg px-2 py-0.5">
+                <span className="text-[10.5px] font-extrabold text-amber-200 truncate">
+                  Socio: {selectedMember.fullName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedClientId('')}
+                  className="p-0.5 text-amber-200/80 hover:text-white rounded hover:bg-white/[0.12] transition-colors shrink-0"
+                  title="Volver a Público General"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-200">
-                Cliente / Socio
+                Público en General
               </span>
-              <button
-                type="button"
-                onClick={() => setShowAddClientModal(true)}
-                className="text-[10.5px] text-amber-300 hover:text-amber-200 font-extrabold flex items-center gap-1 hover:underline"
-              >
-                <UserPlus className="w-3 h-3" />
-                <span>+ Nuevo Socio</span>
-              </button>
-            </div>
-
-            <div
-              onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
-                selectedMember
-                  ? 'bg-gradient-to-r from-amber-500/20 via-white/[0.1] to-white/[0.08] border-amber-400/60 hover:border-amber-300 text-white shadow-sm'
-                  : 'bg-white/[0.09] hover:bg-white/[0.14] border-white/20 hover:border-amber-400/50 text-zinc-100'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 truncate">
-                {selectedMember ? (
-                  selectedMember.avatarUrl ? (
-                    <img
-                      src={selectedMember.avatarUrl}
-                      alt={selectedMember.fullName}
-                      className="w-7 h-7 rounded-full object-cover border border-amber-400/60 shrink-0"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
-                      {selectedMember.fullName.charAt(0)}
-                    </div>
-                  )
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-amber-400/15 border border-amber-400/45 flex items-center justify-center text-amber-300 shrink-0">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                )}
-
-                <div className="truncate text-left leading-tight">
-                  <span className="font-extrabold text-white text-xs block truncate">
-                    {selectedMember ? selectedMember.fullName : 'Público en General'}
-                  </span>
-                  <span className="text-[10px] text-zinc-300 block truncate font-normal">
-                    {selectedMember
-                      ? `${selectedMember.membership?.planName || 'Socio'} • ${selectedMember.phone || selectedMember.documentId}`
-                      : 'Venta de mostrador directa'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                {selectedMember && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedClientId('');
-                    }}
-                    className="p-1 text-zinc-300 hover:text-white rounded-lg hover:bg-white/[0.12] transition-colors"
-                    title="Quitar socio y volver a Público General"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-zinc-300 transition-transform ${
-                    isClientSearchOpen ? 'rotate-180 text-amber-300' : ''
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* Dropdown Popover for Searching Members */}
-            {isClientSearchOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#1b2030]/95 backdrop-blur-2xl border border-amber-400/50 rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-2.5 z-40 space-y-2 animate-fade-in">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-amber-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    autoFocus
-                    value={clientSearchQuery}
-                    onChange={(e) => setClientSearchQuery(e.target.value)}
-                    placeholder="Buscar por nombre, teléfono o DNI..."
-                    className="w-full pl-8 pr-3 py-2 bg-[#131722]/90 rounded-xl border border-white/20 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-
-                <div className="max-h-44 overflow-y-auto pos-scroll space-y-1 pr-1 divide-y divide-white/[0.06]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedClientId('');
-                      setIsClientSearchOpen(false);
-                      setClientSearchQuery('');
-                    }}
-                    className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
-                      !selectedClientId
-                        ? 'bg-amber-400/20 text-amber-200 font-bold'
-                        : 'text-zinc-200 hover:bg-white/[0.08]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <User className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Público en General (Mostrador)</span>
-                    </div>
-                    {!selectedClientId && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />}
-                  </button>
-
-                  {filteredMembers.map(member => {
-                    const isSelected = selectedClientId === member.id;
-                    return (
-                      <button
-                        key={member.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedClientId(member.id);
-                          setIsClientSearchOpen(false);
-                          setClientSearchQuery('');
-                        }}
-                        className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-xs transition-colors ${
-                          isSelected
-                            ? 'bg-amber-400/20 text-amber-200 font-bold'
-                            : 'text-zinc-200 hover:bg-white/[0.08]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 truncate text-left">
-                          <div className="w-6 h-6 rounded-full bg-white/[0.12] flex items-center justify-center text-[10px] font-bold shrink-0">
-                            {member.fullName.charAt(0)}
-                          </div>
-                          <div className="truncate">
-                            <span className="block truncate font-bold text-white">
-                              {member.fullName}
-                            </span>
-                            <span className="text-[10px] text-zinc-300 block font-mono">
-                              {member.phone || member.documentId || 'Socio'}
-                            </span>
-                          </div>
-                        </div>
-                        {member.membership?.status === 'active' && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shrink-0 font-black">
-                            Activo
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="pt-2 border-t border-white/15 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsClientSearchOpen(false);
-                      setShowAddClientModal(true);
-                    }}
-                    className="w-full py-1.5 text-xs text-amber-300 hover:text-amber-200 font-bold flex items-center justify-center gap-1.5 hover:bg-amber-400/15 rounded-xl transition-colors"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>+ Registrar Nuevo Socio</span>
-                  </button>
-                </div>
-              </div>
             )}
+            <button
+              type="button"
+              onClick={() => setShowAddClientModal(true)}
+              className="text-[10.5px] text-amber-300 hover:text-amber-200 font-extrabold flex items-center gap-1 hover:underline shrink-0"
+            >
+              <UserPlus className="w-3 h-3" />
+              <span>+ Nuevo Socio</span>
+            </button>
           </div>
 
           {/* 2. Middle: Live Ticket Items List (Flex-1 with Zero-Clip Proportions) */}
-          <div className="flex-1 min-h-0 flex flex-col my-2 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col mt-1 mb-2 overflow-hidden">
             {/* Ticket Sub-header */}
             <div className="flex items-center justify-between pb-1.5 border-b border-white/15 text-xs shrink-0">
               <span className="font-black text-white flex items-center gap-1.5">
