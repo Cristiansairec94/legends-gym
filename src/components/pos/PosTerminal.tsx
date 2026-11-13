@@ -5,7 +5,6 @@ import { ReceiptModal } from './ReceiptModal';
 import { CashMovementsModal } from './CashMovementsModal';
 import { PosSalesHistoryModal } from './PosSalesHistoryModal';
 import { ClientFormModal } from '../clients/ClientFormModal';
-import posBg from '../../assets/pos-luxury-bg.jpg';
 import { Sale, PaymentMethod, Product } from '../../types';
 import { sounds } from '../../services/audio';
 import {
@@ -312,31 +311,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
   const selectedMember = members.find(m => m.id === selectedClientId);
 
   return (
-    <div className="h-full min-h-0 relative rounded-3xl border border-white/25 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col p-2.5 sm:p-3 gap-2.5">
-      
-      {/* High-Definition Color-Matched Luxury Supplement Bar & Gym Background */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none rounded-3xl">
-        <img
-          src={posBg}
-          alt="LEYENDS GYM Supplement Bar & Fitness Lounge"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = '/pos-luxury-bg.jpg';
-          }}
-          style={{
-            filter: 'brightness(1.06) contrast(1.04) saturate(1.06)',
-            objectPosition: 'center center',
-          }}
-          className="w-full h-full object-cover"
-        />
-        {/* Ultra-Light Crystal Vignette so High-Res Architectural Details & Warm Gold Lighting Shine Through */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111522]/35 via-transparent to-[#111522]/15 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(251,191,36,0.12)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
-      </div>
+    <div className="h-full min-h-0 relative rounded-3xl border border-white/15 bg-[#090c14] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2.5 sm:p-3 gap-2.5">
 
       {/* ===================================================================== */}
       {/* 1. TOP UNIFIED COMMAND HEADER BAR                                     */}
       {/* ===================================================================== */}
-      <div className="relative z-20 bg-[#1a2030]/65 backdrop-blur-xl rounded-2xl border border-white/25 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
+      <div className="relative z-20 bg-[#181f30]/85 backdrop-blur-xl rounded-2xl border border-white/15 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
         {/* Top Specular Hairline */}
         <div className="absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/70 to-transparent pointer-events-none" />
 
@@ -430,7 +410,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         {/* ================================================================ */}
         {/* LEFT COLUMN: Catálogo Visual & Escáner (7 / 8 de 12)             */}
         {/* ================================================================ */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 bg-[#181e2e]/42 backdrop-blur-md rounded-2xl border border-white/25 p-3 sm:p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.4)] relative overflow-hidden">
+        <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 bg-[#131826]/90 backdrop-blur-md rounded-2xl border border-white/15 p-3 sm:p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
           {/* Subtle Top Specular Hairline */}
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
@@ -546,7 +526,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
         {/* ================================================================ */}
         {/* RIGHT COLUMN: Ticket de Venta & Caja de Cobro (5 / 4 de 12)      */}
         {/* ================================================================ */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#1e2538]/70 via-[#181e2e]/74 to-[#141927]/78 backdrop-blur-xl rounded-2xl border border-amber-400/50 p-3 sm:p-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.5),0_0_24px_rgba(245,158,11,0.14)] relative overflow-hidden">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between min-h-0 bg-gradient-to-b from-[#1a2133]/95 via-[#151b2a]/95 to-[#111623]/95 backdrop-blur-xl rounded-2xl border border-amber-400/45 p-3 sm:p-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.5),0_0_24px_rgba(245,158,11,0.12)] relative overflow-hidden">
           {/* Kiosk Gold Top Specular Highlight */}
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none" />
 
