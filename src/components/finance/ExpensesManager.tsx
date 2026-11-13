@@ -539,24 +539,24 @@ export const ExpensesManager: React.FC = () => {
       </div>
 
       {/* Expenses Table */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden">
+      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gym-surface/80 border-b border-gym-border text-gym-muted uppercase font-bold text-[10px] tracking-wider">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gym-surface/80 border-b border-gym-border text-zinc-300 uppercase font-extrabold text-[11px] xl:text-xs tracking-wider">
               <tr>
-                <th className="py-3 px-4">Fecha</th>
-                <th className="py-3 px-4">Categoría</th>
-                <th className="py-3 px-4">Descripción del Gasto</th>
-                <th className="py-3 px-4">Método de Pago</th>
-                <th className="py-3 px-4">Registró</th>
-                <th className="py-3 px-4 text-right">Importe</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Fecha</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Categoría</th>
+                <th className="py-4 px-3 xl:px-5">Descripción del Gasto</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Método de Pago</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Registró</th>
+                <th className="py-4 px-3 xl:px-5 text-right whitespace-nowrap">Importe</th>
+                <th className="py-4 px-3 xl:px-5 text-center whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gym-border/40">
+            <tbody className="divide-y divide-gym-border/50">
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gym-muted">
+                  <td colSpan={7} className="py-12 text-center text-gym-muted text-sm">
                     No se encontraron gastos que coincidan con la búsqueda.
                   </td>
                 </tr>
@@ -567,65 +567,65 @@ export const ExpensesManager: React.FC = () => {
 
                   return (
                     <tr key={expense.id} className="hover:bg-gym-surface/40 transition-colors">
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-white block">
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
+                        <span className="font-bold text-sm sm:text-[15px] text-white block">
                           {dateObj.toLocaleDateString('es-MX')}
                         </span>
-                        <span className="text-[11px] text-gym-muted">
+                        <span className="text-xs text-gym-muted">
                           {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cat.color}`}>
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
+                        <span className={`inline-flex items-center text-xs font-bold px-3 py-1 rounded-full border ${cat.color}`}>
                           {cat.label}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 max-w-xs">
-                        <p className="font-semibold text-gray-200 truncate" title={expense.description}>
+                      <td className="py-4 px-3 xl:px-5 min-w-[200px]">
+                        <p className="font-semibold text-sm sm:text-[15px] text-gray-200 line-clamp-2 leading-snug max-w-[260px] lg:max-w-[340px] xl:max-w-[440px]" title={expense.description}>
                           {expense.description}
                         </p>
                         {expense.receiptNumber && (
-                          <span className="text-[10px] text-gym-muted font-mono block">
+                          <span className="text-xs text-zinc-400 font-mono block mt-0.5">
                             Doc: {expense.receiptNumber}
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5">
-                          {expense.paymentMethod === 'cash' && <Banknote className="w-3.5 h-3.5 text-emerald-400" />}
-                          {expense.paymentMethod === 'card' && <CreditCard className="w-3.5 h-3.5 text-blue-400" />}
-                          {expense.paymentMethod === 'transfer' && <DollarSign className="w-3.5 h-3.5 text-purple-400" />}
-                          <span className="capitalize font-medium text-gray-300">
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {expense.paymentMethod === 'cash' && <Banknote className="w-4 h-4 text-emerald-400" />}
+                          {expense.paymentMethod === 'card' && <CreditCard className="w-4 h-4 text-blue-400" />}
+                          {expense.paymentMethod === 'transfer' && <DollarSign className="w-4 h-4 text-purple-400" />}
+                          <span className="capitalize font-semibold text-sm text-gray-200">
                             {expense.paymentMethod === 'cash' ? 'Efectivo' : expense.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
                           </span>
                         </div>
                         {expense.paidFromCashRegister && (
-                          <span className="text-[9px] text-amber-400 block font-semibold">
+                          <span className="text-[11px] text-amber-400 block font-semibold mt-0.5">
                             (Descontado de Caja)
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3 px-4 text-gym-muted font-medium">
+                      <td className="py-4 px-3 xl:px-5 text-zinc-300 font-medium text-sm whitespace-nowrap">
                         {expense.registeredBy}
                       </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <span className="font-black text-sm text-red-400">
+                      <td className="py-4 px-3 xl:px-5 text-right whitespace-nowrap">
+                        <span className="font-mono font-black text-base xl:text-lg text-red-400">
                           -${expense.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-3 xl:px-5 text-center whitespace-nowrap">
                         <button
                           onClick={() => deleteExpense(expense.id)}
-                          className="p-1 rounded-lg text-gym-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="p-2 rounded-xl bg-gym-surface/60 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-transparent hover:border-red-500/30 transition-all inline-flex items-center justify-center"
                           title="Eliminar gasto"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>
