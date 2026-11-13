@@ -293,12 +293,6 @@ export const ProductsCatalog: React.FC = () => {
             <span>Sincronizado</span>
           </div>
 
-          {/* Matriz Dropdown Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gray-200 border border-gym-border font-semibold">
-            <span className="text-amber-400 font-bold">🏪 Matriz</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gym-muted" />
-          </div>
-
           {/* Clock */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gym-muted border border-gym-border font-mono text-[11px]">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
