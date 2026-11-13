@@ -23,6 +23,12 @@ import {
 import { ReceiptModal } from '../pos/ReceiptModal';
 import { exportIncomeReportToExcel } from '../../utils/excelExport';
 
+const PAYMENT_METHOD_FILTERS = [
+  { id: 'cash', label: 'Efectivo', activeClass: 'bg-emerald-500 text-black' },
+  { id: 'card', label: 'Tarjeta', activeClass: 'bg-blue-500 text-white' },
+  { id: 'transfer', label: 'Transfer', activeClass: 'bg-purple-500 text-white' },
+] as const;
+
 export const IncomeHistoryView: React.FC = () => {
   const { sales, todaySalesTotal, cashSession, gymSettings } = useGym();
 
@@ -321,46 +327,23 @@ export const IncomeHistoryView: React.FC = () => {
 
           {/* Payment Method Filter */}
           <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
-            <button
-              onClick={() => setMethodFilter('all')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                methodFilter === 'all'
-                  ? 'bg-emerald-500 text-black'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              Métodos ({sales.length})
-            </button>
-            <button
-              onClick={() => setMethodFilter('cash')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
-                methodFilter === 'cash'
-                  ? 'bg-emerald-500 text-black'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              Efectivo
-            </button>
-            <button
-              onClick={() => setMethodFilter('card')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
-                methodFilter === 'card'
-                  ? 'bg-blue-500 text-white'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              Tarjeta
-            </button>
-            <button
-              onClick={() => setMethodFilter('transfer')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
-                methodFilter === 'transfer'
-                  ? 'bg-purple-500 text-white'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              Transfer
-            </button>
+            {PAYMENT_METHOD_FILTERS.map((method) => {
+              const isActive = methodFilter === method.id;
+              return (
+                <button
+                  key={method.id}
+                  onClick={() => setMethodFilter(prev => (prev === method.id ? 'all' : method.id))}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                    isActive
+                      ? method.activeClass
+                      : 'text-gym-muted hover:text-white'
+                  }`}
+                  title={isActive ? 'Clic para mostrar todos los métodos' : `Filtrar por ${method.label}`}
+                >
+                  {method.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Botón Descargar Reporte Detallado */}
