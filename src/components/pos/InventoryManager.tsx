@@ -635,12 +635,6 @@ export const InventoryManager: React.FC = () => {
                     dotClass: 'bg-zinc-400',
                   };
 
-                  const targetHealthy = Math.max(p.minStock * 3, 15);
-                  const stockBarPct = Math.min(
-                    100,
-                    Math.max(isOut ? 0 : 8, Math.round((p.stock / targetHealthy) * 100))
-                  );
-
                   return (
                     <tr
                       key={p.id}
@@ -718,36 +712,41 @@ export const InventoryManager: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Col 4: Compact Stock Health */}
+                      {/* Col 4: Clean Executive Stock Pill & Status */}
                       <td className="py-2 px-3">
-                        <div className="w-32 space-y-1">
-                          <div className="flex items-center justify-between gap-1.5">
-                            <span
-                              className={`text-[11px] font-black font-mono px-1.5 py-0.2 rounded border ${
-                                isOut
-                                  ? 'bg-red-500/20 text-red-300 border-red-500/40'
-                                  : isLow
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                  : 'bg-gym-surface text-white border-gym-border'
-                              }`}
-                            >
-                              {isOut ? 'AGOTADO' : `${p.stock} uds`}
-                            </span>
-                            <span className="text-[10px] font-mono text-zinc-400">
-                              Mín:{p.minStock}
-                            </span>
+                        <div className="inline-flex items-center gap-2.5">
+                          <div
+                            className={`min-w-[38px] h-8 px-2 rounded-lg border flex items-center justify-center font-mono text-xs sm:text-sm font-black shrink-0 ${
+                              isOut
+                                ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.18)]'
+                                : isLow
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.15)]'
+                                : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                            }`}
+                          >
+                            {p.stock}
                           </div>
-                          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                isOut
-                                  ? 'bg-red-500'
-                                  : isLow
-                                  ? 'bg-amber-400'
-                                  : 'bg-emerald-400'
-                              }`}
-                              style={{ width: `${stockBarPct}%` }}
-                            />
+
+                          <div className="leading-tight whitespace-nowrap">
+                            {isOut ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-red-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                                Agotado
+                              </span>
+                            ) : isLow ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400">
+                                <AlertTriangle className="w-3 h-3 shrink-0" />
+                                Stock bajo
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                Disponible
+                              </span>
+                            )}
+                            <span className="block text-[10px] font-mono text-zinc-400 mt-0.5">
+                              Mín. {p.minStock} pzas
+                            </span>
                           </div>
                         </div>
                       </td>
