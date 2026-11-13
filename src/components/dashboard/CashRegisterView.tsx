@@ -269,7 +269,7 @@ export const CashRegisterView: React.FC = () => {
   };
 
   return (
-    <div className="h-full min-h-0 relative rounded-3xl border border-white/25 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2.5 sm:p-3 gap-2.5">
+    <div className="h-full min-h-0 relative rounded-3xl border border-white/25 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2 sm:p-2.5 gap-2">
       {/* ===================================================================== */}
       {/* ARCHITECTURAL HIGH-DEFINITION GYM BACKGROUND & AMBIENT LIGHTING       */}
       {/* ===================================================================== */}
@@ -293,7 +293,7 @@ export const CashRegisterView: React.FC = () => {
       {/* ===================================================================== */}
       {/* 1. TOP UNIFIED COMMAND HEADER BAR (FROSTED CRYSTAL)                   */}
       {/* ===================================================================== */}
-      <div className="relative z-20 bg-[#181f30]/75 backdrop-blur-xl rounded-2xl border border-white/25 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
+      <div className="relative z-20 bg-[#181f30]/75 backdrop-blur-xl rounded-2xl border border-white/25 px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
         {/* Specular Top Accent Line */}
         <div
           className={`absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent ${
@@ -384,9 +384,9 @@ export const CashRegisterView: React.FC = () => {
       {/* ===================================================================== */}
       {/* 2. SLIM LUMINOUS KPI STRIP (4 HIGH-CONTRAST GLASS CARDS)              */}
       {/* ===================================================================== */}
-      <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-2.5 shrink-0">
+      <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
         {/* KPI 1: Total Ingresado en Turno */}
-        <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181f30]/70 backdrop-blur-md border border-amber-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-amber-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-amber-300 uppercase font-black tracking-wider block truncate">
@@ -401,7 +401,7 @@ export const CashRegisterView: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1.5 pt-1.5 border-t border-white/15">
+          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1 pt-1 border-t border-white/15">
             <span>
               Membresías: <strong className="text-white font-mono">${totalMemberships.toLocaleString()}</strong>
             </span>
@@ -412,7 +412,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 2: Efectivo Físico Esperado / En Caja */}
-        <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181f30]/70 backdrop-blur-md border border-emerald-400/45 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-emerald-400/45 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-emerald-300 uppercase font-black tracking-wider block truncate">
@@ -433,7 +433,7 @@ export const CashRegisterView: React.FC = () => {
               <Banknote className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1.5 pt-1.5 border-t border-white/15 truncate">
+          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1 pt-1 border-t border-white/15 truncate">
             {cashSession.status === 'open' ? (
               <>
                 <span>
@@ -454,7 +454,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 3: Cobros con Tarjeta POS */}
-        <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181f30]/70 backdrop-blur-md border border-sky-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-sky-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-sky-300 uppercase font-black tracking-wider block truncate">
@@ -469,7 +469,7 @@ export const CashRegisterView: React.FC = () => {
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1.5 pt-1.5 border-t border-white/15">
+          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1 pt-1 border-t border-white/15">
             <span>
               Membresías: <strong className="text-white font-mono">${cashSession.totalMembershipsCard.toLocaleString()}</strong>
             </span>
@@ -480,7 +480,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 4: Transferencias / SPEI */}
-        <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181f30]/70 backdrop-blur-md border border-purple-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-purple-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-purple-300 uppercase font-black tracking-wider block truncate">
@@ -495,7 +495,7 @@ export const CashRegisterView: React.FC = () => {
               <ArrowRightLeft className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1.5 pt-1.5 border-t border-white/15">
+          <div className="flex items-center justify-between text-[10.5px] text-zinc-200 mt-1 pt-1 border-t border-white/15">
             <span>
               Membresías:{' '}
               <strong className="text-white font-mono">
@@ -512,23 +512,23 @@ export const CashRegisterView: React.FC = () => {
       {/* ===================================================================== */}
       {/* 3. TWO-COLUMN KIOSK WORKSPACE (ZERO OUTER CLIPPING)                   */}
       {/* ===================================================================== */}
-      <div className="relative z-10 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden items-stretch">
+      <div className="relative z-10 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2.5 overflow-hidden items-stretch">
         {/* ================================================================= */}
-        {/* LEFT COLUMN (7/12): INTERACTIVE AUDIT & DENOMINATIONS CONSOLE     */}
+        {/* LEFT COLUMN (7/12): DESGLOSE DEL TURNO Y OPERACIONES              */}
         {/* ================================================================= */}
-        <div className="lg:col-span-7 flex flex-col min-h-0 bg-[#161c2c]/72 backdrop-blur-xl rounded-2xl border border-white/25 p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
+        <div className="lg:col-span-7 flex flex-col min-h-0 bg-[#151b2b]/88 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
           {/* Top Navigation Tabs Inside Left Panel */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/15 shrink-0">
-            <div className="flex items-center gap-1.5 bg-[#0f1320]/80 p-1 rounded-xl border border-white/15">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/15 shrink-0">
+            <div className="flex items-center gap-1.5 bg-[#0c101b]/90 p-1 rounded-xl border border-white/15">
               <button
                 type="button"
                 onClick={() => setActiveLeftTab('breakdown')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
                   activeLeftTab === 'breakdown'
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-sm'
-                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -538,10 +538,10 @@ export const CashRegisterView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveLeftTab('operations')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
                   activeLeftTab === 'operations'
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-sm'
-                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.06]'
+                    : 'text-zinc-200 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
                 <Receipt className="w-3.5 h-3.5" />
@@ -558,243 +558,229 @@ export const CashRegisterView: React.FC = () => {
               </button>
             </div>
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono bg-white/[0.08] px-2.5 py-1 rounded-xl border border-white/15 text-zinc-100">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold bg-[#0c101b]/85 px-2.5 py-1 rounded-xl border border-white/20 text-white">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
               <span>Activo: {shiftDurationText}</span>
             </div>
           </div>
 
-          {/* Scrollable Body of Left Column */}
-          <div className="flex-1 min-h-0 overflow-y-auto pos-scroll pr-1 pt-2.5 space-y-3">
+          {/* Left Panel Body */}
+          <div className="flex-1 min-h-0 overflow-y-auto pos-scroll pr-0.5 pt-2 flex flex-col gap-2">
             {/* ============================================================= */}
             {/* TAB 1: DESGLOSE DETALLADO DEL TURNO                           */}
             {/* ============================================================= */}
             {activeLeftTab === 'breakdown' && (
               <>
-                {/* 2-Column Shift Metadata Strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#101522]/80 border border-white/15">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-400/35 flex items-center justify-center text-emerald-300 shrink-0">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] uppercase tracking-wider text-zinc-300 font-bold block">
-                        Apertura de Turno
-                      </span>
-                      <span className="font-mono font-bold text-white text-xs truncate block">
-                        {new Date(cashSession.openedAt).toLocaleString('es-MX', {
-                          dateStyle: 'short',
-                          timeStyle: 'short',
-                        })}
-                      </span>
-                    </div>
+                {/* Compact High-Contrast Shift Metadata Bar */}
+                <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-[#0c111d]/90 border border-white/20">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="text-zinc-300 font-semibold">Apertura:</span>
+                    <span className="font-mono font-black text-white">
+                      {new Date(cashSession.openedAt).toLocaleString('es-MX', {
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                      })}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2.5 sm:border-l sm:border-white/15 sm:pl-3 sm:justify-end">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-400/35 flex items-center justify-center text-amber-300 shrink-0">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 sm:text-right">
-                      <span className="text-[10px] uppercase tracking-wider text-zinc-300 font-bold block">
-                        Responsable
-                      </span>
-                      <span className="font-extrabold text-amber-300 text-xs truncate block">
-                        {cashSession.openedBy}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="text-zinc-300 font-semibold">Responsable:</span>
+                    <span className="font-black text-amber-300">{cashSession.openedBy}</span>
                   </div>
                 </div>
 
-                {/* Cash In Drawer Flow Box */}
-                <div className="rounded-xl bg-[#101522]/75 border border-white/15 overflow-hidden">
-                  <div className="px-3.5 py-2 bg-white/[0.05] border-b border-white/10 flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                      <Banknote className="w-4 h-4 text-emerald-400" />
-                      Arqueo de Efectivo Físico (Suman a Cajón)
-                    </span>
-                    <span className="text-[10px] font-mono font-bold text-zinc-300">
-                      Billetes y Monedas
-                    </span>
-                  </div>
-
-                  <div className="p-3 space-y-1.5 font-mono text-xs">
-                    {/* Row 1 */}
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors">
-                      <div className="flex items-center gap-2.5 font-sans">
-                        <span className="w-5 h-5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono font-black text-xs flex items-center justify-center">
-                          +
-                        </span>
-                        <Wallet className="w-3.5 h-3.5 text-amber-300" />
-                        <span className="text-zinc-100 font-semibold">
-                          Fondo Inicial con que abrió este turno
-                        </span>
-                      </div>
-                      <span className="text-white font-black text-sm">
-                        ${cashSession.initialCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {/* Two-Column Uncrowded Breakdown (Physical Cash vs Electronic) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 flex-1 min-h-0">
+                  {/* LEFT CARD: Efectivo Físico en Cajón */}
+                  <div className="rounded-xl bg-[#0c111d]/92 border border-emerald-400/35 overflow-hidden flex flex-col shadow-lg">
+                    <div className="px-3 py-2 bg-emerald-500/15 border-b border-emerald-400/25 flex items-center justify-between gap-2 shrink-0">
+                      <span className="text-xs font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                        <Banknote className="w-4 h-4 text-emerald-400" />
+                        Efectivo Físico
+                      </span>
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-200 border border-emerald-400/35">
+                        Suma a cajón
                       </span>
                     </div>
 
-                    {/* Row 2 */}
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors">
-                      <div className="flex items-center gap-2.5 font-sans">
-                        <span className="w-5 h-5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono font-black text-xs flex items-center justify-center">
-                          +
-                        </span>
-                        <ShoppingBag className="w-3.5 h-3.5 text-emerald-300" />
-                        <span className="text-zinc-100 font-semibold">
-                          Ventas de Suplementos (Efectivo)
-                        </span>
-                      </div>
-                      <span className="text-white font-black text-sm">
-                        ${cashSession.totalSalesCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
-
-                    {/* Row 3 */}
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-colors">
-                      <div className="flex items-center gap-2.5 font-sans">
-                        <span className="w-5 h-5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono font-black text-xs flex items-center justify-center">
-                          +
-                        </span>
-                        <Dumbbell className="w-3.5 h-3.5 text-amber-300" />
-                        <span className="text-zinc-100 font-semibold">
-                          Membresías y Cuotas (Efectivo)
-                        </span>
-                      </div>
-                      <span className="text-white font-black text-sm">
-                        ${cashSession.totalMembershipsCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
-
-                    {/* Row 4: Gastos */}
-                    {todayCashExpenses > 0 && (
-                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-rose-500/15 border border-rose-400/35 text-rose-200">
-                        <div className="flex items-center gap-2.5 font-sans">
-                          <span className="w-5 h-5 rounded-md bg-rose-500/25 border border-rose-400/50 text-rose-300 font-mono font-black text-xs flex items-center justify-center">
-                            -
+                    <div className="p-2.5 space-y-2 flex-1 flex flex-col">
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                            +
                           </span>
-                          <span className="font-semibold">Gastos / Retiros Pagados de Caja</span>
+                          <Wallet className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                          <span className="text-xs font-bold text-white truncate">Fondo Inicial</span>
                         </div>
-                        <span className="font-black text-sm text-rose-300">
-                          -${todayCashExpenses.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <span className="text-sm font-mono font-black text-white shrink-0">
+                          ${cashSession.initialCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
-                    )}
 
-                    {/* Highlighted Total Expected Cash */}
-                    <div className="mt-2 p-3 rounded-xl bg-gradient-to-r from-emerald-500/25 via-emerald-500/15 to-emerald-500/25 border border-emerald-400/50 flex items-center justify-between shadow-[0_0_25px_rgba(16,185,129,0.15)]">
-                      <div className="flex items-center gap-2.5 font-sans">
-                        <span className="w-6 h-6 rounded-lg bg-emerald-400 text-black font-mono font-black text-sm flex items-center justify-center shadow-sm">
-                          =
-                        </span>
-                        <div>
-                          <span className="text-emerald-200 font-black text-xs sm:text-sm block">
-                            Total Efectivo Físico que debe haber:
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                            +
                           </span>
-                          <span className="text-[10px] text-emerald-300/85 block">
-                            Monto exacto requerido dentro del cajón de dinero
+                          <ShoppingBag className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                          <span className="text-xs font-bold text-white truncate">Suplementos (Efectivo)</span>
+                        </div>
+                        <span className="text-sm font-mono font-black text-white shrink-0">
+                          ${cashSession.totalSalesCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                            +
+                          </span>
+                          <Dumbbell className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                          <span className="text-xs font-bold text-white truncate">Membresías (Efectivo)</span>
+                        </div>
+                        <span className="text-sm font-mono font-black text-white shrink-0">
+                          ${cashSession.totalMembershipsCash.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+
+                      {todayCashExpenses > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-rose-500/20 border border-rose-400/45 text-rose-200">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-5 h-5 rounded-md bg-rose-500/30 border border-rose-400/60 text-rose-200 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                              -
+                            </span>
+                            <span className="text-xs font-bold truncate">Gastos / Retiros de Caja</span>
+                          </div>
+                          <span className="text-sm font-mono font-black text-rose-300 shrink-0">
+                            -${todayCashExpenses.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </div>
+                      )}
+
+                      {/* Highlighted Total Expected Cash */}
+                      <div className="mt-auto p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/25 via-emerald-500/15 to-emerald-500/25 border border-emerald-400/60 flex items-center justify-between gap-2 shadow-[0_0_20px_rgba(16,185,129,0.18)]">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-emerald-400 text-black font-mono font-black text-sm flex items-center justify-center shrink-0">
+                            =
+                          </span>
+                          <div className="leading-tight min-w-0">
+                            <span className="text-white font-black text-xs block truncate">
+                              Total en Cajón
+                            </span>
+                            <span className="text-[10px] text-emerald-200 font-semibold block truncate">
+                              Efectivo esperado
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-base sm:text-lg font-black text-emerald-300 font-mono whitespace-nowrap">
+                          ${expectedCashInDrawer.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
+                        </span>
                       </div>
-                      <span className="text-lg sm:text-xl font-black text-emerald-300 font-mono drop-shadow-sm">
-                        ${expectedCashInDrawer.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
-                      </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Electronic Income Breakdown (2x2 Grid + Composition Bar) */}
-                <div className="rounded-xl bg-[#101522]/75 border border-white/15 overflow-hidden">
-                  <div className="px-3.5 py-2 bg-white/[0.05] border-b border-white/10 flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4 text-sky-400" />
-                      Ingresos Electrónicos (No suman a caja física)
-                    </span>
-                    <span className="text-xs font-mono font-extrabold text-sky-200 bg-sky-500/20 px-2.5 py-0.5 rounded-lg border border-sky-400/40">
-                      Subtotal Digital: ${totalElectronic.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
-                    </span>
-                  </div>
+                  {/* RIGHT CARD: Ingresos Digitales */}
+                  <div className="rounded-xl bg-[#0c111d]/92 border border-sky-400/35 overflow-hidden flex flex-col shadow-lg">
+                    <div className="px-3 py-2 bg-sky-500/15 border-b border-sky-400/25 flex items-center justify-between gap-2 shrink-0">
+                      <span className="text-xs font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-sky-400" />
+                        Ingresos Digitales
+                      </span>
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-200 border border-sky-400/35">
+                        No suma a cajón
+                      </span>
+                    </div>
 
-                  <div className="p-3 space-y-2.5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-400/35 flex items-center justify-center text-sky-300">
+                    <div className="p-2.5 space-y-1.5 flex-1 flex flex-col">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-sky-500/25 border border-sky-400/45 flex items-center justify-center text-sky-300 shrink-0">
                             <CreditCard className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-zinc-100 font-semibold">Membresías (Tarjeta)</span>
+                          <span className="text-xs font-bold text-white truncate">Membresías (Tarjeta)</span>
                         </div>
-                        <span className="font-mono font-black text-white text-sm">
+                        <span className="font-mono font-black text-white text-sm shrink-0">
                           ${cashSession.totalMembershipsCard.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-400/35 flex items-center justify-center text-sky-300">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-sky-500/25 border border-sky-400/45 flex items-center justify-center text-sky-300 shrink-0">
                             <ShoppingBag className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-zinc-100 font-semibold">Suplementos (Tarjeta)</span>
+                          <span className="text-xs font-bold text-white truncate">Suplementos (Tarjeta)</span>
                         </div>
-                        <span className="font-mono font-black text-white text-sm">
+                        <span className="font-mono font-black text-white text-sm shrink-0">
                           ${cashSession.totalSalesCard.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/35 flex items-center justify-center text-purple-300">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-purple-500/25 border border-purple-400/45 flex items-center justify-center text-purple-300 shrink-0">
                             <ArrowRightLeft className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-zinc-100 font-semibold">Membresías (Transferencia)</span>
+                          <span className="text-xs font-bold text-white truncate">Membresías (Transf.)</span>
                         </div>
-                        <span className="font-mono font-black text-white text-sm">
+                        <span className="font-mono font-black text-white text-sm shrink-0">
                           ${(cashSession.totalMembershipsTransfer || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/35 flex items-center justify-center text-purple-300">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-purple-500/25 border border-purple-400/45 flex items-center justify-center text-purple-300 shrink-0">
                             <ArrowRightLeft className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-zinc-100 font-semibold">Suplementos (Transferencia)</span>
+                          <span className="text-xs font-bold text-white truncate">Suplementos (Transf.)</span>
                         </div>
-                        <span className="font-mono font-black text-white text-sm">
+                        <span className="font-mono font-black text-white text-sm shrink-0">
                           ${cashSession.totalSalesTransfer.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
-                    </div>
 
-                    {/* Multi-Method Visual Distribution Bar */}
-                    <div className="pt-1.5 border-t border-white/10">
-                      <div className="flex items-center justify-between text-[10.5px] text-zinc-300 font-bold mb-1">
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                          Efectivo ({cashPct}%)
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-sky-400" />
-                          Tarjeta ({cardPct}%)
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-purple-400" />
-                          Transferencia ({transferPct}%)
-                        </span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden flex">
-                        <div
-                          style={{ width: `${grandTotalShift > 0 ? cashPct : 34}%` }}
-                          className="h-full bg-emerald-400 transition-all duration-300"
-                        />
-                        <div
-                          style={{ width: `${grandTotalShift > 0 ? cardPct : 33}%` }}
-                          className="h-full bg-sky-400 transition-all duration-300"
-                        />
-                        <div
-                          style={{ width: `${grandTotalShift > 0 ? transferPct : 33}%` }}
-                          className="h-full bg-purple-400 transition-all duration-300"
-                        />
+                      {/* Digital Subtotal + Payment Mix Bar */}
+                      <div className="mt-auto p-2.5 rounded-xl bg-gradient-to-r from-sky-500/20 via-sky-500/10 to-purple-500/20 border border-sky-400/45 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-white">Subtotal Digital:</span>
+                          <span className="text-sm sm:text-base font-mono font-black text-sky-300 whitespace-nowrap">
+                            ${totalElectronic.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
+                          </span>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between text-[10px] text-zinc-200 font-bold mb-1">
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                              Efvo ({cashPct}%)
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-sky-400" />
+                              Tarj ({cardPct}%)
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-purple-400" />
+                              Transf ({transferPct}%)
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-white/15 overflow-hidden flex">
+                            <div
+                              style={{ width: `${grandTotalShift > 0 ? cashPct : 34}%` }}
+                              className="h-full bg-emerald-400 transition-all duration-300"
+                            />
+                            <div
+                              style={{ width: `${grandTotalShift > 0 ? cardPct : 33}%` }}
+                              className="h-full bg-sky-400 transition-all duration-300"
+                            />
+                            <div
+                              style={{ width: `${grandTotalShift > 0 ? transferPct : 33}%` }}
+                              className="h-full bg-purple-400 transition-all duration-300"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
