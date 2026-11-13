@@ -37,7 +37,7 @@ export const IncomeHistoryView: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
 
-  type PeriodFilterType = 'all' | 'today' | 'week' | 'month' | 'year';
+  type PeriodFilterType = 'all' | 'today' | 'month' | 'year';
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all');
 
   const isSaleInPeriod = (saleTimestamp: string, period: PeriodFilterType): boolean => {
@@ -54,9 +54,6 @@ export const IncomeHistoryView: React.FC = () => {
       return saleDate.getDate() === nowDate.getDate() &&
              saleDate.getMonth() === nowDate.getMonth() &&
              saleDate.getFullYear() === nowDate.getFullYear();
-    }
-    if (period === 'week') {
-      return diffMs >= -60000 && diffMs <= 7 * 24 * 60 * 60 * 1000;
     }
     if (period === 'month') {
       const saleDate = new Date(saleTimestamp);
@@ -85,8 +82,6 @@ export const IncomeHistoryView: React.FC = () => {
     ? 'Histórico Completo' 
     : periodFilter === 'today' 
     ? 'Hoy' 
-    : periodFilter === 'week' 
-    ? 'Esta Semana' 
     : periodFilter === 'month' 
     ? 'Este Mes' 
     : 'Este Año';
@@ -227,7 +222,7 @@ export const IncomeHistoryView: React.FC = () => {
 
         {/* Type, Period & Method Filters */}
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          {/* Period Filter (12h, Semana, Mes, Año, Todo) */}
+          {/* Period Filter (Hoy, Mes, Año, Todo) */}
           <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
             <div className="hidden sm:flex items-center gap-1 px-2 text-gym-muted text-xs font-bold border-r border-gym-border/60 mr-0.5">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
@@ -253,17 +248,6 @@ export const IncomeHistoryView: React.FC = () => {
               title="Cobros registrados el día de hoy"
             >
               Hoy
-            </button>
-            <button
-              onClick={() => setPeriodFilter('week')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                periodFilter === 'week'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Cobros de los últimos 7 días"
-            >
-              Semana
             </button>
             <button
               onClick={() => setPeriodFilter('month')}
@@ -403,7 +387,7 @@ export const IncomeHistoryView: React.FC = () => {
                       No se encontraron cobros registrados en {periodLabel.toLowerCase()}.
                     </p>
                     <p className="text-xs sm:text-sm text-gym-muted mt-1.5">
-                      Puedes cambiar el filtro de tiempo a &quot;Todo&quot; o seleccionar otro periodo (Hoy, Semana, Mes, Año).
+                      Puedes cambiar el filtro de tiempo a &quot;Todo&quot; o seleccionar otro periodo (Hoy, Mes, Año).
                     </p>
                   </td>
                 </tr>
