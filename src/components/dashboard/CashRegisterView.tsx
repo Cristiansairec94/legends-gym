@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useGym } from '../../context/GymContext';
 import { Sale } from '../../types';
-import posBg from '../../assets/pos-luxury-bg.jpg';
 import {
   Wallet,
   Banknote,
@@ -269,27 +268,7 @@ export const CashRegisterView: React.FC = () => {
   };
 
   return (
-    <div className="h-full min-h-0 relative rounded-3xl border border-white/25 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2 sm:p-2.5 gap-2">
-      {/* ===================================================================== */}
-      {/* ARCHITECTURAL HIGH-DEFINITION GYM BACKGROUND & AMBIENT LIGHTING       */}
-      {/* ===================================================================== */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none rounded-3xl">
-        <img
-          src={posBg}
-          alt="Legends Gym Cash Register Background"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = '/pos-luxury-bg.jpg';
-          }}
-          style={{
-            filter: 'brightness(0.95) contrast(1.05) saturate(1.05)',
-            objectPosition: 'center center',
-          }}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d111d]/75 via-[#101524]/55 to-[#0d111d]/45 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,rgba(251,191,36,0.14)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
-      </div>
-
+    <div className="h-full min-h-0 relative rounded-3xl border border-white/15 bg-[#090c14] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2 sm:p-2.5 gap-2">
       {/* ===================================================================== */}
       {/* 1. TOP UNIFIED COMMAND HEADER BAR (FROSTED CRYSTAL)                   */}
       {/* ===================================================================== */}
