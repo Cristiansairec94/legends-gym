@@ -947,50 +947,14 @@ export const CashRegisterView: React.FC = () => {
 
           {cashSession.status === 'open' ? (
             <form onSubmit={handleCloseSession} className="flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-y-auto pos-scroll pr-0.5">
-              {/* Top Header + 3-Step Visual Progress */}
-              <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-b border-white/15 pb-1.5">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.35)] border border-amber-200/70 shrink-0">
-                    <Lock className="w-4 h-4 stroke-[2.5]" />
-                  </div>
-                  <h3 className="font-black text-sm sm:text-base text-white tracking-tight">
-                    Realizar Corte de Caja
-                  </h3>
+              {/* Top Header */}
+              <div className="flex items-center gap-2.5 shrink-0 border-b border-white/15 pb-1.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.35)] border border-amber-200/70 shrink-0">
+                  <Lock className="w-4 h-4 stroke-[2.5]" />
                 </div>
-
-                {/* 3-Step Progress Pills */}
-                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider">
-                  <div
-                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
-                      hasCountedInput
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
-                        : 'bg-white/[0.06] text-amber-300 border-amber-400/40'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>1. Conteo</span>
-                  </div>
-                  <div
-                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
-                      hasCountedInput && isRemanentValid
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
-                        : 'bg-white/[0.05] text-zinc-400 border-white/15'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>2. Retiro</span>
-                  </div>
-                  <div
-                    className={`px-2 py-1 rounded-lg border flex items-center gap-1 ${
-                      isConfirmedYes
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
-                        : 'bg-white/[0.05] text-zinc-400 border-white/15'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>3. Autorizar</span>
-                  </div>
-                </div>
+                <h3 className="font-black text-sm sm:text-base text-white tracking-tight">
+                  Realizar Corte de Caja
+                </h3>
               </div>
 
               {/* Middle Controls */}
