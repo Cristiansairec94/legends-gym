@@ -91,6 +91,8 @@ const MainLayout: React.FC = () => {
         <main className={`flex-1 ${
           activeTab === 'pos' || activeTab === 'inventory' || activeTab === 'cash'
             ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col min-h-0 h-[calc(100vh-61px)]' 
+            : activeTab === 'incomes'
+            ? 'overflow-y-auto p-3 sm:p-4 lg:p-5'
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
         } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
           <div className={

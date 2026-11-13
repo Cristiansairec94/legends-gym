@@ -383,15 +383,15 @@ export const IncomeHistoryView: React.FC = () => {
       <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gym-surface/80 border-b border-gym-border text-zinc-300 uppercase font-extrabold text-xs tracking-wider">
+            <thead className="bg-gym-surface/80 border-b border-gym-border text-zinc-300 uppercase font-extrabold text-[11px] xl:text-xs tracking-wider">
               <tr>
-                <th className="py-4 px-5 whitespace-nowrap">Fecha</th>
-                <th className="py-4 px-5 whitespace-nowrap">Tipo</th>
-                <th className="py-4 px-5 whitespace-nowrap">Detalle de Cobro</th>
-                <th className="py-4 px-5 whitespace-nowrap">Método de Pago</th>
-                <th className="py-4 px-5 whitespace-nowrap">Cajero</th>
-                <th className="py-4 px-5 text-right whitespace-nowrap">Total Cobrado</th>
-                <th className="py-4 px-5 text-center whitespace-nowrap">Ticket</th>
+                <th className="py-3.5 px-3 xl:px-4 whitespace-nowrap">Fecha</th>
+                <th className="py-3.5 px-3 xl:px-4 whitespace-nowrap">Tipo</th>
+                <th className="py-3.5 px-3 xl:px-4">Detalle de Cobro</th>
+                <th className="py-3.5 px-3 xl:px-4 whitespace-nowrap">Método de Pago</th>
+                <th className="py-3.5 px-3 xl:px-4 whitespace-nowrap">Cajero</th>
+                <th className="py-3.5 px-3 xl:px-4 text-right whitespace-nowrap">Total Cobrado</th>
+                <th className="py-3.5 px-3 xl:px-4 text-center whitespace-nowrap">Ticket</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gym-border/50">
@@ -415,40 +415,40 @@ export const IncomeHistoryView: React.FC = () => {
 
                   return (
                     <tr key={sale.id} className="hover:bg-gym-surface/40 transition-colors">
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        <div className="font-bold text-sm sm:text-[15px] text-white">
+                      <td className="py-3.5 px-3 xl:px-4 whitespace-nowrap">
+                        <div className="font-bold text-sm text-white">
                           {dateObj.toLocaleDateString('es-MX')}
                         </div>
-                        <span className="text-xs sm:text-[13px] text-gym-muted">
+                        <span className="text-xs text-gym-muted">
                           {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </td>
 
-                      <td className="py-4 px-5 whitespace-nowrap">
+                      <td className="py-3.5 px-3 xl:px-4 whitespace-nowrap">
                         {isMembership ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] xl:text-xs font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
                             <Dumbbell className="w-3.5 h-3.5" />
                             Membresía
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] xl:text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
                             <ShoppingBag className="w-3.5 h-3.5" />
                             Punto Venta
                           </span>
                         )}
                       </td>
 
-                      <td className="py-4 px-5">
-                        <div className="font-semibold text-sm sm:text-[15px] text-gray-200">
+                      <td className="py-3.5 px-3 xl:px-4 min-w-[180px]">
+                        <div className="font-semibold text-sm text-gray-200">
                           {itemsCount} artículo(s)
                         </div>
-                        <p className="text-xs sm:text-[13px] text-zinc-400 truncate max-w-md xl:max-w-xl mt-0.5" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
+                        <p className="text-xs sm:text-[13px] text-zinc-400 line-clamp-2 leading-snug max-w-[240px] lg:max-w-[280px] xl:max-w-[320px] 2xl:max-w-[400px] mt-0.5" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
                           {sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
                         </p>
                       </td>
 
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
+                      <td className="py-3.5 px-3 xl:px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
                           {sale.paymentMethod === 'cash' && <Banknote className="w-4 h-4 text-emerald-400" />}
                           {sale.paymentMethod === 'card' && <CreditCard className="w-4 h-4 text-blue-400" />}
                           {sale.paymentMethod === 'transfer' && <DollarSign className="w-4 h-4 text-purple-400" />}
@@ -458,20 +458,20 @@ export const IncomeHistoryView: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="py-4 px-5 text-zinc-300 font-medium text-sm whitespace-nowrap">
+                      <td className="py-3.5 px-3 xl:px-4 text-zinc-300 font-medium text-sm">
                         {sale.cashierName}
                       </td>
 
-                      <td className="py-4 px-5 text-right whitespace-nowrap">
-                        <span className="font-mono font-black text-base sm:text-lg text-emerald-400">
+                      <td className="py-3.5 px-3 xl:px-4 text-right whitespace-nowrap">
+                        <span className="font-mono font-black text-sm xl:text-base text-emerald-400">
                           ${sale.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
-                      <td className="py-4 px-5 text-center whitespace-nowrap">
+                      <td className="py-3.5 px-3 xl:px-4 text-center whitespace-nowrap">
                         <button
                           onClick={() => setSelectedSaleForReceipt(sale)}
-                          className="px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-emerald-500/20 text-zinc-300 hover:text-emerald-400 border border-gym-border hover:border-emerald-500/30 transition-all inline-flex items-center gap-1.5"
+                          className="px-3 py-1.5 xl:px-3.5 xl:py-2 rounded-xl bg-gym-surface hover:bg-emerald-500/20 text-zinc-300 hover:text-emerald-400 border border-gym-border hover:border-emerald-500/30 transition-all inline-flex items-center gap-1.5"
                           title="Reimprimir o ver ticket"
                         >
                           <Printer className="w-4 h-4" />
