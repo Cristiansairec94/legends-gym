@@ -45,7 +45,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
     cartItemsCount,
     processSale,
     members,
-    todaySalesCount
+    todaySalesCount,
+    activePermissions
   } = useGym();
 
   const [search, setSearch] = useState('');
@@ -306,16 +307,18 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </div>
 
           {/* $ Movimientos Button */}
-          <button
-            type="button"
-            onClick={() => setShowMovementsModal(true)}
-            className="h-9 flex items-center gap-2 px-3.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/50 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-extrabold transition-all shadow-sm shrink-0 active:scale-95"
-          >
-            <span className="w-4.5 h-4.5 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[11px] shadow-sm">
-              $
-            </span>
-            <span>Movimientos</span>
-          </button>
+          {activePermissions.cashRegister && (
+            <button
+              type="button"
+              onClick={() => setShowMovementsModal(true)}
+              className="h-9 flex items-center gap-2 px-3.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/50 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-extrabold transition-all shadow-sm shrink-0 active:scale-95"
+            >
+              <span className="w-4.5 h-4.5 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[11px] shadow-sm">
+                $
+              </span>
+              <span>Movimientos</span>
+            </button>
+          )}
 
           {/* 🔄 Tickets / Devoluciones Button */}
           <button
@@ -334,17 +337,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
           </button>
 
           {/* 🔒 Cerrar Turno Button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (onNavigateToCash) onNavigateToCash();
-              else alert('Usa el menú lateral "Corte de Caja" para cerrar tu turno formalmente.');
-            }}
-            className="h-9 flex items-center gap-2 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] border border-amber-200/80 transition-all shrink-0 active:scale-[0.98]"
-          >
-            <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Cerrar Turno</span>
-          </button>
+          {activePermissions.cashRegister && onNavigateToCash && (
+            <button
+              type="button"
+              onClick={() => onNavigateToCash()}
+              className="h-9 flex items-center gap-2 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] border border-amber-200/80 transition-all shrink-0 active:scale-[0.98]"
+            >
+              <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Cerrar Turno</span>
+            </button>
+          )}
 
           {/* Sincronizado Pill */}
           <div className="hidden xl:flex h-9 items-center gap-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-400/45 font-extrabold text-xs shadow-sm">
@@ -480,14 +482,16 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({ onNavigateToCash }) =>
                 Público en General
               </span>
             )}
-            <button
-              type="button"
-              onClick={() => setShowAddClientModal(true)}
-              className="text-[10.5px] text-amber-300 hover:text-amber-200 font-extrabold flex items-center gap-1 hover:underline shrink-0"
-            >
-              <UserPlus className="w-3 h-3" />
-              <span>+ Nuevo Socio</span>
-            </button>
+            {activePermissions.manageClients && (
+              <button
+                type="button"
+                onClick={() => setShowAddClientModal(true)}
+                className="text-[10.5px] text-amber-300 hover:text-amber-200 font-extrabold flex items-center gap-1 hover:underline shrink-0"
+              >
+                <UserPlus className="w-3 h-3" />
+                <span>+ Nuevo Socio</span>
+              </button>
+            )}
           </div>
 
           {/* 2. Middle: Live Ticket Items List (Compact Empty State, Scrollable Flex-1 When Active) */}

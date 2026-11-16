@@ -26,7 +26,8 @@ export interface SyncMessage {
     | 'PRODUCT_UPDATED'
     | 'CASH_SESSION_UPDATED'
     | 'BRANCH_UPDATED'
-    | 'NOTIFICATION_ADDED';
+    | 'NOTIFICATION_ADDED'
+    | 'ROLES_UPDATED';
   member?: Client;
   memberId?: string;
   members?: Client[];
@@ -38,6 +39,7 @@ export interface SyncMessage {
   cashSession?: CashRegisterSession;
   branch?: Branch;
   notification?: SystemNotification;
+  roles?: RoleDefinition[];
   version?: number;
   sourceId?: string;
   timestamp: number;
@@ -618,7 +620,7 @@ export async function pushFullDatabaseToServer(
  * to all sync servers so all devices update in real time
  */
 export async function pushEntityChangeToServer(
-  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs',
+  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs' | 'roles',
   changeType: 'add' | 'update' | 'delete',
   item: any,
   itemId?: string,

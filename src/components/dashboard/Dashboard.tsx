@@ -29,7 +29,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     todayMembershipsSalesTotal,
     cashSession,
     activeBranch,
-    isTerminalConnected
+    isTerminalConnected,
+    canAccessTab
   } = useGym();
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -114,20 +115,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
           {/* Quick Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              onClick={() => setActiveTab('access')}
-              className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] flex items-center gap-1.5 transition-all transform hover:scale-[1.02] active:scale-[0.98] border border-white"
-            >
-              <Fingerprint className="w-4 h-4 stroke-[2.5]" />
-              <span>Huella</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('pos')}
-              className="px-4 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 hover:border-white/35 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
-            >
-              <ShoppingBag className="w-4 h-4 text-zinc-300" />
-              <span>Punto de Venta</span>
-            </button>
+            {canAccessTab('access') && (
+              <button
+                onClick={() => setActiveTab('access')}
+                className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] flex items-center gap-1.5 transition-all transform hover:scale-[1.02] active:scale-[0.98] border border-white"
+              >
+                <Fingerprint className="w-4 h-4 stroke-[2.5]" />
+                <span>Huella</span>
+              </button>
+            )}
+            {canAccessTab('pos') && (
+              <button
+                onClick={() => setActiveTab('pos')}
+                className="px-4 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 hover:border-white/35 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                <ShoppingBag className="w-4 h-4 text-zinc-300" />
+                <span>Punto de Venta</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -167,8 +172,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         
         {/* Socios Activos */}
         <div 
-          onClick={() => setActiveTab('clients')}
-          className="p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] hover:border-emerald-500/40 transition-all cursor-pointer shadow-lg hover:shadow-[0_8px_25px_rgba(16,185,129,0.12)] group hover:-translate-y-0.5 duration-200"
+          onClick={() => canAccessTab('clients') && setActiveTab('clients')}
+          className={`p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] transition-all shadow-lg duration-200 ${
+            canAccessTab('clients') ? 'hover:border-emerald-500/40 cursor-pointer hover:shadow-[0_8px_25px_rgba(16,185,129,0.12)] group hover:-translate-y-0.5' : ''
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Socios Activos</span>
@@ -179,14 +186,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           <span className="text-3xl font-black text-white mt-2 block tracking-tight">{activeMembersCount}</span>
           <div className="flex items-center gap-1 text-xs text-emerald-400 mt-2 font-semibold">
             <span>De {members.length} socios registrados</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            {canAccessTab('clients') && <ArrowUpRight className="w-3.5 h-3.5" />}
           </div>
         </div>
 
         {/* Accesos de Hoy */}
         <div 
-          onClick={() => setActiveTab('access')}
-          className="p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] hover:border-cyan-500/40 transition-all cursor-pointer shadow-lg hover:shadow-[0_8px_25px_rgba(6,182,212,0.12)] group hover:-translate-y-0.5 duration-200"
+          onClick={() => canAccessTab('access') && setActiveTab('access')}
+          className={`p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] transition-all shadow-lg duration-200 ${
+            canAccessTab('access') ? 'hover:border-cyan-500/40 cursor-pointer hover:shadow-[0_8px_25px_rgba(6,182,212,0.12)] group hover:-translate-y-0.5' : ''
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Check-ins Hoy</span>
@@ -215,8 +224,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
         {/* Ventas Tienda Suplementos */}
         <div 
-          onClick={() => setActiveTab('pos')}
-          className="p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] hover:border-white/40 transition-all cursor-pointer shadow-lg hover:shadow-[0_8px_25px_rgba(255,255,255,0.12)] group hover:-translate-y-0.5 duration-200"
+          onClick={() => canAccessTab('pos') && setActiveTab('pos')}
+          className={`p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] transition-all shadow-lg duration-200 ${
+            canAccessTab('pos') ? 'hover:border-white/40 cursor-pointer hover:shadow-[0_8px_25px_rgba(255,255,255,0.12)] group hover:-translate-y-0.5' : ''
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Venta Suplementos</span>
@@ -234,8 +245,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
         {/* Membresías Cobradas */}
         <div 
-          onClick={() => setActiveTab('incomes')}
-          className="p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] hover:border-purple-500/40 transition-all cursor-pointer shadow-lg hover:shadow-[0_8px_25px_rgba(168,85,247,0.12)] group hover:-translate-y-0.5 duration-200"
+          onClick={() => canAccessTab('incomes') && setActiveTab('incomes')}
+          className={`p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] transition-all shadow-lg duration-200 ${
+            canAccessTab('incomes') ? 'hover:border-purple-500/40 cursor-pointer hover:shadow-[0_8px_25px_rgba(168,85,247,0.12)] group hover:-translate-y-0.5' : ''
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Ingresos Cuotas</span>
@@ -343,21 +356,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               ))}
             </div>
 
-            <button
-              onClick={() => setActiveTab('inventory')}
-              className="w-full mt-3 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-xs font-bold text-zinc-200 rounded-xl border border-white/10 transition-colors text-center"
-            >
-              Gestionar Almacén
-            </button>
+            {canAccessTab('inventory') && (
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className="w-full mt-3 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-xs font-bold text-zinc-200 rounded-xl border border-white/10 transition-colors text-center"
+              >
+                Gestionar Almacén
+              </button>
+            )}
           </div>
 
           {/* Quick Turnstile Activity Mini-feed */}
           <div className="bg-gradient-to-b from-[#151518] to-[#0f0f12] rounded-2xl border border-white/[0.08] p-5 shadow-lg">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-white">Últimos Accesos</span>
-              <button onClick={() => setActiveTab('access')} className="text-[11px] text-zinc-300 hover:text-white hover:underline font-semibold">
-                Ver todos
-              </button>
+              {canAccessTab('access') && (
+                <button onClick={() => setActiveTab('access')} className="text-[11px] text-zinc-300 hover:text-white hover:underline font-semibold">
+                  Ver todos
+                </button>
+              )}
             </div>
 
             <div className="space-y-2">

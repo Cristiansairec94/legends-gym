@@ -712,6 +712,8 @@ const server = http.createServer(async (req, res) => {
           }
         } else if (entity === 'settings') {
           if (item) db.settings = { ...(db.settings || {}), ...item };
+        } else if (entity === 'roles') {
+          if (Array.isArray(item)) db.roles = item.filter(r => r && r.id !== 'trainer');
         } else if (entity === 'catalogPlans') {
           if (!Array.isArray(db.catalogPlans)) db.catalogPlans = [];
           if (changeType === 'delete') {
@@ -781,6 +783,7 @@ const server = http.createServer(async (req, res) => {
           db.employees = Array.from(map.values());
         }
         if (incoming.settings) db.settings = { ...(db.settings || {}), ...incoming.settings };
+        if (Array.isArray(incoming.roles) && incoming.roles.length > 0) db.roles = incoming.roles.filter(r => r && r.id !== 'trainer');
         if (Array.isArray(incoming.catalogPlans)) {
           const map = new Map();
           for (const p of db.catalogPlans || []) if (p && p.id) map.set(p.id, p);

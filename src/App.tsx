@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GymProvider, useGym } from './context/GymContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -20,6 +20,7 @@ import { DataSyncModal } from './components/config/DataSyncModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { SupervisorPinModal } from './components/auth/SupervisorPinModal';
 import { IndependentTerminalApp } from './components/access/IndependentTerminalApp';
+import { Lock } from 'lucide-react';
 
 export const isTerminalMode = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -50,108 +51,131 @@ const getInitialTab = (): string => {
 };
 
 const MainLayout: React.FC = () => {
-  const { isAdmin } = useGym();
+  const { isAdmin, activePermissions, canAccessTab, firstAllowedTab } = useGym();
   const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isAdmin && isNotificationsOpen) {
-      setIsNotificationsOpen(false);
+  const effectiveTab = canAccessTab(activeTab) ? activeTab : firstAllowedTab;
+  const hasTabAccess = effectiveTab !== 'none' && canAccessTab(effectiveTab);
+
+  const handleSafeSetActiveTab = (tab: string) => {
+    if (canAccessTab(tab)) {
+      setActiveTab(tab);
     }
-  }, [isAdmin, isNotificationsOpen]);
+  };
 
   return (
     <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none sm:select-auto">
       
       {/* Top Navbar matching Panadería Brito */}
       <Navbar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onOpenCart={() => setIsCartOpen(true)}
+        activeTab={effectiveTab} 
+        setActiveTab={handleSafeSetActiveTab} 
+        onOpenCart={activePermissions.posSales ? () => setIsCartOpen(true) : undefined}
         onOpenNotifications={isAdmin ? () => setIsNotificationsOpen(true) : undefined}
-        onOpenSync={() => setIsSyncModalOpen(true)}
+        onOpenSync={activePermissions.manageSettings ? () => setIsSyncModalOpen(true) : undefined}
       />
 
       <div className="flex-1 flex overflow-hidden">
         {/* Navigation Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar activeTab={effectiveTab} setActiveTab={handleSafeSetActiveTab} />
 
         {/* Dynamic Main Workspace View */}
         <main className={`flex-1 ${
-          activeTab === 'pos' || activeTab === 'inventory' || activeTab === 'cash'
+          hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
             ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col min-h-0 h-[calc(100vh-61px)]' 
-            : activeTab === 'incomes' || activeTab === 'expenses'
+            : hasTabAccess && (effectiveTab === 'incomes' || effectiveTab === 'expenses')
             ? 'overflow-y-auto p-3 sm:p-4 lg:p-5'
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
         } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
           <div className={
-            activeTab === 'pos' || activeTab === 'inventory' || activeTab === 'cash'
+            hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
               ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto'
-              : activeTab === 'incomes' || activeTab === 'expenses'
+              : hasTabAccess && (effectiveTab === 'incomes' || effectiveTab === 'expenses')
               ? 'max-w-[1800px] mx-auto'
               : 'max-w-7xl mx-auto'
           }>
-            {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
-            {activeTab === 'access' && <TurnstileTerminal />}
-            {activeTab === 'pos' && (
-              <PosTerminal 
-                isCartOpen={isCartOpen} 
-                setIsCartOpen={setIsCartOpen} 
-                onNavigateToCash={() => setActiveTab('cash')}
-              />
-            )}
-            {activeTab === 'clients' && <ClientList />}
-            {activeTab === 'catalog' && <ProductsCatalog />}
-            {activeTab === 'inventory' && <InventoryManager />}
-            {activeTab === 'incomes' && <IncomeHistoryView />}
-            {activeTab === 'expenses' && <ExpensesManager />}
-            {activeTab === 'cash' && <CashRegisterView />}
-            
-            {/* Configuración Módulos */}
-            {activeTab === 'config_catalogs' && <SystemCatalogs />}
-            {activeTab === 'config_roles' && <RolesManager />}
-            {activeTab === 'config_employees' && <EmployeesManager />}
-            {activeTab === 'config_sync' && (
-              <div className="space-y-4">
-                <div className="p-6 bg-gym-card rounded-2xl border border-gym-border">
-                  <h2 className="text-xl font-black text-white">Sincronización & Base de Datos</h2>
-                  <p className="text-xs text-gym-muted mt-1">Configuración del motor de datos offline y respaldos en la nube.</p>
-                  <button 
-                    onClick={() => setIsSyncModalOpen(true)}
-                    className="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-xl"
-                  >
-                    Abrir Centro de Sincronización y Backup
-                  </button>
+            {!hasTabAccess ? (
+              <div className="p-8 sm:p-12 bg-gym-card rounded-2xl border border-amber-500/30 text-center max-w-lg mx-auto my-12 shadow-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center mx-auto mb-4 text-amber-400">
+                  <Lock className="w-7 h-7" />
                 </div>
+                <h2 className="text-lg font-black text-white uppercase tracking-wide">
+                  Acceso Restringido al Módulo
+                </h2>
+                <p className="text-xs text-gym-muted mt-2 leading-relaxed">
+                  Tu rol actual no cuenta con los permisos necesarios para visualizar este apartado. Solicita al Administrador General habilitar el permiso correspondiente en Roles & Permisos.
+                </p>
               </div>
+            ) : (
+              <>
+                {effectiveTab === 'dashboard' && <Dashboard setActiveTab={handleSafeSetActiveTab} />}
+                {effectiveTab === 'access' && <TurnstileTerminal />}
+                {effectiveTab === 'pos' && (
+                  <PosTerminal 
+                    isCartOpen={isCartOpen && activePermissions.posSales} 
+                    setIsCartOpen={setIsCartOpen} 
+                    onNavigateToCash={canAccessTab('cash') ? () => handleSafeSetActiveTab('cash') : undefined}
+                  />
+                )}
+                {effectiveTab === 'clients' && <ClientList />}
+                {effectiveTab === 'catalog' && <ProductsCatalog />}
+                {effectiveTab === 'inventory' && <InventoryManager />}
+                {effectiveTab === 'incomes' && <IncomeHistoryView />}
+                {effectiveTab === 'expenses' && <ExpensesManager />}
+                {effectiveTab === 'cash' && <CashRegisterView />}
+                
+                {/* Configuración Módulos */}
+                {effectiveTab === 'config_catalogs' && <SystemCatalogs />}
+                {effectiveTab === 'config_roles' && <RolesManager />}
+                {effectiveTab === 'config_employees' && <EmployeesManager />}
+                {effectiveTab === 'config_sync' && (
+                  <div className="space-y-4">
+                    <div className="p-6 bg-gym-card rounded-2xl border border-gym-border">
+                      <h2 className="text-xl font-black text-white">Sincronización & Base de Datos</h2>
+                      <p className="text-xs text-gym-muted mt-1">Configuración del motor de datos offline y respaldos en la nube.</p>
+                      <button 
+                        onClick={() => setIsSyncModalOpen(true)}
+                        className="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-xl"
+                      >
+                        Abrir Centro de Sincronización y Backup
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>
       </div>
 
       {/* Global Quick Cart Drawer */}
-      <CartDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        onSaleCompleted={() => setIsCartOpen(false)} 
-      />
+      {activePermissions.posSales && (
+        <CartDrawer 
+          isOpen={isCartOpen && activePermissions.posSales} 
+          onClose={() => setIsCartOpen(false)} 
+          onSaleCompleted={() => setIsCartOpen(false)} 
+        />
+      )}
 
       {/* Global Notifications Drawer (Solo Administrador) */}
       {isAdmin && (
         <NotificationsDrawer 
-          isOpen={isNotificationsOpen}
+          isOpen={isNotificationsOpen && isAdmin}
           onClose={() => setIsNotificationsOpen(false)}
-          onNavigateTab={(tab) => setActiveTab(tab)}
+          onNavigateTab={(tab) => handleSafeSetActiveTab(tab)}
         />
       )}
 
       {/* Global Cloud Sync & Database Backup Modal */}
-      <DataSyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-      />
+      {activePermissions.manageSettings && (
+        <DataSyncModal
+          isOpen={isSyncModalOpen && activePermissions.manageSettings}
+          onClose={() => setIsSyncModalOpen(false)}
+        />
+      )}
 
       {/* Global Supervisor PIN Authorization Modal for Critical Operations */}
       <SupervisorPinModal />

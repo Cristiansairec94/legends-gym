@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react';
 import { 
   Client, 
   Product, 
@@ -20,11 +20,11 @@ import {
   SyncState,
   SecurityAuditEvent
 } from '../types';
-import { storage, sanitizeEmployees } from '../services/storage';
+import { storage, sanitizeEmployees, sanitizeRoles } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
 import { hashSecret, verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
-import { INITIAL_EMPLOYEES } from '../data/initialEmployees';
+import { INITIAL_EMPLOYEES, INITIAL_ROLES } from '../data/initialEmployees';
 import { 
   broadcastLocalSync, 
   subscribeToLocalSync, 
@@ -70,6 +70,9 @@ interface GymContextType {
   // Roles
   currentRole: UserRole;
   isAdmin: boolean;
+  activePermissions: RolePermissions;
+  canAccessTab: (tabId: string) => boolean;
+  firstAllowedTab: string;
   setCurrentRole: (role: UserRole) => void;
   roles: RoleDefinition[];
   updateRolePermissions: (roleId: UserRole, permissions: Partial<RolePermissions>) => void;
@@ -180,6 +183,50 @@ interface GymContextType {
   isTerminalConnected: boolean;
 }
 
+const ALL_ADMIN_PERMISSIONS: RolePermissions = {
+  accessTurnstile: true,
+  manageClients: true,
+  enrollBiometrics: true,
+  posSales: true,
+  manageInventory: true,
+  cashRegister: true,
+  viewReports: true,
+  manageSettings: true,
+  manageEmployees: true,
+};
+
+const TAB_PERMISSION_MAP: Record<string, keyof RolePermissions> = {
+  dashboard: 'viewReports',
+  access: 'accessTurnstile',
+  pos: 'posSales',
+  clients: 'manageClients',
+  catalog: 'manageInventory',
+  inventory: 'manageInventory',
+  incomes: 'viewReports',
+  expenses: 'cashRegister',
+  cash: 'cashRegister',
+  config_catalogs: 'manageSettings',
+  config_roles: 'manageSettings',
+  config_sync: 'manageSettings',
+  config_employees: 'manageEmployees',
+};
+
+const ORDERED_APP_TABS = [
+  'dashboard',
+  'pos',
+  'clients',
+  'access',
+  'cash',
+  'catalog',
+  'inventory',
+  'incomes',
+  'expenses',
+  'config_catalogs',
+  'config_employees',
+  'config_roles',
+  'config_sync',
+];
+
 const MODULE_TAB_ID = `TAB_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 let hasAnnouncedTabOpen = false;
 
@@ -199,6 +246,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const employeesRef = useRef<Employee[]>(employees);
   employeesRef.current = employees;
   const [roles, setRoles] = useState<RoleDefinition[]>(() => storage.getRoles());
+  const rolesRef = useRef<RoleDefinition[]>(roles);
+  rolesRef.current = roles;
   const [gymSettings, setGymSettings] = useState<GymSettings>(() => storage.getSettings());
   const [catalogPlans, setCatalogPlans] = useState<SystemCatalogPlan[]>(() => storage.getCatalogPlans());
   
@@ -221,7 +270,45 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [securityAlert, setSecurityAlertState] = useState<string | null>(null);
   const [securityAuditLogs, setSecurityAuditLogs] = useState<SecurityAuditEvent[]>(() => storage.getSecurityAuditLogs());
   const isAuthenticated = currentUser !== null;
-  const isAdmin = currentRole === 'admin' && currentUser?.role === 'admin';
+
+  // Enforce real employee role whenever logged-in user is not admin (only admins may preview other roles)
+  const effectiveRole: UserRole =
+    currentUser && currentUser.role !== 'admin' ? currentUser.role : currentRole;
+  const isAdmin = effectiveRole === 'admin' && currentUser?.role === 'admin';
+
+  useEffect(() => {
+    if (currentUser && currentUser.role !== 'admin' && currentRole !== currentUser.role) {
+      setCurrentRoleState(currentUser.role);
+      storage.saveActiveRole(currentUser.role);
+    }
+  }, [currentUser, currentRole]);
+
+  const activePermissions: RolePermissions = useMemo(() => {
+    if (effectiveRole === 'admin') {
+      return ALL_ADMIN_PERMISSIONS;
+    }
+    const roleDef =
+      roles.find((r) => r.id === effectiveRole) ||
+      INITIAL_ROLES.find((r) => r.id === effectiveRole);
+    return roleDef ? roleDef.permissions : ALL_ADMIN_PERMISSIONS;
+  }, [effectiveRole, roles]);
+
+  const canAccessTab = useCallback(
+    (tabId: string): boolean => {
+      if (effectiveRole === 'admin') return true;
+      const permKey = TAB_PERMISSION_MAP[tabId];
+      return permKey ? Boolean(activePermissions[permKey]) : false;
+    },
+    [effectiveRole, activePermissions]
+  );
+
+  const firstAllowedTab: string = useMemo(() => {
+    for (const tab of ORDERED_APP_TABS) {
+      if (canAccessTab(tab)) return tab;
+    }
+    return 'none';
+  }, [canAccessTab]);
+
   const [isTerminalConnected, setIsTerminalConnected] = useState<boolean>(false);
 
   const clearSecurityAlert = useCallback(() => {
@@ -242,7 +329,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     employeesRef.current = employees;
     storage.saveEmployees(employees);
   }, [employees]);
-  useEffect(() => { storage.saveRoles(roles); }, [roles]);
+  useEffect(() => {
+    rolesRef.current = roles;
+    storage.saveRoles(roles);
+  }, [roles]);
   useEffect(() => { storage.saveSettings(gymSettings); }, [gymSettings]);
   useEffect(() => { storage.saveCatalogPlans(catalogPlans); }, [catalogPlans]);
   useEffect(() => { storage.saveBranches(branches); }, [branches]);
@@ -430,6 +520,13 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           if (prev.some(n => n.id === msg.notification!.id)) return prev;
           return [msg.notification!, ...prev];
         });
+      } else if (msg.type === 'ROLES_UPDATED' && Array.isArray(msg.roles)) {
+        const cleanedRoles = sanitizeRoles(msg.roles).map((r) =>
+          r.id === 'admin' ? { ...r, permissions: ALL_ADMIN_PERMISSIONS } : r
+        );
+        rolesRef.current = cleanedRoles;
+        storage.saveRoles(cleanedRoles);
+        setRoles(cleanedRoles);
       }
     });
 
@@ -522,6 +619,14 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               storage.saveEmployees(mergedEmployees);
               setEmployees(mergedEmployees);
             }
+            if (Array.isArray(db.roles) && db.roles.length > 0) {
+              const cleanedRoles = sanitizeRoles(db.roles).map((r) =>
+                r.id === 'admin' ? { ...r, permissions: ALL_ADMIN_PERMISSIONS } : r
+              );
+              rolesRef.current = cleanedRoles;
+              storage.saveRoles(cleanedRoles);
+              setRoles(cleanedRoles);
+            }
             if (db.settings) {
               setGymSettings(prev => {
                 const merged = { ...prev, ...db.settings };
@@ -548,6 +653,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               expenses: storage.getExpenses(),
               cashSession: storage.getCashSession(),
               employees: employeesRef.current,
+              roles: rolesRef.current,
               settings: storage.getSettings(),
               catalogPlans: storage.getCatalogPlans(),
             }).catch(() => {});
@@ -560,6 +666,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               expenses: storage.getExpenses(),
               cashSession: storage.getCashSession(),
               employees: employeesRef.current,
+              roles: rolesRef.current,
               settings: storage.getSettings(),
               catalogPlans: storage.getCatalogPlans(),
             }).catch(() => {});
@@ -627,6 +734,14 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 storage.saveEmployees(next);
                 return next;
               });
+            }
+            if (Array.isArray(db.roles) && db.roles.length > 0) {
+              const cleanedRoles = sanitizeRoles(db.roles).map((r) =>
+                r.id === 'admin' ? { ...r, permissions: ALL_ADMIN_PERMISSIONS } : r
+              );
+              rolesRef.current = cleanedRoles;
+              storage.saveRoles(cleanedRoles);
+              setRoles(cleanedRoles);
             }
             if (Array.isArray(db.accessLogs) && db.accessLogs.length > 0) {
               db.accessLogs.forEach(l => ingestIncomingAccessLog(l));
@@ -995,10 +1110,23 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // El Administrador siempre conserva acceso total por seguridad y consistencia del sistema
     if (roleId === 'admin') return;
 
-    setRoles(prev => prev.map(r => r.id === roleId ? {
-      ...r,
-      permissions: { ...r.permissions, ...permissions }
-    } : r));
+    const next = rolesRef.current.map((r) =>
+      r.id === roleId
+        ? {
+            ...r,
+            permissions: { ...r.permissions, ...permissions },
+          }
+        : r
+    );
+    rolesRef.current = next;
+    storage.saveRoles(next);
+    setRoles(next);
+    broadcastLocalSync({ type: 'ROLES_UPDATED', roles: next });
+    pushEntityChangeToServer('roles', 'update', next).then((res) => {
+      if (res.version && res.version > serverVersionRef.current) {
+        serverVersionRef.current = res.version;
+      }
+    }).catch(() => {});
   };
 
   // Member Management
@@ -2238,8 +2366,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       requestSupervisorAuth,
       pendingSupervisorAction,
       cancelSupervisorAuth,
-      currentRole,
+      currentRole: effectiveRole,
       isAdmin,
+      activePermissions,
+      canAccessTab,
+      firstAllowedTab,
       setCurrentRole,
       roles,
       updateRolePermissions,

@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const ClientList: React.FC = () => {
-  const { members, deleteMember, currentRole } = useGym();
+  const { members, deleteMember, currentRole, activePermissions } = useGym();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring_soon' | 'expired' | 'no_fingerprint'>('all');
@@ -249,7 +249,7 @@ export const ClientList: React.FC = () => {
                           <Fingerprint className="w-3.5 h-3.5" />
                           <span>Huella OK</span>
                         </span>
-                      ) : (
+                      ) : activePermissions.enrollBiometrics ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -261,6 +261,11 @@ export const ClientList: React.FC = () => {
                           <Fingerprint className="w-3 h-3" />
                           <span>Sin huella</span>
                         </button>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[10px] text-zinc-400 font-semibold px-2 py-0.5 rounded-lg bg-gym-surface border border-gym-border">
+                          <Fingerprint className="w-3 h-3" />
+                          <span>Sin huella</span>
+                        </span>
                       )}
                     </div>
 
@@ -473,7 +478,7 @@ export const ClientList: React.FC = () => {
                               <Fingerprint className="w-4 h-4" />
                               <span>Enrolada</span>
                             </div>
-                          ) : (
+                          ) : activePermissions.enrollBiometrics ? (
                             <button
                               onClick={() => setSelectedClientForEnroll(member)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
@@ -482,6 +487,11 @@ export const ClientList: React.FC = () => {
                               <Fingerprint className="w-4 h-4" />
                               <span>Capturar</span>
                             </button>
+                          ) : (
+                            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gym-surface border border-gym-border text-zinc-400 text-xs font-semibold">
+                              <Fingerprint className="w-4 h-4" />
+                              <span>Sin huella</span>
+                            </div>
                           )}
                         </td>
 
@@ -545,7 +555,7 @@ export const ClientList: React.FC = () => {
           onClose={() => setShowAddModal(false)}
           onClientCreated={(newClient, wantsEnrollment) => {
             setShowAddModal(false);
-            if (wantsEnrollment) {
+            if (wantsEnrollment && activePermissions.enrollBiometrics) {
               setSelectedClientForEnroll(newClient);
             }
           }}
@@ -573,11 +583,15 @@ export const ClientList: React.FC = () => {
             setSelectedClientForDetail(null);
             setSelectedClientForEdit(client);
           }}
-          onEnrollBiometric={() => {
-            const client = selectedClientForDetail;
-            setSelectedClientForDetail(null);
-            setSelectedClientForEnroll(client);
-          }}
+          onEnrollBiometric={
+            activePermissions.enrollBiometrics
+              ? () => {
+                  const client = selectedClientForDetail;
+                  setSelectedClientForDetail(null);
+                  setSelectedClientForEnroll(client);
+                }
+              : undefined
+          }
           onRenewMembership={() => {
             const client = selectedClientForDetail;
             setSelectedClientForDetail(null);
@@ -587,7 +601,7 @@ export const ClientList: React.FC = () => {
       )}
 
       {/* Biometric Enroll Wizard Modal */}
-      {selectedClientForEnroll && (
+      {selectedClientForEnroll && activePermissions.enrollBiometrics && (
         <BiometricEnrollModal
           client={selectedClientForEnroll}
           onClose={() => setSelectedClientForEnroll(null)}

@@ -20,7 +20,7 @@ import {
 interface ClientDetailModalProps {
   client: Client;
   onClose: () => void;
-  onEnrollBiometric: () => void;
+  onEnrollBiometric?: () => void;
   onRenewMembership: () => void;
   onEdit?: () => void;
 }
@@ -164,7 +164,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                 </p>
               </div>
 
-              {!client.biometricRegistered && (
+              {!client.biometricRegistered && onEnrollBiometric && (
                 <button
                   onClick={onEnrollBiometric}
                   className="mt-3 w-full py-2 bg-gym-surface hover:bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"

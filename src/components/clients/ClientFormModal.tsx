@@ -34,7 +34,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   onClientCreated,
   initialPlanId,
 }) => {
-  const { addMember, catalogPlans } = useGym();
+  const { addMember, catalogPlans, activePermissions } = useGym();
 
   const [fullName, setFullName] = useState('');
   const [documentId, setDocumentId] = useState('');
@@ -50,7 +50,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [emergencyPhone, setEmergencyPhone] = useState('');
   const [emergencyRel, setEmergencyRel] = useState('');
   const [medicalNotes, setMedicalNotes] = useState('');
-  const [enrollNow, setEnrollNow] = useState(true);
+  const [enrollNow, setEnrollNow] = useState(() => activePermissions.enrollBiometrics);
 
   const DEFAULT_PLANS: { id: string; type: MembershipPlanType; name: string; price: number; duration: string; durationDays: number }[] = [
     { id: 'CAT-PLAN-001', type: 'daily', name: 'Pase por Día (Day Pass)', price: 150, duration: '1 día', durationDays: 1 },
@@ -115,7 +115,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
       },
     }, paymentMethod);
 
-    onClientCreated(created, enrollNow);
+    onClientCreated(created, enrollNow && activePermissions.enrollBiometrics);
   };
 
   return (
@@ -354,23 +354,25 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             </div>
 
             {/* Checkbox: Prompt for immediate Biometric Enrollment */}
-            <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-white">Enrolar Huella Inmediatamente</p>
-                  <p className="text-[10px] sm:text-[11px] text-gym-muted">
-                    Abrirá el asistente para capturar la huella del socio para control de acceso
-                  </p>
+            {activePermissions.enrollBiometrics && (
+              <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-white">Enrolar Huella Inmediatamente</p>
+                    <p className="text-[10px] sm:text-[11px] text-gym-muted">
+                      Abrirá el asistente para capturar la huella del socio para control de acceso
+                    </p>
+                  </div>
                 </div>
+                <input
+                  type="checkbox"
+                  checked={enrollNow}
+                  onChange={(e) => setEnrollNow(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={enrollNow}
-                onChange={(e) => setEnrollNow(e.target.checked)}
-                className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
-              />
-            </div>
+            )}
           </div>
 
           {/* Footer Actions (Sticky at bottom, ALWAYS visible on any zoom) */}

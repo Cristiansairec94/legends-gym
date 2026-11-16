@@ -6,7 +6,7 @@ import {
   Cloud, 
   CloudOff, 
   LogOut,
-  Zap
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -22,11 +22,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCart: _onOpenCart, 
   onOpenNotifications,
   onOpenSync,
-  activeTab,
+  activeTab: _activeTab,
   setActiveTab 
 }) => {
   const { 
     currentUser,
+    currentRole,
+    setCurrentRole,
+    firstAllowedTab,
     isAdmin,
     logout,
     unreadNotificationsCount,
@@ -50,7 +53,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       colors: ['#FFFFFF', '#E4E4E7', '#A1A1AA', '#F4F4F6']
     });
     setTimeout(() => setIsLogoSpinning(false), 900);
-    setActiveTab('dashboard');
+    if (firstAllowedTab !== 'none') {
+      setActiveTab(firstAllowedTab);
+    }
   };
 
 
@@ -103,25 +108,60 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
 
+          {/* Admin Role Preview Return Pill */}
+          {currentUser?.role === 'admin' && currentRole !== 'admin' && (
+            <button
+              onClick={() => {
+                setCurrentRole('admin');
+                setActiveTab('config_roles');
+              }}
+              className="flex items-center gap-1.5 h-10 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold shadow-glow-gold transition-all whitespace-nowrap shrink-0"
+              title="Salir de vista previa y restaurar acceso total de Administrador"
+            >
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Volver a Admin</span>
+            </button>
+          )}
+
           {/* Offline / Cloud Sync Pill Button */}
-          <button
-            onClick={onOpenSync}
-            className={`flex items-center gap-2 h-10 px-3.5 rounded-xl border text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-              syncState.isOnline
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
-            }`}
-            title="Estado de sincronización y base de datos"
-          >
-            {syncState.isOnline ? (
-              <Cloud className="w-4 h-4 shrink-0" />
-            ) : (
-              <CloudOff className="w-4 h-4 shrink-0" />
-            )}
-            <span className="hidden sm:inline">
-              {syncState.isOnline ? 'En línea' : 'Local'}
-            </span>
-          </button>
+          {onOpenSync ? (
+            <button
+              onClick={onOpenSync}
+              className={`flex items-center gap-2 h-10 px-3.5 rounded-xl border text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                syncState.isOnline
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+              }`}
+              title="Estado de sincronización y base de datos"
+            >
+              {syncState.isOnline ? (
+                <Cloud className="w-4 h-4 shrink-0" />
+              ) : (
+                <CloudOff className="w-4 h-4 shrink-0" />
+              )}
+              <span className="hidden sm:inline">
+                {syncState.isOnline ? 'En línea' : 'Local'}
+              </span>
+            </button>
+          ) : (
+            <div
+              className={`flex items-center gap-2 h-10 px-3.5 rounded-xl border text-xs font-bold whitespace-nowrap shrink-0 select-none ${
+                syncState.isOnline
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              }`}
+              title="Estado de conexión del sistema"
+            >
+              {syncState.isOnline ? (
+                <Cloud className="w-4 h-4 shrink-0" />
+              ) : (
+                <CloudOff className="w-4 h-4 shrink-0" />
+              )}
+              <span className="hidden sm:inline">
+                {syncState.isOnline ? 'En línea' : 'Local'}
+              </span>
+            </div>
+          )}
 
           {/* Notifications Bell Button (Solo Administrador) */}
           {isAdmin && (
@@ -153,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {currentUser.fullName}
                 </p>
                 <p className="text-[10px] text-amber-400 capitalize font-semibold">
-                  {currentUser.role === 'admin' ? 'Administrador' : 'Recepción'}
+                  {currentRole === 'admin' ? 'Administrador' : 'Recepción'}
                 </p>
               </div>
             </div>

@@ -965,6 +965,11 @@ export async function saveFullDatabase(incoming) {
     store.settings = { ...(store.settings || {}), ...incoming.settings };
   }
 
+  // Roles & Permissions
+  if (Array.isArray(incoming.roles) && incoming.roles.length > 0) {
+    store.roles = incoming.roles.filter((r) => r && r.id !== 'trainer');
+  }
+
   // Catalog Plans
   if (Array.isArray(incoming.catalogPlans)) {
     const map = new Map();
@@ -1066,6 +1071,8 @@ export async function updateEntity(entity, action, item, itemId) {
     }
   } else if (entity === 'settings') {
     if (item) store.settings = { ...(store.settings || {}), ...item };
+  } else if (entity === 'roles') {
+    if (Array.isArray(item)) store.roles = item.filter(r => r && r.id !== 'trainer');
   } else if (entity === 'catalogPlans') {
     if (!Array.isArray(store.catalogPlans)) store.catalogPlans = [];
     if (action === 'delete') {
