@@ -30,11 +30,24 @@ import { getSaleItemLabel, toSafeNumber } from '../../utils/saleNormalizer';
 
 type PeriodFilterType = 'all' | 'today' | 'month' | 'year';
 
+const MONTH_OPTIONS = [
+  { index: 0, name: 'Enero', short: 'Ene' },
+  { index: 1, name: 'Febrero', short: 'Feb' },
+  { index: 2, name: 'Marzo', short: 'Mar' },
+  { index: 3, name: 'Abril', short: 'Abr' },
+  { index: 4, name: 'Mayo', short: 'May' },
+  { index: 5, name: 'Junio', short: 'Jun' },
+  { index: 6, name: 'Julio', short: 'Jul' },
+  { index: 7, name: 'Agosto', short: 'Ago' },
+  { index: 8, name: 'Septiembre', short: 'Sep' },
+  { index: 9, name: 'Octubre', short: 'Oct' },
+  { index: 10, name: 'Noviembre', short: 'Nov' },
+  { index: 11, name: 'Diciembre', short: 'Dic' },
+] as const;
+
 const INCOME_PERIOD_OPTIONS: Array<{
   id: PeriodFilterType;
   label: string;
-  periodLabel: string;
-  subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   iconBg: string;
   iconColor: string;
@@ -42,8 +55,6 @@ const INCOME_PERIOD_OPTIONS: Array<{
   {
     id: 'all',
     label: 'Todos los periodos',
-    periodLabel: 'Histórico Completo',
-    subtitle: 'Historial completo',
     icon: Layers,
     iconBg: 'bg-zinc-800/80 border-zinc-700/70',
     iconColor: 'text-zinc-300',
@@ -51,8 +62,6 @@ const INCOME_PERIOD_OPTIONS: Array<{
   {
     id: 'today',
     label: 'Por Día',
-    periodLabel: 'Hoy',
-    subtitle: 'Cobros de hoy',
     icon: Clock,
     iconBg: 'bg-emerald-500/15 border-emerald-500/30',
     iconColor: 'text-emerald-400',
@@ -60,8 +69,6 @@ const INCOME_PERIOD_OPTIONS: Array<{
   {
     id: 'month',
     label: 'Por Mes',
-    periodLabel: 'Este Mes',
-    subtitle: 'Mes actual',
     icon: Calendar,
     iconBg: 'bg-teal-500/15 border-teal-500/30',
     iconColor: 'text-teal-400',
@@ -69,22 +76,22 @@ const INCOME_PERIOD_OPTIONS: Array<{
   {
     id: 'year',
     label: 'Por Año',
-    periodLabel: 'Este Año',
-    subtitle: 'Año actual',
     icon: CalendarDays,
     iconBg: 'bg-purple-500/15 border-purple-500/30',
     iconColor: 'text-purple-400',
   },
 ];
 
-function isSaleInPeriod(saleTimestamp: string, period: PeriodFilterType, now = new Date()): boolean {
+function isSaleInPeriod(
+  saleTimestamp: string,
+  period: PeriodFilterType,
+  targetMonth: number,
+  targetYear: number,
+  now = new Date()
+): boolean {
   if (period === 'all') return true;
-  const saleTime = new Date(saleTimestamp).getTime();
-  if (isNaN(saleTime)) return true;
-
-  const nowTime = now.getTime();
-  const diffMs = nowTime - saleTime;
   const saleDate = new Date(saleTimestamp);
+  if (isNaN(saleDate.getTime())) return false;
 
   if (period === 'today') {
     return (
@@ -94,15 +101,29 @@ function isSaleInPeriod(saleTimestamp: string, period: PeriodFilterType, now = n
     );
   }
   if (period === 'month') {
-    const isCurrentMonth =
-      saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-    return (diffMs >= -60000 && diffMs <= 30 * 24 * 60 * 60 * 1000) || isCurrentMonth;
+    return saleDate.getMonth() === targetMonth && saleDate.getFullYear() === targetYear;
   }
   if (period === 'year') {
-    const isCurrentYear = saleDate.getFullYear() === now.getFullYear();
-    return (diffMs >= -60000 && diffMs <= 365 * 24 * 60 * 60 * 1000) || isCurrentYear;
+    return saleDate.getFullYear() === targetYear;
   }
   return true;
+}
+
+function getAvailableYears(salesList: Sale[], baseYear = new Date().getFullYear()): number[] {
+  const yearSet = new Set<number>([
+    baseYear,
+    baseYear - 1,
+    baseYear - 2,
+    baseYear - 3,
+    baseYear - 4,
+  ]);
+  salesList.forEach((s) => {
+    const d = new Date(s.timestamp || '');
+    if (!isNaN(d.getTime())) {
+      yearSet.add(d.getFullYear());
+    }
+  });
+  return Array.from(yearSet).sort((a, b) => b - a);
 }
 
 const PAYMENT_METHOD_FILTERS = [
@@ -119,8 +140,17 @@ export const IncomeHistoryView: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all');
+  const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
   const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
   const periodDropdownRef = useRef<HTMLDivElement>(null);
+
+  const resetPeriodToAll = () => {
+    const now = new Date();
+    setPeriodFilter('all');
+    setSelectedYear(now.getFullYear());
+    setSelectedMonth(now.getMonth());
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -147,11 +177,42 @@ export const IncomeHistoryView: React.FC = () => {
   }, [isPeriodDropdownOpen]);
 
   const safeSales = Array.isArray(sales) ? sales.filter(Boolean) : [];
+  const availableYears = getAvailableYears(safeSales);
+
+  const selectedMonthName = MONTH_OPTIONS[selectedMonth]?.name || 'Mes';
 
   const periodSummaries = INCOME_PERIOD_OPTIONS.map((option) => {
-    const matching = safeSales.filter((s) => isSaleInPeriod(s.timestamp || '', option.id));
+    const matching = safeSales.filter((s) =>
+      isSaleInPeriod(s.timestamp || '', option.id, selectedMonth, selectedYear)
+    );
+    const subtitle =
+      option.id === 'all'
+        ? 'Historial completo'
+        : option.id === 'today'
+        ? 'Cobros de hoy'
+        : option.id === 'month'
+        ? `${selectedMonthName} ${selectedYear}`
+        : `Año ${selectedYear}`;
+    const triggerLabel =
+      option.id === 'month'
+        ? `${selectedMonthName} ${selectedYear}`
+        : option.id === 'year'
+        ? `Año ${selectedYear}`
+        : option.label;
+    const periodLabelText =
+      option.id === 'all'
+        ? 'Histórico Completo'
+        : option.id === 'today'
+        ? 'Hoy'
+        : option.id === 'month'
+        ? `${selectedMonthName} ${selectedYear}`
+        : `Año ${selectedYear}`;
+
     return {
       ...option,
+      subtitle,
+      triggerLabel,
+      periodLabel: periodLabelText,
       count: matching.length,
       total: matching.reduce((acc, s) => acc + toSafeNumber(s.total), 0),
     };
@@ -161,7 +222,9 @@ export const IncomeHistoryView: React.FC = () => {
   const ActivePeriodIcon = activePeriodMeta.icon;
 
   // Totales del periodo seleccionado
-  const periodSales = safeSales.filter(s => isSaleInPeriod(s.timestamp || '', periodFilter));
+  const periodSales = safeSales.filter((s) =>
+    isSaleInPeriod(s.timestamp || '', periodFilter, selectedMonth, selectedYear)
+  );
   const periodTotalSales = periodSales.reduce((acc, s) => acc + toSafeNumber(s.total), 0);
   const periodCash = periodSales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + toSafeNumber(s.total), 0);
   const periodCard = periodSales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + toSafeNumber(s.total), 0);
@@ -172,7 +235,7 @@ export const IncomeHistoryView: React.FC = () => {
 
   const normalizedQuery = searchTerm.toLowerCase();
   const filteredSales = safeSales.filter(s => {
-    const matchesPeriod = isSaleInPeriod(s.timestamp || '', periodFilter);
+    const matchesPeriod = isSaleInPeriod(s.timestamp || '', periodFilter, selectedMonth, selectedYear);
     const itemNames = Array.isArray(s.items)
       ? s.items.map(i => getSaleItemLabel(i, '')).join(' ').toLowerCase()
       : '';
@@ -339,7 +402,7 @@ export const IncomeHistoryView: React.FC = () => {
                     Periodo
                   </span>
                   <span className="text-xs font-black text-white truncate max-w-[160px]">
-                    {activePeriodMeta.label}
+                    {activePeriodMeta.triggerLabel}
                   </span>
                 </div>
 
@@ -357,7 +420,7 @@ export const IncomeHistoryView: React.FC = () => {
                   <span
                     onClick={(e) => {
                       e.stopPropagation();
-                      setPeriodFilter('all');
+                      resetPeriodToAll();
                     }}
                     className="p-1 rounded-md hover:bg-emerald-500/25 text-emerald-400 hover:text-white transition-colors cursor-pointer"
                     title="Mostrar todos los periodos"
@@ -370,7 +433,7 @@ export const IncomeHistoryView: React.FC = () => {
             </button>
 
             {isPeriodDropdownOpen && (
-              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[340px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[370px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
                 <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800/80 mb-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-3.5 h-3.5 text-emerald-400" />
@@ -382,7 +445,7 @@ export const IncomeHistoryView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        setPeriodFilter('all');
+                        resetPeriodToAll();
                         setIsPeriodDropdownOpen(false);
                       }}
                       className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
@@ -401,58 +464,192 @@ export const IncomeHistoryView: React.FC = () => {
                   {periodSummaries.map((option) => {
                     const isSelected = periodFilter === option.id;
                     const OptionIcon = option.icon;
+                    const hasSubSelector = option.id === 'month' || option.id === 'year';
 
                     return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => {
-                          setPeriodFilter(option.id);
-                          setIsPeriodDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border ${
-                          isSelected
-                            ? 'bg-emerald-500/15 border-emerald-500/40 text-white font-bold shadow-sm'
-                            : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${option.iconBg} ${option.iconColor} group-hover:scale-105`}>
-                            <OptionIcon className="w-3.5 h-3.5" />
+                      <div key={option.id} className="space-y-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPeriodFilter(option.id);
+                            if (!hasSubSelector) {
+                              setIsPeriodDropdownOpen(false);
+                            }
+                          }}
+                          className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border ${
+                            isSelected
+                              ? 'bg-emerald-500/15 border-emerald-500/40 text-white font-bold shadow-sm'
+                              : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${option.iconBg} ${option.iconColor} group-hover:scale-105`}>
+                              <OptionIcon className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="flex flex-col leading-tight truncate">
+                              <span className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                                {option.label}
+                              </span>
+                              <span className="text-[10px] text-zinc-400">
+                                {option.subtitle}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-col leading-tight truncate">
-                            <span className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
-                              {option.label}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              {option.subtitle}
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 shrink-0 ml-2">
-                          <div className="text-right leading-tight">
-                            <span className={`font-mono font-bold text-[11px] block ${option.total > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                              +${option.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                            </span>
-                            <span className="text-[10px] text-zinc-400 font-mono">
-                              {option.count} {option.count === 1 ? 'cobro' : 'cobros'}
-                            </span>
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            <div className="text-right leading-tight">
+                              <span className={`font-mono font-bold text-[11px] block ${option.total > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                                +${option.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                              </span>
+                              <span className="text-[10px] text-zinc-400 font-mono">
+                                {option.count} {option.count === 1 ? 'cobro' : 'cobros'}
+                              </span>
+                            </div>
+                            {isSelected ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
+                            ) : hasSubSelector ? (
+                              <ChevronDown className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300" />
+                            ) : null}
                           </div>
-                          {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
-                          )}
-                        </div>
-                      </button>
+                        </button>
+
+                        {/* Selector interactivo de Mes + Año */}
+                        {option.id === 'month' && isSelected && (
+                          <div className="mx-1 p-2.5 rounded-xl bg-zinc-900/85 border border-emerald-500/25 space-y-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] uppercase font-extrabold tracking-wider text-emerald-400">
+                                Año
+                              </span>
+                              <div className="flex flex-wrap items-center justify-end gap-1">
+                                {availableYears.map((yr) => {
+                                  const isYrActive = selectedYear === yr;
+                                  return (
+                                    <button
+                                      key={yr}
+                                      type="button"
+                                      onClick={() => setSelectedYear(yr)}
+                                      className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all border ${
+                                        isYrActive
+                                          ? 'bg-emerald-500 text-black border-emerald-400 shadow-sm'
+                                          : 'bg-zinc-800/80 text-zinc-300 border-zinc-700/70 hover:text-white hover:border-zinc-500'
+                                      }`}
+                                    >
+                                      {yr}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] uppercase font-extrabold tracking-wider text-zinc-400 block mb-1.5">
+                                Selecciona el Mes ({selectedYear})
+                              </span>
+                              <div className="grid grid-cols-4 gap-1.5">
+                                {MONTH_OPTIONS.map((m) => {
+                                  const isMonthActive = selectedMonth === m.index;
+                                  const monthCount = safeSales.filter((s) =>
+                                    isSaleInPeriod(s.timestamp || '', 'month', m.index, selectedYear)
+                                  ).length;
+
+                                  return (
+                                    <button
+                                      key={m.index}
+                                      type="button"
+                                      onClick={() => setSelectedMonth(m.index)}
+                                      title={`${m.name} ${selectedYear} (${monthCount} cobros)`}
+                                      className={`px-1.5 py-1.5 rounded-lg text-[11px] flex flex-col items-center justify-center leading-tight transition-all border ${
+                                        isMonthActive
+                                          ? 'bg-emerald-500 text-black border-emerald-400 font-black shadow-sm'
+                                          : monthCount > 0
+                                          ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25 hover:bg-emerald-500/20 font-bold'
+                                          : 'bg-zinc-800/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-white font-semibold'
+                                      }`}
+                                    >
+                                      <span>{m.short}</span>
+                                      <span
+                                        className={`text-[9px] font-mono mt-0.5 ${
+                                          isMonthActive
+                                            ? 'text-black/80 font-extrabold'
+                                            : monthCount > 0
+                                            ? 'text-emerald-400'
+                                            : 'text-zinc-500'
+                                        }`}
+                                      >
+                                        {monthCount}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Selector interactivo de Año */}
+                        {option.id === 'year' && isSelected && (
+                          <div className="mx-1 p-2.5 rounded-xl bg-zinc-900/85 border border-emerald-500/25 space-y-1.5">
+                            <span className="text-[10px] uppercase font-extrabold tracking-wider text-emerald-400 block">
+                              Selecciona el Año
+                            </span>
+                            <div className="grid grid-cols-3 gap-1.5">
+                              {availableYears.map((yr) => {
+                                const isYrActive = selectedYear === yr;
+                                const yrSales = safeSales.filter((s) =>
+                                  isSaleInPeriod(s.timestamp || '', 'year', selectedMonth, yr)
+                                );
+                                return (
+                                  <button
+                                    key={yr}
+                                    type="button"
+                                    onClick={() => setSelectedYear(yr)}
+                                    className={`px-2 py-1.5 rounded-lg text-xs flex flex-col items-center justify-center leading-tight transition-all border ${
+                                      isYrActive
+                                        ? 'bg-emerald-500 text-black border-emerald-400 font-black shadow-sm'
+                                        : yrSales.length > 0
+                                        ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25 hover:bg-emerald-500/20 font-bold'
+                                        : 'bg-zinc-800/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-white font-semibold'
+                                    }`}
+                                  >
+                                    <span className="font-mono">{yr}</span>
+                                    <span
+                                      className={`text-[9.5px] font-mono mt-0.5 ${
+                                        isYrActive
+                                          ? 'text-black/80 font-extrabold'
+                                          : yrSales.length > 0
+                                          ? 'text-emerald-400'
+                                          : 'text-zinc-500'
+                                      }`}
+                                    >
+                                      {yrSales.length} {yrSales.length === 1 ? 'cobro' : 'cobros'}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
 
-                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                  <span>Total del periodo activo</span>
-                  <span className="font-bold text-emerald-400">
-                    +${activePeriodMeta.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                  </span>
+                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between gap-2 text-[10px] text-zinc-400 font-mono">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span>Total ({activePeriodMeta.periodLabel}):</span>
+                    <span className="font-bold text-emerald-400">
+                      +${activePeriodMeta.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {(periodFilter === 'month' || periodFilter === 'year') && (
+                    <button
+                      type="button"
+                      onClick={() => setIsPeriodDropdownOpen(false)}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-sans font-black text-[11px] transition-colors shrink-0"
+                    >
+                      Aplicar
+                    </button>
+                  )}
                 </div>
               </div>
             )}
