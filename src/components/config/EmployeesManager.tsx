@@ -16,7 +16,6 @@ import {
   Edit3, 
   X,
   CheckCircle2,
-  Clock,
   Upload,
   Camera,
   KeyRound,
@@ -50,7 +49,6 @@ export const EmployeesManager: React.FC = () => {
   const [pin, setPin] = useState('1234');
   const [showPassword, setShowPassword] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
-  const [shift, setShift] = useState<Employee['shift']>('Matutino (06:00 - 14:00)');
   const [salaryMonthly, setSalaryMonthly] = useState<number>(12000);
   const [usernameEditedManually, setUsernameEditedManually] = useState(false);
   const [formError, setFormError] = useState('');
@@ -166,7 +164,6 @@ export const EmployeesManager: React.FC = () => {
     setPin('1234');
     setShowPassword(false);
     setJobTitle('');
-    setShift('Matutino (06:00 - 14:00)');
     setSalaryMonthly(12000);
     setFormError('');
     setShowAddModal(true);
@@ -186,7 +183,6 @@ export const EmployeesManager: React.FC = () => {
     setPin(emp.pin?.startsWith('lg_hash$') ? '' : (emp.pin || ''));
     setShowPassword(false);
     setJobTitle(emp.jobTitle);
-    setShift(emp.shift);
     setSalaryMonthly(emp.salaryMonthly);
     setFormError('');
     setShowAddModal(true);
@@ -244,7 +240,7 @@ export const EmployeesManager: React.FC = () => {
         role,
         username: finalUsername,
         jobTitle: jobTitle.trim() || editingEmployee.jobTitle,
-        shift,
+        shift: 'Turno Completo',
         salaryMonthly: editingEmployee.salaryMonthly ?? 12000,
       };
       if (cleanPassword) {
@@ -276,7 +272,7 @@ export const EmployeesManager: React.FC = () => {
         password: cleanPassword,
         pin: cleanPin || '1234',
         jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : 'Recepcionista'),
-        shift,
+        shift: 'Turno Completo',
         status: 'active',
         hireDate: new Date().toISOString().slice(0, 10),
         salaryMonthly: 12000,
@@ -311,7 +307,7 @@ export const EmployeesManager: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gym-muted mt-0.5">
-                Administración del staff operativo: credenciales de acceso, roles, turnos y sueldos.
+                Administración del staff operativo: credenciales de acceso, roles y sueldos.
               </p>
             </div>
           </div>
@@ -495,17 +491,6 @@ export const EmployeesManager: React.FC = () => {
                     ) : (
                       <span className="text-[10px] text-gym-muted italic">Sin asignar</span>
                     )}
-                  </div>
-
-                  {/* Turno */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
-                      <Clock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                      <span>Turno:</span>
-                    </span>
-                    <span className="text-gray-200 font-semibold text-[11px] truncate max-w-[150px]" title={emp.shift}>
-                      {emp.shift}
-                    </span>
                   </div>
 
                   {/* Sueldo Base */}
@@ -857,32 +842,17 @@ export const EmployeesManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Cargo y Puesto */}
-              <div>
-                <label className="text-xs font-semibold text-gym-muted block mb-1">Puesto / Cargo Laboral</label>
-                <input
-                  type="text"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Ej. Líder de Mostrador / Cajero"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              {/* Turno y Teléfono */}
+              {/* Cargo / Puesto y Teléfono */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-gym-muted block mb-1">Turno</label>
-                  <select
-                    value={shift}
-                    onChange={(e) => setShift(e.target.value as Employee['shift'])}
+                  <label className="text-xs font-semibold text-gym-muted block mb-1">Puesto / Cargo Laboral</label>
+                  <input
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="Ej. Líder de Mostrador / Cajero"
                     className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="Matutino (06:00 - 14:00)">Matutino (06:00 - 14:00)</option>
-                    <option value="Vespertino (14:00 - 22:00)">Vespertino (14:00 - 22:00)</option>
-                    <option value="Turno Completo">Turno Completo</option>
-                    <option value="Fines de Semana">Fines de Semana</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

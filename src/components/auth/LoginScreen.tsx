@@ -171,12 +171,6 @@ export const LoginScreen: React.FC = () => {
     month: 'short',
   });
 
-  const getShiftLabel = (shift?: string) => {
-    if (!shift) return null;
-    if (shift.toLowerCase().includes('completo')) return 'Completo';
-    return shift.split(' ')[0];
-  };
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col justify-between relative overflow-hidden select-none">
       {/* Full-Definition Real Gym Architectural Background (Matching Terminal Kiosk Style) */}
@@ -603,8 +597,6 @@ export const LoginScreen: React.FC = () => {
                             color: 'bg-sky-500/20 text-sky-300 border-sky-400/45',
                           };
 
-                    const shiftTag = getShiftLabel(emp.shift);
-
                     return (
                       <button
                         key={emp.id}
@@ -645,11 +637,6 @@ export const LoginScreen: React.FC = () => {
                               >
                                 {roleBadge.label}
                               </span>
-                              {shiftTag && (
-                                <span className="text-[9px] text-zinc-300 bg-white/[0.07] border border-white/10 px-1.5 py-0.5 rounded-md font-medium">
-                                  {shiftTag}
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>

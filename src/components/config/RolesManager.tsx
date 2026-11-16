@@ -31,7 +31,7 @@ export const RolesManager: React.FC = () => {
     { key: 'manageInventory', label: 'Control y Ajuste de Inventario', desc: 'Modificar existencias, dar de alta suplementos y costos', icon: <Sliders className="w-4 h-4 text-purple-400" /> },
     { key: 'cashRegister', label: 'Caja & Arqueo de Turno', desc: 'Apertura y cierre de caja (Corte X y Z), cuadre de efectivo', icon: <Wallet className="w-4 h-4 text-emerald-400" /> },
     { key: 'viewReports', label: 'Reportes Ejecutivos & Afluencia', desc: 'Consultar métricas de ingresos y horas pico del gimnasio', icon: <Activity className="w-4 h-4 text-blue-400" /> },
-    { key: 'manageEmployees', label: 'Gestión de Empleados (Personal)', desc: 'Administrar staff, sueldos, turnos y altas/bajas', icon: <UserCheck className="w-4 h-4 text-amber-400" /> },
+    { key: 'manageEmployees', label: 'Gestión de Empleados (Personal)', desc: 'Administrar staff, sueldos, credenciales y altas/bajas', icon: <UserCheck className="w-4 h-4 text-amber-400" /> },
     { key: 'manageSettings', label: 'Configuración y Catálogos', desc: 'Modificar precios de planes, datos fiscales y tolerancias', icon: <ShieldCheck className="w-4 h-4 text-red-400" /> },
   ];
 
