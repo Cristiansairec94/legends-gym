@@ -24,6 +24,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
   onNavigateTab 
 }) => {
   const { 
+    isAdmin,
     notifications, 
     unreadNotificationsCount, 
     markNotificationAsRead, 
@@ -31,7 +32,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
     deleteNotification 
   } = useGym();
 
-  if (!isOpen) return null;
+  if (!isOpen || !isAdmin) return null;
 
   const getIcon = (type: string) => {
     switch (type) {

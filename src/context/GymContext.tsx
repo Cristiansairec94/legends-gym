@@ -69,6 +69,7 @@ interface GymContextType {
 
   // Roles
   currentRole: UserRole;
+  isAdmin: boolean;
   setCurrentRole: (role: UserRole) => void;
   roles: RoleDefinition[];
   updateRolePermissions: (roleId: UserRole, permissions: Partial<RolePermissions>) => void;
@@ -218,6 +219,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [securityAlert, setSecurityAlertState] = useState<string | null>(null);
   const [securityAuditLogs, setSecurityAuditLogs] = useState<SecurityAuditEvent[]>(() => storage.getSecurityAuditLogs());
   const isAuthenticated = currentUser !== null;
+  const isAdmin = currentRole === 'admin' && currentUser?.role === 'admin';
   const [isTerminalConnected, setIsTerminalConnected] = useState<boolean>(false);
 
   const clearSecurityAlert = useCallback(() => {
@@ -2152,6 +2154,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       pendingSupervisorAction,
       cancelSupervisorAuth,
       currentRole,
+      isAdmin,
       setCurrentRole,
       roles,
       updateRolePermissions,

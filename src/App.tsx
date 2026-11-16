@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GymProvider, useGym } from './context/GymContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -50,10 +50,17 @@ const getInitialTab = (): string => {
 };
 
 const MainLayout: React.FC = () => {
+  const { isAdmin } = useGym();
   const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isAdmin && isNotificationsOpen) {
+      setIsNotificationsOpen(false);
+    }
+  }, [isAdmin, isNotificationsOpen]);
 
   return (
     <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none sm:select-auto">
@@ -63,7 +70,7 @@ const MainLayout: React.FC = () => {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenCart={() => setIsCartOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        onOpenNotifications={isAdmin ? () => setIsNotificationsOpen(true) : undefined}
         onOpenSync={() => setIsSyncModalOpen(true)}
       />
 
@@ -131,12 +138,14 @@ const MainLayout: React.FC = () => {
         onSaleCompleted={() => setIsCartOpen(false)} 
       />
 
-      {/* Global Notifications Drawer */}
-      <NotificationsDrawer 
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-      />
+      {/* Global Notifications Drawer (Solo Administrador) */}
+      {isAdmin && (
+        <NotificationsDrawer 
+          isOpen={isNotificationsOpen}
+          onClose={() => setIsNotificationsOpen(false)}
+          onNavigateTab={(tab) => setActiveTab(tab)}
+        />
+      )}
 
       {/* Global Cloud Sync & Database Backup Modal */}
       <DataSyncModal

@@ -27,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { 
     currentUser,
+    isAdmin,
     logout,
     unreadNotificationsCount,
     syncState
@@ -122,19 +123,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Notifications Bell Button */}
-          <button
-            onClick={onOpenNotifications}
-            className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
-            title="Centro de notificaciones y avisos"
-          >
-            <Bell className="w-4.5 h-4.5 text-amber-400" />
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center animate-pulse">
-                {unreadNotificationsCount}
-              </span>
-            )}
-          </button>
+          {/* Notifications Bell Button (Solo Administrador) */}
+          {isAdmin && (
+            <button
+              onClick={onOpenNotifications}
+              className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-amber-500/50 hover:bg-white/[0.08] transition-all text-gray-200 shrink-0"
+              title="Centro de notificaciones y avisos"
+            >
+              <Bell className="w-4.5 h-4.5 text-amber-400" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-black font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center animate-pulse">
+                  {unreadNotificationsCount}
+                </span>
+              )}
+            </button>
+          )}
 
 
           {/* Current Logged-in User Profile Card */}
