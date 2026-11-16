@@ -8,6 +8,7 @@ import {
   DollarSign, 
   TrendingDown, 
   Calendar, 
+  CalendarDays,
   CalendarRange,
   Clock,
   CreditCard, 
@@ -30,7 +31,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-type ExpensePeriodFilter = 'all' | 'day' | 'week' | 'month';
+type ExpensePeriodFilter = 'all' | 'day' | 'week' | 'month' | 'year';
 
 const PERIOD_OPTIONS: Array<{
   id: ExpensePeriodFilter;
@@ -72,6 +73,14 @@ const PERIOD_OPTIONS: Array<{
     iconBg: 'bg-emerald-500/15 border-emerald-500/30',
     iconColor: 'text-emerald-400',
   },
+  {
+    id: 'year',
+    label: 'Por Año',
+    subtitle: 'Año actual',
+    icon: CalendarDays,
+    iconBg: 'bg-purple-500/15 border-purple-500/30',
+    iconColor: 'text-purple-400',
+  },
 ];
 
 function isExpenseInPeriod(dateStr: string, period: ExpensePeriodFilter, now = new Date()): boolean {
@@ -93,7 +102,11 @@ function isExpenseInPeriod(dateStr: string, period: ExpensePeriodFilter, now = n
     return expDate >= startOfWeek && expDate <= endOfToday;
   }
 
-  return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+  if (period === 'month') {
+    return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+  }
+
+  return expDate.getFullYear() === now.getFullYear();
 }
 
 export const ExpensesManager: React.FC = () => {
@@ -579,7 +592,7 @@ export const ExpensesManager: React.FC = () => {
             )}
           </div>
 
-          {/* Dropdown de Periodo (Día, Semana, Mes, Todos) */}
+          {/* Dropdown de Periodo (Día, Semana, Mes, Año, Todos) */}
           <div className="relative shrink-0" ref={periodDropdownRef}>
             <button
               type="button"
@@ -594,7 +607,7 @@ export const ExpensesManager: React.FC = () => {
                   ? 'bg-gym-surface border-zinc-500 text-white shadow-md'
                   : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-zinc-300 hover:text-white'
               }`}
-              title="Filtrar gastos por día, semana o mes"
+              title="Filtrar gastos por día, semana, mes o año"
             >
               <div className="flex items-center gap-2.5 truncate">
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
@@ -663,7 +676,7 @@ export const ExpensesManager: React.FC = () => {
                     </button>
                   ) : (
                     <span className="text-[10px] text-zinc-400 font-mono">
-                      Día / Semana / Mes
+                      Día / Semana / Mes / Año
                     </span>
                   )}
                 </div>
