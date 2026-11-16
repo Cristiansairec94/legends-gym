@@ -36,6 +36,7 @@ const KEYS = {
   CASH_SESSION: 'legends_cash_session_v1',
   ACTIVE_ROLE: 'legends_active_role_v1',
   EMPLOYEES: 'legends_employees_v1',
+  DELETED_EMPLOYEE_IDS: 'legends_deleted_employee_ids_v1',
   ROLES: 'legends_roles_v1',
   SETTINGS: 'legends_settings_v1',
   CATALOG_PLANS: 'legends_catalog_plans_v1',
@@ -76,9 +77,9 @@ const isRemovedCoachEmployee = (emp: Employee): boolean =>
   emp.username?.toLowerCase() === 'marcos.coach' ||
   (emp.id === 'EMP-003' && (emp.role as string) === 'trainer');
 
-export const sanitizeEmployees = (list: Employee[]): Employee[] =>
+export const sanitizeEmployees = (list: Employee[], deletedIds: string[] = []): Employee[] =>
   list
-    .filter((emp) => emp && !isRemovedCoachEmployee(emp))
+    .filter((emp) => emp && !isRemovedCoachEmployee(emp) && !deletedIds.includes(emp.id))
     .map((emp) =>
       (emp.role as string) === 'trainer' ? { ...emp, role: 'receptionist' } : emp
     );
@@ -87,6 +88,34 @@ export const sanitizeRoles = (list: RoleDefinition[]): RoleDefinition[] =>
   list.filter((r) => r && (r.id as string) !== 'trainer');
 
 export const storage = {
+  getDeletedEmployeeIds(): string[] {
+    try {
+      const raw = localStorage.getItem(KEYS.DELETED_EMPLOYEE_IDS);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addDeletedEmployeeId(id: string): void {
+    if (!id || id === 'EMP-000') return;
+    try {
+      const current = this.getDeletedEmployeeIds();
+      if (!current.includes(id)) {
+        localStorage.setItem(KEYS.DELETED_EMPLOYEE_IDS, JSON.stringify([...current, id]));
+      }
+    } catch {}
+  },
+
+  removeDeletedEmployeeId(id: string): void {
+    try {
+      const current = this.getDeletedEmployeeIds();
+      if (current.includes(id)) {
+        localStorage.setItem(KEYS.DELETED_EMPLOYEE_IDS, JSON.stringify(current.filter((x) => x !== id)));
+      }
+    } catch {}
+  },
+
   getDeletedMemberIds(): string[] {
     try {
       const raw = localStorage.getItem(KEYS.DELETED_MEMBER_IDS);
@@ -495,9 +524,10 @@ export const storage = {
   // Employees (with cryptographic hashing for stored passwords & PINs)
   getEmployees(): Employee[] {
     try {
+      const deletedIds = this.getDeletedEmployeeIds();
       const data = localStorage.getItem(KEYS.EMPLOYEES);
       if (!data) {
-        return INITIAL_EMPLOYEES.map((emp) => ({
+        return sanitizeEmployees(INITIAL_EMPLOYEES, deletedIds).map((emp) => ({
           ...emp,
           password: hashSecret(emp.password || '1234'),
           pin: hashSecret(emp.pin || '1234')
@@ -526,11 +556,8 @@ export const storage = {
           password: hashSecret(adminFromInitial.password || 'admin'),
           pin: hashSecret(adminFromInitial.pin || 'admin')
         });
-        try {
-          localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(mapped));
-        } catch {}
       } else {
-        // Guarantee admin user credentials and active status
+        // Guarantee admin user active status & non-empty credentials
         const adminIndex = mapped.findIndex((e) => e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000');
         if (adminIndex !== -1) {
           mapped[adminIndex].role = 'admin';
@@ -544,10 +571,10 @@ export const storage = {
         }
       }
 
-      const cleaned = sanitizeEmployees(mapped);
+      const cleaned = sanitizeEmployees(mapped, deletedIds);
       if (
         cleaned.length !== parsed.length ||
-        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role)
+        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role || emp.password !== parsed[idx]?.password)
       ) {
         try {
           localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(cleaned));
@@ -556,20 +583,38 @@ export const storage = {
 
       return cleaned;
     } catch {
-      return INITIAL_EMPLOYEES;
+      return INITIAL_EMPLOYEES.map((emp) => ({
+        ...emp,
+        password: hashSecret(emp.password || '1234'),
+        pin: hashSecret(emp.pin || '1234')
+      }));
     }
   },
 
-  saveEmployees(employees: Employee[]): void {
+  saveEmployees(employees: Employee[]): boolean {
+    const deletedIds = this.getDeletedEmployeeIds();
+    const hashedEmployees = sanitizeEmployees(employees, deletedIds).map((emp) => ({
+      ...emp,
+      password: emp.password ? hashSecret(emp.password) : undefined,
+      pin: emp.pin ? hashSecret(emp.pin) : undefined
+    }));
     try {
-      const hashedEmployees = sanitizeEmployees(employees).map((emp) => ({
-        ...emp,
-        password: emp.password ? hashSecret(emp.password) : undefined,
-        pin: emp.pin ? hashSecret(emp.pin) : undefined
-      }));
       localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(hashedEmployees));
+      return true;
     } catch (e) {
-      console.error('Error saving employees:', e);
+      // Fallback: if localStorage quota is tight due to large base64 avatar images, strip oversized avatars so profile + password still persist
+      try {
+        const compact = hashedEmployees.map((emp) =>
+          emp.avatarUrl && emp.avatarUrl.startsWith('data:image/') && emp.avatarUrl.length > 60000
+            ? { ...emp, avatarUrl: '' }
+            : emp
+        );
+        localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(compact));
+        return true;
+      } catch (innerErr) {
+        console.error('Error saving employees:', e, innerErr);
+        return false;
+      }
     }
   },
 

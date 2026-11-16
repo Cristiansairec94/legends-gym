@@ -169,6 +169,7 @@ export interface Employee {
   status: 'active' | 'inactive';
   hireDate: string;
   salaryMonthly: number;
+  updatedAt?: string;
 }
 
 export interface RolePermissions {

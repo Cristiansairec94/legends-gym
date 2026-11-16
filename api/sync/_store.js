@@ -945,7 +945,16 @@ export async function saveFullDatabase(incoming) {
     }
     for (const emp of incoming.employees) {
       if (emp && emp.id && !store.deletedEmployeeIds.includes(emp.id)) {
-        map.set(emp.id, { ...(map.get(emp.id) || {}), ...emp });
+        const existing = map.get(emp.id);
+        if (!existing) {
+          map.set(emp.id, emp);
+          continue;
+        }
+        const existingTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+        const incomingTime = emp.updatedAt ? new Date(emp.updatedAt).getTime() : 0;
+        if (incomingTime > existingTime || (existingTime === 0 && incomingTime === 0)) {
+          map.set(emp.id, { ...existing, ...emp });
+        }
       }
     }
     store.employees = Array.from(map.values());

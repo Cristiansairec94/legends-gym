@@ -52,6 +52,9 @@ export const EmployeesManager: React.FC = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [shift, setShift] = useState<Employee['shift']>('Matutino (06:00 - 14:00)');
   const [salaryMonthly, setSalaryMonthly] = useState<number>(12000);
+  const [usernameEditedManually, setUsernameEditedManually] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch = 
@@ -136,12 +139,14 @@ export const EmployeesManager: React.FC = () => {
   // Auto-sugerir nombre de usuario basado en el nombre completo
   const handleNameChange = (val: string) => {
     setFullName(val);
-    if (!editingEmployee && (!username || username === '')) {
+    setFormError('');
+    if (!editingEmployee && !usernameEditedManually) {
       const clean = val
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .trim()
+        .replace(/[^a-z0-9\s.]/g, '')
         .replace(/\s+/g, '.');
       setUsername(clean);
     }
@@ -156,12 +161,14 @@ export const EmployeesManager: React.FC = () => {
     setAvatarUrl(DEFAULT_EMPLOYEE_AVATAR);
     setRole('receptionist');
     setUsername('');
+    setUsernameEditedManually(false);
     setPassword('');
     setPin('1234');
     setShowPassword(false);
     setJobTitle('');
     setShift('Matutino (06:00 - 14:00)');
     setSalaryMonthly(12000);
+    setFormError('');
     setShowAddModal(true);
   };
 
@@ -174,55 +181,112 @@ export const EmployeesManager: React.FC = () => {
     setAvatarUrl(emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR);
     setRole(emp.role);
     setUsername(emp.username || '');
+    setUsernameEditedManually(true);
     setPassword(emp.password?.startsWith('lg_hash$') ? '' : (emp.password || ''));
     setPin(emp.pin?.startsWith('lg_hash$') ? '' : (emp.pin || ''));
     setShowPassword(false);
     setJobTitle(emp.jobTitle);
     setShift(emp.shift);
     setSalaryMonthly(emp.salaryMonthly);
+    setFormError('');
     setShowAddModal(true);
   };
 
   const handleSaveEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim()) return;
+    setFormError('');
 
-    const finalUsername = username.trim().toLowerCase().replace(/\s+/g, '') || `${fullName.toLowerCase().replace(/\s+/g, '.')}`;
+    const cleanName = fullName.trim();
+    if (!cleanName) {
+      setFormError('Ingresa el nombre completo del empleado.');
+      return;
+    }
+
+    const finalUsername =
+      username.trim().toLowerCase().replace(/\s+/g, '') ||
+      cleanName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s.]/g, '')
+        .replace(/\s+/g, '.');
+
+    if (!finalUsername) {
+      setFormError('Ingresa un nombre de usuario válido para acceder al sistema.');
+      return;
+    }
+
+    const duplicateUser = employees.find(
+      (emp) =>
+        emp.id !== editingEmployee?.id &&
+        (emp.username?.toLowerCase() === finalUsername || emp.email?.toLowerCase() === `${finalUsername}@legendsgym.com`)
+    );
+    if (duplicateUser) {
+      setFormError(`El usuario @${finalUsername} ya está asignado a ${duplicateUser.fullName}. Elige otro usuario.`);
+      return;
+    }
+
+    const cleanPassword = password.trim();
+    const cleanPin = pin.trim();
+
+    if (!editingEmployee && !cleanPassword) {
+      setFormError('Ingresa una contraseña para el nuevo empleado (o haz clic en "Generar").');
+      return;
+    }
 
     if (editingEmployee) {
-      updateEmployee(editingEmployee.id, {
-        fullName: fullName.trim(),
+      const updates: Partial<Employee> = {
+        fullName: cleanName,
         documentId: documentId.trim() || editingEmployee.documentId,
         email: editingEmployee.email || `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || editingEmployee.phone,
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || editingEmployee.password || '123456',
-        pin: pin.trim() || editingEmployee.pin || '1234',
         jobTitle: jobTitle.trim() || editingEmployee.jobTitle,
         shift,
         salaryMonthly: editingEmployee.salaryMonthly ?? 12000,
-      });
+      };
+      if (cleanPassword) {
+        updates.password = cleanPassword;
+      } else if (!editingEmployee.password) {
+        updates.password = '123456';
+      }
+      if (cleanPin) {
+        updates.pin = cleanPin;
+      } else if (!editingEmployee.pin) {
+        updates.pin = '1234';
+      }
+
+      updateEmployee(editingEmployee.id, updates);
+      setSaveToast(
+        cleanPassword
+          ? `Perfil y nueva contraseña de ${cleanName} guardados correctamente`
+          : `Perfil de ${cleanName} actualizado correctamente`
+      );
     } else {
       addEmployee({
-        fullName: fullName.trim(),
+        fullName: cleanName,
         documentId: documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`,
         email: `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || '+52 55 0000 0000',
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || '123456',
-        pin: pin.trim() || '1234',
+        password: cleanPassword,
+        pin: cleanPin || '1234',
         jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : 'Recepcionista'),
         shift,
         status: 'active',
         hireDate: new Date().toISOString().slice(0, 10),
         salaryMonthly: 12000,
       });
+      setRoleFilter('all');
+      setSearch('');
+      setSaveToast(`Empleado ${cleanName} (@${finalUsername}) registrado con su contraseña`);
     }
 
+    setTimeout(() => setSaveToast(null), 4000);
     setShowAddModal(false);
     setEditingEmployee(null);
   };
@@ -253,13 +317,21 @@ export const EmployeesManager: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
-        >
-          <UserPlus className="w-4 h-4 stroke-[2.5]" />
-          <span>Nuevo Empleado</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {saveToast && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{saveToast}</span>
+            </div>
+          )}
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+          >
+            <UserPlus className="w-4 h-4 stroke-[2.5]" />
+            <span>Nuevo Empleado</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -516,7 +588,7 @@ export const EmployeesManager: React.FC = () => {
             </div>
 
             {/* Formulario con scroll independiente */}
-            <form onSubmit={handleSaveEmployee} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveEmployee} noValidate className="p-6 space-y-4 overflow-y-auto flex-1">
               
               {/* Sección de Foto de Perfil: Subir y Eliminar */}
               <div className="bg-gym-surface/50 p-4 rounded-xl border border-gym-border space-y-3">
@@ -710,7 +782,12 @@ export const EmployeesManager: React.FC = () => {
                         type="text"
                         required
                         value={username}
-                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                        onChange={(e) => {
+                          const clean = e.target.value.toLowerCase().replace(/\s+/g, '');
+                          setUsername(clean);
+                          setUsernameEditedManually(clean.length > 0);
+                          setFormError('');
+                        }}
                         placeholder="andres.navarro"
                         className="w-full pl-8 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
                       />
@@ -721,7 +798,7 @@ export const EmployeesManager: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-gym-muted block">
-                        Contraseña *
+                        {editingEmployee ? 'Nueva Contraseña' : 'Contraseña *'}
                       </label>
                       <button
                         type="button"
@@ -738,7 +815,10 @@ export const EmployeesManager: React.FC = () => {
                         type={showPassword ? 'text' : 'password'}
                         required={!editingEmployee}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setFormError('');
+                        }}
                         placeholder={editingEmployee ? 'Vacío = mantener actual' : '••••••••'}
                         className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 font-mono"
                       />
@@ -751,7 +831,13 @@ export const EmployeesManager: React.FC = () => {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    <span className="text-[10px] text-gym-muted block mt-0.5">Clave de acceso</span>
+                    <span className="text-[10px] block mt-0.5">
+                      {editingEmployee && editingEmployee.password ? (
+                        <span className="text-emerald-400 font-semibold">✓ Guardada (escribe solo para cambiarla)</span>
+                      ) : (
+                        <span className="text-gym-muted">Clave de acceso</span>
+                      )}
+                    </span>
                   </div>
 
                   <div>
@@ -810,6 +896,13 @@ export const EmployeesManager: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {formError && (
+                <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-semibold flex items-center gap-2">
+                  <X className="w-4 h-4 text-red-400 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
 
               {/* Botones de acción */}
               <div className="flex justify-end gap-2 pt-3 border-t border-gym-border">

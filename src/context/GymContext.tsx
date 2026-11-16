@@ -23,7 +23,7 @@ import {
 import { storage, sanitizeEmployees } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
-import { verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
+import { hashSecret, verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
 import { INITIAL_EMPLOYEES } from '../data/initialEmployees';
 import { 
   broadcastLocalSync, 
@@ -196,6 +196,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [cashSession, setCashSession] = useState<CashRegisterSession>(() => storage.getCashSession());
   const [cart, setCart] = useState<CartItem[]>([]);
   const [employees, setEmployees] = useState<Employee[]>(() => storage.getEmployees());
+  const employeesRef = useRef<Employee[]>(employees);
+  employeesRef.current = employees;
   const [roles, setRoles] = useState<RoleDefinition[]>(() => storage.getRoles());
   const [gymSettings, setGymSettings] = useState<GymSettings>(() => storage.getSettings());
   const [catalogPlans, setCatalogPlans] = useState<SystemCatalogPlan[]>(() => storage.getCatalogPlans());
@@ -236,7 +238,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => { storage.saveSales(sales); }, [sales]);
   useEffect(() => { storage.saveAccessLogs(accessLogs); }, [accessLogs]);
   useEffect(() => { storage.saveCashSession(cashSession); }, [cashSession]);
-  useEffect(() => { storage.saveEmployees(employees); }, [employees]);
+  useEffect(() => {
+    employeesRef.current = employees;
+    storage.saveEmployees(employees);
+  }, [employees]);
   useEffect(() => { storage.saveRoles(roles); }, [roles]);
   useEffect(() => { storage.saveSettings(gymSettings); }, [gymSettings]);
   useEffect(() => { storage.saveCatalogPlans(catalogPlans); }, [catalogPlans]);
@@ -263,6 +268,36 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           biometricHash: m.biometricHash || existing?.biometricHash || `BIO_HASH_${m.id}`,
           biometricTemplate: m.biometricTemplate || existing?.biometricTemplate || `FP_THUMB_RIGHT_${m.id}`,
           avatarUrl: getGymAvatar(m.fullName, m.avatarUrl || existing?.avatarUrl)
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, []);
+
+  // Safely merge employee lists using updatedAt so stale server seed records never overwrite local password/profile edits
+  const mergeEmployeeLists = useCallback((currentList: Employee[], incomingList: Employee[]): Employee[] => {
+    const deletedIds = storage.getDeletedEmployeeIds();
+    const map = new Map<string, Employee>();
+    for (const emp of sanitizeEmployees(currentList, deletedIds)) {
+      if (emp && emp.id) {
+        map.set(emp.id, emp);
+      }
+    }
+    for (const incoming of sanitizeEmployees(incomingList, deletedIds)) {
+      if (!incoming || !incoming.id) continue;
+      const existing = map.get(incoming.id);
+      if (!existing) {
+        map.set(incoming.id, incoming);
+        continue;
+      }
+      const localTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      const remoteTime = incoming.updatedAt ? new Date(incoming.updatedAt).getTime() : 0;
+      if (remoteTime > localTime || (localTime === 0 && remoteTime === 0)) {
+        map.set(incoming.id, {
+          ...existing,
+          ...incoming,
+          password: incoming.password || existing.password,
+          pin: incoming.pin || existing.pin,
         });
       }
     }
@@ -482,11 +517,10 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               });
             }
             if (Array.isArray(db.employees) && db.employees.length > 0) {
-              setEmployees(prev => {
-                const merged = sanitizeEmployees(mergeById(prev, db.employees!));
-                storage.saveEmployees(merged);
-                return merged;
-              });
+              const mergedEmployees = mergeEmployeeLists(employeesRef.current, db.employees);
+              employeesRef.current = mergedEmployees;
+              storage.saveEmployees(mergedEmployees);
+              setEmployees(mergedEmployees);
             }
             if (db.settings) {
               setGymSettings(prev => {
@@ -513,7 +547,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               sales: storage.getSales(),
               expenses: storage.getExpenses(),
               cashSession: storage.getCashSession(),
-              employees: storage.getEmployees(),
+              employees: employeesRef.current,
               settings: storage.getSettings(),
               catalogPlans: storage.getCatalogPlans(),
             }).catch(() => {});
@@ -525,7 +559,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               sales: storage.getSales(),
               expenses: storage.getExpenses(),
               cashSession: storage.getCashSession(),
-              employees: storage.getEmployees(),
+              employees: employeesRef.current,
               settings: storage.getSettings(),
               catalogPlans: storage.getCatalogPlans(),
             }).catch(() => {});
@@ -588,7 +622,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             if (Array.isArray(db.employees) && db.employees.length > 0) {
               setEmployees(prev => {
-                const next = sanitizeEmployees(mergeById(prev, db.employees!));
+                const next = mergeEmployeeLists(prev, db.employees!);
+                employeesRef.current = next;
                 storage.saveEmployees(next);
                 return next;
               });
@@ -618,7 +653,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       clearInterval(pollInterval);
       window.removeEventListener('focus', onFocusSync);
     };
-  }, [ingestIncomingAccessLog, mergeMemberLists, mergeById]);
+  }, [ingestIncomingAccessLog, mergeMemberLists, mergeEmployeeLists, mergeById]);
 
   // Security Guard: Single-Tab Session Binding & Multi-Tab Synchronization
   useEffect(() => {
@@ -781,15 +816,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return { success: false, message: 'Ingresa tu usuario / correo / cédula y tu contraseña o PIN.' };
     }
 
-    // Direct instant login for master admin credentials (admin / admin or admin / 1234)
+    // Direct instant login for master admin credentials only if admin account still uses default password
     if (cleanId === 'admin' && (cleanPass === 'admin' || cleanPass === '1234')) {
       let adminEmp = employees.find(
-        (e) => (e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000' || e.role === 'admin') && e.status === 'active'
+        (e) => (e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000') && e.status === 'active'
       );
       if (!adminEmp) {
         adminEmp = INITIAL_EMPLOYEES.find((e) => e.username === 'admin') || INITIAL_EMPLOYEES[0];
       }
-      if (adminEmp) {
+      const adminUsesDefault =
+        !adminEmp?.password ||
+        verifySecret('admin', adminEmp.password) ||
+        verifySecret('1234', adminEmp.password);
+      if (adminEmp && adminUsesDefault) {
         storage.resetLoginAttempts();
         storage.setSecurityAlert(null);
         setSecurityAlertState(null);
@@ -854,22 +893,19 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     }
 
-    // Official fallback credentials from system definitions
+    // Official fallback credentials only when stored password/PIN is missing
     const initial = INITIAL_EMPLOYEES.find(
       (ie) => ie.id === found.id || ie.email.toLowerCase() === found.email.toLowerCase() || (found.username && ie.username === found.username)
     );
 
-    const isMasterAdmin = (cleanId === 'admin' || found.username?.toLowerCase() === 'admin') && (cleanPass === 'admin' || cleanPass === '1234');
+    const hasStoredPassword = Boolean(found.password && found.password.trim() !== '');
+    const hasStoredPin = Boolean(found.pin && found.pin.trim() !== '');
 
     const isValid =
-      isMasterAdmin ||
       verifySecret(cleanPass, found.password) ||
       verifySecret(cleanPass, found.pin) ||
-      (initial?.password && cleanPass === initial.password) ||
-      (initial?.pin && cleanPass === initial.pin) ||
-      (initial?.password && cleanPass.toLowerCase() === initial.password.toLowerCase()) ||
-      (found.password && cleanPass === found.password) ||
-      (found.pin && cleanPass === found.pin);
+      (!hasStoredPassword && Boolean(initial?.password) && cleanPass === initial!.password) ||
+      (!hasStoredPin && Boolean(initial?.pin) && cleanPass === initial!.pin);
 
     if (!isValid) {
       const fail = storage.recordFailedLoginAttempt(found.email);
@@ -1854,33 +1890,82 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Empleados (Staff)
   const addEmployee = (data: Omit<Employee, 'id'>): Employee => {
-    const maxIdNum = employees.reduce((max, emp) => {
+    const current = employeesRef.current;
+    const maxIdNum = current.reduce((max, emp) => {
       const match = emp.id.match(/^EMP-(\d+)$/i);
       return match ? Math.max(max, parseInt(match[1], 10)) : max;
     }, 0);
     const newId = `EMP-${String(maxIdNum + 1).padStart(3, '0')}`;
-    const newEmp: Employee = { ...data, id: newId };
-    setEmployees(prev => [newEmp, ...prev]);
-    pushEntityChangeToServer('employees', 'add', newEmp).catch(() => {});
+    const cleanPass = (data.password || '').trim() || '123456';
+    const cleanPin = (data.pin || '').trim() || '1234';
+    const newEmp: Employee = {
+      ...data,
+      id: newId,
+      password: hashSecret(cleanPass),
+      pin: hashSecret(cleanPin),
+      updatedAt: new Date().toISOString(),
+    };
+    storage.removeDeletedEmployeeId(newId);
+    const next = [newEmp, ...current];
+    employeesRef.current = next;
+    storage.saveEmployees(next);
+    setEmployees(next);
+    pushEntityChangeToServer('employees', 'add', newEmp).then((res) => {
+      if (res.version && res.version > serverVersionRef.current) {
+        serverVersionRef.current = res.version;
+      }
+    }).catch(() => {});
     return newEmp;
   };
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
-    setEmployees(prev => {
-      const next = prev.map(e => e.id === id ? { ...e, ...updates } : e);
-      const target = next.find(e => e.id === id);
-      if (target) pushEntityChangeToServer('employees', 'update', target).catch(() => {});
-      return next;
-    });
-    if (currentUser?.id === id) {
-      const updated = { ...currentUser, ...updates };
-      setCurrentUserState(updated);
-      storage.saveCurrentUser(updated);
+    const sanitizedUpdates: Partial<Employee> = {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    if (updates.password !== undefined) {
+      const trimmedPass = updates.password.trim();
+      if (trimmedPass) {
+        sanitizedUpdates.password = hashSecret(trimmedPass);
+      } else {
+        delete sanitizedUpdates.password;
+      }
+    }
+    if (updates.pin !== undefined) {
+      const trimmedPin = updates.pin.trim();
+      if (trimmedPin) {
+        sanitizedUpdates.pin = hashSecret(trimmedPin);
+      } else {
+        delete sanitizedUpdates.pin;
+      }
+    }
+
+    const next = employeesRef.current.map((e) => (e.id === id ? { ...e, ...sanitizedUpdates } : e));
+    employeesRef.current = next;
+    storage.saveEmployees(next);
+    setEmployees(next);
+
+    const target = next.find((e) => e.id === id);
+    if (target) {
+      pushEntityChangeToServer('employees', 'update', target).then((res) => {
+        if (res.version && res.version > serverVersionRef.current) {
+          serverVersionRef.current = res.version;
+        }
+      }).catch(() => {});
+    }
+    if (currentUser?.id === id && target) {
+      setCurrentUserState(target);
+      currentUserRef.current = target;
+      storage.saveCurrentUser(target);
     }
   };
 
   const deleteEmployee = (id: string) => {
-    setEmployees(prev => prev.filter(e => e.id !== id));
+    storage.addDeletedEmployeeId(id);
+    const next = employeesRef.current.filter((e) => e.id !== id);
+    employeesRef.current = next;
+    storage.saveEmployees(next);
+    setEmployees(next);
     pushEntityChangeToServer('employees', 'delete', null, id).catch(() => {});
     if (currentUser?.id === id) {
       logout();

@@ -764,7 +764,20 @@ const server = http.createServer(async (req, res) => {
         if (Array.isArray(incoming.employees)) {
           const map = new Map();
           for (const emp of db.employees || []) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, emp);
-          for (const emp of incoming.employees) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, { ...(map.get(emp.id) || {}), ...emp });
+          for (const emp of incoming.employees) {
+            if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) {
+              const existing = map.get(emp.id);
+              if (!existing) {
+                map.set(emp.id, emp);
+                continue;
+              }
+              const existingTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+              const incomingTime = emp.updatedAt ? new Date(emp.updatedAt).getTime() : 0;
+              if (incomingTime > existingTime || (existingTime === 0 && incomingTime === 0)) {
+                map.set(emp.id, { ...existing, ...emp });
+              }
+            }
+          }
           db.employees = Array.from(map.values());
         }
         if (incoming.settings) db.settings = { ...(db.settings || {}), ...incoming.settings };
