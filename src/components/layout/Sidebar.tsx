@@ -36,14 +36,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       label: 'Dashboard / Inicio',
       icon: <LayoutDashboard className="w-5 h-5" />,
       badge: null,
-      roles: ['admin', 'trainer', 'receptionist'],
+      roles: ['admin', 'receptionist'],
     },
     {
       id: 'access',
       label: 'Control de Acceso',
       icon: <Fingerprint className="w-5 h-5" />,
       badge: 'Biométrico',
-      roles: ['admin', 'receptionist', 'trainer'],
+      roles: ['admin', 'receptionist'],
       highlight: true,
     },
     {
@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       label: 'Clientes / Membresías',
       icon: <Users className="w-5 h-5" />,
       badge: null,
-      roles: ['admin', 'receptionist', 'trainer'],
+      roles: ['admin', 'receptionist'],
     },
     {
       id: 'catalog',

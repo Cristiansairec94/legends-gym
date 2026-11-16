@@ -575,23 +575,6 @@ let store = {
       "salaryMonthly": 12500
     },
     {
-      "id": "EMP-003",
-      "fullName": "Marcos \"Titan\" Valenzuela",
-      "documentId": "38190284",
-      "email": "marcos.coach@legendsgym.com",
-      "phone": "+52 55 7766 5544",
-      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-      "role": "trainer",
-      "username": "marcos.coach",
-      "password": "lg_hash$68eac23f695b44e50858d20a74f89635",
-      "pin": "lg_hash$439a20bd47f857892e9f547424049480",
-      "jobTitle": "Head Coach • Fuerza & Hipertrofia",
-      "shift": "Vespertino (14:00 - 22:00)",
-      "status": "active",
-      "hireDate": "2023-08-10",
-      "salaryMonthly": 18000
-    },
-    {
       "id": "EMP-004",
       "fullName": "Daniela Morales Ruiz",
       "documentId": "55192038",

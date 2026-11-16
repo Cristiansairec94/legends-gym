@@ -78,7 +78,7 @@ export const RolesManager: React.FC = () => {
       </div>
 
       {/* Role Selector Tabs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roles.map((r) => {
           const isSelected = selectedRole === r.id;
           const isCurrentActive = currentRole === r.id;
@@ -167,7 +167,7 @@ export const RolesManager: React.FC = () => {
             </div>
             <div className="leading-relaxed">
               <span className="font-bold text-white block">Permisos de Administrador Bloqueados contra Modificación</span>
-              Por políticas de seguridad, este perfil posee todas las facultades activas de forma invariable. Si necesitas un perfil con restricciones para mostrador o entrenamiento, selecciona y configura <strong>Recepción</strong> o <strong>Coach</strong>.
+              Por políticas de seguridad, este perfil posee todas las facultades activas de forma invariable. Si necesitas un perfil con restricciones para mostrador y caja, selecciona y configura <strong>Recepción & Cajero</strong>.
             </div>
           </div>
         )}

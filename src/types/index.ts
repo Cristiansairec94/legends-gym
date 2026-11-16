@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'receptionist' | 'trainer';
+export type UserRole = 'admin' | 'receptionist';
 
 export type MembershipPlanType = 'daily' | 'monthly' | 'quarterly' | 'annual' | 'vip';
 

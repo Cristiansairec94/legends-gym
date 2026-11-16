@@ -71,6 +71,21 @@ if (typeof window !== 'undefined') {
 }
 
 
+const isRemovedCoachEmployee = (emp: Employee): boolean =>
+  emp.email?.toLowerCase() === 'marcos.coach@legendsgym.com' ||
+  emp.username?.toLowerCase() === 'marcos.coach' ||
+  (emp.id === 'EMP-003' && (emp.role as string) === 'trainer');
+
+export const sanitizeEmployees = (list: Employee[]): Employee[] =>
+  list
+    .filter((emp) => emp && !isRemovedCoachEmployee(emp))
+    .map((emp) =>
+      (emp.role as string) === 'trainer' ? { ...emp, role: 'receptionist' } : emp
+    );
+
+export const sanitizeRoles = (list: RoleDefinition[]): RoleDefinition[] =>
+  list.filter((r) => r && (r.id as string) !== 'trainer');
+
 export const storage = {
   getDeletedMemberIds(): string[] {
     try {
@@ -282,8 +297,8 @@ export const storage = {
 
   getActiveRole(): UserRole {
     try {
-      const r = localStorage.getItem(KEYS.ACTIVE_ROLE) as UserRole;
-      return (r === 'admin' || r === 'receptionist' || r === 'trainer') ? r : 'admin';
+      const r = localStorage.getItem(KEYS.ACTIVE_ROLE);
+      return (r === 'admin' || r === 'receptionist') ? r : 'admin';
     } catch {
       return 'admin';
     }
@@ -313,7 +328,16 @@ export const storage = {
 
       const tabUserRaw = sessionStorage.getItem(KEYS.TAB_SESSION_USER);
       if (tabUserRaw) {
-        return JSON.parse(tabUserRaw);
+        const parsedUser: Employee = JSON.parse(tabUserRaw);
+        if (isRemovedCoachEmployee(parsedUser)) {
+          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+          return null;
+        }
+        if ((parsedUser.role as string) === 'trainer') {
+          return { ...parsedUser, role: 'receptionist' };
+        }
+        return parsedUser;
       }
 
       return null;
@@ -520,7 +544,17 @@ export const storage = {
         }
       }
 
-      return mapped;
+      const cleaned = sanitizeEmployees(mapped);
+      if (
+        cleaned.length !== parsed.length ||
+        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role)
+      ) {
+        try {
+          localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(cleaned));
+        } catch {}
+      }
+
+      return cleaned;
     } catch {
       return INITIAL_EMPLOYEES;
     }
@@ -528,7 +562,7 @@ export const storage = {
 
   saveEmployees(employees: Employee[]): void {
     try {
-      const hashedEmployees = employees.map((emp) => ({
+      const hashedEmployees = sanitizeEmployees(employees).map((emp) => ({
         ...emp,
         password: emp.password ? hashSecret(emp.password) : undefined,
         pin: emp.pin ? hashSecret(emp.pin) : undefined
@@ -543,7 +577,15 @@ export const storage = {
   getRoles(): RoleDefinition[] {
     try {
       const data = localStorage.getItem(KEYS.ROLES);
-      return data ? JSON.parse(data) : INITIAL_ROLES;
+      if (!data) return INITIAL_ROLES;
+      const parsed: RoleDefinition[] = JSON.parse(data);
+      const cleaned = sanitizeRoles(parsed);
+      if (cleaned.length !== parsed.length) {
+        try {
+          localStorage.setItem(KEYS.ROLES, JSON.stringify(cleaned));
+        } catch {}
+      }
+      return cleaned.length > 0 ? cleaned : INITIAL_ROLES;
     } catch {
       return INITIAL_ROLES;
     }
@@ -551,7 +593,7 @@ export const storage = {
 
   saveRoles(roles: RoleDefinition[]): void {
     try {
-      localStorage.setItem(KEYS.ROLES, JSON.stringify(roles));
+      localStorage.setItem(KEYS.ROLES, JSON.stringify(sanitizeRoles(roles)));
     } catch (e) {
       console.error('Error saving roles:', e);
     }
@@ -721,8 +763,8 @@ export const storage = {
       if (data.sales) this.saveSales(data.sales);
       if (data.accessLogs) this.saveAccessLogs(data.accessLogs);
       if (data.cashSession) this.saveCashSession(data.cashSession);
-      if (data.employees) this.saveEmployees(data.employees);
-      if (data.roles) this.saveRoles(data.roles);
+      if (data.employees) this.saveEmployees(sanitizeEmployees(data.employees));
+      if (data.roles) this.saveRoles(sanitizeRoles(data.roles));
       if (data.settings) this.saveSettings(data.settings);
       if (data.catalogPlans) this.saveCatalogPlans(data.catalogPlans);
       if (data.branches) this.saveBranches(data.branches);

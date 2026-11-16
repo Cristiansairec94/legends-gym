@@ -80,16 +80,14 @@ export const ClientList: React.FC = () => {
           </p>
         </div>
 
-        {/* Add client button (only admin & receptionist) */}
-        {currentRole !== 'trainer' && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
-          >
-            <UserPlus className="w-4 h-4 stroke-[2.5]" />
-            <span>Nuevo Cliente</span>
-          </button>
-        )}
+        {/* Add client button */}
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+        >
+          <UserPlus className="w-4 h-4 stroke-[2.5]" />
+          <span>Nuevo Cliente</span>
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -334,25 +332,21 @@ export const ClientList: React.FC = () => {
                     </span>
 
                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      {currentRole !== 'trainer' && (
-                        <button
-                          onClick={() => setSelectedClientForEdit(member)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-blue-500/20 text-gym-muted hover:text-blue-400 transition-colors"
-                          title="Editar datos"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setSelectedClientForEdit(member)}
+                        className="p-1.5 rounded-lg bg-gym-surface hover:bg-blue-500/20 text-gym-muted hover:text-blue-400 transition-colors"
+                        title="Editar datos"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
 
-                      {currentRole !== 'trainer' && (
-                        <button
-                          onClick={() => setSelectedClientForRenew(member)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-emerald-500/20 text-gym-muted hover:text-emerald-400 transition-colors"
-                          title="Renovar membresía"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setSelectedClientForRenew(member)}
+                        className="p-1.5 rounded-lg bg-gym-surface hover:bg-emerald-500/20 text-gym-muted hover:text-emerald-400 transition-colors"
+                        title="Renovar membresía"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
 
                       {currentRole === 'admin' && (
                         <button
@@ -502,27 +496,23 @@ export const ClientList: React.FC = () => {
                               <Eye className="w-4 h-4" />
                             </button>
 
-                            {currentRole !== 'trainer' && (
-                              <button
-                                onClick={() => setSelectedClientForEdit(member)}
-                                className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
-                                title="Editar datos del cliente"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Editar</span>
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setSelectedClientForEdit(member)}
+                              className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
+                              title="Editar datos del cliente"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Editar</span>
+                            </button>
 
-                            {currentRole !== 'trainer' && (
-                              <button
-                                onClick={() => setSelectedClientForRenew(member)}
-                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
-                                title="Renovar membresía"
-                              >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Renovar</span>
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setSelectedClientForRenew(member)}
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
+                              title="Renovar membresía"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Renovar</span>
+                            </button>
 
                             {currentRole === 'admin' && (
                               <button

@@ -215,7 +215,7 @@ export const EmployeesManager: React.FC = () => {
         username: finalUsername,
         password: password.trim() || '123456',
         pin: pin.trim() || '1234',
-        jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : role === 'trainer' ? 'Entrenador de Piso' : 'Recepcionista'),
+        jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : 'Recepcionista'),
         shift,
         status: 'active',
         hireDate: new Date().toISOString().slice(0, 10),
@@ -263,7 +263,7 @@ export const EmployeesManager: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <span className="text-xs text-gym-muted block uppercase font-bold">Total Personal</span>
           <span className="text-2xl font-black text-white mt-1 block">{employees.length}</span>
@@ -284,14 +284,6 @@ export const EmployeesManager: React.FC = () => {
             {employees.filter(e => e.role === 'receptionist').length}
           </span>
           <span className="text-xs text-gym-muted mt-1 block">Atención & Caja</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
-          <span className="text-xs text-gym-muted block uppercase font-bold">Coaches & Trainers</span>
-          <span className="text-2xl font-black text-emerald-400 mt-1 block">
-            {employees.filter(e => e.role === 'trainer').length}
-          </span>
-          <span className="text-xs text-gym-muted mt-1 block">Piso & Clases</span>
         </div>
       </div>
 
@@ -315,7 +307,6 @@ export const EmployeesManager: React.FC = () => {
               { id: 'all', label: 'Todos' },
               { id: 'admin', label: 'Administradores' },
               { id: 'receptionist', label: 'Recepción' },
-              { id: 'trainer', label: 'Entrenadores' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -357,9 +348,7 @@ export const EmployeesManager: React.FC = () => {
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${
                 emp.role === 'admin'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-300'
-                  : emp.role === 'receptionist'
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-300'
-                  : 'bg-gradient-to-r from-emerald-500 to-emerald-300'
+                  : 'bg-gradient-to-r from-blue-500 to-blue-300'
               }`} />
 
               <div>
@@ -368,11 +357,9 @@ export const EmployeesManager: React.FC = () => {
                   <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-lg border ${
                     emp.role === 'admin'
                       ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                      : emp.role === 'receptionist'
-                      ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                      : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
                   }`}>
-                    {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
+                    {emp.role === 'admin' ? 'Administrador' : 'Recepción'}
                   </span>
 
                   <button
@@ -660,7 +647,7 @@ export const EmployeesManager: React.FC = () => {
                   <label className="text-xs font-bold text-white block mb-1.5">
                     Rol que tendrá en el sistema: *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {[
                       {
                         id: 'receptionist' as UserRole,
@@ -669,14 +656,6 @@ export const EmployeesManager: React.FC = () => {
                         desc: 'Ventas POS, arqueo de caja y cobros',
                         borderSelected: 'border-blue-400 bg-blue-500/15 text-blue-300',
                         badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-                      },
-                      {
-                        id: 'trainer' as UserRole,
-                        title: 'Coach / Trainer',
-                        badge: 'Coach',
-                        desc: 'Expedientes, clases y entrenamientos',
-                        borderSelected: 'border-emerald-400 bg-emerald-500/15 text-emerald-300',
-                        badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
                       },
                       {
                         id: 'admin' as UserRole,
@@ -799,7 +778,7 @@ export const EmployeesManager: React.FC = () => {
                   type="text"
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Ej. Entrenador de Piso / Líder de Mostrador"
+                  placeholder="Ej. Líder de Mostrador / Cajero"
                   className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
                 />
               </div>

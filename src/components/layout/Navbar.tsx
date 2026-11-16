@@ -150,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {currentUser.fullName}
                 </p>
                 <p className="text-[10px] text-amber-400 capitalize font-semibold">
-                  {currentUser.role === 'admin' ? 'Administrador' : currentUser.role === 'trainer' ? 'Coach' : 'Recepción'}
+                  {currentUser.role === 'admin' ? 'Administrador' : 'Recepción'}
                 </p>
               </div>
             </div>

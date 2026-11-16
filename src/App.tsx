@@ -50,26 +50,10 @@ const getInitialTab = (): string => {
 };
 
 const MainLayout: React.FC = () => {
-  const { currentRole } = useGym();
   const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-
-  // Role permissions fallback
-  React.useEffect(() => {
-    if (currentRole === 'trainer' && (
-      activeTab === 'pos' || 
-      activeTab === 'cash' || 
-      activeTab === 'inventory' || 
-      activeTab === 'catalog' || 
-      activeTab === 'expenses' ||
-      activeTab === 'incomes' ||
-      activeTab.startsWith('config_')
-    )) {
-      setActiveTab('access');
-    }
-  }, [currentRole, activeTab]);
 
   return (
     <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none sm:select-auto">

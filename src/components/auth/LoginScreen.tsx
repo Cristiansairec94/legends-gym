@@ -598,14 +598,9 @@ export const LoginScreen: React.FC = () => {
                             label: 'Administrador',
                             color: 'bg-amber-500/20 text-amber-300 border-amber-400/45',
                           }
-                        : emp.role === 'receptionist'
-                        ? {
+                        : {
                             label: 'Recepción',
                             color: 'bg-sky-500/20 text-sky-300 border-sky-400/45',
-                          }
-                        : {
-                            label: 'Entrenador',
-                            color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/45',
                           };
 
                     const shiftTag = getShiftLabel(emp.shift);

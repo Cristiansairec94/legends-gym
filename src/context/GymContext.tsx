@@ -20,7 +20,7 @@ import {
   SyncState,
   SecurityAuditEvent
 } from '../types';
-import { storage } from '../services/storage';
+import { storage, sanitizeEmployees } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
 import { verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
@@ -481,7 +481,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             if (Array.isArray(db.employees) && db.employees.length > 0) {
               setEmployees(prev => {
-                const merged = mergeById(prev, db.employees!);
+                const merged = sanitizeEmployees(mergeById(prev, db.employees!));
                 storage.saveEmployees(merged);
                 return merged;
               });
@@ -586,7 +586,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             if (Array.isArray(db.employees) && db.employees.length > 0) {
               setEmployees(prev => {
-                const next = mergeById(prev, db.employees!);
+                const next = sanitizeEmployees(mergeById(prev, db.employees!));
                 storage.saveEmployees(next);
                 return next;
               });
@@ -830,9 +830,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         emp.id.toLowerCase() === cleanId ||
         (cleanId === 'admin' && role === 'admin') ||
         (cleanId === 'recepcion' && role === 'receptionist') ||
-        (cleanId === 'caja' && role === 'receptionist') ||
-        (cleanId === 'coach' && role === 'trainer') ||
-        (cleanId === 'entrenador' && role === 'trainer')
+        (cleanId === 'caja' && role === 'receptionist')
       );
     });
 
@@ -1854,7 +1852,11 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Empleados (Staff)
   const addEmployee = (data: Omit<Employee, 'id'>): Employee => {
-    const newId = `EMP-${String(employees.length + 1).padStart(3, '0')}`;
+    const maxIdNum = employees.reduce((max, emp) => {
+      const match = emp.id.match(/^EMP-(\d+)$/i);
+      return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 0);
+    const newId = `EMP-${String(maxIdNum + 1).padStart(3, '0')}`;
     const newEmp: Employee = { ...data, id: newId };
     setEmployees(prev => [newEmp, ...prev]);
     pushEntityChangeToServer('employees', 'add', newEmp).catch(() => {});
