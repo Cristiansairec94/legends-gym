@@ -22,6 +22,7 @@ import {
   Calendar,
   History
 } from 'lucide-react';
+import { getSaleItemLabel, isNonInventorySaleItem, toSafeNumber } from '../../utils/saleNormalizer';
 
 interface PosSalesHistoryModalProps {
   onClose: () => void;
@@ -63,7 +64,7 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
   // Filtrado de ventas para la vista de Historial del Turno / Hoy (Patrón gym-operations-suite)
   const scopedSales = useMemo(() => {
     return sales.filter(s => {
-      if (dateScope === 'today' && !s.timestamp.startsWith(todayStr)) {
+      if (dateScope === 'today' && !(s.timestamp || '').startsWith(todayStr)) {
         return false;
       }
       if (methodFilter !== 'all' && s.paymentMethod !== methodFilter) {
@@ -71,17 +72,18 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
       }
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
-      const matchesFolio = s.folio.toLowerCase().includes(q);
-      const matchesClient = s.clientName.toLowerCase().includes(q);
-      const matchesCashier = s.cashierName.toLowerCase().includes(q);
-      const matchesItem = s.items.some(i => i.product.name.toLowerCase().includes(q));
+      const matchesFolio = (s.folio || s.id || '').toLowerCase().includes(q);
+      const matchesClient = (s.clientName || '').toLowerCase().includes(q);
+      const matchesCashier = (s.cashierName || '').toLowerCase().includes(q);
+      const items = Array.isArray(s.items) ? s.items : [];
+      const matchesItem = items.some(i => getSaleItemLabel(i, '').toLowerCase().includes(q));
       return matchesFolio || matchesClient || matchesCashier || matchesItem;
     });
   }, [sales, dateScope, todayStr, methodFilter, searchQuery]);
 
   // Resumen financiero del turno / día (Patrón TodaySalesPanel de gym-operations-suite)
   const summary = useMemo(() => {
-    const baseList = dateScope === 'today' ? sales.filter(s => s.timestamp.startsWith(todayStr)) : sales;
+    const baseList = dateScope === 'today' ? sales.filter(s => (s.timestamp || '').startsWith(todayStr)) : sales;
     let grossTotal = 0;
     let refundedTotal = 0;
     let netCash = 0;
@@ -124,14 +126,16 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
     });
 
     const initialQtyMap: Record<string, number> = {};
-    sale.items.forEach(item => {
-      const alreadyRefunded = prevRefundedMap.get(item.product.id) || 0;
-      const remaining = Math.max(0, item.quantity - alreadyRefunded);
-      initialQtyMap[item.product.id] = remaining;
+    (Array.isArray(sale.items) ? sale.items : []).forEach(item => {
+      const prodId = item?.product?.id || '';
+      if (!prodId) return;
+      const alreadyRefunded = prevRefundedMap.get(prodId) || 0;
+      const remaining = Math.max(0, toSafeNumber(item.quantity, 1) - alreadyRefunded);
+      initialQtyMap[prodId] = remaining;
     });
 
     setSelectedSaleForReturn(sale);
-    setFolioInput(sale.folio);
+    setFolioInput(sale.folio || sale.id);
     setReturnQuantities(initialQtyMap);
     setFeedbackBanner(null);
     setActiveTab('returns');
@@ -150,9 +154,9 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
 
     const found = sales.find(
       s =>
-        s.folio.toLowerCase() === clean ||
-        s.id.toLowerCase() === clean ||
-        s.folio.toLowerCase().endsWith(clean)
+        (s.folio || '').toLowerCase() === clean ||
+        (s.id || '').toLowerCase() === clean ||
+        (s.folio || '').toLowerCase().endsWith(clean)
     );
 
     if (found) {
@@ -162,9 +166,11 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
       });
 
       const initialQtyMap: Record<string, number> = {};
-      found.items.forEach(item => {
-        const alreadyRefunded = prevRefundedMap.get(item.product.id) || 0;
-        initialQtyMap[item.product.id] = Math.max(0, item.quantity - alreadyRefunded);
+      (Array.isArray(found.items) ? found.items : []).forEach(item => {
+        const prodId = item?.product?.id || '';
+        if (!prodId) return;
+        const alreadyRefunded = prevRefundedMap.get(prodId) || 0;
+        initialQtyMap[prodId] = Math.max(0, toSafeNumber(item.quantity, 1) - alreadyRefunded);
       });
 
       setSelectedSaleForReturn(found);
@@ -189,12 +195,15 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
     let totalRefundAmount = 0;
     let totalRestoredUnits = 0;
 
-    const itemRows = selectedSaleForReturn.items.map(item => {
-      const alreadyRefunded = prevRefundedMap.get(item.product.id) || 0;
-      const maxRemaining = Math.max(0, item.quantity - alreadyRefunded);
-      const selectedQty = Math.min(maxRemaining, Math.max(0, returnQuantities[item.product.id] || 0));
-      const lineRefund = Math.round(selectedQty * item.unitPrice * 100) / 100;
-      const isStoreProduct = !item.product.id.startsWith('PLAN-');
+    const itemRows = (Array.isArray(selectedSaleForReturn.items) ? selectedSaleForReturn.items : []).map((item, idx) => {
+      const prodId = item?.product?.id || `ITEM-${idx}`;
+      const qty = toSafeNumber(item?.quantity, 1);
+      const unitPrice = toSafeNumber(item?.unitPrice, 0);
+      const alreadyRefunded = prevRefundedMap.get(prodId) || 0;
+      const maxRemaining = Math.max(0, qty - alreadyRefunded);
+      const selectedQty = Math.min(maxRemaining, Math.max(0, returnQuantities[prodId] || 0));
+      const lineRefund = Math.round(selectedQty * unitPrice * 100) / 100;
+      const isStoreProduct = !isNonInventorySaleItem(prodId);
 
       totalRefundAmount += lineRefund;
       if (isStoreProduct) {
@@ -202,12 +211,12 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
       }
 
       return {
-        productId: item.product.id,
-        productName: item.product.name,
-        brand: item.product.brand,
-        image: item.product.image,
-        unitPrice: item.unitPrice,
-        originalQty: item.quantity,
+        productId: prodId,
+        productName: getSaleItemLabel(item),
+        brand: item?.product?.brand || 'LEYENDS',
+        image: item?.product?.image || '',
+        unitPrice,
+        originalQty: qty,
         alreadyRefunded,
         maxRemaining,
         selectedQty,
@@ -595,21 +604,22 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
 
                         {/* Middle: Sold Items List */}
                         <div className="space-y-1.5">
-                          {sale.items.map((item, idx) => {
+                          {(Array.isArray(sale.items) ? sale.items : []).map((item, idx) => {
+                            const prodId = item?.product?.id || `ITEM-${idx}`;
                             const refundedEntry = (sale.refundedItems || []).find(
-                              r => r.productId === item.product.id
+                              r => r.productId === prodId
                             );
                             return (
                               <div
-                                key={`${sale.id}-${item.product.id}-${idx}`}
+                                key={`${sale.id}-${prodId}-${idx}`}
                                 className="flex items-center justify-between text-xs bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/[0.04]"
                               >
                                 <div className="flex items-center gap-2 truncate pr-2">
                                   <span className="font-mono font-black text-amber-400">
-                                    {item.quantity}x
+                                    {toSafeNumber(item?.quantity, 1)}x
                                   </span>
                                   <span className="text-zinc-200 font-semibold truncate">
-                                    {item.product.name}
+                                    {getSaleItemLabel(item)}
                                   </span>
                                   {refundedEntry && (
                                     <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30 shrink-0">
@@ -618,7 +628,7 @@ export const PosSalesHistoryModal: React.FC<PosSalesHistoryModalProps> = ({
                                   )}
                                 </div>
                                 <span className="font-mono font-bold text-zinc-300 shrink-0">
-                                  ${item.subtotal.toFixed(2)}
+                                  ${toSafeNumber(item?.subtotal).toFixed(2)}
                                 </span>
                               </div>
                             );

@@ -23,6 +23,7 @@ import {
   INITIAL_CATALOG_PLANS 
 } from '../data/initialEmployees';
 import { INITIAL_BRANCHES } from '../data/initialBranches';
+import { normalizeSaleList } from '../utils/saleNormalizer';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
 import { getGymAvatar, serializeGymAvatar } from '../utils/genderAvatar';
 import { hashSecret, signSessionPayload, verifySessionSignature } from '../utils/securityCrypto';
@@ -80,9 +81,11 @@ const isRemovedCoachEmployee = (emp: Employee): boolean =>
 export const sanitizeEmployees = (list: Employee[], deletedIds: string[] = []): Employee[] =>
   list
     .filter((emp) => emp && !isRemovedCoachEmployee(emp) && !deletedIds.includes(emp.id))
-    .map((emp) =>
-      (emp.role as string) === 'trainer' ? { ...emp, role: 'receptionist' } : emp
-    );
+    .map((emp) => ({
+      ...emp,
+      role: (emp.role as string) === 'trainer' ? 'receptionist' : emp.role,
+      shift: 'Turno Completo' as const,
+    }));
 
 export const sanitizeRoles = (list: RoleDefinition[]): RoleDefinition[] =>
   list.filter((r) => r && (r.id as string) !== 'trainer');
@@ -203,7 +206,7 @@ export const storage = {
   getSales(): Sale[] {
     try {
       const data = localStorage.getItem(KEYS.SALES);
-      return data ? JSON.parse(data) : [];
+      return data ? normalizeSaleList(JSON.parse(data)) : [];
     } catch {
       return [];
     }
@@ -211,7 +214,7 @@ export const storage = {
 
   saveSales(sales: Sale[]): void {
     try {
-      localStorage.setItem(KEYS.SALES, JSON.stringify(sales));
+      localStorage.setItem(KEYS.SALES, JSON.stringify(normalizeSaleList(sales)));
     } catch (e) {
       console.error('Error saving sales:', e);
     }
@@ -574,7 +577,7 @@ export const storage = {
       const cleaned = sanitizeEmployees(mapped, deletedIds);
       if (
         cleaned.length !== parsed.length ||
-        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role || emp.password !== parsed[idx]?.password)
+        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role || emp.password !== parsed[idx]?.password || emp.shift !== parsed[idx]?.shift)
       ) {
         try {
           localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(cleaned));
@@ -805,7 +808,7 @@ export const storage = {
       const data = JSON.parse(jsonString);
       if (data.members) this.saveMembers(data.members);
       if (data.products) this.saveProducts(data.products);
-      if (data.sales) this.saveSales(data.sales);
+      if (data.sales) this.saveSales(normalizeSaleList(data.sales));
       if (data.accessLogs) this.saveAccessLogs(data.accessLogs);
       if (data.cashSession) this.saveCashSession(data.cashSession);
       if (data.employees) this.saveEmployees(sanitizeEmployees(data.employees));

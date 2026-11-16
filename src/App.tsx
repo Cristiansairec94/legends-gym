@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { GymProvider, useGym } from './context/GymContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -20,7 +20,56 @@ import { DataSyncModal } from './components/config/DataSyncModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { SupervisorPinModal } from './components/auth/SupervisorPinModal';
 import { IndependentTerminalApp } from './components/access/IndependentTerminalApp';
-import { Lock } from 'lucide-react';
+import { Lock, AlertTriangle, RotateCcw } from 'lucide-react';
+
+interface ModuleErrorBoundaryProps {
+  moduleName: string;
+  children: ReactNode;
+}
+
+interface ModuleErrorBoundaryState {
+  hasError: boolean;
+  errorMessage: string;
+}
+
+class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, ModuleErrorBoundaryState> {
+  state: ModuleErrorBoundaryState = { hasError: false, errorMessage: '' };
+
+  static getDerivedStateFromError(error: Error): ModuleErrorBoundaryState {
+    return {
+      hasError: true,
+      errorMessage: error?.message || 'Error inesperado al renderizar el módulo.',
+    };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`[ModuleErrorBoundary:${this.props.moduleName}]`, error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 sm:p-10 bg-gym-card rounded-2xl border border-red-500/30 text-center max-w-lg mx-auto my-10 shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/35 flex items-center justify-center mx-auto mb-4 text-red-400">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-black text-white">No se pudo cargar este apartado</h2>
+          <p className="text-xs text-gym-muted mt-2 break-words">{this.state.errorMessage}</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, errorMessage: '' })}
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export const isTerminalMode = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -50,8 +99,38 @@ const getInitialTab = (): string => {
   return 'dashboard';
 };
 
+const getLoadedBundleScript = (): string | null => {
+  if (typeof document === 'undefined') return null;
+  const scriptEl = document.querySelector<HTMLScriptElement>('script[type="module"][src*="index-"]');
+  const src = scriptEl?.getAttribute('src') || '';
+  const match = src.match(/index-[A-Za-z0-9_-]+\.js/);
+  return match ? match[0] : null;
+};
+
+const checkAndReloadIfNewBuild = async (hasItemsInCart = false): Promise<void> => {
+  if (!import.meta.env.PROD || typeof window === 'undefined' || hasItemsInCart) return;
+  if (!window.location.protocol.startsWith('http')) return;
+  const currentScript = getLoadedBundleScript();
+  if (!currentScript) return;
+
+  try {
+    const res = await fetch(`/index.html?_v=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (!res.ok) return;
+    const html = await res.text();
+    const remoteMatch = html.match(/index-[A-Za-z0-9_-]+\.js/);
+    if (remoteMatch && remoteMatch[0] !== currentScript) {
+      window.location.reload();
+    }
+  } catch {
+    // Ignore transient offline/network errors
+  }
+};
+
 const MainLayout: React.FC = () => {
-  const { isAdmin, activePermissions, canAccessTab, firstAllowedTab } = useGym();
+  const { isAdmin, activePermissions, canAccessTab, firstAllowedTab, cart } = useGym();
   const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -61,6 +140,7 @@ const MainLayout: React.FC = () => {
   const hasTabAccess = effectiveTab !== 'none' && canAccessTab(effectiveTab);
 
   const handleSafeSetActiveTab = (tab: string) => {
+    void checkAndReloadIfNewBuild(cart.length > 0);
     if (canAccessTab(tab)) {
       setActiveTab(tab);
     }
@@ -110,7 +190,7 @@ const MainLayout: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <>
+              <ModuleErrorBoundary key={effectiveTab} moduleName={effectiveTab}>
                 {effectiveTab === 'dashboard' && <Dashboard setActiveTab={handleSafeSetActiveTab} />}
                 {effectiveTab === 'access' && <TurnstileTerminal />}
                 {effectiveTab === 'pos' && (
@@ -145,7 +225,7 @@ const MainLayout: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </>
+              </ModuleErrorBoundary>
             )}
           </div>
         </main>
@@ -185,8 +265,31 @@ const MainLayout: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useGym();
+  const { isAuthenticated, cart } = useGym();
   const [terminalMode] = useState<boolean>(() => isTerminalMode());
+
+  useEffect(() => {
+    const handlePreloadError = () => window.location.reload();
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        void checkAndReloadIfNewBuild(cart.length > 0);
+      }
+    };
+
+    window.addEventListener('vite:preloadError', handlePreloadError);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    const intervalId = window.setInterval(() => {
+      void checkAndReloadIfNewBuild(cart.length > 0);
+    }, 45000);
+
+    return () => {
+      window.removeEventListener('vite:preloadError', handlePreloadError);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.clearInterval(intervalId);
+    };
+  }, [cart.length]);
 
   // Independent Turnstile terminal mode for separate computer
   if (terminalMode) {

@@ -22,6 +22,7 @@ import {
   Eye
 } from 'lucide-react';
 import { exportShiftReportToExcel } from '../../utils/excelExport';
+import { toSafeNumber } from '../../utils/saleNormalizer';
 import { CashMovementsModal } from '../pos/CashMovementsModal';
 import { ReceiptModal } from '../pos/ReceiptModal';
 
@@ -82,7 +83,7 @@ export const CashRegisterView: React.FC = () => {
       if (!isNaN(openedMs) && !isNaN(saleMs) && saleMs >= openedMs - 60000) {
         return true;
       }
-      return s.timestamp.startsWith(todayStr);
+      return (s.timestamp || '').startsWith(todayStr);
     });
   }, [sales, cashSession.openedAt, todayStr]);
 
@@ -892,7 +893,7 @@ export const CashRegisterView: React.FC = () => {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="font-mono font-black text-xs text-amber-300">
-                                {sale.folio}
+                                {sale.folio || sale.id}
                               </span>
                               <span className="text-xs font-bold text-white truncate">
                                 {sale.clientName}
@@ -919,7 +920,7 @@ export const CashRegisterView: React.FC = () => {
 
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="font-mono font-black text-sm text-emerald-300">
-                            +${sale.total.toFixed(2)}
+                            +${toSafeNumber(sale.total).toFixed(2)}
                           </span>
                           <button
                             type="button"

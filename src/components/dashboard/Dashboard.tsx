@@ -82,7 +82,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     : (cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer);
 
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
-  const storeTicketsToday = sales.filter(s => s.timestamp.startsWith(todayStr) && s.saleType !== 'membership').length;
+  const storeTicketsToday = sales.filter(s => (s.timestamp || '').startsWith(todayStr) && s.saleType !== 'membership').length;
 
   return (
     <div className="space-y-6">

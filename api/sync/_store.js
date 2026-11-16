@@ -569,7 +569,7 @@ let store = {
       "password": "lg_hash$ebc13ca0f0fc2387138040e041f3e1eb",
       "pin": "lg_hash$087d003f03cb893f77b3c88ccadb6160",
       "jobTitle": "Líder de Recepción & Atención a Socios",
-      "shift": "Matutino (06:00 - 14:00)",
+      "shift": "Turno Completo",
       "status": "active",
       "hireDate": "2024-03-01",
       "salaryMonthly": 12500
@@ -585,8 +585,8 @@ let store = {
       "username": "daniela.caja",
       "password": "lg_hash$a3a2a6bde11a179d8200183d0505b548",
       "pin": "lg_hash$64762b58a580e1f332c6081019813bae",
-      "jobTitle": "Cajera & Recepcionista Turno Tarde",
-      "shift": "Vespertino (14:00 - 22:00)",
+      "jobTitle": "Cajera & Recepcionista",
+      "shift": "Turno Completo",
       "status": "active",
       "hireDate": "2024-07-20",
       "salaryMonthly": 11500
@@ -857,6 +857,91 @@ async function kvFetch(command, ...args) {
   return null;
 }
 
+function normalizeServerSaleItem(rawItem) {
+  if (!rawItem || typeof rawItem !== 'object') return null;
+  const rawProduct = rawItem.product && typeof rawItem.product === 'object' ? rawItem.product : null;
+  const quantity = Math.max(1, Number(rawItem.quantity ?? 1) || 1);
+  const unitPrice = Number(rawItem.unitPrice ?? rawItem.price ?? rawProduct?.price ?? 0) || 0;
+  const subtotal = Number(rawItem.subtotal ?? rawItem.total ?? Math.round(unitPrice * quantity * 100) / 100) || 0;
+  return {
+    ...rawItem,
+    product: {
+      id: String(rawProduct?.id || rawItem.id || 'ITEM-CUSTOM'),
+      name: String(rawProduct?.name || rawItem.name || 'Artículo / Pase'),
+      brand: String(rawProduct?.brand || rawItem.brand || 'LEYENDS'),
+      category: rawProduct?.category || 'gear',
+      price: Number(rawProduct?.price ?? unitPrice) || 0,
+      costPrice: Number(rawProduct?.costPrice ?? 0) || 0,
+      stock: Number(rawProduct?.stock ?? 0) || 0,
+      minStock: Number(rawProduct?.minStock ?? 0) || 0,
+      image: String(rawProduct?.image || ''),
+      barcode: String(rawProduct?.barcode || ''),
+      description: String(rawProduct?.description || ''),
+      ...(rawProduct || {}),
+    },
+    quantity,
+    unitPrice,
+    subtotal,
+  };
+}
+
+function normalizeServerSale(rawSale) {
+  if (!rawSale || typeof rawSale !== 'object') return null;
+  const id = String(rawSale.id || `SALE-${Date.now()}`);
+  const isVisit =
+    id.startsWith('SALE_VISIT_') ||
+    id.startsWith('SALE-VISIT-') ||
+    rawSale.source === 'terminal_visit_authorized';
+  const folio =
+    typeof rawSale.folio === 'string' && rawSale.folio.trim()
+      ? rawSale.folio.trim()
+      : isVisit
+      ? `VIS-${id.slice(-4)}`
+      : id;
+  const items = Array.isArray(rawSale.items)
+    ? rawSale.items.map(normalizeServerSaleItem).filter(Boolean)
+    : [];
+  const itemsTotal = items.reduce((acc, it) => acc + (Number(it.subtotal) || 0), 0);
+  const total = Number(rawSale.total ?? itemsTotal) || 0;
+  const subtotal = Number(rawSale.subtotal ?? total) || 0;
+  const cashierName =
+    (typeof rawSale.cashierName === 'string' && rawSale.cashierName.trim()) ||
+    (typeof rawSale.authorizedBy === 'string' && rawSale.authorizedBy.trim()) ||
+    'Recepción Mostrador';
+
+  return {
+    ...rawSale,
+    id,
+    folio,
+    timestamp:
+      typeof rawSale.timestamp === 'string' && rawSale.timestamp.trim()
+        ? rawSale.timestamp
+        : new Date().toISOString(),
+    clientName:
+      typeof rawSale.clientName === 'string' && rawSale.clientName.trim()
+        ? rawSale.clientName
+        : 'Público en General',
+    items,
+    total,
+    subtotal,
+    tax: Number(rawSale.tax ?? 0) || 0,
+    amountPaid: Number(rawSale.amountPaid ?? total) || 0,
+    changeGiven: Number(rawSale.changeGiven ?? 0) || 0,
+    paymentMethod:
+      rawSale.paymentMethod === 'cash' || rawSale.paymentMethod === 'card' || rawSale.paymentMethod === 'transfer'
+        ? rawSale.paymentMethod
+        : 'cash',
+    cashierName,
+    cashierRole: rawSale.cashierRole === 'admin' ? 'admin' : 'receptionist',
+    saleType:
+      rawSale.saleType === 'membership' || rawSale.saleType === 'store'
+        ? rawSale.saleType
+        : isVisit
+        ? 'membership'
+        : 'store',
+  };
+}
+
 export async function getFullDatabase() {
   const kvData = await kvFetch('GET', 'legends_gym_store');
   if (kvData) {
@@ -866,6 +951,9 @@ export async function getFullDatabase() {
         store = { ...store, ...parsed };
       }
     } catch {}
+  }
+  if (Array.isArray(store.sales)) {
+    store.sales = store.sales.map(normalizeServerSale).filter(Boolean);
   }
   return store;
 }
@@ -908,12 +996,16 @@ export async function saveFullDatabase(incoming) {
   if (Array.isArray(incoming.sales)) {
     const map = new Map();
     for (const s of store.sales || []) {
-      if (s && s.id) map.set(s.id, s);
+      if (s && s.id) map.set(s.id, normalizeServerSale(s));
     }
     for (const s of incoming.sales) {
-      if (s && s.id) map.set(s.id, { ...(map.get(s.id) || {}), ...s });
+      if (s && s.id) {
+        map.set(s.id, normalizeServerSale({ ...(map.get(s.id) || {}), ...s }));
+      }
     }
-    store.sales = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+    store.sales = Array.from(map.values())
+      .filter(Boolean)
+      .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
   }
 
   // Merge expenses (unique by id)
@@ -1024,11 +1116,14 @@ export async function updateEntity(entity, action, item, itemId) {
   } else if (entity === 'sales') {
     if (!Array.isArray(store.sales)) store.sales = [];
     if (item && item.id) {
-      const exists = store.sales.some(s => s.id === item.id);
+      const normalizedItem = normalizeServerSale(item);
+      const exists = store.sales.some(s => s.id === normalizedItem.id);
       if (exists) {
-        store.sales = store.sales.map(s => s.id === item.id ? { ...s, ...item } : s);
+        store.sales = store.sales.map(s =>
+          s.id === normalizedItem.id ? normalizeServerSale({ ...s, ...normalizedItem }) : s
+        );
       } else {
-        store.sales = [item, ...store.sales];
+        store.sales = [normalizedItem, ...store.sales];
       }
     }
   } else if (entity === 'expenses') {

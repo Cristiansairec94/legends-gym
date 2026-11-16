@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Sale } from '../../types';
 import { X, Printer, CheckCircle2 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
+import { getSaleItemLabel, toSafeNumber } from '../../utils/saleNormalizer';
 
 interface ReceiptModalProps {
   sale: Sale;
@@ -198,19 +199,19 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           <div style={{ fontSize: '10px', lineHeight: '1.35', color: '#000000' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span style={{ fontWeight: 'bold' }}>FOLIO:</span>
-              <span style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{sale.folio}</span>
+              <span style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{sale.folio || sale.id}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>FECHA:</span>
-              <span>{new Date(sale.timestamp).toLocaleString('es-MX')}</span>
+              <span>{sale.timestamp ? new Date(sale.timestamp).toLocaleString('es-MX') : '-'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>CLIENTE:</span>
-              <span style={{ fontWeight: 'bold' }}>{sale.clientName}</span>
+              <span style={{ fontWeight: 'bold' }}>{sale.clientName || 'Público en General'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>ATENDIÓ:</span>
-              <span>{sale.cashierName}</span>
+              <span>{sale.cashierName || 'Recepción Mostrador'}</span>
             </div>
           </div>
 
@@ -224,22 +225,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px' }}>
-              {sale.items.map((item, idx) => (
+              {(Array.isArray(sale.items) ? sale.items : []).map((item, idx) => {
+                const qty = toSafeNumber(item?.quantity, 1);
+                const unitPrice = toSafeNumber(item?.unitPrice ?? item?.product?.price, 0);
+                const itemSubtotal = toSafeNumber(item?.subtotal, unitPrice * qty);
+                return (
                 <div key={idx} style={{ marginBottom: '2px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontWeight: 'bold', textAlign: 'left', paddingRight: '6px' }}>
-                      {item.quantity}x {item.product.name}
+                      {qty}x {getSaleItemLabel(item)}
                     </span>
                     <span style={{ fontWeight: 'bold', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
-                      ${item.subtotal.toFixed(2)}
+                      ${itemSubtotal.toFixed(2)}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8.5px', color: '#555555', marginTop: '0.5px' }}>
-                    <span>{item.product.brand} - {item.product.flavor || 'Original'}</span>
-                    <span>@${item.unitPrice.toFixed(2)} c/u</span>
+                    <span>{item?.product?.brand || 'LEYENDS'} - {item?.product?.flavor || 'Original'}</span>
+                    <span>@${unitPrice.toFixed(2)} c/u</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -249,27 +255,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           <div style={{ fontSize: '10.5px', lineHeight: '1.35', color: '#000000' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '1px' }}>
               <span>SUBTOTAL:</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.subtotal.toFixed(2)}</span>
+              <span style={{ fontFamily: 'monospace' }}>${toSafeNumber(sale.subtotal, toSafeNumber(sale.total)).toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '1px' }}>
               <span>I.V.A. (16%):</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.tax.toFixed(2)}</span>
+              <span style={{ fontFamily: 'monospace' }}>${toSafeNumber(sale.tax).toFixed(2)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', fontSize: '13px', borderTop: '1px solid #000000', paddingTop: '3px', marginTop: '3px', color: '#000000' }}>
               <span>TOTAL A PAGAR:</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.total.toFixed(2)} MXN</span>
+              <span style={{ fontFamily: 'monospace' }}>${toSafeNumber(sale.total).toFixed(2)} MXN</span>
             </div>
 
             {sale.refundedAmount && sale.refundedAmount > 0 ? (
               <div style={{ marginTop: '3px', padding: '3px', border: '1px dashed #000000', backgroundColor: '#f5f5f5' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', fontSize: '10.5px', color: '#000000' }}>
                   <span>{sale.status === 'voided' ? 'ESTADO: ANULADO' : 'DEVOLUCIÓN PARCIAL:'}</span>
-                  <span style={{ fontFamily: 'monospace' }}>-${sale.refundedAmount.toFixed(2)}</span>
+                  <span style={{ fontFamily: 'monospace' }}>-${toSafeNumber(sale.refundedAmount).toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10.5px', color: '#000000', marginTop: '1px' }}>
                   <span>TOTAL NETO:</span>
-                  <span style={{ fontFamily: 'monospace' }}>${Math.max(0, sale.total - sale.refundedAmount).toFixed(2)} MXN</span>
+                  <span style={{ fontFamily: 'monospace' }}>${Math.max(0, toSafeNumber(sale.total) - toSafeNumber(sale.refundedAmount)).toFixed(2)} MXN</span>
                 </div>
                 {sale.voidReason && (
                   <div style={{ fontSize: '8.5px', color: '#333333', marginTop: '1px' }}>
@@ -280,13 +286,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             ) : null}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#333333', fontSize: '10px', marginTop: '2px' }}>
-              <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod}):</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.amountPaid.toFixed(2)}</span>
+              <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod || 'cash'}):</span>
+              <span style={{ fontFamily: 'monospace' }}>${toSafeNumber(sale.amountPaid, toSafeNumber(sale.total)).toFixed(2)}</span>
             </div>
             {sale.paymentMethod === 'cash' && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10.5px', color: '#000000', marginTop: '1px' }}>
                 <span>CAMBIO ENTREGADO:</span>
-                <span style={{ fontFamily: 'monospace' }}>${sale.changeGiven.toFixed(2)}</span>
+                <span style={{ fontFamily: 'monospace' }}>${toSafeNumber(sale.changeGiven).toFixed(2)}</span>
               </div>
             )}
           </div>

@@ -23,7 +23,14 @@ import {
 import { storage, sanitizeEmployees, sanitizeRoles } from '../services/storage';
 import { sounds } from '../services/audio';
 import { getGymAvatar } from '../utils/genderAvatar';
-import { hashSecret, verifySecret, checkEmployeeShiftAllowed } from '../utils/securityCrypto';
+import { hashSecret, verifySecret } from '../utils/securityCrypto';
+import {
+  getSaleItemLabel,
+  isNonInventorySaleItem,
+  normalizeSaleList,
+  normalizeSaleRecord,
+  toSafeNumber,
+} from '../utils/saleNormalizer';
 import { INITIAL_EMPLOYEES, INITIAL_ROLES } from '../data/initialEmployees';
 import { 
   broadcastLocalSync, 
@@ -497,12 +504,14 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           return [msg.log!, ...prev];
         });
       } else if (msg.type === 'SALE_ADDED' && msg.sale) {
+        const normalizedSale = normalizeSaleRecord(msg.sale);
+        if (!normalizedSale) return;
         setSales(prev => {
-          const exists = prev.some(s => s.id === msg.sale!.id);
+          const exists = prev.some(s => s.id === normalizedSale.id);
           if (exists) {
-            return prev.map(s => s.id === msg.sale!.id ? msg.sale! : s);
+            return prev.map(s => s.id === normalizedSale.id ? normalizedSale : s);
           }
-          return [msg.sale!, ...prev];
+          return [normalizedSale, ...prev];
         });
       } else if (msg.type === 'EXPENSE_ADDED' && msg.expense) {
         setExpenses(prev => {
@@ -590,7 +599,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             if (Array.isArray(db.sales) && db.sales.length > 0) {
               setSales(prev => {
-                const merged = mergeById(prev, db.sales!);
+                const merged = normalizeSaleList(mergeById(prev, normalizeSaleList(db.sales)));
                 storage.saveSales(merged);
                 return merged;
               });
@@ -704,7 +713,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             if (Array.isArray(db.sales) && db.sales.length > 0) {
               setSales(prev => {
-                const next = mergeById(prev, db.sales!);
+                const next = normalizeSaleList(mergeById(prev, normalizeSaleList(db.sales)));
                 storage.saveSales(next);
                 return next;
               });
@@ -1613,7 +1622,9 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   ): { success: boolean; message: string; refundedAmount: number; restoredUnits: number; updatedSale?: Sale } => {
     const cleanQuery = saleIdOrFolio.trim().toLowerCase();
     const targetSale = sales.find(
-      s => s.id.toLowerCase() === cleanQuery || s.folio.toLowerCase() === cleanQuery
+      s =>
+        (s.id || '').toLowerCase() === cleanQuery ||
+        (s.folio || '').toLowerCase() === cleanQuery
     );
 
     if (!targetSale) {
@@ -1650,21 +1661,23 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       subtotal: number;
     }[] = [];
 
-    for (const item of targetSale.items) {
-      const alreadyRefunded = prevRefundedMap.get(item.product.id) || 0;
-      const maxRemaining = Math.max(0, item.quantity - alreadyRefunded);
+    const targetItems = Array.isArray(targetSale.items) ? targetSale.items : [];
+    for (const item of targetItems) {
+      const productId = item?.product?.id || '';
+      const alreadyRefunded = prevRefundedMap.get(productId) || 0;
+      const maxRemaining = Math.max(0, (item.quantity || 0) - alreadyRefunded);
       if (maxRemaining <= 0) continue;
 
       let requestedQty = maxRemaining;
       if (itemsToRefund && itemsToRefund.length > 0) {
-        const matchReq = itemsToRefund.find(r => r.productId === item.product.id);
+        const matchReq = itemsToRefund.find(r => r.productId === productId);
         requestedQty = matchReq ? Math.min(maxRemaining, Math.max(0, Math.floor(matchReq.quantity))) : 0;
       }
 
       if (requestedQty > 0) {
         effectiveRefunds.push({
-          productId: item.product.id,
-          productName: item.product.name,
+          productId,
+          productName: getSaleItemLabel(item),
           quantity: requestedQty,
           unitPrice: item.unitPrice,
           subtotal: Math.round(requestedQty * item.unitPrice * 100) / 100,
@@ -1688,7 +1701,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // 1. Restaurar unidades al stock de almacén automáticamente
     effectiveRefunds.forEach(refItem => {
-      if (!refItem.productId.startsWith('PLAN-')) {
+      if (!isNonInventorySaleItem(refItem.productId)) {
         adjustStock(refItem.productId, refItem.quantity);
         restoredUnits += refItem.quantity;
       }
@@ -1717,7 +1730,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     const mergedRefundedItems = Array.from(combinedRefundsMap.values());
-    const totalOriginalQty = targetSale.items.reduce((sum, i) => sum + i.quantity, 0);
+    const totalOriginalQty = targetItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
     const totalRefundedQty = mergedRefundedItems.reduce((sum, i) => sum + i.quantity, 0);
     const isFullyVoided = totalRefundedQty >= totalOriginalQty;
     const totalRefundedAmount =
@@ -2337,20 +2350,20 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const todayCheckInsCount = todayAccess.length;
   const lowStockProductsCount = products.filter(p => p.stock <= p.minStock).length;
   
-  const todaySales = sales.filter(s => s.timestamp.startsWith(todayStr));
+  const todaySales = sales.filter(s => (s.timestamp || '').startsWith(todayStr));
   const todaySalesTotal = todaySales.reduce(
-    (acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)),
+    (acc, s) => acc + Math.max(0, toSafeNumber(s.total) - toSafeNumber(s.refundedAmount)),
     0
   );
   const todaySalesCount = todaySales.filter(s => s.status !== 'voided').length;
 
   const todayStoreSalesTotal = todaySales
     .filter(s => s.saleType !== 'membership')
-    .reduce((acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)), 0);
+    .reduce((acc, s) => acc + Math.max(0, toSafeNumber(s.total) - toSafeNumber(s.refundedAmount)), 0);
 
   const todayMembershipsSalesTotal = todaySales
     .filter(s => s.saleType === 'membership')
-    .reduce((acc, s) => acc + Math.max(0, s.total - (s.refundedAmount || 0)), 0);
+    .reduce((acc, s) => acc + Math.max(0, toSafeNumber(s.total) - toSafeNumber(s.refundedAmount)), 0);
 
   return (
     <GymContext.Provider value={{

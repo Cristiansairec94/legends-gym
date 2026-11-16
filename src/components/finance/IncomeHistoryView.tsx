@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGym } from '../../context/GymContext';
 import { Sale, PaymentMethod } from '../../types';
 import { 
@@ -8,6 +8,7 @@ import {
   CreditCard, 
   Banknote, 
   Calendar, 
+  CalendarDays,
   Clock,
   Filter, 
   Download, 
@@ -18,10 +19,91 @@ import {
   UserCheck,
   Eye,
   X,
-  Printer
+  Printer,
+  ChevronDown,
+  Check,
+  Layers
 } from 'lucide-react';
 import { ReceiptModal } from '../pos/ReceiptModal';
 import { exportIncomeReportToExcel } from '../../utils/excelExport';
+import { getSaleItemLabel, toSafeNumber } from '../../utils/saleNormalizer';
+
+type PeriodFilterType = 'all' | 'today' | 'month' | 'year';
+
+const INCOME_PERIOD_OPTIONS: Array<{
+  id: PeriodFilterType;
+  label: string;
+  periodLabel: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+  iconColor: string;
+}> = [
+  {
+    id: 'all',
+    label: 'Todos los periodos',
+    periodLabel: 'Histórico Completo',
+    subtitle: 'Historial completo',
+    icon: Layers,
+    iconBg: 'bg-zinc-800/80 border-zinc-700/70',
+    iconColor: 'text-zinc-300',
+  },
+  {
+    id: 'today',
+    label: 'Por Día',
+    periodLabel: 'Hoy',
+    subtitle: 'Cobros de hoy',
+    icon: Clock,
+    iconBg: 'bg-emerald-500/15 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+  },
+  {
+    id: 'month',
+    label: 'Por Mes',
+    periodLabel: 'Este Mes',
+    subtitle: 'Mes actual',
+    icon: Calendar,
+    iconBg: 'bg-teal-500/15 border-teal-500/30',
+    iconColor: 'text-teal-400',
+  },
+  {
+    id: 'year',
+    label: 'Por Año',
+    periodLabel: 'Este Año',
+    subtitle: 'Año actual',
+    icon: CalendarDays,
+    iconBg: 'bg-purple-500/15 border-purple-500/30',
+    iconColor: 'text-purple-400',
+  },
+];
+
+function isSaleInPeriod(saleTimestamp: string, period: PeriodFilterType, now = new Date()): boolean {
+  if (period === 'all') return true;
+  const saleTime = new Date(saleTimestamp).getTime();
+  if (isNaN(saleTime)) return true;
+
+  const nowTime = now.getTime();
+  const diffMs = nowTime - saleTime;
+  const saleDate = new Date(saleTimestamp);
+
+  if (period === 'today') {
+    return (
+      saleDate.getDate() === now.getDate() &&
+      saleDate.getMonth() === now.getMonth() &&
+      saleDate.getFullYear() === now.getFullYear()
+    );
+  }
+  if (period === 'month') {
+    const isCurrentMonth =
+      saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+    return (diffMs >= -60000 && diffMs <= 30 * 24 * 60 * 60 * 1000) || isCurrentMonth;
+  }
+  if (period === 'year') {
+    const isCurrentYear = saleDate.getFullYear() === now.getFullYear();
+    return (diffMs >= -60000 && diffMs <= 365 * 24 * 60 * 60 * 1000) || isCurrentYear;
+  }
+  return true;
+}
 
 const PAYMENT_METHOD_FILTERS = [
   { id: 'cash', label: 'Efectivo', activeClass: 'bg-emerald-500 text-black' },
@@ -36,62 +118,69 @@ export const IncomeHistoryView: React.FC = () => {
   const [methodFilter, setMethodFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
-
-  type PeriodFilterType = 'all' | 'today' | 'month' | 'year';
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all');
+  const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
+  const periodDropdownRef = useRef<HTMLDivElement>(null);
 
-  const isSaleInPeriod = (saleTimestamp: string, period: PeriodFilterType): boolean => {
-    if (period === 'all') return true;
-    const saleTime = new Date(saleTimestamp).getTime();
-    if (isNaN(saleTime)) return true;
-    
-    const nowTime = Date.now();
-    const diffMs = nowTime - saleTime;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (periodDropdownRef.current && !periodDropdownRef.current.contains(event.target as Node)) {
+        setIsPeriodDropdownOpen(false);
+      }
+    };
 
-    if (period === 'today') {
-      const saleDate = new Date(saleTimestamp);
-      const nowDate = new Date();
-      return saleDate.getDate() === nowDate.getDate() &&
-             saleDate.getMonth() === nowDate.getMonth() &&
-             saleDate.getFullYear() === nowDate.getFullYear();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsPeriodDropdownOpen(false);
+      }
+    };
+
+    if (isPeriodDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
-    if (period === 'month') {
-      const saleDate = new Date(saleTimestamp);
-      const nowDate = new Date();
-      const isCurrentMonth = saleDate.getMonth() === nowDate.getMonth() && saleDate.getFullYear() === nowDate.getFullYear();
-      return (diffMs >= -60000 && diffMs <= 30 * 24 * 60 * 60 * 1000) || isCurrentMonth;
-    }
-    if (period === 'year') {
-      const saleDate = new Date(saleTimestamp);
-      const nowDate = new Date();
-      const isCurrentYear = saleDate.getFullYear() === nowDate.getFullYear();
-      return (diffMs >= -60000 && diffMs <= 365 * 24 * 60 * 60 * 1000) || isCurrentYear;
-    }
-    return true;
-  };
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPeriodDropdownOpen]);
+
+  const safeSales = Array.isArray(sales) ? sales.filter(Boolean) : [];
+
+  const periodSummaries = INCOME_PERIOD_OPTIONS.map((option) => {
+    const matching = safeSales.filter((s) => isSaleInPeriod(s.timestamp || '', option.id));
+    return {
+      ...option,
+      count: matching.length,
+      total: matching.reduce((acc, s) => acc + toSafeNumber(s.total), 0),
+    };
+  });
+
+  const activePeriodMeta = periodSummaries.find((p) => p.id === periodFilter) || periodSummaries[0];
+  const ActivePeriodIcon = activePeriodMeta.icon;
 
   // Totales del periodo seleccionado
-  const periodSales = sales.filter(s => isSaleInPeriod(s.timestamp, periodFilter));
-  const periodTotalSales = periodSales.reduce((acc, s) => acc + s.total, 0);
-  const periodCash = periodSales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + s.total, 0);
-  const periodCard = periodSales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + s.total, 0);
-  const periodTransfer = periodSales.filter(s => s.paymentMethod === 'transfer').reduce((acc, s) => acc + s.total, 0);
+  const periodSales = safeSales.filter(s => isSaleInPeriod(s.timestamp || '', periodFilter));
+  const periodTotalSales = periodSales.reduce((acc, s) => acc + toSafeNumber(s.total), 0);
+  const periodCash = periodSales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + toSafeNumber(s.total), 0);
+  const periodCard = periodSales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + toSafeNumber(s.total), 0);
+  const periodTransfer = periodSales.filter(s => s.paymentMethod === 'transfer').reduce((acc, s) => acc + toSafeNumber(s.total), 0);
   const periodAverageTicket = periodSales.length > 0 ? Math.round(periodTotalSales / periodSales.length) : 0;
 
-  const periodLabel = periodFilter === 'all' 
-    ? 'Histórico Completo' 
-    : periodFilter === 'today' 
-    ? 'Hoy' 
-    : periodFilter === 'month' 
-    ? 'Este Mes' 
-    : 'Este Año';
+  const periodLabel = activePeriodMeta.periodLabel;
 
-  const filteredSales = sales.filter(s => {
-    const matchesPeriod = isSaleInPeriod(s.timestamp, periodFilter);
-    const matchesSearch = s.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.cashierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (s.planName && s.planName.toLowerCase().includes(searchTerm.toLowerCase()));
+  const normalizedQuery = searchTerm.toLowerCase();
+  const filteredSales = safeSales.filter(s => {
+    const matchesPeriod = isSaleInPeriod(s.timestamp || '', periodFilter);
+    const itemNames = Array.isArray(s.items)
+      ? s.items.map(i => getSaleItemLabel(i, '')).join(' ').toLowerCase()
+      : '';
+    const matchesSearch = (s.folio || '').toLowerCase().includes(normalizedQuery) ||
+                          (s.clientName || '').toLowerCase().includes(normalizedQuery) ||
+                          (s.cashierName || '').toLowerCase().includes(normalizedQuery) ||
+                          itemNames.includes(normalizedQuery) ||
+                          Boolean(s.planName && String(s.planName).toLowerCase().includes(normalizedQuery));
     const matchesMethod = methodFilter === 'all' || s.paymentMethod === methodFilter;
     const matchesType = typeFilter === 'all' || 
                         (typeFilter === 'membership' && s.saleType === 'membership') ||
@@ -222,55 +311,151 @@ export const IncomeHistoryView: React.FC = () => {
 
         {/* Type, Period & Method Filters */}
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          {/* Period Filter (Hoy, Mes, Año, Todo) */}
-          <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border">
-            <div className="hidden sm:flex items-center gap-1 px-2 text-gym-muted text-xs font-bold border-r border-gym-border/60 mr-0.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>Periodo:</span>
-            </div>
+          {/* Dropdown de Periodo (Día, Mes, Año, Todos) */}
+          <div className="relative shrink-0" ref={periodDropdownRef}>
             <button
-              onClick={() => setPeriodFilter('all')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                periodFilter === 'all'
-                  ? 'bg-emerald-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
+              type="button"
+              onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
+              className={`w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-sm ${
+                periodFilter !== 'all'
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                  : isPeriodDropdownOpen
+                  ? 'bg-gym-surface border-zinc-500 text-white shadow-md'
+                  : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-zinc-300 hover:text-white'
               }`}
+              title="Filtrar ingresos por día, mes o año"
             >
-              Todo
+              <div className="flex items-center gap-2.5 truncate">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                  periodFilter === 'all'
+                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                    : `${activePeriodMeta.iconBg} ${activePeriodMeta.iconColor}`
+                }`}>
+                  <ActivePeriodIcon className="w-3.5 h-3.5" />
+                </div>
+
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                    Periodo
+                  </span>
+                  <span className="text-xs font-black text-white truncate max-w-[160px]">
+                    {activePeriodMeta.label}
+                  </span>
+                </div>
+
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
+                  periodFilter !== 'all'
+                    ? 'bg-emerald-500 text-black border-emerald-400 shadow-sm'
+                    : 'bg-zinc-800/90 text-zinc-300 border-zinc-700/80'
+                }`}>
+                  {activePeriodMeta.count}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                {periodFilter !== 'all' && (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPeriodFilter('all');
+                    }}
+                    className="p-1 rounded-md hover:bg-emerald-500/25 text-emerald-400 hover:text-white transition-colors cursor-pointer"
+                    title="Mostrar todos los periodos"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 shrink-0 ${isPeriodDropdownOpen ? 'rotate-180 text-white' : ''}`} />
+              </div>
             </button>
-            <button
-              onClick={() => setPeriodFilter('today')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                periodFilter === 'today'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Cobros registrados el día de hoy"
-            >
-              Hoy
-            </button>
-            <button
-              onClick={() => setPeriodFilter('month')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                periodFilter === 'month'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Cobros de este mes / últimos 30 días"
-            >
-              Mes
-            </button>
-            <button
-              onClick={() => setPeriodFilter('year')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                periodFilter === 'year'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-              title="Cobros de este año"
-            >
-              Año
-            </button>
+
+            {isPeriodDropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[340px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800/80 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-[11px] uppercase font-extrabold tracking-wider text-zinc-300">
+                      Filtrar por Periodo
+                    </span>
+                  </div>
+                  {periodFilter !== 'all' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPeriodFilter('all');
+                        setIsPeriodDropdownOpen(false);
+                      }}
+                      className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Restablecer</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      Día / Mes / Año
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  {periodSummaries.map((option) => {
+                    const isSelected = periodFilter === option.id;
+                    const OptionIcon = option.icon;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          setPeriodFilter(option.id);
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border ${
+                          isSelected
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-white font-bold shadow-sm'
+                            : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${option.iconBg} ${option.iconColor} group-hover:scale-105`}>
+                            <OptionIcon className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="flex flex-col leading-tight truncate">
+                            <span className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                              {option.label}
+                            </span>
+                            <span className="text-[10px] text-zinc-400">
+                              {option.subtitle}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <div className="text-right leading-tight">
+                            <span className={`font-mono font-bold text-[11px] block ${option.total > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                              +${option.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              {option.count} {option.count === 1 ? 'cobro' : 'cobros'}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                  <span>Total del periodo activo</span>
+                  <span className="font-bold text-emerald-400">
+                    +${activePeriodMeta.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Source Filter */}
@@ -358,7 +543,7 @@ export const IncomeHistoryView: React.FC = () => {
         <div className="flex items-center gap-2.5 text-gym-muted text-xs sm:text-sm">
           <span>Total en vista:</span>
           <span className="text-emerald-400 font-mono font-black text-base sm:text-lg">
-            ${filteredSales.reduce((acc, s) => acc + s.total, 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+            ${filteredSales.reduce((acc, s) => acc + toSafeNumber(s.total), 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
           </span>
         </div>
       </div>
@@ -392,19 +577,24 @@ export const IncomeHistoryView: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredSales.map((sale) => {
-                  const dateObj = new Date(sale.timestamp);
-                  const itemsCount = sale.items.reduce((acc, i) => acc + i.quantity, 0);
+                filteredSales.map((sale, idx) => {
+                  const dateObj = new Date(sale.timestamp || '');
+                  const hasValidDate = !isNaN(dateObj.getTime());
+                  const saleItems = Array.isArray(sale.items) ? sale.items : [];
+                  const itemsCount = saleItems.reduce((acc, i) => acc + toSafeNumber(i?.quantity, 1), 0);
+                  const itemsSummary = saleItems.length > 0
+                    ? saleItems.map(i => `${toSafeNumber(i?.quantity, 1)}x ${getSaleItemLabel(i, sale.planName || 'Artículo')}`).join(', ')
+                    : sale.planName || 'Cobro registrado';
                   const isMembership = sale.saleType === 'membership';
 
                   return (
-                    <tr key={sale.id} className="hover:bg-gym-surface/40 transition-colors">
+                    <tr key={sale.id || idx} className="hover:bg-gym-surface/40 transition-colors">
                       <td className="py-3.5 px-3 xl:px-4 whitespace-nowrap">
                         <div className="font-bold text-sm text-white">
-                          {dateObj.toLocaleDateString('es-MX')}
+                          {hasValidDate ? dateObj.toLocaleDateString('es-MX') : 'Sin fecha'}
                         </div>
                         <span className="text-xs text-gym-muted">
-                          {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                          {hasValidDate ? dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                         </span>
                       </td>
 
@@ -426,8 +616,8 @@ export const IncomeHistoryView: React.FC = () => {
                         <div className="font-semibold text-sm text-gray-200">
                           {itemsCount} artículo(s)
                         </div>
-                        <p className="text-xs sm:text-[13px] text-zinc-400 line-clamp-2 leading-snug max-w-[240px] lg:max-w-[280px] xl:max-w-[320px] 2xl:max-w-[400px] mt-0.5" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
-                          {sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
+                        <p className="text-xs sm:text-[13px] text-zinc-400 line-clamp-2 leading-snug max-w-[240px] lg:max-w-[280px] xl:max-w-[320px] 2xl:max-w-[400px] mt-0.5" title={itemsSummary}>
+                          {itemsSummary}
                         </p>
                       </td>
 
@@ -443,12 +633,12 @@ export const IncomeHistoryView: React.FC = () => {
                       </td>
 
                       <td className="py-3.5 px-3 xl:px-4 text-zinc-300 font-medium text-sm">
-                        {sale.cashierName}
+                        {sale.cashierName || 'Recepción Mostrador'}
                       </td>
 
                       <td className="py-3.5 px-3 xl:px-4 text-right whitespace-nowrap">
                         <span className="font-mono font-black text-sm xl:text-base text-emerald-400">
-                          ${sale.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          ${toSafeNumber(sale.total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
