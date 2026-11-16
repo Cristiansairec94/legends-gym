@@ -8,6 +8,8 @@ import {
   DollarSign, 
   TrendingDown, 
   Calendar, 
+  CalendarRange,
+  Clock,
   CreditCard, 
   Banknote, 
   Building2, 
@@ -28,6 +30,72 @@ import {
   Sparkles
 } from 'lucide-react';
 
+type ExpensePeriodFilter = 'all' | 'day' | 'week' | 'month';
+
+const PERIOD_OPTIONS: Array<{
+  id: ExpensePeriodFilter;
+  label: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+  iconColor: string;
+}> = [
+  {
+    id: 'all',
+    label: 'Todos los periodos',
+    subtitle: 'Historial completo',
+    icon: Layers,
+    iconBg: 'bg-zinc-800/80 border-zinc-700/70',
+    iconColor: 'text-zinc-300',
+  },
+  {
+    id: 'day',
+    label: 'Por Día',
+    subtitle: 'Gastos de hoy',
+    icon: Clock,
+    iconBg: 'bg-amber-500/15 border-amber-500/30',
+    iconColor: 'text-amber-400',
+  },
+  {
+    id: 'week',
+    label: 'Por Semana',
+    subtitle: 'Últimos 7 días',
+    icon: CalendarRange,
+    iconBg: 'bg-blue-500/15 border-blue-500/30',
+    iconColor: 'text-blue-400',
+  },
+  {
+    id: 'month',
+    label: 'Por Mes',
+    subtitle: 'Mes actual',
+    icon: Calendar,
+    iconBg: 'bg-emerald-500/15 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+  },
+];
+
+function isExpenseInPeriod(dateStr: string, period: ExpensePeriodFilter, now = new Date()): boolean {
+  if (period === 'all') return true;
+  const expDate = new Date(dateStr);
+  if (isNaN(expDate.getTime())) return false;
+
+  if (period === 'day') {
+    return (
+      expDate.getDate() === now.getDate() &&
+      expDate.getMonth() === now.getMonth() &&
+      expDate.getFullYear() === now.getFullYear()
+    );
+  }
+
+  if (period === 'week') {
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return expDate >= startOfWeek && expDate <= endOfToday;
+  }
+
+  return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+}
+
 export const ExpensesManager: React.FC = () => {
   const { 
     expenses, 
@@ -41,25 +109,33 @@ export const ExpensesManager: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [periodFilter, setPeriodFilter] = useState<ExpensePeriodFilter>('all');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const periodDropdownRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Close category dropdown on click outside or escape key
+  // Close open dropdowns on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(target)) {
         setIsCategoryDropdownOpen(false);
+      }
+      if (periodDropdownRef.current && !periodDropdownRef.current.contains(target)) {
+        setIsPeriodDropdownOpen(false);
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsCategoryDropdownOpen(false);
+        setIsPeriodDropdownOpen(false);
       }
     };
 
-    if (isCategoryDropdownOpen) {
+    if (isCategoryDropdownOpen || isPeriodDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
@@ -68,7 +144,7 @@ export const ExpensesManager: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isCategoryDropdownOpen]);
+  }, [isCategoryDropdownOpen, isPeriodDropdownOpen]);
 
   // Nuevo gasto form state
   const [amount, setAmount] = useState<number | ''>('');
@@ -178,13 +254,37 @@ export const ExpensesManager: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const filteredExpenses = expenses.filter(e => {
-    const matchesSearch = e.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          e.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (e.receiptNumber && e.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()));
+  const periodExpenses = expenses.filter(e => isExpenseInPeriod(e.date, periodFilter));
+
+  const periodSummaries = PERIOD_OPTIONS.map(option => {
+    const matching = expenses.filter(e => isExpenseInPeriod(e.date, option.id));
+    return {
+      ...option,
+      count: matching.length,
+      total: matching.reduce((acc, e) => acc + e.amount, 0),
+    };
+  });
+
+  const activePeriodMeta = periodSummaries.find(p => p.id === periodFilter) || periodSummaries[0];
+  const ActivePeriodIcon = activePeriodMeta.icon;
+
+  const normalizedQuery = searchTerm.toLowerCase();
+  const filteredExpenses = periodExpenses.filter(e => {
+    const matchesSearch = e.description.toLowerCase().includes(normalizedQuery) ||
+                          e.folio.toLowerCase().includes(normalizedQuery) ||
+                          (e.receiptNumber && e.receiptNumber.toLowerCase().includes(normalizedQuery));
     const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  const filteredTotalAmount = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const hasActiveFilters = categoryFilter !== 'all' || periodFilter !== 'all' || Boolean(searchTerm);
+
+  const resetAllFilters = () => {
+    setCategoryFilter('all');
+    setPeriodFilter('all');
+    setSearchTerm('');
+  };
 
   return (
     <div className="space-y-6">
@@ -267,13 +367,19 @@ export const ExpensesManager: React.FC = () => {
 
       {/* Filtros & Búsqueda */}
       <div className="bg-gym-card p-3 rounded-2xl border border-gym-border shadow-sm">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           
-          {/* LADO IZQUIERDO: Category Filter Dropdown Trigger */}
+          {/* LADO IZQUIERDO: Filtros desplegables de Categoría y Periodo */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-wrap">
+
+          {/* Dropdown de Categoría */}
           <div className="relative shrink-0" ref={categoryDropdownRef}>
             <button
               type="button"
-              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+              onClick={() => {
+                setIsPeriodDropdownOpen(false);
+                setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+              }}
               className={`w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-sm ${
                 categoryFilter !== 'all'
                   ? 'bg-red-500/15 border-red-500/40 text-white shadow-[0_0_15px_rgba(239,68,68,0.15)]'
@@ -318,8 +424,8 @@ export const ExpensesManager: React.FC = () => {
                     : 'bg-zinc-800/90 text-zinc-300 border-zinc-700/80'
                 }`}>
                   {categoryFilter === 'all'
-                    ? expenses.length
-                    : expenses.filter(e => e.category === categoryFilter).length}
+                    ? periodExpenses.length
+                    : periodExpenses.filter(e => e.category === categoryFilter).length}
                 </span>
               </div>
 
@@ -402,7 +508,7 @@ export const ExpensesManager: React.FC = () => {
                         ? 'bg-red-500/30 text-red-200 border-red-500/40'
                         : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/70'
                     }`}>
-                      {expenses.length}
+                      {periodExpenses.length}
                     </span>
                     {categoryFilter === 'all' && (
                       <Check className="w-3.5 h-3.5 text-red-400 stroke-[3]" />
@@ -413,7 +519,7 @@ export const ExpensesManager: React.FC = () => {
                 {/* Grid de 2 Columnas de Categorías (Ultra compacto, sin scroll largo) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[60vh] sm:max-h-none overflow-y-auto sm:overflow-visible pr-0.5 custom-scrollbar">
                   {Object.entries(categoryLabels).map(([catKey, catMeta]) => {
-                    const count = expenses.filter(e => e.category === catKey).length;
+                    const count = periodExpenses.filter(e => e.category === catKey).length;
                     const isSelected = categoryFilter === catKey;
                     const IconComponent = catMeta.icon;
 
@@ -466,16 +572,168 @@ export const ExpensesManager: React.FC = () => {
 
                 {/* Footer with summary */}
                 <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                  <span>Total en catálogo</span>
-                  <span className="font-bold text-zinc-300">{expenses.length} gastos</span>
+                  <span>{periodFilter === 'all' ? 'Total en catálogo' : `En ${activePeriodMeta.label.toLowerCase()}`}</span>
+                  <span className="font-bold text-zinc-300">{periodExpenses.length} gastos</span>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Dropdown de Periodo (Día, Semana, Mes, Todos) */}
+          <div className="relative shrink-0" ref={periodDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsCategoryDropdownOpen(false);
+                setIsPeriodDropdownOpen(!isPeriodDropdownOpen);
+              }}
+              className={`w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-sm ${
+                periodFilter !== 'all'
+                  ? 'bg-amber-500/15 border-amber-500/40 text-white shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                  : isPeriodDropdownOpen
+                  ? 'bg-gym-surface border-zinc-500 text-white shadow-md'
+                  : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-zinc-300 hover:text-white'
+              }`}
+              title="Filtrar gastos por día, semana o mes"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                  periodFilter === 'all'
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                    : `${activePeriodMeta.iconBg} ${activePeriodMeta.iconColor}`
+                }`}>
+                  <ActivePeriodIcon className="w-3.5 h-3.5" />
+                </div>
+
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                    Periodo
+                  </span>
+                  <span className="text-xs font-black text-white truncate max-w-[160px]">
+                    {activePeriodMeta.label}
+                  </span>
+                </div>
+
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
+                  periodFilter !== 'all'
+                    ? 'bg-amber-500 text-black border-amber-400 shadow-sm'
+                    : 'bg-zinc-800/90 text-zinc-300 border-zinc-700/80'
+                }`}>
+                  {activePeriodMeta.count}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                {periodFilter !== 'all' && (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPeriodFilter('all');
+                    }}
+                    className="p-1 rounded-md hover:bg-amber-500/25 text-amber-400 hover:text-white transition-colors cursor-pointer"
+                    title="Mostrar todos los periodos"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 shrink-0 ${isPeriodDropdownOpen ? 'rotate-180 text-white' : ''}`} />
+              </div>
+            </button>
+
+            {isPeriodDropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[340px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800/80 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[11px] uppercase font-extrabold tracking-wider text-zinc-300">
+                      Filtrar por Periodo
+                    </span>
+                  </div>
+                  {periodFilter !== 'all' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPeriodFilter('all');
+                        setIsPeriodDropdownOpen(false);
+                      }}
+                      className="text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Restablecer</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      Día / Semana / Mes
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  {periodSummaries.map((option) => {
+                    const isSelected = periodFilter === option.id;
+                    const OptionIcon = option.icon;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          setPeriodFilter(option.id);
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border ${
+                          isSelected
+                            ? 'bg-amber-500/15 border-amber-500/40 text-white font-bold shadow-sm'
+                            : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${option.iconBg} ${option.iconColor} group-hover:scale-105`}>
+                            <OptionIcon className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="flex flex-col leading-tight truncate">
+                            <span className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                              {option.label}
+                            </span>
+                            <span className="text-[10px] text-zinc-400">
+                              {option.subtitle}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <div className="text-right leading-tight">
+                            <span className={`font-mono font-bold text-[11px] block ${option.total > 0 ? 'text-red-400' : 'text-zinc-500'}`}>
+                              -${option.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              {option.count} {option.count === 1 ? 'gasto' : 'gastos'}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-amber-400 stroke-[3]" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                  <span>Total del periodo activo</span>
+                  <span className="font-bold text-red-400">
+                    -${activePeriodMeta.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          </div>
+
           {/* LADO DERECHO: Search Input & Restablecer */}
-          <div className="flex items-center gap-2 flex-1 sm:justify-end">
-            <div className="relative w-full sm:w-64 md:w-80">
+          <div className="flex items-center gap-2 flex-1 lg:justify-end">
+            <div className="relative w-full lg:w-72 xl:w-80">
               <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input 
                 type="text"
@@ -497,15 +755,12 @@ export const ExpensesManager: React.FC = () => {
             </div>
 
             {/* Reset Filters button if any filter is active */}
-            {(categoryFilter !== 'all' || searchTerm) && (
+            {hasActiveFilters && (
               <button
                 type="button"
-                onClick={() => {
-                  setCategoryFilter('all');
-                  setSearchTerm('');
-                }}
+                onClick={resetAllFilters}
                 className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold transition-all whitespace-nowrap shadow-sm"
-                title="Restablecer búsqueda y categoría"
+                title="Restablecer filtros"
               >
                 Restablecer
               </button>
@@ -515,12 +770,27 @@ export const ExpensesManager: React.FC = () => {
         </div>
 
         {/* Info strip when filtering */}
-        {(categoryFilter !== 'all' || searchTerm) && (
-          <div className="mt-2.5 pt-2 border-t border-gym-border/40 flex items-center justify-between text-[11px] text-gym-muted">
-            <span>
-              Mostrando <strong className="text-white">{filteredExpenses.length}</strong> de <strong className="text-white">{expenses.length}</strong> gastos registrados
-            </span>
-            <div className="flex items-center gap-2">
+        {hasActiveFilters && (
+          <div className="mt-2.5 pt-2 border-t border-gym-border/40 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gym-muted">
+            <div className="flex items-center gap-3">
+              <span>
+                Mostrando <strong className="text-white">{filteredExpenses.length}</strong> de <strong className="text-white">{expenses.length}</strong> gastos
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span>
+                Total en vista:{' '}
+                <strong className="text-red-400 font-mono">
+                  -${filteredTotalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                </strong>
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {periodFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 font-bold">
+                  {activePeriodMeta.label}
+                  <button onClick={() => setPeriodFilter('all')} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
               {categoryFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20 font-bold">
                   {categoryLabels[categoryFilter as ExpenseCategory]?.label}
@@ -528,7 +798,7 @@ export const ExpensesManager: React.FC = () => {
                 </span>
               )}
               {searchTerm && (
-                <span className="inline-flex items-center gap-1 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 font-bold">
+                <span className="inline-flex items-center gap-1 text-zinc-200 bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-700 font-bold">
                   "{searchTerm}"
                   <button onClick={() => setSearchTerm('')} className="hover:text-white ml-0.5">×</button>
                 </span>
@@ -557,7 +827,16 @@ export const ExpensesManager: React.FC = () => {
               {filteredExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-gym-muted text-sm">
-                    No se encontraron gastos que coincidan con la búsqueda.
+                    <p>No se encontraron gastos para el periodo o los filtros seleccionados.</p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={resetAllFilters}
+                        className="mt-3 px-3.5 py-1.5 rounded-xl bg-gym-surface hover:bg-zinc-800 text-xs font-bold text-white border border-gym-border transition-colors"
+                      >
+                        Ver todos los gastos
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
