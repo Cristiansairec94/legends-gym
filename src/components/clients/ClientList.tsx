@@ -70,7 +70,7 @@ export const ClientList: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
         <div>
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
+            <Users className="w-5 h-5 text-crimson-400" />
             <h1 className="text-xl font-black text-white tracking-wide uppercase">
               Cartera de Clientes & Membresías
             </h1>
@@ -83,7 +83,7 @@ export const ClientList: React.FC = () => {
         {/* Add client button */}
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-sm shadow-glow-crimson transition-all"
         >
           <UserPlus className="w-4 h-4 stroke-[2.5]" />
           <span>Nuevo Cliente</span>
@@ -95,7 +95,7 @@ export const ClientList: React.FC = () => {
         <div 
           onClick={() => setStatusFilter('all')}
           className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-            statusFilter === 'all' ? 'bg-amber-500/15 border-amber-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
+            statusFilter === 'all' ? 'bg-crimson-500/15 border-crimson-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
           }`}
         >
           <span className="text-xs text-gym-muted block">Total Cartera</span>
@@ -152,7 +152,7 @@ export const ClientList: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, DNI, teléfono o ID..."
-            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
           />
         </div>
 
@@ -171,7 +171,7 @@ export const ClientList: React.FC = () => {
                 onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                   statusFilter === tab.id
-                    ? 'bg-amber-500 text-black font-bold'
+                    ? 'bg-crimson-500 text-white font-bold'
                     : 'bg-gym-surface text-gym-muted hover:text-white'
                 }`}
               >
@@ -187,7 +187,7 @@ export const ClientList: React.FC = () => {
               title="Vista minimalista en recuadros"
               className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
                 viewMode === 'grid'
-                  ? 'bg-amber-500 text-black shadow-sm font-bold'
+                  ? 'bg-crimson-500 text-white shadow-sm font-bold'
                   : 'text-gym-muted hover:text-white'
               }`}
             >
@@ -199,7 +199,7 @@ export const ClientList: React.FC = () => {
               title="Vista en tabla"
               className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
                 viewMode === 'table'
-                  ? 'bg-amber-500 text-black shadow-sm font-bold'
+                  ? 'bg-crimson-500 text-white shadow-sm font-bold'
                   : 'text-gym-muted hover:text-white'
               }`}
             >
@@ -214,7 +214,7 @@ export const ClientList: React.FC = () => {
       {viewMode === 'grid' ? (
         filteredMembers.length === 0 ? (
           <div className="bg-gym-card rounded-2xl border border-gym-border p-12 text-center text-gym-muted">
-            <Users className="w-12 h-12 mx-auto mb-3 opacity-30 text-amber-400" />
+            <Users className="w-12 h-12 mx-auto mb-3 opacity-30 text-crimson-400" />
             <p className="font-semibold text-white">No se encontraron clientes</p>
             <p className="text-xs text-gym-muted mt-1">Prueba cambiando los filtros o el término de búsqueda.</p>
           </div>
@@ -228,7 +228,7 @@ export const ClientList: React.FC = () => {
                 <div
                   key={member.id}
                   onClick={() => setSelectedClientForDetail(member)}
-                  className="group relative bg-gym-card hover:bg-[#16161c] rounded-2xl border border-gym-border hover:border-amber-500/50 p-4 transition-all duration-200 cursor-pointer shadow-md hover:shadow-glow-gold/15 flex flex-col justify-between"
+                  className="group relative bg-gym-card hover:bg-[#16161c] rounded-2xl border border-gym-border hover:border-crimson-500/50 p-4 transition-all duration-200 cursor-pointer shadow-md hover:shadow-glow-crimson/15 flex flex-col justify-between"
                   title="Haz clic para abrir el expediente completo"
                 >
                   <div>
@@ -255,7 +255,7 @@ export const ClientList: React.FC = () => {
                             e.stopPropagation();
                             setSelectedClientForEnroll(member);
                           }}
-                          className="flex items-center gap-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+                          className="flex items-center gap-1 text-[10px] text-crimson-400 hover:text-crimson-300 font-bold px-2 py-0.5 rounded-lg bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 transition-colors"
                           title="Haz clic para enrolar huella"
                         >
                           <Fingerprint className="w-3 h-3" />
@@ -278,7 +278,7 @@ export const ClientList: React.FC = () => {
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
                           }}
-                          className="w-12 h-12 rounded-xl object-cover border border-gym-border group-hover:border-amber-400/60 transition-colors"
+                          className="w-12 h-12 rounded-xl object-cover border border-gym-border group-hover:border-crimson-400/60 transition-colors"
                         />
                         <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gym-card ${
                           isExpired ? 'bg-red-500' : isExpiring ? 'bg-amber-500' : 'bg-emerald-500'
@@ -286,7 +286,7 @@ export const ClientList: React.FC = () => {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors truncate">
+                        <h3 className="font-bold text-white text-sm group-hover:text-crimson-400 transition-colors truncate">
                           {member.fullName}
                         </h3>
                         <p className="text-[11px] text-gym-muted font-mono truncate">
@@ -304,7 +304,7 @@ export const ClientList: React.FC = () => {
                         <span className="font-semibold text-white truncate max-w-[65%]">
                           {member.membership.planName}
                         </span>
-                        <span className="text-amber-400 font-bold font-mono text-[11px]">
+                        <span className="text-crimson-400 font-bold font-mono text-[11px]">
                           ${member.membership.price}
                         </span>
                       </div>
@@ -331,7 +331,7 @@ export const ClientList: React.FC = () => {
 
                   {/* Card Footer: Ver expediente + Acciones rápidas */}
                   <div className="border-t border-gym-border/60 pt-2.5 mt-2 flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-amber-400 group-hover:text-amber-300 flex items-center gap-0.5 transition-colors">
+                    <span className="text-[11px] font-semibold text-crimson-400 group-hover:text-crimson-300 flex items-center gap-0.5 transition-colors">
                       Expediente
                       <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
@@ -417,7 +417,7 @@ export const ClientList: React.FC = () => {
                               className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0"
                             />
                             <div>
-                              <div className="font-bold text-white hover:text-amber-400 cursor-pointer" onClick={() => setSelectedClientForDetail(member)}>
+                              <div className="font-bold text-white hover:text-crimson-400 cursor-pointer" onClick={() => setSelectedClientForDetail(member)}>
                                 {member.fullName}
                               </div>
                               <div className="flex items-center gap-2 text-xs text-gym-muted font-mono mt-0.5">
@@ -446,7 +446,7 @@ export const ClientList: React.FC = () => {
                           <span className="font-bold text-white block text-xs">
                             {member.membership.planName}
                           </span>
-                          <span className="text-[11px] text-amber-400 font-mono">
+                          <span className="text-[11px] text-crimson-400 font-mono">
                             ${member.membership.price} MXN
                           </span>
                         </td>
@@ -481,7 +481,7 @@ export const ClientList: React.FC = () => {
                           ) : activePermissions.enrollBiometrics ? (
                             <button
                               onClick={() => setSelectedClientForEnroll(member)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 text-crimson-400 text-xs font-bold transition-colors"
                               title="Haz clic para capturar su huella digital"
                             >
                               <Fingerprint className="w-4 h-4" />

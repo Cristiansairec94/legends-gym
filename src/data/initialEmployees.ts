@@ -77,7 +77,7 @@ export const INITIAL_ROLES: RoleDefinition[] = [
     name: 'Administrador General',
     badgeText: 'Admin',
     description: 'Acceso total sin restricciones a todas las funciones financieras, inventario, socios y configuración.',
-    color: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
+    color: 'bg-crimson-500/20 text-crimson-400 border-crimson-500/40',
     permissions: {
       accessTurnstile: true,
       manageClients: true,

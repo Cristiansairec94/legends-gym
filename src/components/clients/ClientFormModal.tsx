@@ -125,7 +125,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
         {/* Header */}
         <div className="px-5 py-3 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
@@ -180,12 +180,12 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                     }
                   }}
                   placeholder="Ej. Rodrigo Silva Mendoza"
-                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-amber-400 block mb-1 flex items-center justify-between">
+                <label className="text-xs font-semibold text-crimson-400 block mb-1 flex items-center justify-between">
                   <span>Cédula / Tarjeta RFID / DNI *</span>
                   <span className="text-[10px] text-gym-muted font-normal">Clave de Torniquete</span>
                 </label>
@@ -194,7 +194,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   value={documentId}
                   onChange={(e) => setDocumentId(e.target.value)}
                   placeholder="Ej. 10984523 o pasa tarjeta RFID..."
-                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-amber-500/40 text-xs sm:text-sm text-white font-mono placeholder-gym-muted focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50"
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-crimson-500/40 text-xs sm:text-sm text-white font-mono placeholder-gym-muted focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400/50"
                 />
               </div>
 
@@ -207,7 +207,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+52 55 9876 5432"
-                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
@@ -220,7 +220,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="cliente@email.com"
-                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
                 />
               </div>
             </div>
@@ -248,13 +248,13 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                       }}
                       className={`p-2.5 rounded-xl border cursor-pointer transition-all relative group ${
                         isSelected
-                          ? 'bg-amber-500/15 border-amber-400 shadow-glow-gold/40'
+                          ? 'bg-crimson-500/15 border-crimson-400 shadow-glow-crimson/40'
                           : 'bg-gym-surface/60 border-gym-border hover:border-gym-border/80'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-xs font-bold text-white leading-snug">{opt.name}</span>
-                        <span className="text-xs font-mono font-extrabold text-amber-400 shrink-0">
+                        <span className="text-xs font-mono font-extrabold text-crimson-400 shrink-0">
                           ${opt.price} MXN
                         </span>
                       </div>
@@ -327,14 +327,14 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                     value={emergencyName}
                     onChange={(e) => setEmergencyName(e.target.value)}
                     placeholder="Nombre de familiar"
-                    className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
                   />
                   <input
                     type="tel"
                     value={emergencyPhone}
                     onChange={(e) => setEmergencyPhone(e.target.value)}
                     placeholder="Teléfono de emergencia"
-                    className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
                   />
                 </div>
               </div>
@@ -348,16 +348,16 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   onChange={(e) => setMedicalNotes(e.target.value)}
                   rows={2}
                   placeholder="Alergias, lesiones previas, restricciones..."
-                  className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 resize-none"
+                  className="w-full px-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400 resize-none"
                 />
               </div>
             </div>
 
             {/* Checkbox: Prompt for immediate Biometric Enrollment */}
             {activePermissions.enrollBiometrics && (
-              <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/30 flex items-center justify-between">
+              <div className="p-2.5 bg-crimson-500/10 rounded-xl border border-crimson-500/30 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <Sparkles className="w-4 h-4 text-crimson-400 shrink-0" />
                   <div>
                     <p className="text-xs font-bold text-white">Enrolar Huella Inmediatamente</p>
                     <p className="text-[10px] sm:text-[11px] text-gym-muted">
@@ -369,7 +369,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   type="checkbox"
                   checked={enrollNow}
                   onChange={(e) => setEnrollNow(e.target.checked)}
-                  className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                  className="w-4 h-4 accent-crimson-500 rounded cursor-pointer"
                 />
               </div>
             )}
@@ -386,7 +386,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm shadow-glow-gold transition-all"
+              className="px-6 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs sm:text-sm shadow-glow-crimson transition-all"
             >
               Guardar e Inscribir Cliente
             </button>

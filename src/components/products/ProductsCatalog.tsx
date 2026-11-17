@@ -270,8 +270,8 @@ export const ProductsCatalog: React.FC = () => {
         
         {/* Left Brand Badge */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-glow-gold border border-amber-400/50">
-            <Package className="w-5 h-5 text-black stroke-[2.5]" />
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-crimson-500 to-crimson-700 flex items-center justify-center shadow-glow-crimson border border-crimson-400/50">
+            <Package className="w-5 h-5 text-white stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -295,21 +295,21 @@ export const ProductsCatalog: React.FC = () => {
 
           {/* Clock */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gym-surface text-gym-muted border border-gym-border font-mono text-[11px]">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <Clock className="w-3.5 h-3.5 text-crimson-400" />
             <span>{currentTime.toLocaleTimeString('es-MX')}</span>
           </div>
 
 
           {/* Cashier / Manager User Card */}
           <div className="flex items-center gap-2 pl-2 border-l border-gym-border">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-bold text-amber-400 text-xs">
+            <div className="w-8 h-8 rounded-full bg-crimson-500/20 border border-crimson-500/40 flex items-center justify-center font-bold text-crimson-400 text-xs">
               {currentRole === 'admin' ? 'RG' : 'CR'}
             </div>
             <div className="hidden md:block text-left leading-tight">
               <span className="font-bold text-xs text-white block">
                 {currentRole === 'admin' ? 'Don Roberto Garza' : 'Camila Herrera'}
               </span>
-              <span className="text-[9px] font-extrabold uppercase text-amber-400">
+              <span className="text-[9px] font-extrabold uppercase text-crimson-400">
                 {currentRole === 'admin' ? 'DUEÑO / ADMINISTRADOR' : 'RECEPCIÓN / CAJERA'}
               </span>
             </div>
@@ -329,7 +329,7 @@ export const ProductsCatalog: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar producto, suplemento, shaker o código de barras..."
-            className="w-full pl-10 pr-4 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+            className="w-full pl-10 pr-4 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
           />
         </div>
 
@@ -345,7 +345,7 @@ export const ProductsCatalog: React.FC = () => {
               onClick={() => setViewMode('grid')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-amber-500 text-black shadow-sm'
+                  ? 'bg-crimson-500 text-white shadow-sm'
                   : 'text-gym-muted hover:text-white'
               }`}
             >
@@ -357,7 +357,7 @@ export const ProductsCatalog: React.FC = () => {
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'list'
-                  ? 'bg-amber-500 text-black shadow-sm'
+                  ? 'bg-crimson-500 text-white shadow-sm'
                   : 'text-gym-muted hover:text-white'
               }`}
             >
@@ -369,10 +369,10 @@ export const ProductsCatalog: React.FC = () => {
           {/* Botón Imprimir Códigos de Barra */}
           <button
             onClick={() => setShowBarcodePrintModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gym-surface hover:bg-amber-500/10 text-gray-200 hover:text-amber-400 border border-gym-border hover:border-amber-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gym-surface hover:bg-crimson-500/10 text-gray-200 hover:text-crimson-400 border border-gym-border hover:border-crimson-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
             title="Imprimir todos los códigos de barra"
           >
-            <Printer className="w-3.5 h-3.5 text-amber-400" />
+            <Printer className="w-3.5 h-3.5 text-crimson-400" />
             <span className="hidden sm:inline">Imprimir Códigos</span>
             <span className="sm:hidden">Códigos</span>
           </button>
@@ -380,7 +380,7 @@ export const ProductsCatalog: React.FC = () => {
           {/* Botón Agregar Nuevo Producto */}
           <button
             onClick={openNewProductModal}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs shadow-glow-gold transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-extrabold text-xs shadow-glow-crimson transition-all cursor-pointer"
             title="Dar de alta un nuevo producto en el catálogo"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
@@ -396,7 +396,7 @@ export const ProductsCatalog: React.FC = () => {
         {/* Header Strip with + Categorías and Ocultar Lista */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-amber-400" />
+            <Layers className="w-4 h-4 text-crimson-400" />
             <span className="text-xs font-black uppercase tracking-wider text-white">
               CATEGORÍAS DEL CATÁLOGO:
             </span>
@@ -408,16 +408,16 @@ export const ProductsCatalog: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setSelectedCatToEdit(null); setShowCategoryManagerModal(true); }}
-              className="px-3.5 py-1.5 rounded-xl bg-gym-surface hover:bg-amber-500/10 text-gray-200 hover:text-amber-400 border border-gym-border hover:border-amber-500/30 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-gym-surface hover:bg-crimson-500/10 text-gray-200 hover:text-crimson-400 border border-gym-border hover:border-crimson-500/30 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
               title="Editar nombres, emojis y clasificaciones de categorías"
             >
-              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+              <Edit3 className="w-3.5 h-3.5 text-crimson-400" />
               <span>Editar Categorías</span>
             </button>
 
             <button
               onClick={() => { setSelectedCatToEdit(null); setShowCategoryManagerModal(true); }}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson flex items-center gap-1 transition-all cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3]" />
               <span>+ Categorías</span>
@@ -442,7 +442,7 @@ export const ProductsCatalog: React.FC = () => {
               onClick={() => setSelectedCat('all')}
               className={`p-3 rounded-2xl border text-left flex items-center justify-between transition-all ${
                 selectedCat === 'all'
-                  ? 'bg-gradient-to-r from-amber-950/80 to-gym-surface border-2 border-amber-500 text-white shadow-glow-gold/20'
+                  ? 'bg-gradient-to-r from-crimson-950/80 to-gym-surface border-2 border-crimson-500 text-white shadow-glow-crimson/20'
                   : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-gray-200'
               }`}
             >
@@ -451,7 +451,7 @@ export const ProductsCatalog: React.FC = () => {
                 <span className="font-bold text-xs">Todas las Categorías</span>
               </div>
               <span className={`text-[11px] font-mono font-black px-2 py-0.5 rounded-lg ${
-                selectedCat === 'all' ? 'bg-amber-500 text-black' : 'bg-gym-card text-gym-muted'
+                selectedCat === 'all' ? 'bg-crimson-500 text-white' : 'bg-gym-card text-gym-muted'
               }`}>
                 {products.length}
               </span>
@@ -468,7 +468,7 @@ export const ProductsCatalog: React.FC = () => {
                   onClick={() => setSelectedCat(cat.id)}
                   className={`p-3 rounded-2xl border text-left flex items-center justify-between transition-all group relative cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-r from-amber-950/80 to-gym-surface border-2 border-amber-500 text-white shadow-glow-gold/20'
+                      ? 'bg-gradient-to-r from-crimson-950/80 to-gym-surface border-2 border-crimson-500 text-white shadow-glow-crimson/20'
                       : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-gray-200'
                   }`}
                 >
@@ -485,14 +485,14 @@ export const ProductsCatalog: React.FC = () => {
                         setSelectedCatToEdit(cat.id);
                         setShowCategoryManagerModal(true);
                       }}
-                      className="p-1 rounded-lg bg-gym-card/80 hover:bg-amber-500/20 text-gym-muted hover:text-amber-400 border border-gym-border/40 hover:border-amber-500/30 transition-all opacity-70 group-hover:opacity-100"
+                      className="p-1 rounded-lg bg-gym-card/80 hover:bg-crimson-500/20 text-gym-muted hover:text-crimson-400 border border-gym-border/40 hover:border-crimson-500/30 transition-all opacity-70 group-hover:opacity-100"
                       title={`Editar categoría "${cat.name}"`}
                     >
                       <Edit3 className="w-3 h-3" />
                     </button>
 
                     <span className={`text-[11px] font-mono font-black px-2 py-0.5 rounded-lg shrink-0 ${
-                      isSelected ? 'bg-amber-500 text-black' : 'bg-gym-card text-gym-muted'
+                      isSelected ? 'bg-crimson-500 text-white' : 'bg-gym-card text-gym-muted'
                     }`}>
                       {count}
                     </span>
@@ -504,7 +504,7 @@ export const ProductsCatalog: React.FC = () => {
             {/* + Nueva Categoría Dashed Card */}
             <button
               onClick={() => { setSelectedCatToEdit(null); setShowCategoryManagerModal(true); }}
-              className="p-3 rounded-2xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 hover:bg-amber-500/10 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="p-3 rounded-2xl border-2 border-dashed border-crimson-500/40 hover:border-crimson-400 bg-crimson-500/5 hover:bg-crimson-500/10 text-crimson-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Nueva Categoría</span>
@@ -525,7 +525,7 @@ export const ProductsCatalog: React.FC = () => {
               <div
                 key={p.id}
                 onClick={() => openEditModal(p)}
-                className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg hover:border-amber-400/60 hover:shadow-glow-gold/20 transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg hover:border-crimson-400/60 hover:shadow-glow-crimson/20 transition-all cursor-pointer group flex flex-col justify-between"
               >
                 {/* Image Container with Badges */}
                 <div className="relative h-44 w-full bg-gym-surface overflow-hidden">
@@ -537,8 +537,8 @@ export const ProductsCatalog: React.FC = () => {
                   />
 
                   {/* Top-Left Barcode Strip Pill on Image (as in screenshot) */}
-                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/85 border border-white/10 px-2 py-0.5 rounded-md text-[10px] font-mono text-amber-300 shadow-md">
-                    <Barcode className="w-3 h-3 text-amber-400" />
+                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/85 border border-white/10 px-2 py-0.5 rounded-md text-[10px] font-mono text-crimson-300 shadow-md">
+                    <Barcode className="w-3 h-3 text-crimson-400" />
                     <span>{p.barcode}</span>
                   </div>
 
@@ -560,10 +560,10 @@ export const ProductsCatalog: React.FC = () => {
                     </span>
 
                     <div className="flex items-center gap-1">
-                      <span className="text-lg font-mono font-black text-amber-400">
+                      <span className="text-lg font-mono font-black text-crimson-400">
                         ${p.price.toFixed(2)}
                       </span>
-                      <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px] shadow-sm">
+                      <span className="w-4 h-4 rounded-full bg-crimson-400 text-white flex items-center justify-center font-bold text-[10px] shadow-sm">
                         ⚡
                       </span>
                     </div>
@@ -572,13 +572,13 @@ export const ProductsCatalog: React.FC = () => {
                   {/* Second row: [ Barcode Box ] on left, [ /pz ] on right */}
                   <div className="flex items-center justify-between gap-1 text-[11px]">
                     <div className="flex items-center gap-1 text-gym-muted font-mono bg-gym-surface/60 px-1.5 py-0.5 rounded border border-gym-border/60 text-[10px]">
-                      <Barcode className="w-3 h-3 text-amber-400" />
+                      <Barcode className="w-3 h-3 text-crimson-400" />
                       <span className="truncate max-w-[90px]">{p.barcode}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       {p.soldByScoop && p.scoopPrice && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-crimson-500/15 text-crimson-300 border border-crimson-500/30">
                           🥄 Scoop: ${p.scoopPrice}
                         </span>
                       )}
@@ -588,7 +588,7 @@ export const ProductsCatalog: React.FC = () => {
 
                   {/* Third row: Product Title */}
                   <div>
-                    <h3 className="font-black text-sm text-white line-clamp-1 group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-black text-sm text-white line-clamp-1 group-hover:text-crimson-400 transition-colors">
                       {p.name}
                     </h3>
                     <p className="text-xs text-gym-muted line-clamp-1 mt-0.5">
@@ -615,7 +615,7 @@ export const ProductsCatalog: React.FC = () => {
                         <span className="text-[11px]">Eliminar</span>
                       </button>
 
-                      <span className="text-[11px] text-amber-400 group-hover:underline">
+                      <span className="text-[11px] text-crimson-400 group-hover:underline">
                         Editar datos →
                       </span>
                     </div>
@@ -665,15 +665,15 @@ export const ProductsCatalog: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="p-4 font-mono text-xs text-amber-300 flex items-center gap-1 mt-3">
-                      <Barcode className="w-3.5 h-3.5 text-amber-400" />
+                    <td className="p-4 font-mono text-xs text-crimson-300 flex items-center gap-1 mt-3">
+                      <Barcode className="w-3.5 h-3.5 text-crimson-400" />
                       <span>{p.barcode}</span>
                     </td>
 
                     <td className="p-4 font-mono text-xs">
-                      <span className="font-black text-sm text-amber-400 block">${p.price.toFixed(2)} MXN</span>
+                      <span className="font-black text-sm text-crimson-400 block">${p.price.toFixed(2)} MXN</span>
                       {p.soldByScoop && p.scoopPrice && (
-                        <span className="text-[10px] text-amber-300 font-bold block">🥄 Scoop: ${p.scoopPrice}</span>
+                        <span className="text-[10px] text-crimson-300 font-bold block">🥄 Scoop: ${p.scoopPrice}</span>
                       )}
                     </td>
 
@@ -685,7 +685,7 @@ export const ProductsCatalog: React.FC = () => {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-amber-500/20 text-gym-muted hover:text-amber-400 transition-colors"
+                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-crimson-500/20 text-gym-muted hover:text-crimson-400 transition-colors"
                           title="Editar producto"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -717,7 +717,7 @@ export const ProductsCatalog: React.FC = () => {
           <div className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl relative my-auto overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
               <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-amber-400" />
+                <Package className="w-5 h-5 text-crimson-400" />
                 <h3 className="font-bold text-base text-white">
                   {editingProduct ? 'Editar Producto del Catálogo' : 'Agregar Nuevo Producto'}
                 </h3>
@@ -757,7 +757,7 @@ export const ProductsCatalog: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => productImageInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
                     >
                       <Upload className="w-3.5 h-3.5" />
                       <span>{formImage ? 'Cambiar Imagen' : 'Subir Imagen'}</span>
@@ -783,7 +783,7 @@ export const ProductsCatalog: React.FC = () => {
                     <img
                       src={formImage}
                       alt="Vista previa del producto"
-                      className="w-16 h-16 rounded-lg object-cover border border-amber-500/40 shadow-sm shrink-0"
+                      className="w-16 h-16 rounded-lg object-cover border border-crimson-500/40 shadow-sm shrink-0"
                     />
                     <div className="text-xs space-y-0.5 min-w-0">
                       <span className="font-semibold text-white block truncate">Imagen cargada</span>
@@ -795,9 +795,9 @@ export const ProductsCatalog: React.FC = () => {
                 ) : (
                   <div
                     onClick={() => productImageInputRef.current?.click()}
-                    className="border-2 border-dashed border-gym-border hover:border-amber-400/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-gym-surface/20 hover:bg-amber-500/5 group"
+                    className="border-2 border-dashed border-gym-border hover:border-crimson-400/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-gym-surface/20 hover:bg-crimson-500/5 group"
                   >
-                    <ImageIcon className="w-7 h-7 mx-auto text-gym-muted group-hover:text-amber-400 transition-colors mb-1" />
+                    <ImageIcon className="w-7 h-7 mx-auto text-gym-muted group-hover:text-crimson-400 transition-colors mb-1" />
                     <p className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors">
                       Haz clic para seleccionar o subir una foto
                     </p>
@@ -814,7 +814,7 @@ export const ProductsCatalog: React.FC = () => {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="Ej. Gold Standard 100% Whey (5 lbs)"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
@@ -826,7 +826,7 @@ export const ProductsCatalog: React.FC = () => {
                     value={formBrand}
                     onChange={(e) => setFormBrand(e.target.value)}
                     placeholder="Ej. Optimum Nutrition"
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   />
                 </div>
 
@@ -835,7 +835,7 @@ export const ProductsCatalog: React.FC = () => {
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as ProductCategory)}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400 font-semibold"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400 font-semibold"
                   >
                     {customCategories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -849,7 +849,7 @@ export const ProductsCatalog: React.FC = () => {
               <div className="bg-gym-surface/30 p-3.5 rounded-xl border border-gym-border space-y-2">
                 <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <div className="flex items-center gap-1.5">
-                    <Barcode className="w-4 h-4 text-amber-400" />
+                    <Barcode className="w-4 h-4 text-crimson-400" />
                     <label className="text-xs font-bold text-white">Código de Barras</label>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -872,7 +872,7 @@ export const ProductsCatalog: React.FC = () => {
                         setFormBarcode(`${Math.floor(100000000000 + Math.random() * 900000000000)}`);
                         setScanSuccess(false);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                      className="px-2.5 py-1 rounded-lg bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
                       title="Genera un código nuevo para productos que no traen código de fábrica"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
@@ -907,8 +907,8 @@ export const ProductsCatalog: React.FC = () => {
                       scanSuccess 
                         ? 'border-emerald-500 ring-2 ring-emerald-500/30' 
                         : isScanningActive 
-                        ? 'border-amber-400 ring-2 ring-amber-400/20' 
-                        : 'border-gym-border focus:border-amber-400'
+                        ? 'border-crimson-400 ring-2 ring-crimson-400/20' 
+                        : 'border-gym-border focus:border-crimson-400'
                     }`}
                   />
                   {formBarcode && (
@@ -945,7 +945,7 @@ export const ProductsCatalog: React.FC = () => {
                     type="number"
                     value={formPrice}
                     onChange={(e) => setFormPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white font-mono font-bold focus:outline-none focus:border-crimson-400"
                   />
                 </div>
 
@@ -955,7 +955,7 @@ export const ProductsCatalog: React.FC = () => {
                     type="number"
                     value={formCostPrice}
                     onChange={(e) => setFormCostPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-crimson-400"
                   />
                 </div>
               </div>
@@ -966,7 +966,7 @@ export const ProductsCatalog: React.FC = () => {
                   type="number"
                   value={formStock}
                   onChange={(e) => setFormStock(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
@@ -977,7 +977,7 @@ export const ProductsCatalog: React.FC = () => {
                   onChange={(e) => setFormDescription(e.target.value)}
                   rows={2}
                   placeholder="24g de proteína de suero por porción..."
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400 resize-none"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-crimson-400 resize-none"
                 />
               </div>
 
@@ -987,7 +987,7 @@ export const ProductsCatalog: React.FC = () => {
                   <div className="flex items-center gap-2.5">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                       formSoldByScoop 
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' 
+                        ? 'bg-crimson-500/20 text-crimson-400 border border-crimson-500/40' 
                         : 'bg-gym-card text-gym-muted border border-gym-border'
                     }`}>
                       <Sparkles className="w-4 h-4" />
@@ -1010,12 +1010,12 @@ export const ProductsCatalog: React.FC = () => {
                     type="button"
                     onClick={() => setFormSoldByScoop(!formSoldByScoop)}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      formSoldByScoop ? 'bg-amber-500' : 'bg-gym-border'
+                      formSoldByScoop ? 'bg-crimson-500' : 'bg-gym-border'
                     }`}
                   >
                     <span
                       className={`pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${
-                        formSoldByScoop ? 'translate-x-5 bg-black' : 'translate-x-0 bg-gray-400'
+                        formSoldByScoop ? 'translate-x-5 bg-white' : 'translate-x-0 bg-gray-400'
                       }`}
                     />
                   </button>
@@ -1036,7 +1036,7 @@ export const ProductsCatalog: React.FC = () => {
                           placeholder="35"
                           min="1"
                           required={formSoldByScoop}
-                          className="w-full pl-7 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                          className="w-full pl-7 pr-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono font-bold focus:outline-none focus:border-crimson-400"
                         />
                       </div>
                     </div>
@@ -1050,7 +1050,7 @@ export const ProductsCatalog: React.FC = () => {
                         onChange={(e) => setFormScoopsPerContainer(Number(e.target.value))}
                         placeholder="30"
                         min="1"
-                        className="w-full px-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-amber-400"
+                        className="w-full px-3 py-2 bg-gym-card rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-crimson-400"
                       />
                     </div>
                   </div>
@@ -1088,7 +1088,7 @@ export const ProductsCatalog: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs shadow-glow-gold transition-all cursor-pointer"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-extrabold text-xs shadow-glow-crimson transition-all cursor-pointer"
                   >
                     {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
                   </button>

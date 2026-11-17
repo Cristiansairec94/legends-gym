@@ -77,7 +77,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-gym-border flex items-center justify-between bg-gym-surface/40">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <Fingerprint className="w-5 h-5" />
             </div>
             <div>
@@ -107,7 +107,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
               <span>•</span>
               <span>Doc: <strong className="text-gray-300">{client.documentId}</strong></span>
               <span>•</span>
-              <span className="text-amber-400 font-semibold">{client.membership.planName}</span>
+              <span className="text-crimson-400 font-semibold">{client.membership.planName}</span>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
                         onClick={() => setFingerSelected(f)}
                         className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
                           fingerSelected === f
-                            ? 'bg-amber-500/20 text-amber-400 border-amber-500 shadow-sm'
+                            ? 'bg-crimson-500/20 text-crimson-400 border-crimson-500 shadow-sm'
                             : 'bg-gym-surface text-gray-300 border-gym-border hover:border-gym-border/80'
                         }`}
                       >
@@ -149,12 +149,12 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
                       step > s
                         ? 'bg-emerald-500 text-black'
                         : step === s
-                        ? 'bg-amber-500 text-black ring-4 ring-amber-500/20'
+                        ? 'bg-crimson-500 text-white ring-4 ring-crimson-500/20'
                         : 'bg-gym-surface text-gym-muted border border-gym-border'
                     }`}>
                       {step > s ? '✓' : s}
                     </div>
-                    <span className={`text-xs ${step === s ? 'text-amber-400 font-bold' : 'text-gym-muted'}`}>
+                    <span className={`text-xs ${step === s ? 'text-crimson-400 font-bold' : 'text-gym-muted'}`}>
                       {s === 1 ? '1ra Lectura' : s === 2 ? '2da Lectura' : 'Verificación'}
                     </span>
                   </div>
@@ -167,17 +167,17 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
                   onClick={handleCaptureStep}
                   className={`w-36 h-36 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 relative border-2 ${
                     isReading
-                      ? 'bg-amber-500/10 border-amber-400 shadow-glow-gold scale-105'
-                      : 'bg-gym-surface/80 border-gym-border hover:border-amber-400 hover:shadow-glow-gold/30'
+                      ? 'bg-crimson-500/10 border-crimson-400 shadow-glow-crimson scale-105'
+                      : 'bg-gym-surface/80 border-gym-border hover:border-crimson-400 hover:shadow-glow-crimson/30'
                   }`}
                 >
                   {isReading && (
-                    <div className="absolute inset-0 rounded-full border border-amber-400/40 scanner-ring" />
+                    <div className="absolute inset-0 rounded-full border border-crimson-400/40 scanner-ring" />
                   )}
                   {isReading && (
-                    <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_10px_#FFFFFF] animate-scan-line z-20" />
+                    <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-crimson-200 to-transparent shadow-[0_0_12px_#FF4757] animate-scan-line z-20" />
                   )}
-                  <Fingerprint className={`w-16 h-16 ${isReading ? 'text-amber-400 animate-pulse' : 'text-gym-muted hover:text-amber-400'}`} />
+                  <Fingerprint className={`w-16 h-16 ${isReading ? 'text-crimson-400 animate-pulse' : 'text-gym-muted hover:text-crimson-400'}`} />
                 </div>
 
                 <div className="mt-4 text-center">
@@ -217,7 +217,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
               <div className="flex gap-2 justify-center pt-2">
                 <button
                   onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm shadow-glow-gold transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-bold text-sm shadow-glow-crimson transition-all"
                 >
                   Finalizar y Cerrar
                 </button>

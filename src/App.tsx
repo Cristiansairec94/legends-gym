@@ -58,7 +58,7 @@ class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, ModuleErro
           <button
             type="button"
             onClick={() => this.setState({ hasError: false, errorMessage: '' })}
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold transition-colors"
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-extrabold transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reintentar
@@ -163,13 +163,13 @@ const MainLayout: React.FC = () => {
         <Sidebar activeTab={effectiveTab} setActiveTab={handleSafeSetActiveTab} />
 
         {/* Dynamic Main Workspace View */}
-        <main className={`flex-1 ${
+        <main className={`flex-1 relative ${
           hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
             ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col min-h-0 h-[calc(100vh-61px)]' 
             : hasTabAccess && (effectiveTab === 'incomes' || effectiveTab === 'expenses')
             ? 'overflow-y-auto p-3 sm:p-4 lg:p-5'
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
-        } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
+        } bg-concrete-carbon`}>
           <div className={
             hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
               ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto'
@@ -178,8 +178,8 @@ const MainLayout: React.FC = () => {
               : 'max-w-7xl mx-auto'
           }>
             {!hasTabAccess ? (
-              <div className="p-8 sm:p-12 bg-gym-card rounded-2xl border border-amber-500/30 text-center max-w-lg mx-auto my-12 shadow-2xl">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center mx-auto mb-4 text-amber-400">
+              <div className="p-8 sm:p-12 bg-gym-card rounded-2xl border border-crimson-500/30 text-center max-w-lg mx-auto my-12 shadow-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-crimson-500/15 border border-crimson-500/40 flex items-center justify-center mx-auto mb-4 text-crimson-400">
                   <Lock className="w-7 h-7" />
                 </div>
                 <h2 className="text-lg font-black text-white uppercase tracking-wide">
@@ -218,7 +218,7 @@ const MainLayout: React.FC = () => {
                       <p className="text-xs text-gym-muted mt-1">Configuración del motor de datos offline y respaldos en la nube.</p>
                       <button 
                         onClick={() => setIsSyncModalOpen(true)}
-                        className="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-xl"
+                        className="mt-4 px-4 py-2 bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-bold rounded-xl"
                       >
                         Abrir Centro de Sincronización y Backup
                       </button>

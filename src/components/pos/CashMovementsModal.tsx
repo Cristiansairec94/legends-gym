@@ -39,7 +39,7 @@ export const CashMovementsModal: React.FC<CashMovementsModalProps> = ({ onClose 
       <div className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-md overflow-hidden shadow-2xl relative">
         <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40">
           <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-amber-400" />
+            <DollarSign className="w-5 h-5 text-crimson-400" />
             <h3 className="font-bold text-base text-white">Movimientos de Caja</h3>
           </div>
           <button onClick={onClose} className="text-gym-muted hover:text-white">
@@ -84,7 +84,7 @@ export const CashMovementsModal: React.FC<CashMovementsModalProps> = ({ onClose 
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+              className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-base font-mono font-bold text-white focus:outline-none focus:border-crimson-400"
             />
           </div>
 
@@ -96,7 +96,7 @@ export const CashMovementsModal: React.FC<CashMovementsModalProps> = ({ onClose 
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
               placeholder="Ej. Compra de agua, hielo, insumos de limpieza..."
-              className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400"
+              className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-crimson-400"
             />
           </div>
 
@@ -110,7 +110,7 @@ export const CashMovementsModal: React.FC<CashMovementsModalProps> = ({ onClose 
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold"
+              className="px-6 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson"
             >
               Registrar Movimiento
             </button>

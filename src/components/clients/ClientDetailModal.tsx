@@ -40,9 +40,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
       <div className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-2xl overflow-hidden shadow-2xl relative my-8">
         
         {/* Header Cover */}
-        <div className="h-28 bg-gradient-to-r from-amber-600/30 via-gym-surface to-gym-card p-4 relative border-b border-gym-border flex items-start justify-between">
+        <div className="h-28 bg-gradient-to-r from-crimson-600/30 via-gym-surface to-gym-card p-4 relative border-b border-gym-border flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase font-extrabold px-2 py-0.5 rounded bg-black/50 text-amber-400 border border-amber-500/30">
+            <span className="text-xs uppercase font-extrabold px-2 py-0.5 rounded bg-black/50 text-crimson-400 border border-crimson-500/30">
               Expediente de Socio
             </span>
             <span className="text-xs font-mono text-gray-300 bg-black/40 px-2 py-0.5 rounded">
@@ -94,7 +94,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               )}
               <button
                 onClick={onRenewMembership}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 shadow-glow-gold transition-all"
+                className="px-3.5 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-bold text-xs flex items-center gap-1.5 shadow-glow-crimson transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Renovar Cuota</span>
@@ -167,7 +167,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               {!client.biometricRegistered && onEnrollBiometric && (
                 <button
                   onClick={onEnrollBiometric}
-                  className="mt-3 w-full py-2 bg-gym-surface hover:bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  className="mt-3 w-full py-2 bg-gym-surface hover:bg-crimson-500/20 text-crimson-400 border border-crimson-500/40 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Fingerprint className="w-4 h-4" />
                   <span>Enrolar Huella Ahora</span>
@@ -186,9 +186,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
             </div>
 
             <div className="p-3 rounded-xl bg-gym-surface/40 border border-gym-border text-center">
-              <ShoppingBag className="w-4 h-4 mx-auto text-amber-400 mb-1" />
+              <ShoppingBag className="w-4 h-4 mx-auto text-crimson-400 mb-1" />
               <span className="text-xs text-gym-muted block">Gasto en Punto Venta</span>
-              <span className="text-lg font-black text-amber-400">${client.totalSpentInStore}</span>
+              <span className="text-lg font-black text-crimson-400">${client.totalSpentInStore}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-gym-surface/40 border border-gym-border text-center">
@@ -228,7 +228,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
 
             {client.medicalNotes && (
               <div className="p-3 rounded-lg bg-gym-surface/20 border border-gym-border text-xs text-gym-muted">
-                <span className="font-bold text-amber-400 block mb-1">Notas Médicas & Entrenamiento:</span>
+                <span className="font-bold text-crimson-400 block mb-1">Notas Médicas & Entrenamiento:</span>
                 <p>{client.medicalNotes}</p>
               </div>
             )}

@@ -24,14 +24,14 @@ export const RolesManager: React.FC = () => {
   const activeRoleDef = roles.find(r => r.id === selectedRole) || roles[0];
 
   const permissionLabels: { key: keyof RolePermissions; label: string; desc: string; icon: React.ReactNode }[] = [
-    { key: 'accessTurnstile', label: 'Control de Acceso Biométrico', desc: 'Permite operar el terminal de huella dactilar de entrada', icon: <Fingerprint className="w-4 h-4 text-amber-400" /> },
+    { key: 'accessTurnstile', label: 'Control de Acceso Biométrico', desc: 'Permite operar el terminal de huella dactilar de entrada', icon: <Fingerprint className="w-4 h-4 text-crimson-400" /> },
     { key: 'manageClients', label: 'Gestión de Cartera de Clientes', desc: 'Consultar expedientes, dar de alta socios y ver fichas médicas', icon: <Users className="w-4 h-4 text-blue-400" /> },
     { key: 'enrollBiometrics', label: 'Enrolamiento de Huellas Dactilares', desc: 'Capturar y registrar muestras biométricas de socios', icon: <Fingerprint className="w-4 h-4 text-emerald-400" /> },
-    { key: 'posSales', label: 'Punto de Venta (POS) Suplementos', desc: 'Vender productos, cobrar en mostrador y emitir tickets térmicos', icon: <ShoppingBag className="w-4 h-4 text-amber-400" /> },
+    { key: 'posSales', label: 'Punto de Venta (POS) Suplementos', desc: 'Vender productos, cobrar en mostrador y emitir tickets térmicos', icon: <ShoppingBag className="w-4 h-4 text-crimson-400" /> },
     { key: 'manageInventory', label: 'Control y Ajuste de Inventario', desc: 'Modificar existencias, dar de alta suplementos y costos', icon: <Sliders className="w-4 h-4 text-purple-400" /> },
     { key: 'cashRegister', label: 'Caja & Arqueo de Turno', desc: 'Apertura y cierre de caja (Corte X y Z), cuadre de efectivo', icon: <Wallet className="w-4 h-4 text-emerald-400" /> },
     { key: 'viewReports', label: 'Reportes Ejecutivos & Afluencia', desc: 'Consultar métricas de ingresos y horas pico del gimnasio', icon: <Activity className="w-4 h-4 text-blue-400" /> },
-    { key: 'manageEmployees', label: 'Gestión de Empleados (Personal)', desc: 'Administrar staff, sueldos, credenciales y altas/bajas', icon: <UserCheck className="w-4 h-4 text-amber-400" /> },
+    { key: 'manageEmployees', label: 'Gestión de Empleados (Personal)', desc: 'Administrar staff, sueldos, credenciales y altas/bajas', icon: <UserCheck className="w-4 h-4 text-crimson-400" /> },
     { key: 'manageSettings', label: 'Configuración y Catálogos', desc: 'Modificar precios de planes, datos fiscales y tolerancias', icon: <ShieldCheck className="w-4 h-4 text-red-400" /> },
   ];
 
@@ -50,7 +50,7 @@ export const RolesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -89,7 +89,7 @@ export const RolesManager: React.FC = () => {
               onClick={() => setSelectedRole(r.id)}
               className={`p-5 rounded-2xl border cursor-pointer transition-all ${
                 isSelected
-                  ? 'bg-amber-500/10 border-amber-400 shadow-glow-gold'
+                  ? 'bg-crimson-500/10 border-crimson-400 shadow-glow-crimson'
                   : 'bg-gym-card border-gym-border hover:border-gym-border/80'
               }`}
             >
@@ -117,7 +117,7 @@ export const RolesManager: React.FC = () => {
                       e.stopPropagation();
                       setCurrentRole(r.id);
                     }}
-                    className="text-amber-400 hover:underline font-bold text-xs"
+                    className="text-crimson-400 hover:underline font-bold text-xs"
                   >
                     Activar este rol
                   </button>
@@ -139,10 +139,10 @@ export const RolesManager: React.FC = () => {
             <div className="flex items-center gap-2.5 flex-wrap">
               <h3 className="font-bold text-base text-white flex items-center gap-2">
                 <span>Matriz de Permisos para:</span>
-                <span className="text-amber-400">{activeRoleDef.name}</span>
+                <span className="text-crimson-400">{activeRoleDef.name}</span>
               </h3>
               {activeRoleDef.id === 'admin' && (
-                <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                <span className="text-[10px] bg-crimson-500/20 text-crimson-400 border border-crimson-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
                   <Lock className="w-3 h-3" /> Protegido / No modificable
                 </span>
               )}
@@ -161,8 +161,8 @@ export const RolesManager: React.FC = () => {
 
         {/* Admin Security Information Banner */}
         {activeRoleDef.id === 'admin' && (
-          <div className="mb-5 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start sm:items-center gap-3 text-xs text-amber-300">
-            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+          <div className="mb-5 p-4 rounded-xl bg-crimson-500/10 border border-crimson-500/30 flex items-start sm:items-center gap-3 text-xs text-crimson-300">
+            <div className="p-2 rounded-lg bg-crimson-500/20 text-crimson-400 shrink-0">
               <Lock className="w-4 h-4" />
             </div>
             <div className="leading-relaxed">
@@ -197,24 +197,24 @@ export const RolesManager: React.FC = () => {
                     className="flex items-center gap-2 select-none cursor-not-allowed shrink-0"
                     title="Permiso permanente e inmodificable para el Administrador General"
                   >
-                    <span className="text-[11px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
-                      <Lock className="w-3 h-3 text-amber-400" />
+                    <span className="text-[11px] font-bold text-crimson-400 bg-crimson-500/15 border border-crimson-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                      <Lock className="w-3 h-3 text-crimson-400" />
                       <span>Fijo / Total</span>
                     </span>
-                    <div className="w-11 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 p-0.5 relative flex items-center opacity-60">
-                      <div className="w-4 h-4 rounded-full bg-amber-400/90 shadow-sm translate-x-5" />
+                    <div className="w-11 h-6 rounded-full bg-crimson-500/20 border border-crimson-500/30 p-0.5 relative flex items-center opacity-60">
+                      <div className="w-4 h-4 rounded-full bg-crimson-400/90 shadow-sm translate-x-5" />
                     </div>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleTogglePermission(perm.key)}
                     className={`w-12 h-6 rounded-full transition-colors p-1 relative flex items-center shrink-0 cursor-pointer ${
-                      hasPermission ? 'bg-amber-500' : 'bg-gym-surface border border-gym-border'
+                      hasPermission ? 'bg-crimson-500' : 'bg-gym-surface border border-gym-border'
                     }`}
                     title="Alternar permiso"
                   >
-                    <div className={`w-4 h-4 rounded-full bg-black shadow-md transition-transform ${
-                      hasPermission ? 'translate-x-6' : 'translate-x-0'
+                    <div className={`w-4 h-4 rounded-full shadow-md transition-transform ${
+                      hasPermission ? 'translate-x-6 bg-white' : 'translate-x-0 bg-zinc-400'
                     }`} />
                   </button>
                 )}
@@ -224,7 +224,7 @@ export const RolesManager: React.FC = () => {
         </div>
 
         {activeRoleDef.id === 'admin' && (
-          <div className="mt-4 pt-3 border-t border-gym-border/60 flex items-center gap-2 text-xs text-amber-400/80">
+          <div className="mt-4 pt-3 border-t border-gym-border/60 flex items-center gap-2 text-xs text-crimson-400/80">
             <Lock className="w-3.5 h-3.5 shrink-0" />
             <span>El Administrador General cuenta con todos los permisos habilitados por diseño para garantizar la supervisión total del gimnasio.</span>
           </div>

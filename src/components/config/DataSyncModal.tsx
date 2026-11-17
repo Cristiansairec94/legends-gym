@@ -71,8 +71,8 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-gym-border pb-4 mb-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-              <Database className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded-xl bg-crimson-500/20 border border-crimson-500/40 flex items-center justify-center">
+              <Database className="w-5 h-5 text-crimson-400" />
             </div>
             <div>
               <h3 className="font-black text-lg text-white">Sincronización & Base de Datos</h3>
@@ -126,7 +126,7 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
               className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
                 syncState.isOnline
                   ? 'bg-gym-surface text-gray-300 border-gym-border hover:bg-gym-card'
-                  : 'bg-amber-500 text-black border-amber-400'
+                  : 'bg-crimson-500 text-white border-crimson-400'
               }`}
             >
               {syncState.isOnline ? 'Simular Offline' : 'Restablecer Online'}
@@ -144,7 +144,7 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
 
             <div className="p-3 rounded-xl bg-gym-surface/60 border border-gym-border">
               <span className="text-[10px] text-gym-muted uppercase font-bold block">Almacenamiento Local</span>
-              <span className="font-mono text-amber-400 font-semibold block mt-1">
+              <span className="font-mono text-crimson-400 font-semibold block mt-1">
                 ~{storageUsageKb} KB en disco
               </span>
             </div>
@@ -169,7 +169,7 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
             <p className="text-[11px] text-gray-300 leading-relaxed">
               Abre este enlace en tu otra computadora e inicia sesión con tu mismo perfil (ej. Administrador Roberto):
             </p>
-            <div className="p-2 rounded-lg bg-black/60 border border-white/15 font-mono text-xs text-amber-300 select-all break-all flex items-center justify-between gap-2">
+            <div className="p-2 rounded-lg bg-black/60 border border-white/15 font-mono text-xs text-crimson-300 select-all break-all flex items-center justify-between gap-2">
               <span>https://legends-gym-gold.vercel.app</span>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold shrink-0">Tiempo Real</span>
             </div>
@@ -182,7 +182,7 @@ export const DataSyncModal: React.FC<DataSyncModalProps> = ({ isOpen, onClose })
           <button
             onClick={() => forceSync()}
             disabled={syncState.isSyncing}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs shadow-glow-gold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-black text-xs shadow-glow-crimson flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
           >
             <RefreshCw className={`w-4 h-4 ${syncState.isSyncing ? 'animate-spin' : ''}`} />
             <span>{syncState.isSyncing ? 'Sincronizando registros...' : 'Forzar Sincronización Ahora'}</span>

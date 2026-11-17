@@ -91,7 +91,7 @@ export const SystemCatalogs: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <SlidersHorizontal className="w-5 h-5" />
             </div>
             <div>
@@ -124,7 +124,7 @@ export const SystemCatalogs: React.FC = () => {
           onClick={() => setActiveTab('plans')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'plans'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
+              ? 'bg-crimson-500 text-white shadow-glow-crimson'
               : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
           }`}
         >
@@ -134,7 +134,7 @@ export const SystemCatalogs: React.FC = () => {
           onClick={() => setActiveTab('gym')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'gym'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
+              ? 'bg-crimson-500 text-white shadow-glow-crimson'
               : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
           }`}
         >
@@ -144,7 +144,7 @@ export const SystemCatalogs: React.FC = () => {
           onClick={() => setActiveTab('turnstile')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'turnstile'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
+              ? 'bg-crimson-500 text-white shadow-glow-crimson'
               : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
           }`}
         >
@@ -162,7 +162,7 @@ export const SystemCatalogs: React.FC = () => {
             {currentRole === 'admin' && (
               <button
                 onClick={() => setShowAddPlanModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1.5 transition-all"
+                className="px-3.5 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson flex items-center gap-1.5 transition-all"
               >
                 <Plus className="w-4 h-4 stroke-[3]" />
                 <span>Agregar Nuevo Plan</span>
@@ -174,7 +174,7 @@ export const SystemCatalogs: React.FC = () => {
             {catalogPlans.map((plan) => (
               <div 
                 key={plan.id}
-                className="bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md flex flex-col justify-between hover:border-amber-400/40 transition-all"
+                className="bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md flex flex-col justify-between hover:border-crimson-400/40 transition-all"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
@@ -184,7 +184,7 @@ export const SystemCatalogs: React.FC = () => {
                       </span>
                       <h3 className="font-black text-lg text-white mt-0.5">{plan.name}</h3>
                     </div>
-                    <span className="text-xl font-mono font-black text-amber-400">
+                    <span className="text-xl font-mono font-black text-crimson-400">
                       ${plan.price.toLocaleString()} MXN
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export const SystemCatalogs: React.FC = () => {
         <form onSubmit={handleSaveGymSettings} className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-md space-y-5">
           <div className="border-b border-gym-border pb-3">
             <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-amber-400" />
+              <Building2 className="w-4 h-4 text-crimson-400" />
               <span>Identidad y Datos Fiscales para Recibos de Venta</span>
             </h3>
             <p className="text-xs text-gym-muted mt-0.5">
@@ -259,7 +259,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="text"
                 value={gymName}
                 onChange={(e) => setGymName(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
 
@@ -269,7 +269,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="text"
                 value={legalName}
                 onChange={(e) => setLegalName(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
 
@@ -279,7 +279,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="text"
                 value={rfc}
                 onChange={(e) => setRfc(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
 
@@ -289,7 +289,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
 
@@ -299,7 +299,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
 
@@ -309,7 +309,7 @@ export const SystemCatalogs: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
               />
             </div>
           </div>
@@ -317,7 +317,7 @@ export const SystemCatalogs: React.FC = () => {
           <div className="pt-3 border-t border-gym-border flex justify-end">
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold flex items-center gap-2 transition-all"
+              className="px-6 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-sm shadow-glow-crimson flex items-center gap-2 transition-all"
             >
               <Save className="w-4 h-4" />
               <span>Guardar Datos del Gimnasio</span>
@@ -331,7 +331,7 @@ export const SystemCatalogs: React.FC = () => {
         <form onSubmit={handleSaveGymSettings} className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-md space-y-5">
           <div className="border-b border-gym-border pb-3">
             <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-400" />
+              <Clock className="w-4 h-4 text-crimson-400" />
               <span>Tolerancia de Membresías & Control Biométrico</span>
             </h3>
             <p className="text-xs text-gym-muted mt-0.5">
@@ -354,9 +354,9 @@ export const SystemCatalogs: React.FC = () => {
                   max="12"
                   value={turnstileTimeout}
                   onChange={(e) => setTurnstileTimeout(Number(e.target.value))}
-                  className="flex-1 accent-amber-500"
+                  className="flex-1 accent-crimson-500"
                 />
-                <span className="text-base font-mono font-black text-amber-400 w-12 text-right">
+                <span className="text-base font-mono font-black text-crimson-400 w-12 text-right">
                   {turnstileTimeout} seg
                 </span>
               </div>
@@ -376,9 +376,9 @@ export const SystemCatalogs: React.FC = () => {
                   max="7"
                   value={gracePeriod}
                   onChange={(e) => setGracePeriod(Number(e.target.value))}
-                  className="flex-1 accent-amber-500"
+                  className="flex-1 accent-crimson-500"
                 />
-                <span className="text-base font-mono font-black text-amber-400 w-12 text-right">
+                <span className="text-base font-mono font-black text-crimson-400 w-12 text-right">
                   {gracePeriod} días
                 </span>
               </div>
@@ -388,7 +388,7 @@ export const SystemCatalogs: React.FC = () => {
           <div className="pt-3 border-t border-gym-border flex justify-end">
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold flex items-center gap-2 transition-all"
+              className="px-6 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-sm shadow-glow-crimson flex items-center gap-2 transition-all"
             >
               <Save className="w-4 h-4" />
               <span>Guardar Parámetros Biométricos</span>
@@ -417,7 +417,7 @@ export const SystemCatalogs: React.FC = () => {
                   value={planName}
                   onChange={(e) => setPlanName(e.target.value)}
                   placeholder="Ej. Plan Semestral Cross Training"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
@@ -427,7 +427,7 @@ export const SystemCatalogs: React.FC = () => {
                   <select
                     value={planType}
                     onChange={(e) => setPlanType(e.target.value as MembershipPlanType)}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   >
                     <option value="daily">Diario</option>
                     <option value="monthly">Mensual</option>
@@ -443,7 +443,7 @@ export const SystemCatalogs: React.FC = () => {
                     type="number"
                     value={planDays}
                     onChange={(e) => setPlanDays(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   />
                 </div>
               </div>
@@ -454,7 +454,7 @@ export const SystemCatalogs: React.FC = () => {
                   type="number"
                   value={planPrice}
                   onChange={(e) => setPlanPrice(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
@@ -467,7 +467,7 @@ export const SystemCatalogs: React.FC = () => {
                   onChange={(e) => setPlanBenefits(e.target.value)}
                   rows={2}
                   placeholder="Área de pesas, Asesoría nutricional, Acceso biométrico..."
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400 resize-none"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-crimson-400 resize-none"
                 />
               </div>
 
@@ -481,7 +481,7 @@ export const SystemCatalogs: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold"
+                  className="px-6 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson"
                 >
                   Crear Plan
                 </button>

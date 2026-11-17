@@ -46,18 +46,18 @@ export const SupervisorPinModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-md bg-[#0f0f13] border border-amber-500/40 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden">
+      <div className="w-full max-w-md bg-[#0f0f13] border border-crimson-500/40 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-amber-500/15 via-red-500/10 to-transparent border-b border-white/10 flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-crimson-500/15 via-red-500/10 to-transparent border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-crimson-500/15 border border-crimson-500/40 flex items-center justify-center text-crimson-400">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-black uppercase tracking-wider text-white">
                 Autorización de Supervisor
               </h3>
-              <p className="text-[11px] text-amber-400/90 font-semibold">
+              <p className="text-[11px] text-crimson-400/90 font-semibold">
                 Acción Crítica Protegida por PIN
               </p>
             </div>
@@ -73,8 +73,8 @@ export const SupervisorPinModal: React.FC = () => {
 
         {/* Body */}
         <form onSubmit={handleConfirm} className="p-6 space-y-4">
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">
+          <div className="p-3.5 rounded-2xl bg-crimson-500/10 border border-crimson-500/25">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-crimson-400 mb-1">
               Operación solicitada:
             </p>
             <p className="text-xs font-bold text-white leading-relaxed">
@@ -87,7 +87,7 @@ export const SupervisorPinModal: React.FC = () => {
               PIN o Contraseña de Administrador / Gerente
             </label>
             <div className="relative">
-              <KeyRound className="w-4 h-4 text-amber-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-4 h-4 text-crimson-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 value={pinOrPass}
@@ -99,7 +99,7 @@ export const SupervisorPinModal: React.FC = () => {
                 onCopy={(e) => e.preventDefault()}
                 placeholder="Ingresa PIN de Supervisor (ej. 1234)"
                 autoFocus
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm font-mono tracking-widest focus:outline-none focus:border-amber-500"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm font-mono tracking-widest focus:outline-none focus:border-crimson-500"
               />
             </div>
           </div>
@@ -112,7 +112,7 @@ export const SupervisorPinModal: React.FC = () => {
                   key={digit}
                   type="button"
                   onClick={() => appendDigit(digit)}
-                  className="py-2 rounded-lg bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 text-white font-black text-sm transition active:scale-95"
+                  className="py-2 rounded-lg bg-white/5 hover:bg-crimson-500/20 hover:text-crimson-400 border border-white/5 text-white font-black text-sm transition active:scale-95"
                 >
                   {digit}
                 </button>
@@ -127,7 +127,7 @@ export const SupervisorPinModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => appendDigit('0')}
-                className="py-2 rounded-lg bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 border border-white/5 text-white font-black text-sm transition active:scale-95"
+                className="py-2 rounded-lg bg-white/5 hover:bg-crimson-500/20 hover:text-crimson-400 border border-white/5 text-white font-black text-sm transition active:scale-95"
               >
                 0
               </button>
@@ -158,7 +158,7 @@ export const SupervisorPinModal: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 transition"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg shadow-crimson-500/20 transition"
             >
               <CheckCircle2 className="w-4 h-4" />
               Autorizar Acción
@@ -166,7 +166,7 @@ export const SupervisorPinModal: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 pt-1">
-            <Lock className="w-3 h-3 text-amber-500/70" />
+            <Lock className="w-3 h-3 text-crimson-500/70" />
             <span>Esta autorización quedará registrada en la Bitácora de Auditoría</span>
           </div>
         </form>

@@ -269,7 +269,7 @@ export const ExpensesManager: React.FC = () => {
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gym-muted uppercase">Egresos del Mes</span>
-            <DollarSign className="w-4 h-4 text-amber-400" />
+            <DollarSign className="w-4 h-4 text-crimson-400" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-white">
@@ -577,7 +577,7 @@ export const ExpensesManager: React.FC = () => {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {periodFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 font-bold">
+                <span className="inline-flex items-center gap-1 text-crimson-400 bg-crimson-500/10 px-2 py-0.5 rounded-md border border-crimson-500/20 font-bold">
                   {periodLabel}
                   <button onClick={resetPeriodToAll} className="hover:text-white ml-0.5">×</button>
                 </span>
@@ -673,7 +673,7 @@ export const ExpensesManager: React.FC = () => {
                           </span>
                         </div>
                         {expense.paidFromCashRegister && (
-                          <span className="text-[11px] text-amber-400 block font-semibold mt-0.5">
+                          <span className="text-[11px] text-crimson-400 block font-semibold mt-0.5">
                             (Descontado de Caja)
                           </span>
                         )}

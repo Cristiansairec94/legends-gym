@@ -125,14 +125,14 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
                   onClick={() => setSelectedPlan(p.type)}
                   className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                     selectedPlan === p.type
-                      ? 'bg-amber-500/15 border-amber-400 shadow-glow-gold/40'
+                      ? 'bg-crimson-500/15 border-crimson-400 shadow-glow-crimson/40'
                       : 'bg-gym-surface/60 border-gym-border hover:border-gym-border/80'
                   }`}
                 >
                   <div>
                     <span className="text-xs font-bold text-white block">{p.name}</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-amber-400">
+                  <span className="text-sm font-mono font-black text-crimson-400">
                     ${p.price} MXN
                   </span>
                 </div>
@@ -195,7 +195,7 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
                   value={amountGiven}
                   onChange={(e) => setAmountGiven(e.target.value)}
                   placeholder={`$${currentPlan.price}`}
-                  className="w-32 px-2 py-1 bg-gym-card rounded-lg border border-gym-border text-sm font-mono text-white focus:outline-none focus:border-amber-400"
+                  className="w-32 px-2 py-1 bg-gym-card rounded-lg border border-gym-border text-sm font-mono text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
               <div className="text-right">

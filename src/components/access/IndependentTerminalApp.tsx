@@ -663,12 +663,12 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             className="px-3.5 py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
             title="Cambiar imagen de fondo (Mancuernas / Estudio / Neón)"
           >
-            <Image className="w-4 h-4 text-amber-400" />
+            <Image className="w-4 h-4 text-crimson-400" />
             <span className="hidden sm:inline">CAMBIAR FONDO</span>
           </button>
           <button
             onClick={toggleFullScreen}
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-amber-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl shadow-crimson-500/40 transition-all cursor-pointer transform hover:scale-105 active:scale-95 select-none"
             title="Activar Pantalla Completa"
           >
             <Maximize2 className="w-4 h-4" />
@@ -693,7 +693,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         {/* Transparent dark vignette so neon sign and photo are 100% visible */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
         {/* Spotlight cálido ámbar/dorado centrado exactamente en el logo GYM LEGENDS en la pared para que resalte con máxima fuerza */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(245,158,11,0.22)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(225,29,56,0.22)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
         {/* Degradado oscuro inferior para que las tarjetas de opciones resalten con nitidez y contraste profesional */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
         {/* Viñeta sutil superior */}
@@ -730,7 +730,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <h4 className="text-base font-black text-white">{lastVerifiedClient.name}</h4>
               <p className="text-xs text-gray-200">{lastVerifiedClient.reason}</p>
               {lastVerifiedClient.plan && (
-                <span className="text-[11px] font-mono text-amber-300 font-bold">
+                <span className="text-[11px] font-mono text-crimson-300 font-bold">
                   Plan: {lastVerifiedClient.plan}
                 </span>
               )}
@@ -758,7 +758,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 1: CLIENTE NUEVO */}
           <div 
             onClick={() => setShowNewMemberModal(true)}
-            className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_45px_rgba(245,158,11,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
+            className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-crimson-400/60 hover:border-crimson-400 transition-all duration-500 shadow-[0_0_25px_rgba(225,29,56,0.25)] hover:shadow-[0_0_45px_rgba(225,29,56,0.55)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
           >
             <img 
               src={cardClienteNuevo} 
@@ -766,23 +766,23 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
-            <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-crimson-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-crimson-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
               <span>💪</span>
               <span className="tracking-wider">Inscripción</span>
             </div>
 
-            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
-              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-crimson-400/40 transition-colors">
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-crimson-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Cliente Nuevo
               </h3>
               
               <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                <span className="text-xs font-bold text-crimson-400 group-hover:text-crimson-300 flex items-center gap-1">
                   Registrarme &rarr;
                 </span>
-                <span className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                <span className="w-8 h-8 rounded-full bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
                   +
                 </span>
               </div>
@@ -826,7 +826,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           {/* Opción 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
           <div 
             onClick={() => setShowDirectAccessModal(true)}
-            className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-amber-400/70 hover:border-amber-400 transition-all duration-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
+            className="group relative h-[300px] sm:h-[330px] lg:h-[350px] max-h-[40vh] rounded-3xl overflow-hidden border-2 border-crimson-400/70 hover:border-crimson-400 transition-all duration-500 shadow-[0_0_25px_rgba(225,29,56,0.3)] hover:shadow-[0_0_50px_rgba(225,29,56,0.6)] flex flex-col justify-between p-5 cursor-pointer transform hover:-translate-y-2 select-none"
           >
             <img 
               src={cardHuella} 
@@ -834,23 +834,23 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 brightness-95 group-hover:brightness-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20 pointer-events-none" />
-            <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-crimson-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            <div className="relative z-10 self-end px-3.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-crimson-400/80 flex items-center gap-1.5 text-white font-black text-xs uppercase tracking-wider shadow-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
               <span>👆</span>
               <span className="tracking-wider">Acceso Directo</span>
             </div>
 
-            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-amber-400/40 transition-colors">
-              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            <div className="relative z-10 p-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-crimson-400/40 transition-colors">
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider group-hover:text-crimson-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Ya Tengo Membresía
               </h3>
               
               <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                <span className="text-xs font-bold text-crimson-400 group-hover:text-crimson-300 flex items-center gap-1">
                   Validar Huella &rarr;
                 </span>
-                <span className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
+                <span className="w-8 h-8 rounded-full bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white flex items-center justify-center font-black text-base shadow-lg group-hover:scale-110 transition-transform">
                   👆
                 </span>
               </div>
@@ -870,7 +870,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* MODAL 1: REGISTRO CLIENTE NUEVO */}
       {showNewMemberModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto overflow-hidden">
+          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-crimson-500/50 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-crimson-500/15 animate-in zoom-in-95 duration-200 my-auto max-h-[95vh] overflow-y-auto overflow-hidden">
             {/* Background Fitness Dumbbell Photo */}
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
               <img 
@@ -879,13 +879,13 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-crimson-400 to-transparent shadow-[0_0_15px_#E11D38] pointer-events-none" />
             </div>
             
             {/* Header */}
             <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-crimson-500/20 border border-crimson-500/40 flex items-center justify-center text-2xl shadow-inner">
                   👤
                 </div>
                 <div>
@@ -893,7 +893,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
                       Registro de Cliente Nuevo
                     </h3>
-                    <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                    <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-crimson-500/20 text-crimson-400 border border-crimson-500/40">
                       Inscripción
                     </span>
                   </div>
@@ -916,7 +916,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               {/* 1. Nombre Completo */}
               <div>
                 <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-amber-400" />
+                  <User className="w-3.5 h-3.5 text-crimson-400" />
                   <span>Nombre Completo *</span>
                 </label>
                 <input 
@@ -925,7 +925,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
                   placeholder="Ej. Andrea García Morales"
-                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400 transition-all"
                 />
               </div>
 
@@ -933,7 +933,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <Calendar className="w-3.5 h-3.5 text-crimson-400" />
                     <span>Fecha de Cumpleaños *</span>
                   </label>
                   <input 
@@ -941,16 +941,16 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     required
                     value={newClientBirthDate}
                     onChange={(e) => handleBirthDateChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400 transition-all"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <Clock className="w-3.5 h-3.5 text-crimson-400" />
                       <span>Edad *</span>
                     </span>
-                    <span className="text-[10px] text-amber-400/90 font-medium">(Automática)</span>
+                    <span className="text-[10px] text-crimson-400/90 font-medium">(Automática)</span>
                   </label>
                   <div className="relative">
                     <input 
@@ -961,7 +961,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                       value={newClientAge}
                       onChange={(e) => handleAgeChange(e.target.value)}
                       placeholder="Ej. 25"
-                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all pr-12"
+                      className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400 transition-all pr-12"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold pointer-events-none">
                       años
@@ -974,7 +974,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-200 block mb-1 flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-amber-400" />
+                    <Mail className="w-3.5 h-3.5 text-crimson-400" />
                     <span>Correo Electrónico (Opcional)</span>
                   </label>
                   <input 
@@ -982,7 +982,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     value={newClientEmail}
                     onChange={(e) => setNewClientEmail(e.target.value)}
                     placeholder="andrea@ejemplo.com (opcional)"
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400 transition-all"
                   />
                 </div>
                 <div>
@@ -994,7 +994,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     value={newClientPhone}
                     onChange={(e) => setNewClientPhone(e.target.value)}
                     placeholder="Ej. 8888-9999"
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 focus:ring-1 focus:ring-crimson-400 transition-all"
                   />
                 </div>
               </div>
@@ -1006,7 +1006,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     <span>⚡</span>
                     <span>Mensualidad / Plan de Entrenamiento *</span>
                   </span>
-                  <span className="text-[11px] text-amber-400 font-semibold">Toca para seleccionar</span>
+                  <span className="text-[11px] text-crimson-400 font-semibold">Toca para seleccionar</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availablePlans.map((plan) => {
@@ -1017,20 +1017,20 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                         onClick={() => setNewClientPlan(plan.name)}
                         className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                           isSelected
-                            ? 'bg-amber-500/20 border-amber-400 shadow-glow-gold/40 ring-1 ring-amber-400'
+                            ? 'bg-crimson-500/20 border-crimson-400 shadow-glow-crimson/40 ring-1 ring-crimson-400'
                             : 'bg-white/10 border-white/15 hover:border-white/30 hover:bg-white/20'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="text-xs font-bold text-white leading-tight">{plan.name}</span>
                           {isSelected ? (
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 shadow-sm" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-crimson-400 shrink-0 shadow-sm" />
                           ) : (
                             <span className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0" />
                           )}
                         </div>
                         <div className="mt-2 flex items-baseline justify-between">
-                          <span className="text-sm font-black text-amber-400">
+                          <span className="text-sm font-black text-crimson-400">
                             ${plan.price.toLocaleString('es-MX')}
                           </span>
                           <span className="text-[10px] text-gray-300 font-medium">
@@ -1046,7 +1046,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               {/* 6. Opción de Pago */}
               <div>
                 <label className="text-xs font-bold text-gray-200 block mb-1.5 flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                  <CreditCard className="w-3.5 h-3.5 text-crimson-400" />
                   <span>Opción de Pago *</span>
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1055,7 +1055,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     onClick={() => setNewClientPaymentMethod('cash')}
                     className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       newClientPaymentMethod === 'cash'
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
+                        ? 'bg-gradient-to-r from-crimson-500 to-crimson-600 text-white font-black border-crimson-300 shadow-glow-crimson'
                         : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                     }`}
                   >
@@ -1067,7 +1067,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     onClick={() => setNewClientPaymentMethod('card')}
                     className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       newClientPaymentMethod === 'card'
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
+                        ? 'bg-gradient-to-r from-crimson-500 to-crimson-600 text-white font-black border-crimson-300 shadow-glow-crimson'
                         : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                     }`}
                   >
@@ -1079,7 +1079,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     onClick={() => setNewClientPaymentMethod('transfer')}
                     className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       newClientPaymentMethod === 'transfer'
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black border-amber-300 shadow-glow-gold'
+                        ? 'bg-gradient-to-r from-crimson-500 to-crimson-600 text-white font-black border-crimson-300 shadow-glow-crimson'
                         : 'bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white'
                     }`}
                   >
@@ -1098,16 +1098,16 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 className={`p-4 rounded-2xl border transition-all cursor-pointer group flex items-center justify-between gap-3 ${
                   newClientFingerprintEnrolled
                     ? 'bg-emerald-500/10 border-emerald-500/40 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                    : 'bg-amber-500/10 border-amber-500/40 hover:bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                    : 'bg-crimson-500/10 border-crimson-500/40 hover:bg-crimson-500/20 shadow-[0_0_15px_rgba(225,29,56,0.15)]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110 ${
                     newClientFingerprintEnrolled 
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                      : 'bg-crimson-500/20 text-crimson-400 border border-crimson-500/40 shadow-[0_0_15px_rgba(225,29,56,0.3)]'
                   }`}>
-                    {newClientFingerprintEnrolled ? <CheckCircle2 className="w-6 h-6 text-emerald-400" /> : <Fingerprint className="w-6 h-6 text-amber-400" />}
+                    {newClientFingerprintEnrolled ? <CheckCircle2 className="w-6 h-6 text-emerald-400" /> : <Fingerprint className="w-6 h-6 text-crimson-400" />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -1117,7 +1117,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
                         newClientFingerprintEnrolled
                           ? 'bg-emerald-500 text-white font-black shadow-glow-green'
-                          : 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                          : 'bg-crimson-500/30 text-crimson-300 border border-crimson-500/40'
                       }`}>
                         {newClientFingerprintEnrolled ? '✓ Enrolada' : 'Pendiente'}
                       </span>
@@ -1139,7 +1139,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all transform group-hover:scale-105 shrink-0 cursor-pointer ${
                     newClientFingerprintEnrolled 
                       ? 'bg-emerald-500 text-white font-black shadow-glow-green' 
-                      : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black shadow-glow-gold'
+                      : 'bg-gradient-to-r from-crimson-500 to-crimson-600 text-white font-black shadow-glow-crimson'
                   }`}
                 >
                   {newClientFingerprintEnrolled ? '✓ Ver Escáner' : '⚡ Abrir Escáner'}
@@ -1157,7 +1157,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-xs font-black text-white shadow-glow-gold uppercase tracking-wider transition-all transform hover:scale-[1.02]"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-xs font-black text-white shadow-glow-crimson uppercase tracking-wider transition-all transform hover:scale-[1.02]"
                 >
                   Guardar e Ingresar
                 </button>
@@ -1194,7 +1194,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <div className="flex items-center gap-2">
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-black">
                   <span className={`w-2 h-2 rounded-full ${
-                    biometricScanState === 'scanning' ? 'bg-amber-400 animate-ping' :
+                    biometricScanState === 'scanning' ? 'bg-crimson-400 animate-ping' :
                     biometricScanState === 'completed' ? 'bg-emerald-400' : 'bg-cyan-400 animate-ping'
                   }`} />
                   {biometricScanState === 'scanning' ? 'ESCANEANDO' :
@@ -1256,7 +1256,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   biometricScanState === 'completed'
                     ? 'bg-emerald-500/30'
                     : biometricScanState === 'scanning'
-                    ? 'bg-amber-500/30'
+                    ? 'bg-crimson-500/30'
                     : 'bg-cyan-500/20 group-hover:bg-cyan-400/35'
                 }`} />
 
@@ -1307,9 +1307,9 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   </div>
                 )}
                 {biometricScanState === 'scanning' && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                    <span className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-crimson-500/20 border border-crimson-500/40 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-crimson-400 animate-ping" />
+                    <span className="text-xs font-black text-crimson-300 uppercase tracking-wider">
                       ESCANEANDO MINUCIAS Y CRESTAS PAPILARES...
                     </span>
                   </div>
@@ -1337,7 +1337,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               </div>
               <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                 <p className="text-[10px] text-gray-400 uppercase font-semibold">Resolución</p>
-                <p className="text-xs font-black text-amber-400 mt-0.5">508 DPI Óptico</p>
+                <p className="text-xs font-black text-crimson-400 mt-0.5">508 DPI Óptico</p>
               </div>
               <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                 <p className="text-[10px] text-gray-400 uppercase font-semibold">Seguridad</p>
@@ -1354,7 +1354,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 className={`w-full py-3.5 sm:py-4 rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider shadow-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer ${
                   biometricScanState === 'completed'
                     ? 'bg-emerald-500 text-white font-black shadow-glow-green'
-                    : 'bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 text-white font-black shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+                    : 'bg-gradient-to-r from-crimson-500 via-crimson-600 to-crimson-500 hover:from-crimson-400 text-white font-black shadow-[0_0_25px_rgba(225,29,56,0.5)]'
                 }`}
               >
                 {biometricScanState === 'scanning' ? (
@@ -1456,7 +1456,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       {/* MODAL 3: YA TENGO MEMBRESÍA (ACCESO DIRECTO) */}
       {showDirectAccessModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-amber-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-amber-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="relative bg-[#0d0f17]/92 backdrop-blur-2xl border-2 border-crimson-500/50 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-crimson-500/15 animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
               <img 
                 src={modalGymBg} 
@@ -1464,11 +1464,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 className="w-full h-full object-cover object-bottom opacity-35 select-none pointer-events-none"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-[#0e1017]/85 to-[#0e1017]/90 pointer-events-none" />
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-crimson-400 to-transparent shadow-[0_0_15px_#E11D38] pointer-events-none" />
             </div>
             <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center"><Fingerprint className="w-5 h-5 text-amber-400" /></div>
+                <div className="w-10 h-10 rounded-xl bg-crimson-500/20 border border-crimson-400/60 flex items-center justify-center"><Fingerprint className="w-5 h-5 text-crimson-400" /></div>
                 <div>
                   <h3 className="text-lg font-black text-white uppercase tracking-wider">
                     Validación de Socio Activo
@@ -1552,7 +1552,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     }
                   }}
                   placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                  className="flex-1 px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="flex-1 px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400"
                 />
                 <button
                   onClick={() => {
@@ -1562,7 +1562,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                       setShowDirectAccessModal(false);
                     }
                   }}
-                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold"
+                  className="px-5 py-2.5 bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-crimson"
                 >
                   Verificar
                 </button>

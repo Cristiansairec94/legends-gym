@@ -98,7 +98,7 @@ export const LoginScreen: React.FC = () => {
             particleCount: 55,
             spread: 75,
             origin: { y: 0.6 },
-            colors: ['#F59E0B', '#10B981', '#FFFFFF', '#FBBF24'],
+            colors: ['#E11D38', '#10B981', '#FFFFFF', '#FF4757'],
           });
         } else {
           setErrorMessage(result.message || 'Credenciales incorrectas');
@@ -187,16 +187,16 @@ export const LoginScreen: React.FC = () => {
         {/* Clean cinema vignettes so the LED wall sign & treadmills stay crisp and visible */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-black/35 pointer-events-none" />
         {/* Subtle spotlight on the illuminated LEYENDS GYM wall sign */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_32%,rgba(245,158,11,0.16)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_32%,rgba(225,29,56,0.16)_0%,rgba(0,0,0,0)_60%)] pointer-events-none" />
         {/* Deep lower gradient so foreground cards stand out with high contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/45 to-transparent pointer-events-none" />
         <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/55 to-transparent pointer-events-none" />
       </div>
 
       {/* Floating Enlarged Live Terminal Clock (Top-Right) */}
-      <div className="hidden lg:flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-black/80 border border-amber-400/60 backdrop-blur-xl shadow-[0_14px_36px_rgba(0,0,0,0.9),0_0_24px_rgba(245,158,11,0.22)] absolute top-5 right-7 z-20">
-        <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-400/50 flex items-center justify-center shrink-0 shadow-[0_0_14px_rgba(245,158,11,0.25)]">
-          <Clock className="w-5 h-5 text-amber-400" />
+      <div className="hidden lg:flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-black/80 border border-crimson-400/60 backdrop-blur-xl shadow-[0_14px_36px_rgba(0,0,0,0.9),0_0_24px_rgba(225,29,56,0.22)] absolute top-5 right-7 z-20">
+        <div className="w-10 h-10 rounded-xl bg-crimson-500/15 border border-crimson-400/50 flex items-center justify-center shrink-0 shadow-[0_0_14px_rgba(225,29,56,0.25)]">
+          <Clock className="w-5 h-5 text-crimson-400" />
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xl font-black text-white font-mono tabular-nums tracking-wider leading-none drop-shadow">
@@ -218,7 +218,7 @@ export const LoginScreen: React.FC = () => {
             <div className="absolute -inset-x-10 -inset-y-3 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.42)_55%,transparent_80%)] pointer-events-none rounded-full" />
 
             {/* Obsidian & Metallic Gold Crest Medallion */}
-            <div className="relative p-[1.5px] rounded-2xl bg-gradient-to-b from-amber-300 via-amber-500/60 to-amber-500/20 shadow-[0_12px_36px_rgba(0,0,0,0.9),0_0_30px_rgba(245,158,11,0.35)] transition-transform duration-300 hover:scale-105">
+            <div className="relative p-[1.5px] rounded-2xl bg-gradient-to-b from-crimson-300 via-crimson-500/60 to-crimson-500/20 shadow-[0_12px_36px_rgba(0,0,0,0.9),0_0_30px_rgba(225,29,56,0.35)] transition-transform duration-300 hover:scale-105">
               <div className="w-16 h-16 sm:w-[70px] sm:h-[70px] rounded-[15px] bg-black flex items-center justify-center p-1.5 overflow-hidden relative">
                 <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 <img
@@ -234,18 +234,18 @@ export const LoginScreen: React.FC = () => {
               <span className="font-black text-2xl sm:text-3xl tracking-[0.18em] text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.95)]">
                 LEYENDS
               </span>
-              <span className="text-[10px] sm:text-[11px] uppercase font-black tracking-[0.18em] px-3 py-1 rounded-full bg-black/85 text-amber-400 border border-amber-400/80 shadow-[0_0_20px_rgba(245,158,11,0.35)]">
+              <span className="text-[10px] sm:text-[11px] uppercase font-black tracking-[0.18em] px-3 py-1 rounded-full bg-black/85 text-crimson-400 border border-crimson-400/80 shadow-[0_0_20px_rgba(225,29,56,0.35)]">
                 FITNESS GYM
               </span>
             </div>
 
             {/* Ornamental Gold Hairlines + Subtitle */}
             <div className="relative mt-1.5 flex items-center justify-center gap-3">
-              <span className="h-[1.5px] w-8 sm:w-14 bg-gradient-to-r from-transparent via-amber-400/70 to-amber-400" />
+              <span className="h-[1.5px] w-8 sm:w-14 bg-gradient-to-r from-transparent via-crimson-400/70 to-crimson-400" />
               <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-zinc-100 font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 Sistema Integral de Operaciones &amp; Control
               </p>
-              <span className="h-[1.5px] w-8 sm:w-14 bg-gradient-to-l from-transparent via-amber-400/70 to-amber-400" />
+              <span className="h-[1.5px] w-8 sm:w-14 bg-gradient-to-l from-transparent via-crimson-400/70 to-crimson-400" />
             </div>
           </div>
 
@@ -279,9 +279,9 @@ export const LoginScreen: React.FC = () => {
           {/* Dual Equal-Height Kiosk-Style Jet-Black Glass Cards (Amber Card + Emerald Card) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch">
             {/* LEFT CARD: Login Form (Jet-Black Glass + Crisp Glowing Amber Border) */}
-            <div className="lg:col-span-7 rounded-3xl bg-black/80 backdrop-blur-xl border-2 border-amber-400/65 hover:border-amber-400/90 transition-colors duration-300 shadow-[0_24px_70px_rgba(0,0,0,0.92),0_0_30px_rgba(245,158,11,0.22)] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+            <div className="lg:col-span-7 rounded-3xl bg-black/80 backdrop-blur-xl border-2 border-crimson-400/65 hover:border-crimson-400/90 transition-colors duration-300 shadow-[0_24px_70px_rgba(0,0,0,0.92),0_0_30px_rgba(225,29,56,0.22)] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
               {/* Subtle Inner Top Specular Highlight */}
-              <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-crimson-300/80 to-transparent pointer-events-none" />
 
               <div>
                 {/* Card Top Header Row */}
@@ -296,8 +296,8 @@ export const LoginScreen: React.FC = () => {
                   </div>
 
                   {/* Kiosk-Style Pill Badge */}
-                  <div className="shrink-0 px-3.5 py-1 rounded-full bg-black/85 border border-amber-400/80 flex items-center gap-1.5 text-white font-black text-[11px] uppercase tracking-wider shadow-lg">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="shrink-0 px-3.5 py-1 rounded-full bg-black/85 border border-crimson-400/80 flex items-center gap-1.5 text-white font-black text-[11px] uppercase tracking-wider shadow-lg">
+                    <ShieldCheck className="w-3.5 h-3.5 text-crimson-400" />
                     <span>Acceso</span>
                   </div>
                 </div>
@@ -373,8 +373,8 @@ export const LoginScreen: React.FC = () => {
                     <label className="block text-[11px] font-black uppercase tracking-wider text-zinc-200 mb-2">
                       Usuario, Correo o Cédula
                     </label>
-                    <div className="relative flex items-center h-[52px] rounded-2xl bg-zinc-950/95 hover:bg-zinc-900/95 focus-within:bg-black border border-white/15 hover:border-amber-400/50 focus-within:border-amber-400 focus-within:shadow-[0_0_20px_rgba(245,158,11,0.22)] transition-all group">
-                      <div className="ml-2.5 w-9 h-9 rounded-xl bg-white/[0.05] group-focus-within:bg-amber-500/20 border border-white/10 group-focus-within:border-amber-400/50 flex items-center justify-center text-zinc-400 group-focus-within:text-amber-400 transition-all shrink-0">
+                    <div className="relative flex items-center h-[52px] rounded-2xl bg-zinc-950/95 hover:bg-zinc-900/95 focus-within:bg-black border border-white/15 hover:border-crimson-400/50 focus-within:border-crimson-400 focus-within:shadow-[0_0_20px_rgba(225,29,56,0.22)] transition-all group">
+                      <div className="ml-2.5 w-9 h-9 rounded-xl bg-white/[0.05] group-focus-within:bg-crimson-500/20 border border-white/10 group-focus-within:border-crimson-400/50 flex items-center justify-center text-zinc-400 group-focus-within:text-crimson-400 transition-all shrink-0">
                         <User className="w-4 h-4" />
                       </div>
                       <input
@@ -416,16 +416,16 @@ export const LoginScreen: React.FC = () => {
                         onClick={() => setShowPinPad(!showPinPad)}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border ${
                           showPinPad
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-400/70 shadow-[0_0_14px_rgba(245,158,11,0.25)]'
-                            : 'bg-zinc-950/90 hover:bg-zinc-900 text-amber-400 border-amber-400/40'
+                            ? 'bg-crimson-500/20 text-crimson-300 border-crimson-400/70 shadow-[0_0_14px_rgba(225,29,56,0.25)]'
+                            : 'bg-zinc-950/90 hover:bg-zinc-900 text-crimson-400 border-crimson-400/40'
                         }`}
                       >
                         <Grid3X3 className="w-3 h-3" />
                         <span>{showPinPad ? 'Ocultar PIN' : 'Teclado PIN'}</span>
                       </button>
                     </div>
-                    <div className="relative flex items-center h-[52px] rounded-2xl bg-zinc-950/95 hover:bg-zinc-900/95 focus-within:bg-black border border-white/15 hover:border-amber-400/50 focus-within:border-amber-400 focus-within:shadow-[0_0_20px_rgba(245,158,11,0.22)] transition-all group">
-                      <div className="ml-2.5 w-9 h-9 rounded-xl bg-white/[0.05] group-focus-within:bg-amber-500/20 border border-white/10 group-focus-within:border-amber-400/50 flex items-center justify-center text-zinc-400 group-focus-within:text-amber-400 transition-all shrink-0">
+                    <div className="relative flex items-center h-[52px] rounded-2xl bg-zinc-950/95 hover:bg-zinc-900/95 focus-within:bg-black border border-white/15 hover:border-crimson-400/50 focus-within:border-crimson-400 focus-within:shadow-[0_0_20px_rgba(225,29,56,0.22)] transition-all group">
+                      <div className="ml-2.5 w-9 h-9 rounded-xl bg-white/[0.05] group-focus-within:bg-crimson-500/20 border border-white/10 group-focus-within:border-crimson-400/50 flex items-center justify-center text-zinc-400 group-focus-within:text-crimson-400 transition-all shrink-0">
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
@@ -456,7 +456,7 @@ export const LoginScreen: React.FC = () => {
 
                     {/* Caps Lock Warning */}
                     {capsLockOn && (
-                      <p className="text-[11px] text-amber-400 font-semibold mt-2 flex items-center gap-1.5">
+                      <p className="text-[11px] text-crimson-400 font-semibold mt-2 flex items-center gap-1.5">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>Bloq Mayús (Caps Lock) está activado.</span>
                       </p>
@@ -477,7 +477,7 @@ export const LoginScreen: React.FC = () => {
                             type="button"
                             onClick={() => handlePinPadDigit(digit)}
                             disabled={lockoutSeconds > 0}
-                            className="py-2.5 rounded-xl bg-zinc-900 hover:bg-amber-500/20 hover:border-amber-400/60 border border-white/10 text-sm font-black text-white transition-all active:scale-95"
+                            className="py-2.5 rounded-xl bg-zinc-900 hover:bg-crimson-500/20 hover:border-crimson-400/60 border border-white/10 text-sm font-black text-white transition-all active:scale-95"
                           >
                             {digit}
                           </button>
@@ -494,7 +494,7 @@ export const LoginScreen: React.FC = () => {
                           type="button"
                           onClick={() => handlePinPadDigit('0')}
                           disabled={lockoutSeconds > 0}
-                          className="py-2.5 rounded-xl bg-zinc-900 hover:bg-amber-500/20 hover:border-amber-400/60 border border-white/10 text-sm font-black text-white transition-all active:scale-95"
+                          className="py-2.5 rounded-xl bg-zinc-900 hover:bg-crimson-500/20 hover:border-crimson-400/60 border border-white/10 text-sm font-black text-white transition-all active:scale-95"
                         >
                           0
                         </button>
@@ -515,7 +515,7 @@ export const LoginScreen: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading || isSuccess || lockoutSeconds > 0}
-                    className="w-full h-[54px] mt-2 pl-6 pr-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:via-amber-500 hover:to-amber-500 text-black font-black text-sm uppercase tracking-wider flex items-center justify-between shadow-[0_10px_30px_rgba(245,158,11,0.4)] hover:shadow-[0_14px_40px_rgba(245,158,11,0.6)] transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed group"
+                    className="w-full h-[54px] mt-2 pl-6 pr-3 rounded-2xl bg-gradient-to-r from-crimson-500 via-crimson-500 to-crimson-600 hover:from-crimson-400 hover:via-crimson-500 hover:to-crimson-500 text-white font-black text-sm uppercase tracking-wider flex items-center justify-between shadow-[0_10px_30px_rgba(225,29,56,0.4)] hover:shadow-[0_14px_40px_rgba(225,29,56,0.6)] transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
                     {isLoading ? (
                       <div className="w-full flex items-center justify-center gap-2.5">
@@ -530,7 +530,7 @@ export const LoginScreen: React.FC = () => {
                     ) : (
                       <>
                         <span>Ingresar al Sistema</span>
-                        <span className="w-9 h-9 rounded-xl bg-black/85 text-amber-400 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                        <span className="w-9 h-9 rounded-xl bg-black/85 text-crimson-400 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                           <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                         </span>
                       </>
@@ -541,7 +541,7 @@ export const LoginScreen: React.FC = () => {
 
               {/* Clean Status Strip */}
               <div className="mt-6 pt-3.5 border-t border-white/15 flex items-center justify-between gap-2 text-[11px] text-zinc-300">
-                <span className="font-bold text-amber-400">LEYENDS GYM • Estación Central</span>
+                <span className="font-bold text-crimson-400">LEYENDS GYM • Estación Central</span>
                 <span className="inline-flex items-center gap-1.5 text-emerald-400 font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
                   Sistema en línea
@@ -590,7 +590,7 @@ export const LoginScreen: React.FC = () => {
                       emp.role === 'admin'
                         ? {
                             label: 'Administrador',
-                            color: 'bg-amber-500/20 text-amber-300 border-amber-400/45',
+                            color: 'bg-crimson-500/20 text-crimson-300 border-crimson-400/45',
                           }
                         : {
                             label: 'Recepción',

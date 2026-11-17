@@ -322,7 +322,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
 
           <button
             onClick={handlePrint}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimir Ticket Térmico</span>

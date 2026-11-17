@@ -145,7 +145,7 @@ export const IncomeHistoryView: React.FC = () => {
             <span className="text-xs font-bold text-gym-muted uppercase truncate max-w-[170px]">
               Cobrado en Efectivo
             </span>
-            <Banknote className="w-4 h-4 text-amber-400 shrink-0" />
+            <Banknote className="w-4 h-4 text-crimson-400 shrink-0" />
           </div>
           <div className="mt-2">
             <span className="text-2xl font-black text-white">
@@ -246,7 +246,7 @@ export const IncomeHistoryView: React.FC = () => {
               onClick={() => setTypeFilter('store')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
                 typeFilter === 'store'
-                  ? 'bg-amber-500 text-black'
+                  ? 'bg-crimson-500 text-white'
                   : 'text-gym-muted hover:text-white'
               }`}
             >
@@ -293,8 +293,8 @@ export const IncomeHistoryView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 text-sm">
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="font-extrabold text-white text-sm sm:text-base">Detalle de Cobros:</span>
-          <span className="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm inline-flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-amber-400" />
+          <span className="px-3 py-1 rounded-lg bg-crimson-500/15 text-crimson-300 border border-crimson-500/30 font-bold text-xs sm:text-sm inline-flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-crimson-400" />
             {periodLabel}
           </span>
           <span className="text-gym-muted text-xs sm:text-sm font-medium">
@@ -366,7 +366,7 @@ export const IncomeHistoryView: React.FC = () => {
                             Membresía
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] xl:text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] xl:text-xs font-black uppercase tracking-wider bg-crimson-500/15 text-crimson-400 border border-crimson-500/30 whitespace-nowrap">
                             <ShoppingBag className="w-3.5 h-3.5" />
                             Punto Venta
                           </span>

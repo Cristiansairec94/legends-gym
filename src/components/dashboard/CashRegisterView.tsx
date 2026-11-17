@@ -269,15 +269,15 @@ export const CashRegisterView: React.FC = () => {
   };
 
   return (
-    <div className="h-full min-h-0 relative rounded-3xl border border-white/15 bg-[#090c14] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2 sm:p-2.5 gap-2">
+    <div className="h-full min-h-0 relative rounded-3xl border border-neutral-700/60 bg-[#101113] concrete-panel overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.65)] flex flex-col p-2 sm:p-2.5 gap-2">
       {/* ===================================================================== */}
       {/* 1. TOP UNIFIED COMMAND HEADER BAR (FROSTED CRYSTAL)                   */}
       {/* ===================================================================== */}
-      <div className="relative z-20 bg-[#181f30]/75 backdrop-blur-xl rounded-2xl border border-white/25 px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.4)] shrink-0">
+      <div className="relative z-20 bg-[#1a1c1f]/90 concrete-panel backdrop-blur-xl rounded-2xl border border-neutral-700/65 px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.45)] shrink-0">
         {/* Specular Top Accent Line */}
         <div
           className={`absolute inset-x-12 top-0 h-[1px] bg-gradient-to-r from-transparent ${
-            cashSession.status === 'open' ? 'via-amber-300/75' : 'via-rose-400/75'
+            cashSession.status === 'open' ? 'via-crimson-300/75' : 'via-rose-400/75'
           } to-transparent pointer-events-none`}
         />
 
@@ -285,7 +285,7 @@ export const CashRegisterView: React.FC = () => {
           <div
             className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-lg ${
               cashSession.status === 'open'
-                ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black border-amber-200/75 shadow-[0_0_20px_rgba(245,158,11,0.4)]'
+                ? 'bg-gradient-to-br from-crimson-400 via-crimson-500 to-crimson-600 text-white border-crimson-200/75 shadow-[0_0_20px_rgba(225,29,56,0.4)]'
                 : 'bg-gradient-to-br from-rose-500 to-rose-700 text-white border-rose-300/60 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
             }`}
           >
@@ -329,10 +329,10 @@ export const CashRegisterView: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowMovementsModal(true)}
-              className="h-8.5 flex items-center gap-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/55 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-extrabold transition-all shadow-sm active:scale-95"
+              className="h-8.5 flex items-center gap-2 px-3 rounded-xl bg-crimson-500/20 hover:bg-crimson-500/30 border border-crimson-400/55 hover:border-crimson-300 text-crimson-200 hover:text-white text-xs font-extrabold transition-all shadow-sm active:scale-95"
               title="Registrar entrada de cambio o retiro/gasto menor de caja"
             >
-              <span className="w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-black text-[10px]">
+              <span className="w-4 h-4 rounded-full bg-crimson-400 text-white flex items-center justify-center font-black text-[10px]">
                 $
               </span>
               <span>Movimientos</span>
@@ -345,7 +345,7 @@ export const CashRegisterView: React.FC = () => {
             className="h-8.5 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] border border-white/25 hover:border-white/40 text-white text-xs font-extrabold transition-all active:scale-95"
             title="Imprimir tirilla térmica de Arqueo / Corte (80mm)"
           >
-            <Printer className="w-3.5 h-3.5 text-amber-300" />
+            <Printer className="w-3.5 h-3.5 text-crimson-300" />
             <span>Imprimir Corte</span>
           </button>
 
@@ -366,18 +366,18 @@ export const CashRegisterView: React.FC = () => {
       {/* ===================================================================== */}
       <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
         {/* KPI 1: Total Ingresado en Turno */}
-        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-amber-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#1a1c1f]/90 concrete-panel backdrop-blur-md border border-crimson-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <span className="text-[10px] text-amber-300 uppercase font-black tracking-wider block truncate">
+              <span className="text-[10px] text-crimson-300 uppercase font-black tracking-wider block truncate">
                 Total Ingresado en Turno
               </span>
-              <span className="text-xl sm:text-2xl font-black text-amber-400 font-mono block leading-tight drop-shadow-sm">
+              <span className="text-xl sm:text-2xl font-black text-crimson-400 font-mono block leading-tight drop-shadow-sm">
                 ${grandTotalShift.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-                <span className="text-[10px] font-bold text-amber-200/80">MXN</span>
+                <span className="text-[10px] font-bold text-crimson-200/80">MXN</span>
               </span>
             </div>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/45 flex items-center justify-center text-amber-300 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-crimson-500/20 border border-crimson-400/45 flex items-center justify-center text-crimson-300 shrink-0">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -392,7 +392,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 2: Efectivo Físico Esperado / En Caja */}
-        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-emerald-400/45 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#1a1c1f]/90 concrete-panel backdrop-blur-md border border-emerald-400/45 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-emerald-300 uppercase font-black tracking-wider block truncate">
@@ -424,7 +424,7 @@ export const CashRegisterView: React.FC = () => {
                 </span>
               </>
             ) : cashSession.leaveCashInDrawer ? (
-              <span className="text-amber-300 font-bold truncate">
+              <span className="text-crimson-300 font-bold truncate">
                 Fondo reservado próx. turno: ${(cashSession.remanentCash || 0).toFixed(2)}
               </span>
             ) : (
@@ -434,7 +434,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 3: Cobros con Tarjeta POS */}
-        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-sky-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#1a1c1f]/90 concrete-panel backdrop-blur-md border border-sky-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-sky-300 uppercase font-black tracking-wider block truncate">
@@ -460,7 +460,7 @@ export const CashRegisterView: React.FC = () => {
         </div>
 
         {/* KPI 4: Transferencias / SPEI */}
-        <div className="relative px-3.5 py-2 rounded-2xl bg-[#181f30]/75 backdrop-blur-md border border-purple-400/40 shadow-lg overflow-hidden">
+        <div className="relative px-3.5 py-2 rounded-2xl bg-[#1a1c1f]/90 concrete-panel backdrop-blur-md border border-purple-400/40 shadow-lg overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <span className="text-[10px] text-purple-300 uppercase font-black tracking-wider block truncate">
@@ -496,18 +496,18 @@ export const CashRegisterView: React.FC = () => {
         {/* ================================================================= */}
         {/* LEFT COLUMN (~53%): DESGLOSE DEL TURNO Y OPERACIONES              */}
         {/* ================================================================= */}
-        <div className="flex flex-col min-h-0 bg-[#151b2b]/88 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
+        <div className="flex flex-col min-h-0 bg-[#17191c]/92 concrete-panel backdrop-blur-xl rounded-2xl border border-neutral-700/65 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] relative overflow-hidden">
           <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
           {/* Top Navigation Tabs Inside Left Panel */}
           <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/15 shrink-0">
-            <div className="flex items-center gap-1.5 bg-[#0c101b]/90 p-1 rounded-xl border border-white/15">
+            <div className="flex items-center gap-1.5 bg-[#111214]/90 p-1 rounded-xl border border-white/15">
               <button
                 type="button"
                 onClick={() => setActiveLeftTab('breakdown')}
                 className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
                   activeLeftTab === 'breakdown'
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-sm'
+                    ? 'bg-gradient-to-r from-crimson-400 to-crimson-500 text-white shadow-sm'
                     : 'text-zinc-200 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
@@ -520,7 +520,7 @@ export const CashRegisterView: React.FC = () => {
                 onClick={() => setActiveLeftTab('operations')}
                 className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all ${
                   activeLeftTab === 'operations'
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-sm'
+                    ? 'bg-gradient-to-r from-crimson-400 to-crimson-500 text-white shadow-sm'
                     : 'text-zinc-200 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
@@ -529,8 +529,8 @@ export const CashRegisterView: React.FC = () => {
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-black ${
                     activeLeftTab === 'operations'
-                      ? 'bg-black/20 text-black'
-                      : 'bg-white/15 text-amber-300'
+                      ? 'bg-black/25 text-white'
+                      : 'bg-white/15 text-crimson-300'
                   }`}
                 >
                   {shiftSales.length}
@@ -538,8 +538,8 @@ export const CashRegisterView: React.FC = () => {
               </button>
             </div>
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold bg-[#0c101b]/85 px-2.5 py-1 rounded-xl border border-white/20 text-white">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold bg-[#111214]/85 px-2.5 py-1 rounded-xl border border-white/20 text-white">
+              <Clock className="w-3.5 h-3.5 text-crimson-400" />
               <span>Activo: {shiftDurationText}</span>
             </div>
           </div>
@@ -552,7 +552,7 @@ export const CashRegisterView: React.FC = () => {
             {activeLeftTab === 'breakdown' && (
               <>
                 {/* Compact High-Contrast Shift Metadata Bar */}
-                <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-[#0c111d]/90 border border-white/20">
+                <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-[#111214]/90 border border-white/15">
                   <div className="flex items-center gap-2 text-xs">
                     <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span className="text-zinc-300 font-semibold">Apertura:</span>
@@ -565,16 +565,16 @@ export const CashRegisterView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 text-xs">
-                    <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <User className="w-3.5 h-3.5 text-crimson-400 shrink-0" />
                     <span className="text-zinc-300 font-semibold">Responsable:</span>
-                    <span className="font-black text-amber-300">{cashSession.openedBy}</span>
+                    <span className="font-black text-crimson-300">{cashSession.openedBy}</span>
                   </div>
                 </div>
 
                 {/* Two-Column Uncrowded Breakdown (Physical Cash vs Electronic) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 flex-1 min-h-0">
                   {/* LEFT CARD: Efectivo Físico en Cajón */}
-                  <div className="rounded-xl bg-[#0c111d]/92 border border-emerald-400/35 overflow-hidden flex flex-col shadow-lg">
+                  <div className="rounded-xl bg-[#121316]/92 border border-emerald-400/35 overflow-hidden flex flex-col shadow-lg">
                     <div className="px-3 py-2 bg-emerald-500/15 border-b border-emerald-400/25 flex items-center justify-between gap-2 shrink-0">
                       <span className="text-xs font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
                         <Banknote className="w-4 h-4 text-emerald-400" />
@@ -586,12 +586,12 @@ export const CashRegisterView: React.FC = () => {
                     </div>
 
                     <div className="p-2.5 space-y-2 flex-1 flex flex-col">
-                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
                             +
                           </span>
-                          <Wallet className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                          <Wallet className="w-3.5 h-3.5 text-crimson-300 shrink-0" />
                           <span className="text-xs font-bold text-white truncate">Fondo Inicial</span>
                         </div>
                         <span className="text-sm font-mono font-black text-white shrink-0">
@@ -599,7 +599,7 @@ export const CashRegisterView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
                             +
@@ -612,12 +612,12 @@ export const CashRegisterView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-5 h-5 rounded-md bg-emerald-500/25 border border-emerald-400/50 text-emerald-300 font-mono font-black text-xs flex items-center justify-center shrink-0">
                             +
                           </span>
-                          <Dumbbell className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                          <Dumbbell className="w-3.5 h-3.5 text-crimson-300 shrink-0" />
                           <span className="text-xs font-bold text-white truncate">Membresías (Efectivo)</span>
                         </div>
                         <span className="text-sm font-mono font-black text-white shrink-0">
@@ -662,7 +662,7 @@ export const CashRegisterView: React.FC = () => {
                   </div>
 
                   {/* RIGHT CARD: Ingresos Digitales */}
-                  <div className="rounded-xl bg-[#0c111d]/92 border border-sky-400/35 overflow-hidden flex flex-col shadow-lg">
+                  <div className="rounded-xl bg-[#121316]/92 border border-sky-400/35 overflow-hidden flex flex-col shadow-lg">
                     <div className="px-3 py-2 bg-sky-500/15 border-b border-sky-400/25 flex items-center justify-between gap-2 shrink-0">
                       <span className="text-xs font-black uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
                         <CreditCard className="w-4 h-4 text-sky-400" />
@@ -674,7 +674,7 @@ export const CashRegisterView: React.FC = () => {
                     </div>
 
                     <div className="p-2.5 space-y-1.5 flex-1 flex flex-col">
-                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-6 h-6 rounded-lg bg-sky-500/25 border border-sky-400/45 flex items-center justify-center text-sky-300 shrink-0">
                             <CreditCard className="w-3.5 h-3.5" />
@@ -686,7 +686,7 @@ export const CashRegisterView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-6 h-6 rounded-lg bg-sky-500/25 border border-sky-400/45 flex items-center justify-center text-sky-300 shrink-0">
                             <ShoppingBag className="w-3.5 h-3.5" />
@@ -698,7 +698,7 @@ export const CashRegisterView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-6 h-6 rounded-lg bg-purple-500/25 border border-purple-400/45 flex items-center justify-center text-purple-300 shrink-0">
                             <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -710,7 +710,7 @@ export const CashRegisterView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#161e31] hover:bg-[#1c263d] border border-white/15 transition-colors">
+                      <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#1d1f23] hover:bg-[#25282d] border border-white/15 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-6 h-6 rounded-lg bg-purple-500/25 border border-purple-400/45 flex items-center justify-center text-purple-300 shrink-0">
                             <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -768,9 +768,9 @@ export const CashRegisterView: React.FC = () => {
 
                 {/* Closed Shift Result Card */}
                 {cashSession.status === 'closed' && (
-                  <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-500/15 via-[#141a29] to-[#101522] border border-amber-400/45 space-y-2 font-mono">
+                  <div className="p-3.5 rounded-xl bg-gradient-to-br from-crimson-500/12 via-[#1a1c1f] to-[#131417] border border-crimson-400/45 space-y-2 font-mono">
                     <div className="flex items-center justify-between border-b border-white/15 pb-2">
-                      <span className="text-xs font-black text-amber-300 uppercase tracking-wider font-sans flex items-center gap-1.5">
+                      <span className="text-xs font-black text-crimson-300 uppercase tracking-wider font-sans flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5" />
                         Resultado Auditado del Cierre
                       </span>
@@ -786,7 +786,7 @@ export const CashRegisterView: React.FC = () => {
 
                     {cashSession.leaveCashInDrawer ? (
                       <>
-                        <div className="flex justify-between text-xs text-amber-300">
+                        <div className="flex justify-between text-xs text-crimson-300">
                           <span className="font-sans">( - ) Fondo Dejado en Caja (Próx. Turno):</span>
                           <span className="font-bold">${cashSession.remanentCash?.toFixed(2)} MXN</span>
                         </div>
@@ -832,7 +832,7 @@ export const CashRegisterView: React.FC = () => {
             {activeLeftTab === 'operations' && (
               <div className="space-y-2.5">
                 {/* Filter Chips */}
-                <div className="flex items-center justify-between flex-wrap gap-2 bg-[#101522]/80 p-2 rounded-xl border border-white/15">
+                <div className="flex items-center justify-between flex-wrap gap-2 bg-[#141518]/85 p-2 rounded-xl border border-white/15">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {(
                       [
@@ -848,7 +848,7 @@ export const CashRegisterView: React.FC = () => {
                         onClick={() => setOpFilter(tab.id)}
                         className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
                           opFilter === tab.id
-                            ? 'bg-amber-400 text-black'
+                            ? 'bg-crimson-400 text-white'
                             : 'bg-white/[0.06] text-zinc-200 hover:bg-white/[0.12]'
                         }`}
                       >
@@ -863,7 +863,7 @@ export const CashRegisterView: React.FC = () => {
 
                 {/* Sales List */}
                 {filteredShiftSales.length === 0 ? (
-                  <div className="p-8 rounded-2xl bg-[#101522]/60 border border-white/10 text-center space-y-2">
+                  <div className="p-8 rounded-2xl bg-[#141518]/70 border border-white/10 text-center space-y-2">
                     <Receipt className="w-8 h-8 text-zinc-400 mx-auto" />
                     <p className="text-xs font-bold text-zinc-200">
                       No hay cobros registrados con este filtro en el turno actual.
@@ -874,13 +874,13 @@ export const CashRegisterView: React.FC = () => {
                     {filteredShiftSales.map((sale) => (
                       <div
                         key={sale.id}
-                        className="p-2.5 rounded-xl bg-[#101522]/80 hover:bg-[#151c2e]/90 border border-white/15 flex items-center justify-between gap-2.5 transition-all"
+                        className="p-2.5 rounded-xl bg-[#141518]/85 hover:bg-[#1e2024]/90 border border-white/15 flex items-center justify-between gap-2.5 transition-all"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div
                             className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
                               sale.saleType === 'membership'
-                                ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
+                                ? 'bg-crimson-500/20 border-crimson-400/40 text-crimson-300'
                                 : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
                             }`}
                           >
@@ -892,7 +892,7 @@ export const CashRegisterView: React.FC = () => {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-black text-xs text-amber-300">
+                              <span className="font-mono font-black text-xs text-crimson-300">
                                 {sale.folio || sale.id}
                               </span>
                               <span className="text-xs font-bold text-white truncate">
@@ -943,14 +943,14 @@ export const CashRegisterView: React.FC = () => {
         {/* ================================================================= */}
         {/* RIGHT COLUMN (~47%): CONSOLA DE CORTE DE CAJA                     */}
         {/* ================================================================= */}
-        <div className="flex flex-col min-h-0 bg-[#161c2c]/85 backdrop-blur-xl rounded-2xl border border-white/25 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative overflow-hidden">
-          <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-300/75 to-transparent pointer-events-none" />
+        <div className="flex flex-col min-h-0 bg-[#181a1d]/92 concrete-panel backdrop-blur-xl rounded-2xl border border-neutral-700/65 p-2.5 sm:p-3 shadow-[0_16px_40px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className="absolute inset-x-10 top-0 h-[1px] bg-gradient-to-r from-transparent via-crimson-300/75 to-transparent pointer-events-none" />
 
           {cashSession.status === 'open' ? (
             <form onSubmit={handleCloseSession} className="flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-y-auto pos-scroll pr-0.5">
               {/* Top Header */}
               <div className="flex items-center gap-2.5 shrink-0 border-b border-white/15 pb-1.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.35)] border border-amber-200/70 shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-crimson-400 to-crimson-600 text-white flex items-center justify-center shadow-[0_0_12px_rgba(225,29,56,0.35)] border border-crimson-200/70 shrink-0">
                   <Lock className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <h3 className="font-black text-sm sm:text-base text-white tracking-tight">
@@ -969,7 +969,7 @@ export const CashRegisterView: React.FC = () => {
                   {/* Digital Readout Input */}
                   <div className="relative">
                     <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <DollarSign className="w-5 h-5 text-amber-400 stroke-[2.5]" />
+                      <DollarSign className="w-5 h-5 text-crimson-400 stroke-[2.5]" />
                     </div>
                     <input
                       type="number"
@@ -979,15 +979,15 @@ export const CashRegisterView: React.FC = () => {
                       onChange={(e) => setCountedCashStr(e.target.value)}
                       onWheel={(e) => e.currentTarget.blur()}
                       placeholder="Ingresa el efectivo físico contado..."
-                      className="w-full h-10 pl-10 pr-16 bg-[#0e1320]/90 rounded-xl border border-amber-400/50 text-lg sm:text-xl font-mono font-black text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:text-xs sm:placeholder:text-sm placeholder:font-semibold focus:outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-400/30 transition-all shadow-inner"
+                      className="w-full h-10 pl-10 pr-16 bg-[#111214]/90 rounded-xl border border-crimson-400/50 text-lg sm:text-xl font-mono font-black text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:text-xs sm:placeholder:text-sm placeholder:font-semibold focus:outline-none focus:border-crimson-300 focus:ring-2 focus:ring-crimson-400/30 transition-all shadow-inner"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-black text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-400/40 pointer-events-none">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-black text-crimson-300 bg-crimson-500/15 px-2 py-0.5 rounded border border-crimson-400/40 pointer-events-none">
                       MXN
                     </span>
                   </div>
 
                   {/* 3-Column Live Comparison Gauge */}
-                  <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-[#0e1320]/85 border border-white/15 text-center font-mono">
+                  <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-[#111214]/85 border border-white/15 text-center font-mono">
                     <div className="py-1 px-1.5 rounded-lg bg-white/[0.04]">
                       <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 block">
                         Esperado
@@ -1000,7 +1000,7 @@ export const CashRegisterView: React.FC = () => {
                       <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 block">
                         Contado
                       </span>
-                      <span className="text-sm font-black text-amber-300">
+                      <span className="text-sm font-black text-crimson-300">
                         ${countedCash.toFixed(2)}
                       </span>
                     </div>
@@ -1038,7 +1038,7 @@ export const CashRegisterView: React.FC = () => {
                 </div>
 
                 {/* STEP 2: Fondo en Caja y Desglose de Retiro */}
-                <div className="p-2 rounded-xl bg-[#101522]/90 border border-white/15 space-y-1.5">
+                <div className="p-2 rounded-xl bg-[#131417]/90 border border-white/15 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="leading-tight">
                       <label className="text-xs sm:text-[13px] font-black text-white block">
@@ -1049,7 +1049,7 @@ export const CashRegisterView: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-[#0b0e17] p-1 rounded-xl border border-white/15 shrink-0">
+                    <div className="flex items-center gap-1 bg-[#0e0f11] p-1 rounded-xl border border-white/15 shrink-0">
                       <button
                         type="button"
                         onClick={() => {
@@ -1081,7 +1081,7 @@ export const CashRegisterView: React.FC = () => {
                   {leaveCashInDrawer && (
                     <div className="pt-1.5 border-t border-white/10 space-y-1">
                       <div className="flex items-center justify-between flex-wrap gap-1">
-                        <label className="text-[11.5px] font-bold text-amber-300">
+                        <label className="text-[11.5px] font-bold text-crimson-300">
                           Monto que se queda en caja ($) *
                         </label>
                         <div className="flex items-center gap-1">
@@ -1092,7 +1092,7 @@ export const CashRegisterView: React.FC = () => {
                               onClick={() => setRemanentCashStr(preset.toString())}
                               className={`px-2 py-0.5 rounded text-[10.5px] font-mono font-black border transition-all ${
                                 remanentCashStr === preset.toString()
-                                  ? 'bg-amber-400 text-black border-amber-200'
+                                  ? 'bg-crimson-400 text-white border-crimson-200'
                                   : 'bg-white/10 hover:bg-white/20 text-zinc-200 border-white/15'
                               }`}
                             >
@@ -1103,7 +1103,7 @@ export const CashRegisterView: React.FC = () => {
                       </div>
 
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 font-mono font-bold text-sm">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-crimson-400 font-mono font-bold text-sm">
                           $
                         </span>
                         <input
@@ -1115,7 +1115,7 @@ export const CashRegisterView: React.FC = () => {
                           onChange={(e) => setRemanentCashStr(e.target.value)}
                           onWheel={(e) => e.currentTarget.blur()}
                           placeholder="Ej. 1000.00"
-                          className="w-full h-9 pl-7 pr-3 bg-[#0b0e17] rounded-lg border border-white/20 text-sm font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full h-9 pl-7 pr-3 bg-[#0e0f11] rounded-lg border border-white/20 text-sm font-mono font-bold text-white focus:outline-none focus:border-crimson-400"
                         />
                       </div>
                       {remanentCash > countedCash && countedCash > 0 && (
@@ -1132,7 +1132,7 @@ export const CashRegisterView: React.FC = () => {
                       <span className="text-[10px] font-sans font-bold uppercase text-zinc-300 shrink-0">
                         Fondo:
                       </span>
-                      <span className="text-xs sm:text-sm font-black text-amber-300 truncate">
+                      <span className="text-xs sm:text-sm font-black text-crimson-300 truncate">
                         ${(leaveCashInDrawer ? remanentCash : 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
                       </span>
                     </div>
@@ -1153,16 +1153,16 @@ export const CashRegisterView: React.FC = () => {
                   value={closeNotes}
                   onChange={(e) => setCloseNotes(e.target.value)}
                   placeholder="Observaciones o notas del turno (opcional)..."
-                  className="w-full h-9 px-3 bg-[#101522]/90 rounded-xl border border-white/15 text-xs sm:text-[13px] text-white placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+                  className="w-full h-9 px-3 bg-[#131417]/90 rounded-xl border border-white/15 text-xs sm:text-[13px] text-white placeholder-zinc-400 focus:outline-none focus:border-crimson-400"
                 />
 
                 {/* STEP 3: Confirmación de Cierre */}
-                <div className="p-2 rounded-xl bg-[#101522]/95 border border-amber-400/45 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                <div className="p-2 rounded-xl bg-[#131417]/95 border border-crimson-400/45 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
                   <div className="leading-tight shrink-0">
                     <label className="text-xs sm:text-[13px] font-black text-white block">
                       Confirmar Cierre de Turno *
                     </label>
-                    <span className="text-[9.5px] text-amber-300 uppercase tracking-wider font-extrabold block">
+                    <span className="text-[9.5px] text-crimson-300 uppercase tracking-wider font-extrabold block">
                       Escribe o pulsa "SÍ"
                     </span>
                   </div>
@@ -1174,7 +1174,7 @@ export const CashRegisterView: React.FC = () => {
                       value={confirmCloseInput}
                       onChange={(e) => setConfirmCloseInput(e.target.value.toUpperCase())}
                       placeholder="SI O NO..."
-                      className="flex-1 min-w-0 h-8 px-2.5 bg-[#0b0e17] rounded-lg border border-white/20 text-center font-black tracking-widest text-xs sm:text-sm text-white uppercase placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+                      className="flex-1 min-w-0 h-8 px-2.5 bg-[#0e0f11] rounded-lg border border-white/20 text-center font-black tracking-widest text-xs sm:text-sm text-white uppercase placeholder-zinc-400 focus:outline-none focus:border-crimson-400"
                     />
                     <button
                       type="button"
@@ -1209,7 +1209,7 @@ export const CashRegisterView: React.FC = () => {
                 disabled={!canSubmitClose}
                 className={`w-full h-10 shrink-0 rounded-xl font-black text-sm sm:text-base transition-all flex items-center justify-center gap-2 ${
                   canSubmitClose
-                    ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.45)] border border-amber-200/80 cursor-pointer active:scale-[0.99]'
+                    ? 'bg-gradient-to-r from-crimson-400 via-crimson-500 to-crimson-500 hover:from-crimson-300 hover:to-crimson-400 text-white shadow-[0_0_25px_rgba(225,29,56,0.45)] border border-crimson-200/80 cursor-pointer active:scale-[0.99]'
                     : 'bg-white/[0.06] text-zinc-400 border border-white/15 cursor-not-allowed'
                 }`}
               >
@@ -1267,14 +1267,14 @@ export const CashRegisterView: React.FC = () => {
                     onChange={(e) => setInitialCashStr(e.target.value)}
                     onWheel={(e) => e.currentTarget.blur()}
                     placeholder="0.00"
-                    className="w-full h-11 pl-8 pr-16 bg-[#0e1320]/90 rounded-xl border border-emerald-400/45 text-xl font-mono font-black text-white focus:outline-none focus:border-emerald-300"
+                    className="w-full h-11 pl-8 pr-16 bg-[#111214]/90 rounded-xl border border-emerald-400/45 text-xl font-mono font-black text-white focus:outline-none focus:border-emerald-300"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-mono font-bold text-emerald-300">
                     MXN
                   </span>
                 </div>
 
-                <div className="mt-3 p-3 rounded-xl bg-[#101522]/85 border border-white/15 text-xs text-zinc-200 leading-relaxed">
+                <div className="mt-3 p-3 rounded-xl bg-[#131417]/85 border border-white/15 text-xs text-zinc-200 leading-relaxed">
                   {cashSession.leaveCashInDrawer ? (
                     <span>
                       💡 Fondo heredado del turno anterior:{' '}

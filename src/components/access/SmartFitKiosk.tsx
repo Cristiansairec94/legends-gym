@@ -410,7 +410,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
         {/* Soft dark vignette that keeps the photo clear and luminous */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/65 pointer-events-none" />
         {/* Luminous Neon Light Strip Bloom at top */}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-36 bg-gradient-to-b from-amber-400/20 via-yellow-400/10 to-transparent blur-3xl pointer-events-none animate-pulse" />
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-36 bg-gradient-to-b from-crimson-400/20 via-crimson-400/10 to-transparent blur-3xl pointer-events-none animate-pulse" />
       </div>
 
       {/* 🧭 Top Kiosk Header Bar */}
@@ -423,17 +423,17 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             className="flex items-center gap-3 cursor-pointer group"
             title="Volver a la pantalla principal"
           >
-            <div className="w-11 h-11 rounded-xl bg-black border border-white/20 p-1 flex items-center justify-center shadow-lg ring-1 ring-amber-400/30 group-hover:scale-105 transition-transform shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-black border border-white/20 p-1 flex items-center justify-center shadow-lg ring-1 ring-crimson-400/30 group-hover:scale-105 transition-transform shrink-0">
               <img src="/logo.png" alt="Legends Gym" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-black tracking-wider text-white">LEYENDS</span>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500 text-black shadow-glow-gold">
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-crimson-500 text-white shadow-glow-crimson">
                   SMART KIOSK
                 </span>
               </div>
-              <p className="text-xs text-amber-300 font-semibold tracking-wide hidden sm:block">
+              <p className="text-xs text-crimson-300 font-semibold tracking-wide hidden sm:block">
                 "TU ÚNICO LÍMITE ERES TÚ" • AUTOSERVICIO
               </p>
             </div>
@@ -442,7 +442,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
           {/* Right Kiosk Info & Navigation */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Real-time Clock */}
-            <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono font-bold text-amber-400">
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono font-bold text-crimson-400">
               <Clock className="w-3.5 h-3.5" />
               <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
@@ -450,10 +450,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             {/* Access History Button */}
             <button
               onClick={() => setIsHistoryModalOpen(true)}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-black/40 hover:bg-black/60 text-xs font-bold text-amber-300 hover:text-white transition-all border border-amber-500/20 flex items-center gap-1.5"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-black/40 hover:bg-black/60 text-xs font-bold text-crimson-300 hover:text-white transition-all border border-crimson-500/20 flex items-center gap-1.5"
               title="Ver Registro de Accesos"
             >
-              <History className="w-4 h-4 text-amber-400" />
+              <History className="w-4 h-4 text-crimson-400" />
               <span className="hidden sm:inline">Historial</span>
             </button>
 
@@ -478,7 +478,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-black/40 hover:bg-black/60 text-xs font-bold text-gray-200 hover:text-white transition-all border border-white/10"
               title="Abrir Sistema ERP Administrativo (POS, Caja, Socios)"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
+              <ExternalLink className="w-3.5 h-3.5 text-crimson-400" />
               <span className="hidden sm:inline">Modo ERP</span>
             </button>
 
@@ -505,10 +505,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             
             {/* Hero Welcome Text */}
             <div className="text-center space-y-1.5">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-widest backdrop-blur-md shadow-glow-gold/30">
-                <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/50 border border-crimson-400/40 text-crimson-300 text-xs font-black uppercase tracking-widest backdrop-blur-md shadow-glow-crimson/30">
+                <Flame className="w-3.5 h-3.5 text-crimson-400 fill-crimson-400" />
                 <span>BIENVENIDO A LEGENDS PRO GYM</span>
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="w-3.5 h-3.5 text-crimson-400" />
               </div>
               <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                 ¿Qué deseas hacer hoy?
@@ -559,21 +559,21 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                   setCurrentView('register');
                   setRegisterStep(1);
                 }}
-                className="group relative bg-gradient-to-b from-amber-500/25 to-black/45 hover:from-amber-500/35 hover:to-black/60 backdrop-blur-md rounded-3xl p-6 sm:p-7 border-2 border-amber-400 hover:border-yellow-300 shadow-[0_20px_45px_rgba(245,158,11,0.25)] hover:shadow-[0_0_40px_rgba(245,158,11,0.5)] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden scale-[1.02]"
+                className="group relative bg-gradient-to-b from-crimson-500/25 to-black/45 hover:from-crimson-500/35 hover:to-black/60 backdrop-blur-md rounded-3xl p-6 sm:p-7 border-2 border-crimson-400 hover:border-crimson-300 shadow-[0_20px_45px_rgba(225,29,56,0.25)] hover:shadow-[0_0_40px_rgba(225,29,56,0.5)] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden scale-[1.02]"
               >
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-400/20 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-crimson-400/20 rounded-full blur-3xl pointer-events-none group-hover:bg-crimson-400/30 transition-all" />
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500 text-black flex items-center justify-center font-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.6)]">
+                    <div className="w-14 h-14 rounded-2xl bg-crimson-500 text-white flex items-center justify-center font-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(225,29,56,0.6)]">
                       <Award className="w-8 h-8 stroke-[2.5]" />
                     </div>
-                    <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-amber-400 text-black shadow-glow-gold animate-pulse">
+                    <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-crimson-400 text-white shadow-glow-crimson animate-pulse">
                       ¡MÁS POPULAR!
                     </span>
                   </div>
 
-                  <h3 className="text-2xl font-black uppercase text-white group-hover:text-amber-300 transition-colors drop-shadow">
+                  <h3 className="text-2xl font-black uppercase text-white group-hover:text-crimson-300 transition-colors drop-shadow">
                     Soy Nuevo • Inscribirme
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-200 font-medium mt-2 leading-relaxed">
@@ -581,9 +581,9 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-amber-400/30 flex items-center justify-between text-amber-300 font-black text-sm group-hover:translate-x-1 transition-transform">
+                <div className="mt-6 pt-4 border-t border-crimson-400/30 flex items-center justify-between text-crimson-300 font-black text-sm group-hover:translate-x-1 transition-transform">
                   <span>Ver Planes y Registrarme</span>
-                  <ArrowRight className="w-5 h-5 text-amber-400" />
+                  <ArrowRight className="w-5 h-5 text-crimson-400" />
                 </div>
               </div>
 
@@ -662,23 +662,23 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
               </button>
 
               <div className="flex items-center gap-2 sm:gap-4">
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 1 ? 'text-amber-400' : 'text-gray-400'}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 1 ? 'bg-amber-400 text-black' : 'bg-white/10 text-white'}`}>1</span>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 1 ? 'text-crimson-400' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 1 ? 'bg-crimson-400 text-white' : 'bg-white/10 text-white'}`}>1</span>
                   <span className="hidden sm:inline">Tus Datos</span>
                 </div>
                 <div className="w-6 h-[1px] bg-white/20" />
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 2 ? 'text-amber-400' : 'text-gray-400'}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 2 ? 'bg-amber-400 text-black' : 'bg-white/10 text-white'}`}>2</span>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 2 ? 'text-crimson-400' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 2 ? 'bg-crimson-400 text-white' : 'bg-white/10 text-white'}`}>2</span>
                   <span className="hidden sm:inline">Elige tu Plan</span>
                 </div>
                 <div className="w-6 h-[1px] bg-white/20" />
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 3 ? 'text-amber-400' : 'text-gray-400'}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 3 ? 'bg-amber-400 text-black' : 'bg-white/10 text-white'}`}>3</span>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${registerStep === 3 ? 'text-crimson-400' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${registerStep === 3 ? 'bg-crimson-400 text-white' : 'bg-white/10 text-white'}`}>3</span>
                   <span className="hidden sm:inline">Pago</span>
                 </div>
               </div>
 
-              <span className="text-xs font-bold text-amber-400 hidden sm:block">Paso {registerStep} de 3</span>
+              <span className="text-xs font-bold text-crimson-400 hidden sm:block">Paso {registerStep} de 3</span>
             </div>
 
             {/* STEP 1: DATOS PERSONALES */}
@@ -693,7 +693,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                   {/* Nombre Completo */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-amber-400" />
+                      <User className="w-3.5 h-3.5 text-crimson-400" />
                       Nombre Completo *
                     </label>
                     <input
@@ -702,14 +702,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       placeholder="Ej. Juan Pérez González"
                       value={formData.fullName}
                       onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 text-sm font-semibold"
                     />
                   </div>
 
                   {/* Correo Electrónico */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-amber-400" />
+                      <Mail className="w-3.5 h-3.5 text-crimson-400" />
                       Correo Electrónico *
                     </label>
                     <input
@@ -718,14 +718,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       placeholder="Ej. juan@correo.com"
                       value={formData.email}
                       onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 text-sm font-semibold"
                     />
                   </div>
 
                   {/* Número Telefónico */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <Phone className="w-3.5 h-3.5 text-crimson-400" />
                       Número Telefónico / WhatsApp *
                     </label>
                     <input
@@ -734,14 +734,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       placeholder="Ej. +52 55 1234 5678"
                       value={formData.phone}
                       onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 text-sm font-semibold"
                     />
                   </div>
 
                   {/* Edad */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                      <Calendar className="w-3.5 h-3.5 text-crimson-400" />
                       Edad (Años) *
                     </label>
                     <input
@@ -752,14 +752,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       placeholder="Ej. 24"
                       value={formData.age}
                       onChange={e => setFormData({ ...formData, age: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 text-sm font-semibold"
                     />
                   </div>
 
                   {/* Cédula o DNI */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <IdCard className="w-3.5 h-3.5 text-amber-400" />
+                      <IdCard className="w-3.5 h-3.5 text-crimson-400" />
                       Cédula / DNI / Identificación
                     </label>
                     <input
@@ -767,7 +767,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       placeholder="Ej. 45892011 o INE"
                       value={formData.documentId}
                       onChange={e => setFormData({ ...formData, documentId: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+                      className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400 text-sm font-semibold"
                     />
                   </div>
 
@@ -778,14 +778,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, gender: 'male' })}
-                        className={`py-3 rounded-xl font-bold text-xs transition-all border ${formData.gender === 'male' ? 'bg-amber-400 text-black border-amber-400 shadow-glow-gold' : 'bg-black/50 text-gray-300 border-white/10'}`}
+                        className={`py-3 rounded-xl font-bold text-xs transition-all border ${formData.gender === 'male' ? 'bg-crimson-400 text-white border-crimson-400 shadow-glow-crimson' : 'bg-black/50 text-gray-300 border-white/10'}`}
                       >
                         Hombre
                       </button>
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, gender: 'female' })}
-                        className={`py-3 rounded-xl font-bold text-xs transition-all border ${formData.gender === 'female' ? 'bg-amber-400 text-black border-amber-400 shadow-glow-gold' : 'bg-black/50 text-gray-300 border-white/10'}`}
+                        className={`py-3 rounded-xl font-bold text-xs transition-all border ${formData.gender === 'female' ? 'bg-crimson-400 text-white border-crimson-400 shadow-glow-crimson' : 'bg-black/50 text-gray-300 border-white/10'}`}
                       >
                         Mujer
                       </button>
@@ -798,7 +798,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                     type="button"
                     disabled={!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()}
                     onClick={() => setRegisterStep(2)}
-                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-black text-sm uppercase tracking-wider shadow-glow-gold transition-all"
+                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-crimson-400 hover:bg-crimson-300 disabled:opacity-40 text-white font-black text-sm uppercase tracking-wider shadow-glow-crimson transition-all"
                   >
                     <span>Continuar a Selección de Planes</span>
                     <ArrowRight className="w-4 h-4" />
@@ -824,13 +824,13 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                         onClick={() => handleSelectPlan(plan)}
                         className={`relative p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                           isSelected
-                            ? 'bg-amber-500/20 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.35)] scale-[1.01]'
+                            ? 'bg-crimson-500/20 border-crimson-400 shadow-[0_0_30px_rgba(225,29,56,0.35)] scale-[1.01]'
                             : 'bg-black/40 border-white/15 hover:border-white/40'
                         }`}
                       >
                         {plan.badge && (
                           <span className={`absolute top-3 right-3 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                            plan.recommended ? 'bg-amber-400 text-black shadow-glow-gold' : 'bg-white/15 text-white'
+                            plan.recommended ? 'bg-crimson-400 text-white shadow-glow-crimson' : 'bg-white/15 text-white'
                           }`}>
                             {plan.badge}
                           </span>
@@ -839,7 +839,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                         <div>
                           <h4 className="text-lg font-black text-white">{plan.name}</h4>
                           <div className="mt-2 flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-amber-400">${plan.price.toLocaleString()}</span>
+                            <span className="text-3xl font-black text-crimson-400">${plan.price.toLocaleString()}</span>
                             <span className="text-xs text-gray-400 font-semibold">{plan.period}</span>
                           </div>
 
@@ -855,7 +855,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
 
                         <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between">
                           <span className="text-xs font-bold text-gray-400">Duración: {plan.durationDays} días</span>
-                          <span className={`text-xs font-black px-3 py-1 rounded-lg ${isSelected ? 'bg-amber-400 text-black' : 'bg-white/10 text-white'}`}>
+                          <span className={`text-xs font-black px-3 py-1 rounded-lg ${isSelected ? 'bg-crimson-400 text-white' : 'bg-white/10 text-white'}`}>
                             {isSelected ? '✓ Seleccionado' : 'Seleccionar'}
                           </span>
                         </div>
@@ -877,7 +877,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                   <button
                     type="button"
                     onClick={() => setRegisterStep(3)}
-                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-sm uppercase tracking-wider shadow-glow-gold transition-all"
+                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-crimson-400 hover:bg-crimson-300 text-white font-black text-sm uppercase tracking-wider shadow-glow-crimson transition-all"
                   >
                     <span>Continuar a Forma de Pago</span>
                     <ArrowRight className="w-4 h-4" />
@@ -906,7 +906,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                   </div>
                   <div>
                     <span className="text-gray-400 block font-medium">Plan Elegido:</span>
-                    <strong className="text-amber-400 text-sm block truncate">{formData.selectedPlanName}</strong>
+                    <strong className="text-crimson-400 text-sm block truncate">{formData.selectedPlanName}</strong>
                   </div>
                   <div>
                     <span className="text-gray-400 block font-medium">Total a Pagar:</span>
@@ -922,10 +922,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       type="button"
                       onClick={() => setFormData({ ...formData, paymentMethod: 'cash' })}
                       className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                        formData.paymentMethod === 'cash' ? 'bg-amber-400/20 border-amber-400 shadow-glow-gold' : 'bg-black/40 border-white/10 text-gray-400'
+                        formData.paymentMethod === 'cash' ? 'bg-crimson-400/20 border-crimson-400 shadow-glow-crimson' : 'bg-black/40 border-white/10 text-gray-400'
                       }`}
                     >
-                      <DollarSign className="w-6 h-6 text-amber-400" />
+                      <DollarSign className="w-6 h-6 text-crimson-400" />
                       <span className="font-bold text-xs text-white">Efectivo en Recepción</span>
                       <span className="text-[10px] text-gray-400 text-center">Pagas al pasar el torniquete</span>
                     </button>
@@ -934,10 +934,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       type="button"
                       onClick={() => setFormData({ ...formData, paymentMethod: 'card' })}
                       className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                        formData.paymentMethod === 'card' ? 'bg-amber-400/20 border-amber-400 shadow-glow-gold' : 'bg-black/40 border-white/10 text-gray-400'
+                        formData.paymentMethod === 'card' ? 'bg-crimson-400/20 border-crimson-400 shadow-glow-crimson' : 'bg-black/40 border-white/10 text-gray-400'
                       }`}
                     >
-                      <CreditCard className="w-6 h-6 text-amber-400" />
+                      <CreditCard className="w-6 h-6 text-crimson-400" />
                       <span className="font-bold text-xs text-white">Tarjeta de Débito / Crédito</span>
                       <span className="text-[10px] text-gray-400 text-center">En terminal bancaria</span>
                     </button>
@@ -946,10 +946,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                       type="button"
                       onClick={() => setFormData({ ...formData, paymentMethod: 'transfer' })}
                       className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                        formData.paymentMethod === 'transfer' ? 'bg-amber-400/20 border-amber-400 shadow-glow-gold' : 'bg-black/40 border-white/10 text-gray-400'
+                        formData.paymentMethod === 'transfer' ? 'bg-crimson-400/20 border-crimson-400 shadow-glow-crimson' : 'bg-black/40 border-white/10 text-gray-400'
                       }`}
                     >
-                      <QrCode className="w-6 h-6 text-amber-400" />
+                      <QrCode className="w-6 h-6 text-crimson-400" />
                       <span className="font-bold text-xs text-white">Transferencia / QR</span>
                       <span className="text-[10px] text-gray-400 text-center">SPEI o CoDi inmediato</span>
                     </button>
@@ -1153,14 +1153,14 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                     onChange={e => setSearchQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && searchQuery.trim() && executeScanMember(searchQuery.trim())}
                     placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2.5 bg-black/50 border border-white/20 rounded-xl text-sm font-semibold text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full pl-9 pr-3 py-2.5 bg-black/50 border border-white/20 rounded-xl text-sm font-semibold text-white placeholder-gray-500 focus:outline-none focus:border-crimson-400"
                   />
                 </div>
                 <button
                   type="button"
                   disabled={!searchQuery.trim() || scanStatus === 'scanning'}
                   onClick={() => executeScanMember(searchQuery.trim())}
-                  className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-gold transition-all"
+                  className="px-6 py-2.5 bg-crimson-400 hover:bg-crimson-300 disabled:opacity-40 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-glow-crimson transition-all"
                 >
                   Verificar
                 </button>
@@ -1179,7 +1179,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                 </button>
                 <button
                   onClick={() => executeScanMember('MEM-004')}
-                  className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-amber-400 font-bold"
+                  className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-crimson-400 font-bold"
                 >
                   ⚠ Membresía Vencida
                 </button>
@@ -1209,21 +1209,21 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             </div>
 
             {/* Digital Athlete Credential Card */}
-            <div className="bg-gradient-to-br from-black/80 via-[#13151f] to-black/80 p-5 rounded-2xl border border-amber-400/40 shadow-xl text-left relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
+            <div className="bg-gradient-to-br from-black/80 via-[#13151f] to-black/80 p-5 rounded-2xl border border-crimson-400/40 shadow-xl text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-crimson-500/10 rounded-full blur-xl pointer-events-none" />
 
               <div className="flex items-center gap-4">
                 <img
                   src={createdMember.avatarUrl || '/logo.png'}
                   alt={createdMember.fullName}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md ring-2 ring-black"
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-crimson-400 shadow-md ring-2 ring-black"
                 />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
                       MIEMBRO ACTIVO
                     </span>
-                    <span className="text-xs font-mono font-bold text-amber-400">
+                    <span className="text-xs font-mono font-bold text-crimson-400">
                       ID: {createdMember.id}
                     </span>
                   </div>
@@ -1243,21 +1243,21 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-400 block">Pago:</span>
-                  <span className="font-bold text-amber-400 uppercase">{formData.paymentMethod}</span>
+                  <span className="font-bold text-crimson-400 uppercase">{formData.paymentMethod}</span>
                 </div>
               </div>
             </div>
 
             {/* Biometric Enrolment prompt */}
-            <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-left flex items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-crimson-500/15 border border-crimson-400/40 text-left flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Fingerprint className="w-7 h-7 text-amber-400 shrink-0" />
+                <Fingerprint className="w-7 h-7 text-crimson-400 shrink-0" />
                 <div>
-                  <h4 className="text-xs font-black uppercase text-amber-300">Enrolamiento de Huella Digital</h4>
+                  <h4 className="text-xs font-black uppercase text-crimson-300">Enrolamiento de Huella Digital</h4>
                   <p className="text-[11px] text-gray-300">Puedes vincular tu huella con el staff en recepción para entrar siempre sin celular.</p>
                 </div>
               </div>
-              <span className="text-xs font-bold px-3 py-1 rounded-lg bg-amber-400 text-black shrink-0">
+              <span className="text-xs font-bold px-3 py-1 rounded-lg bg-crimson-400 text-white shrink-0">
                 Opcional
               </span>
             </div>

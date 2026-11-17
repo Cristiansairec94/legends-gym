@@ -294,7 +294,7 @@ export const EmployeesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <Users className="w-5 h-5" />
             </div>
             <div>
@@ -302,7 +302,7 @@ export const EmployeesManager: React.FC = () => {
                 <h1 className="text-xl font-black text-white tracking-wide uppercase">
                   Gestión de Empleados
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-950/70 text-amber-300 border border-amber-500/40 shadow-sm">
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-crimson-950/70 text-crimson-300 border border-crimson-500/40 shadow-sm">
                   Personal
                 </span>
               </div>
@@ -322,7 +322,7 @@ export const EmployeesManager: React.FC = () => {
           )}
           <button
             onClick={handleOpenCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-sm shadow-glow-crimson transition-all"
           >
             <UserPlus className="w-4 h-4 stroke-[2.5]" />
             <span>Nuevo Empleado</span>
@@ -340,7 +340,7 @@ export const EmployeesManager: React.FC = () => {
 
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <span className="text-xs text-gym-muted block uppercase font-bold">Nómina Mensual Base</span>
-          <span className="text-2xl font-black text-amber-400 font-mono mt-1 block">
+          <span className="text-2xl font-black text-crimson-400 font-mono mt-1 block">
             ${totalMonthlyPayroll.toLocaleString()} MXN
           </span>
           <span className="text-xs text-gym-muted mt-1 block">Personal en nómina</span>
@@ -364,7 +364,7 @@ export const EmployeesManager: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, usuario, puesto..."
-            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
           />
         </div>
 
@@ -381,7 +381,7 @@ export const EmployeesManager: React.FC = () => {
                 onClick={() => setRoleFilter(tab.id as typeof roleFilter)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                   roleFilter === tab.id
-                    ? 'bg-amber-500 text-black font-bold'
+                    ? 'bg-crimson-500 text-white font-bold'
                     : 'bg-gym-surface text-gym-muted hover:text-white'
                 }`}
               >
@@ -410,12 +410,12 @@ export const EmployeesManager: React.FC = () => {
           {filteredEmployees.map((emp) => (
             <div
               key={emp.id}
-              className="bg-gym-card rounded-2xl border border-gym-border hover:border-amber-400/50 p-5 shadow-lg flex flex-col justify-between transition-all relative overflow-hidden group hover:shadow-glow-gold/10"
+              className="bg-gym-card rounded-2xl border border-gym-border hover:border-crimson-400/50 p-5 shadow-lg flex flex-col justify-between transition-all relative overflow-hidden group hover:shadow-glow-crimson/10"
             >
               {/* Barra superior de color según rol */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${
                 emp.role === 'admin'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-300'
+                  ? 'bg-gradient-to-r from-crimson-500 to-crimson-300'
                   : 'bg-gradient-to-r from-blue-500 to-blue-300'
               }`} />
 
@@ -424,7 +424,7 @@ export const EmployeesManager: React.FC = () => {
                 <div className="flex items-center justify-between gap-2 mb-3.5 pt-1">
                   <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-lg border ${
                     emp.role === 'admin'
-                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                      ? 'bg-crimson-500/15 text-crimson-400 border-crimson-500/30'
                       : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
                   }`}>
                     {emp.role === 'admin' ? 'Administrador' : 'Recepción'}
@@ -452,7 +452,7 @@ export const EmployeesManager: React.FC = () => {
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
                       }}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-gym-border group-hover:border-amber-400/60 bg-gym-surface shadow-md transition-colors"
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-gym-border group-hover:border-crimson-400/60 bg-gym-surface shadow-md transition-colors"
                     />
                     <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-gym-card ${
                       emp.status === 'active' ? 'bg-emerald-400 ring-2 ring-emerald-500/30' : 'bg-gray-500'
@@ -462,7 +462,7 @@ export const EmployeesManager: React.FC = () => {
                   <div className="min-w-0 flex-1">
                     <h3 
                       onClick={() => handleOpenEditModal(emp)}
-                      className="font-black text-white text-sm truncate hover:text-amber-400 cursor-pointer transition-colors"
+                      className="font-black text-white text-sm truncate hover:text-crimson-400 cursor-pointer transition-colors"
                       title="Clic para editar empleado"
                     >
                       {emp.fullName}
@@ -481,11 +481,11 @@ export const EmployeesManager: React.FC = () => {
                   {/* Usuario de Acceso */}
                   <div className="flex items-center justify-between">
                     <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
-                      <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <KeyRound className="w-3.5 h-3.5 text-crimson-400 shrink-0" />
                       <span>Usuario:</span>
                     </span>
                     {emp.username ? (
-                      <span className="font-mono font-bold text-amber-400 text-xs">
+                      <span className="font-mono font-bold text-crimson-400 text-xs">
                         @{emp.username}
                       </span>
                     ) : (
@@ -516,7 +516,7 @@ export const EmployeesManager: React.FC = () => {
               <div className="pt-3.5 mt-3.5 border-t border-gym-border/60 flex items-center gap-2">
                 <button
                   onClick={() => handleOpenEditModal(emp)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-extrabold transition-all shadow-sm group cursor-pointer"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-crimson-500/15 hover:bg-crimson-500 text-crimson-400 hover:text-white border border-crimson-500/30 text-xs font-extrabold transition-all shadow-sm group cursor-pointer"
                   title="Editar empleado, rol y credenciales"
                 >
                   <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
@@ -553,9 +553,9 @@ export const EmployeesManager: React.FC = () => {
             <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
               <div className="flex items-center gap-2">
                 {editingEmployee ? (
-                  <Edit3 className="w-5 h-5 text-amber-400" />
+                  <Edit3 className="w-5 h-5 text-crimson-400" />
                 ) : (
-                  <UserPlus className="w-5 h-5 text-amber-400" />
+                  <UserPlus className="w-5 h-5 text-crimson-400" />
                 )}
                 <h3 className="font-bold text-base text-white">
                   {editingEmployee ? 'Editar Empleado' : 'Registrar Nuevo Empleado'}
@@ -599,7 +599,7 @@ export const EmployeesManager: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
+                      className="px-3 py-1.5 rounded-lg bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
                       title="Subir imagen desde tu equipo"
                     >
                       <Upload className="w-3.5 h-3.5" />
@@ -626,7 +626,7 @@ export const EmployeesManager: React.FC = () => {
                     <img
                       src={avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
                       alt="Foto del empleado"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-md ring-2 ring-amber-500/30 bg-gym-surface cursor-pointer"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-crimson-400 shadow-md ring-2 ring-crimson-500/30 bg-gym-surface cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
                       title="Clic para cambiar imagen"
                     />
@@ -674,15 +674,15 @@ export const EmployeesManager: React.FC = () => {
                   value={fullName}
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="Ej. Andrés Navarro López"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
               {/* APARTADO: CREDENCIALES & ROL DE ACCESO AL SISTEMA */}
-              <div className="bg-gym-surface/60 p-4 rounded-xl border border-amber-500/40 space-y-3.5 shadow-sm">
+              <div className="bg-gym-surface/60 p-4 rounded-xl border border-crimson-500/40 space-y-3.5 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b border-gym-border/60">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <div className="p-1.5 rounded-lg bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
                       <KeyRound className="w-4 h-4" />
                     </div>
                     <div>
@@ -694,7 +694,7 @@ export const EmployeesManager: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-crimson-500/15 text-crimson-300 border border-crimson-500/30">
                     Seguridad
                   </span>
                 </div>
@@ -719,8 +719,8 @@ export const EmployeesManager: React.FC = () => {
                         title: 'Administrador',
                         badge: 'Admin',
                         desc: 'Control total, nómina, finanzas y roles',
-                        borderSelected: 'border-amber-400 bg-amber-500/15 text-amber-300',
-                        badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                        borderSelected: 'border-crimson-400 bg-crimson-500/15 text-crimson-300',
+                        badgeBg: 'bg-crimson-500/20 text-crimson-300 border-crimson-500/40',
                       },
                     ].map((r) => {
                       const isSelected = role === r.id;
@@ -731,7 +731,7 @@ export const EmployeesManager: React.FC = () => {
                           onClick={() => setRole(r.id)}
                           className={`p-2.5 rounded-xl border text-left transition-all ${
                             isSelected
-                              ? `${r.borderSelected} ring-1 ring-amber-400/40 shadow-sm`
+                              ? `${r.borderSelected} ring-1 ring-crimson-400/40 shadow-sm`
                               : 'border-gym-border bg-gym-surface/40 hover:border-gray-500 text-gym-muted'
                           }`}
                         >
@@ -740,7 +740,7 @@ export const EmployeesManager: React.FC = () => {
                               {r.badge}
                             </span>
                             <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-amber-400 bg-amber-400' : 'border-gray-500'
+                              isSelected ? 'border-crimson-400 bg-crimson-400' : 'border-gray-500'
                             }`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
                             </div>
@@ -760,7 +760,7 @@ export const EmployeesManager: React.FC = () => {
                       Nombre de Usuario *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 text-xs font-mono font-bold">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-crimson-400 text-xs font-mono font-bold">
                         @
                       </span>
                       <input
@@ -774,7 +774,7 @@ export const EmployeesManager: React.FC = () => {
                           setFormError('');
                         }}
                         placeholder="andres.navarro"
-                        className="w-full pl-8 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
+                        className="w-full pl-8 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-crimson-400"
                       />
                     </div>
                     <span className="text-[10px] text-gym-muted block mt-0.5">Identificador único</span>
@@ -788,7 +788,7 @@ export const EmployeesManager: React.FC = () => {
                       <button
                         type="button"
                         onClick={generateRandomPassword}
-                        className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 transition-colors"
+                        className="text-[10px] text-crimson-400 hover:text-crimson-300 font-bold flex items-center gap-1 transition-colors"
                         title="Generar contraseña automática"
                       >
                         <Sparkles className="w-3 h-3" />
@@ -805,7 +805,7 @@ export const EmployeesManager: React.FC = () => {
                           setFormError('');
                         }}
                         placeholder={editingEmployee ? 'Vacío = mantener actual' : '••••••••'}
-                        className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 font-mono"
+                        className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400 font-mono"
                       />
                       <button
                         type="button"
@@ -835,7 +835,7 @@ export const EmployeesManager: React.FC = () => {
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                       placeholder="1234"
-                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400 tracking-widest text-center"
+                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-crimson-400 tracking-widest text-center"
                     />
                     <span className="text-[10px] text-gym-muted block mt-0.5">Acceso rápido en caja</span>
                   </div>
@@ -851,7 +851,7 @@ export const EmployeesManager: React.FC = () => {
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     placeholder="Ej. Líder de Mostrador / Cajero"
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   />
                 </div>
 
@@ -862,7 +862,7 @@ export const EmployeesManager: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+52 55..."
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   />
                 </div>
               </div>
@@ -888,7 +888,7 @@ export const EmployeesManager: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold"
+                  className="px-6 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson"
                 >
                   {editingEmployee ? 'Guardar Cambios' : 'Guardar Empleado'}
                 </button>

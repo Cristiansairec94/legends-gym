@@ -64,14 +64,14 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
         {/* Drawer Header */}
         <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-              <Bell className="w-4 h-4 text-amber-400" />
+            <div className="w-9 h-9 rounded-xl bg-crimson-500/20 border border-crimson-500/40 flex items-center justify-center">
+              <Bell className="w-4 h-4 text-crimson-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-black text-sm text-white">Centro de Avisos</h2>
                 {unreadNotificationsCount > 0 && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500 text-black">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-crimson-500 text-white">
                     {unreadNotificationsCount} nuevos
                   </span>
                 )}
@@ -84,7 +84,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
             {unreadNotificationsCount > 0 && (
               <button
                 onClick={markAllNotificationsAsRead}
-                className="p-1.5 rounded-lg text-gym-muted hover:text-amber-400 hover:bg-gym-surface transition-colors"
+                className="p-1.5 rounded-lg text-gym-muted hover:text-crimson-400 hover:bg-gym-surface transition-colors"
                 title="Marcar todas como leídas"
               >
                 <CheckCheck className="w-4 h-4" />
@@ -143,7 +143,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                           markNotificationAsRead(notif.id);
                           onClose();
                         }}
-                        className="text-[11px] font-extrabold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
+                        className="text-[11px] font-extrabold text-crimson-400 hover:text-crimson-300 flex items-center gap-1 transition-colors"
                       >
                         <span>{notif.actionLabel || 'Ir al módulo'}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -181,7 +181,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
           <span>{notifications.length} avisos en historial</span>
           <button
             onClick={markAllNotificationsAsRead}
-            className="text-amber-400 hover:underline font-bold text-[11px]"
+            className="text-crimson-400 hover:underline font-bold text-[11px]"
           >
             Limpiar no leídas
           </button>

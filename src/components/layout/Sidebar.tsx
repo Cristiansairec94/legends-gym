@@ -34,57 +34,57 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     {
       id: 'dashboard',
       label: 'Dashboard / Inicio',
-      icon: <LayoutDashboard className="w-5 h-5" />,
+      icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
       badge: null,
     },
     {
       id: 'access',
       label: 'Control de Acceso',
-      icon: <Fingerprint className="w-5 h-5" />,
+      icon: <Fingerprint className="w-4 h-4 shrink-0" />,
       badge: 'Biométrico',
       highlight: true,
     },
     {
       id: 'pos',
       label: 'Punto de Venta',
-      icon: <ShoppingBag className="w-5 h-5" />,
+      icon: <ShoppingBag className="w-4 h-4 shrink-0" />,
       badge: null,
     },
     {
       id: 'clients',
       label: 'Clientes / Membresías',
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="w-4 h-4 shrink-0" />,
       badge: null,
     },
     {
       id: 'catalog',
       label: 'Catálogo de Productos',
-      icon: <Layers className="w-5 h-5" />,
+      icon: <Layers className="w-4 h-4 shrink-0" />,
       badge: null,
     },
     {
       id: 'inventory',
       label: 'Inventario & Stock',
-      icon: <Package className="w-5 h-5" />,
+      icon: <Package className="w-4 h-4 shrink-0" />,
       badge: lowStockProductsCount > 0 ? `${lowStockProductsCount} bajos` : null,
       badgeColor: 'bg-red-500/20 text-red-400 border border-red-500/30',
     },
     {
       id: 'incomes',
       label: 'Registro de Ingresos',
-      icon: <TrendingUp className="w-5 h-5" />,
+      icon: <TrendingUp className="w-4 h-4 shrink-0" />,
       badge: 'Abonos',
     },
     {
       id: 'expenses',
       label: 'Registro de Gastos',
-      icon: <Receipt className="w-5 h-5" />,
+      icon: <Receipt className="w-4 h-4 shrink-0" />,
       badge: 'Control',
     },
     {
       id: 'cash',
       label: 'Corte de Caja & Turno',
-      icon: <Wallet className="w-5 h-5" />,
+      icon: <Wallet className="w-4 h-4 shrink-0" />,
       badge: null,
     },
   ];
@@ -97,16 +97,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
   const hasAnyConfigAccess = canConfigCatalogs || canConfigRoles || canConfigEmployees || canConfigSync;
 
   return (
-    <aside className="w-64 bg-gym-card border-r border-gym-border flex flex-col justify-between shrink-0 h-[calc(100vh-61px)]">
+    <aside className="w-[272px] bg-gym-card concrete-panel border-r border-gym-border flex flex-col justify-between shrink-0 h-[calc(100vh-61px)] overflow-hidden">
       {/* Navigation Links */}
-      <div className="p-3 space-y-1 overflow-y-auto">
-        <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gym-muted flex items-center justify-between">
+      <div className="px-2.5 py-2 space-y-0.5 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-wider text-gym-muted flex items-center justify-between">
           <span>Módulos del Sistema</span>
           <span className="w-2 h-2 rounded-full bg-emerald-400" title="Sistema en línea" />
         </div>
 
         {allowedMenuItems.length === 0 && !hasAnyConfigAccess && (
-          <div className="px-3 py-4 rounded-xl bg-gym-surface/40 border border-gym-border text-[11px] text-gym-muted text-center">
+          <div className="px-3 py-3 rounded-xl bg-gym-surface/40 border border-gym-border text-[11px] text-gym-muted text-center">
             Sin módulos asignados a este perfil.
           </div>
         )}
@@ -119,25 +119,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs transition-all text-left ${
+              className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl font-medium text-[11.5px] leading-tight transition-all text-left whitespace-nowrap ${
                 isActive
                   ? isPos
-                    ? 'bg-gradient-to-r from-amber-500/25 via-amber-500/10 to-transparent text-amber-200 border-l-4 border-l-amber-400 border-y border-r border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.25)] font-black'
-                    : 'bg-gradient-to-r from-white/[0.12] via-white/[0.06] to-transparent text-white border-l-4 border-l-white border-y border-r border-white/15 shadow-sm font-black'
+                    ? 'bg-gradient-to-r from-crimson-500/25 via-crimson-500/12 to-transparent text-crimson-200 border-l-4 border-l-crimson-400 border-y border-r border-crimson-500/40 shadow-[0_0_20px_rgba(225,29,56,0.25)] font-black'
+                    : 'bg-gradient-to-r from-crimson-500/[0.16] via-crimson-500/[0.06] to-[#232529]/85 text-crimson-100 border-l-4 border-l-crimson-400 border-y border-r border-crimson-500/25 shadow-[0_0_16px_rgba(225,29,56,0.12)] font-black'
                   : isPos
-                  ? 'bg-amber-500/[0.09] text-amber-300 hover:text-amber-200 hover:bg-amber-500/[0.18] border border-amber-500/35 hover:border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.1)] font-bold'
-                  : 'text-zinc-400 hover:bg-white/[0.05] hover:text-white border border-transparent'
+                  ? 'bg-crimson-500/[0.09] text-crimson-300 hover:text-crimson-200 hover:bg-crimson-500/[0.18] border border-crimson-500/35 hover:border-crimson-400/60 shadow-[0_0_12px_rgba(225,29,56,0.1)] font-bold'
+                  : 'text-neutral-400 hover:bg-neutral-800/70 hover:text-neutral-100 border border-transparent hover:border-neutral-700/50'
               }`}
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className={
                   isActive
                     ? isPos 
-                      ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.7)]'
-                      : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                      ? 'text-crimson-400 drop-shadow-[0_0_10px_rgba(225,29,56,0.7)] shrink-0'
+                      : 'text-crimson-400 drop-shadow-[0_0_8px_rgba(225,29,56,0.45)] shrink-0'
                     : isPos
-                    ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]'
-                    : 'text-zinc-400'
+                    ? 'text-crimson-400 drop-shadow-[0_0_6px_rgba(225,29,56,0.4)] shrink-0'
+                    : 'text-neutral-400 shrink-0'
                 }>
                   {item.icon}
                 </span>
@@ -145,15 +145,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
               </div>
 
               {item.badge && (
-                <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold ${
+                <span className={`text-[8.5px] px-1.5 py-0.5 rounded font-extrabold shrink-0 ${
                   item.badgeColor || (
                     isPos
                       ? isActive
-                        ? 'bg-amber-400/25 text-amber-200 border border-amber-400/60'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        ? 'bg-crimson-400/25 text-crimson-200 border border-crimson-400/60'
+                        : 'bg-crimson-500/20 text-crimson-300 border border-crimson-500/40'
                       : item.highlight 
-                      ? 'bg-white/15 text-white border border-white/20' 
-                      : 'bg-white/[0.05] text-zinc-400 border border-white/10'
+                      ? 'bg-crimson-500/15 text-crimson-300 border border-crimson-500/30' 
+                      : 'bg-neutral-800/80 text-neutral-300 border border-neutral-700/70'
                   )
                 }`}>
                   {item.badge}
@@ -165,25 +165,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
         {/* Section Divider: Configuración (Only if user has at least one admin/config permission) */}
         {hasAnyConfigAccess && (
-          <div className="pt-2">
-            <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-gym-muted">
+          <div className="pt-1.5">
+            <div className="px-2.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-gym-muted">
               Administración
             </div>
 
             {/* Configuración Header (Accordion) */}
-            <div className="mt-1">
+            <div className="mt-0.5">
               <button
                 onClick={() => setIsConfigOpen(!isConfigOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs text-white hover:bg-gym-surface/80 transition-colors group select-none"
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl font-bold text-[11.5px] text-white hover:bg-gym-surface/80 transition-colors group select-none whitespace-nowrap"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-600/80 to-amber-900/90 border border-amber-500/50 flex items-center justify-center shadow-sm">
-                    <Settings className="w-3.5 h-3.5 text-amber-200" />
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-crimson-600/80 to-crimson-900/90 border border-crimson-500/50 flex items-center justify-center shadow-sm shrink-0">
+                    <Settings className="w-3.5 h-3.5 text-crimson-200" />
                   </div>
-                  <span className="font-bold text-white text-xs">Configuración</span>
+                  <span className="font-bold text-white text-[11.5px]">Configuración</span>
                 </div>
 
-                <span className="text-gym-muted group-hover:text-white transition-colors">
+                <span className="text-gym-muted group-hover:text-white transition-colors shrink-0">
                   {isConfigOpen ? (
                     <ChevronUp className="w-3.5 h-3.5 stroke-[2.5]" />
                   ) : (
@@ -194,21 +194,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
               {/* Tree Submenu */}
               {isConfigOpen && (
-                <div className="ml-4 pl-2.5 border-l-2 border-gym-border/80 space-y-1 mt-1">
+                <div className="ml-2.5 pl-2 border-l-2 border-gym-border/80 space-y-0.5 mt-0.5">
                   
                   {/* Subitem 1: Catálogos de sistema */}
                   {canConfigCatalogs && (
                     <button
                       onClick={() => setActiveTab('config_catalogs')}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                      className={`w-full flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-tight font-semibold transition-all text-left whitespace-nowrap ${
                         activeTab === 'config_catalogs'
-                          ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
-                          : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-crimson-500/15 text-crimson-200 border border-crimson-500/35 font-bold shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/60'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <SlidersHorizontal className={`w-3.5 h-3.5 ${activeTab === 'config_catalogs' ? 'text-white' : 'text-zinc-400'}`} />
-                        <span>Catálogos de sistema</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <SlidersHorizontal className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_catalogs' ? 'text-crimson-400' : 'text-neutral-400'}`} />
+                        <span className="truncate">Catálogos de sistema</span>
                       </div>
                     </button>
                   )}
@@ -217,17 +217,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   {canConfigRoles && (
                     <button
                       onClick={() => setActiveTab('config_roles')}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                      className={`w-full flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-tight font-semibold transition-all text-left whitespace-nowrap ${
                         activeTab === 'config_roles'
-                          ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
-                          : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-crimson-500/15 text-crimson-200 border border-crimson-500/35 font-bold shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/60'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className={`w-3.5 h-3.5 ${activeTab === 'config_roles' ? 'text-white' : 'text-zinc-400'}`} />
-                        <span>Roles & Permisos</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_roles' ? 'text-crimson-400' : 'text-neutral-400'}`} />
+                        <span className="truncate">Roles & Permisos</span>
                       </div>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
+                      <span className="text-[8.5px] px-1.5 py-0.5 rounded font-bold bg-neutral-800/80 text-neutral-300 border border-neutral-700/70 shrink-0">
                         Roles
                       </span>
                     </button>
@@ -237,17 +237,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   {canConfigEmployees && (
                     <button
                       onClick={() => setActiveTab('config_employees')}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-left ${
+                      className={`w-full flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-tight font-bold transition-all text-left whitespace-nowrap ${
                         activeTab === 'config_employees'
-                          ? 'bg-white/10 text-white border border-white/20 shadow-sm'
-                          : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-crimson-500/15 text-crimson-200 border border-crimson-500/35 shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/60'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <UserCheck className={`w-3.5 h-3.5 ${activeTab === 'config_employees' ? 'text-white' : 'text-zinc-400'}`} />
-                        <span>Empleados</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <UserCheck className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_employees' ? 'text-crimson-400' : 'text-neutral-400'}`} />
+                        <span className="truncate">Empleados</span>
                       </div>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
+                      <span className="text-[8.5px] px-1.5 py-0.5 rounded font-bold bg-neutral-800/80 text-neutral-300 border border-neutral-700/70 shrink-0">
                         Personal
                       </span>
                     </button>
@@ -257,17 +257,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   {canConfigSync && (
                     <button
                       onClick={() => setActiveTab('config_sync')}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                      className={`w-full flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-tight font-semibold transition-all text-left whitespace-nowrap ${
                         activeTab === 'config_sync'
-                          ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
-                          : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-crimson-500/15 text-crimson-200 border border-crimson-500/35 font-bold shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/60'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Cloud className={`w-3.5 h-3.5 ${activeTab === 'config_sync' ? 'text-white' : 'text-zinc-400'}`} />
-                        <span>Sincronización & Datos</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Cloud className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_sync' ? 'text-crimson-400' : 'text-neutral-400'}`} />
+                        <span className="truncate">Sincronización & Datos</span>
                       </div>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/[0.06] text-zinc-300 border border-white/10">
+                      <span className="text-[8.5px] px-1.5 py-0.5 rounded font-bold bg-neutral-800/80 text-neutral-300 border border-neutral-700/70 shrink-0">
                         Offline
                       </span>
                     </button>
@@ -282,48 +282,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       </div>
 
       {/* Bottom Profile / Terminal Active Info */}
-      <div className="p-3 border-t border-gym-border bg-gym-surface/30">
-        <div className="p-2.5 rounded-xl bg-gym-surface/60 border border-gym-border">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-bold text-gray-200">Personal en Turno</span>
-            </div>
-            <button
-              onClick={logout}
-              title="Cerrar sesión"
-              className="p-1 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
+      <div className="px-2.5 py-2 border-t border-gym-border bg-gym-surface/30 shrink-0">
+        <div className="px-2.5 py-2 rounded-xl bg-gym-surface/60 border border-gym-border flex items-center justify-between gap-2">
           {currentUser ? (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 min-w-0">
               <img 
                 src={currentUser.avatarUrl} 
                 alt={currentUser.fullName}
-                className="w-8 h-8 rounded-lg object-cover border border-amber-500/40 shrink-0" 
+                className="w-8 h-8 rounded-lg object-cover border border-crimson-500/40 shrink-0" 
               />
-              <div className="overflow-hidden leading-tight">
-                <p className="text-xs font-bold text-white truncate">
+              <div className="overflow-hidden leading-tight min-w-0">
+                <div className="flex items-center gap-1 text-[9px] text-neutral-400 font-semibold uppercase tracking-wide">
+                  <Sparkles className="w-2.5 h-2.5 text-crimson-400 shrink-0" />
+                  <span className="truncate">En turno</span>
+                </div>
+                <p className="text-[11.5px] font-bold text-white truncate">
                   {currentUser.fullName}
                 </p>
-                <p className="text-[10px] text-amber-400 font-semibold truncate capitalize">
+                <p className="text-[9.5px] text-crimson-400 font-semibold truncate capitalize">
                   {currentUser.jobTitle || currentRole}
                 </p>
               </div>
             </div>
           ) : (
-            <div>
-              <p className="text-[11px] text-gym-muted leading-tight">
-                Club: <strong className="text-white">LEYENDS FITNESS GYM</strong>
+            <div className="min-w-0">
+              <p className="text-[11px] text-gym-muted leading-tight truncate">
+                Club: <strong className="text-white">LEYENDS GYM</strong>
               </p>
-              <p className="text-[10px] text-gym-muted mt-0.5">
-                Rol: <strong className="text-amber-400 capitalize">{currentRole}</strong>
+              <p className="text-[10px] text-gym-muted mt-0.5 truncate">
+                Rol: <strong className="text-crimson-400 capitalize">{currentRole}</strong>
               </p>
             </div>
           )}
+
+          <button
+            onClick={logout}
+            title="Cerrar sesión"
+            className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
