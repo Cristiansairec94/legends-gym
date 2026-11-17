@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Client, MembershipPlanType, PaymentMethod } from '../../types';
+import { getGymAvatar } from '../../utils/genderAvatar';
 import { useGym } from '../../context/GymContext';
 import confetti from 'canvas-confetti';
 import { X, RefreshCw, CreditCard, Banknote, ArrowRightLeft } from 'lucide-react';
@@ -17,24 +18,27 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
 }) => {
   const { renewMembership, catalogPlans } = useGym();
 
-  const [selectedPlan, setSelectedPlan] = useState<MembershipPlanType>('monthly');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('CAT-PLAN-004');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [amountGiven, setAmountGiven] = useState<string>('');
 
-  const DEFAULT_PLANS: { type: MembershipPlanType; name: string; months: number; price: number }[] = [
-    { type: 'daily', name: 'Pase por Día (Day Pass)', months: 0, price: 150 },
-    { type: 'monthly', name: 'Mensualidad Estándar (30 Días)', months: 1, price: 850 },
-    { type: 'quarterly', name: 'Plan Trimestral Fuerza (90 Días)', months: 3, price: 2300 },
-    { type: 'vip', name: 'Membresía Black VIP Anual (365 Días)', months: 12, price: 9500 },
+  const DEFAULT_PLANS: { id: string; type: MembershipPlanType; name: string; months: number; price: number }[] = [
+    { id: 'CAT-PLAN-002', type: 'weekly', name: 'Pase Semanal (7 Días)', months: 0, price: 150 },
+    { id: 'CAT-PLAN-003', type: 'biweekly', name: 'Pase Quincenal (15 Días)', months: 0, price: 250 },
+    { id: 'CAT-PLAN-004', type: 'monthly', name: 'Mensualidad Individual (30 Días)', months: 1, price: 420 },
+    { id: 'CAT-PLAN-005', type: 'group', name: 'Paquete 3 Personas (Mensual)', months: 1, price: 1100 },
+    { id: 'CAT-PLAN-006', type: 'group', name: 'Paquete 4 Personas (Mensual)', months: 1, price: 1500 },
   ];
 
-  const plans = catalogPlans && catalogPlans.length > 0
-    ? catalogPlans.map(p => {
+  const activeCatalogPlans = catalogPlans ? catalogPlans.filter(p => p.active !== false) : [];
+  const plans = activeCatalogPlans.length > 0
+    ? activeCatalogPlans.map(p => {
         let months = 1;
-        if (p.durationDays === 1) months = 0;
+        if (p.durationDays < 30) months = 0;
         else if (p.durationDays === 90) months = 3;
         else if (p.durationDays >= 360) months = 12;
         return {
+          id: p.id,
           type: p.type,
           name: `${p.name} (${p.durationDays === 1 ? '1 Día' : `${p.durationDays} Días`})`,
           months,
@@ -43,7 +47,7 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
       })
     : DEFAULT_PLANS;
 
-  const currentPlan = plans.find(p => p.type === selectedPlan) || plans[1];
+  const currentPlan = plans.find(p => p.id === selectedPlanId) || plans[2] || plans[0];
   const cashNum = parseFloat(amountGiven) || 0;
   const change = paymentMethod === 'cash' ? Math.max(0, cashNum - currentPlan.price) : 0;
 
@@ -51,7 +55,7 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
     e.preventDefault();
     renewMembership(
       client.id, 
-      selectedPlan, 
+      currentPlan.type, 
       currentPlan.months, 
       currentPlan.price, 
       paymentMethod
@@ -93,7 +97,7 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
         {/* Member preview */}
         <div className="p-4 bg-gym-surface/20 border-b border-gym-border/60 flex items-center gap-3">
           <img 
-            src={client.avatarUrl} 
+            src={getGymAvatar(client.fullName, client.avatarUrl, client.gender)} 
             alt={client.fullName} 
             className="w-12 h-12 rounded-full object-cover border border-gym-border" 
           />
@@ -121,10 +125,10 @@ export const RenewMembershipModal: React.FC<RenewMembershipModalProps> = ({
             <div className="space-y-2">
               {plans.map((p) => (
                 <div
-                  key={p.type}
-                  onClick={() => setSelectedPlan(p.type)}
+                  key={p.id}
+                  onClick={() => setSelectedPlanId(p.id)}
                   className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                    selectedPlan === p.type
+                    currentPlan?.id === p.id
                       ? 'bg-amber-500/15 border-amber-400 shadow-glow-gold/40'
                       : 'bg-gym-surface/60 border-gym-border hover:border-gym-border/80'
                   }`}

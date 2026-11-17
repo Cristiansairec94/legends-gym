@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Client } from '../../types';
+import { getGymAvatar } from '../../utils/genderAvatar';
 import { useGym } from '../../context/GymContext';
 import { sounds } from '../../services/audio';
 import confetti from 'canvas-confetti';
@@ -34,8 +35,6 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
   const fingers = [
     'Pulgar Derecho',
     'Índice Derecho',
-    'Pulgar Izquierdo',
-    'Índice Izquierdo',
   ];
 
   const handleCaptureStep = () => {
@@ -96,7 +95,7 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
         {/* Client Header Info */}
         <div className="p-4 bg-gym-surface/20 border-b border-gym-border/60 flex items-center gap-3">
           <img 
-            src={client.avatarUrl} 
+            src={getGymAvatar(client.fullName, client.avatarUrl, client.gender)} 
             alt={client.fullName} 
             className="w-12 h-12 rounded-full object-cover border border-gym-border" 
           />
@@ -237,3 +236,4 @@ export const BiometricEnrollModal: React.FC<BiometricEnrollModalProps> = ({
     </div>
   );
 };
+

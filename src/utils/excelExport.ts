@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { getMembershipStatus, resolveSaleType } from './membershipUtils';
 import { CashRegisterSession, Expense, Sale, GymSettings } from '../types';
 
 export const exportShiftReportToExcel = (
@@ -34,11 +35,22 @@ export const exportShiftReportToExcel = (
 
   const totalCashExpenses = shiftCashExpenses.reduce((sum, e) => sum + e.amount, 0);
 
+  const totalVisitsCash = cashSession.totalVisitsCash || 0;
+  const totalVisitsCard = cashSession.totalVisitsCard || 0;
+  const totalVisitsTransfer = cashSession.totalVisitsTransfer || 0;
+  const totalVisits = totalVisitsCash + totalVisitsCard + totalVisitsTransfer;
+
   const totalStoreSales = cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer;
   const totalMemberships = cashSession.totalMembershipsCash + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0);
-  const grandTotalShift = totalStoreSales + totalMemberships;
+  const grandTotalShift = totalStoreSales + totalMemberships + totalVisits;
 
-  const totalElectronic = cashSession.totalSalesCard + cashSession.totalSalesTransfer + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0);
+  const totalElectronic =
+    cashSession.totalSalesCard +
+    cashSession.totalSalesTransfer +
+    cashSession.totalMembershipsCard +
+    (cashSession.totalMembershipsTransfer || 0) +
+    totalVisitsCard +
+    totalVisitsTransfer;
   const expectedCashInDrawer = cashSession.expectedCash;
 
   const remanentCash = cashSession.leaveCashInDrawer ? (cashSession.remanentCash || 0) : 0;
@@ -58,7 +70,8 @@ export const exportShiftReportToExcel = (
     ['Concepto', 'Monto ($ MXN)', 'Tipo', 'Detalle Operativo'],
     ['( + ) Fondo Inicial con que abrió el turno', cashSession.initialCash, 'Fondo', 'Monedas y billetes depositados al iniciar'],
     ['( + ) Ventas en Mostrador / Tienda (Efectivo)', cashSession.totalSalesCash, 'Ingreso', 'Suplementos, bebidas y cafetería cobrados en efectivo'],
-    ['( + ) Membresías y Cuotas (Efectivo)', cashSession.totalMembershipsCash, 'Ingreso', 'Planes, inscripciones y visitas pagadas en efectivo'],
+    ['( + ) Membresías y Cuotas (Efectivo)', cashSession.totalMembershipsCash, 'Ingreso', 'Planes e inscripciones pagados en efectivo'],
+    ['( + ) Pases de Visita (Efectivo)', totalVisitsCash, 'Ingreso', 'Pases de visita diaria ($50) pagados en efectivo'],
     ['( - ) Gastos Operativos Pagados de Caja (Efectivo)', -totalCashExpenses, 'Egreso', 'Compras urgentes y gastos menores pagados del cajón'],
     ['( = ) TOTAL EFECTIVO FÍSICO ESPERADO EN CAJÓN', expectedCashInDrawer, 'Cálculo Sistema', 'Monto total que debe existir físicamente en monedas/billetes'],
     [],
@@ -82,8 +95,10 @@ export const exportShiftReportToExcel = (
     ['--- 3. INGRESOS ELECTRÓNICOS Y BANCARIOS (NO INGRESAN A CAJA FÍSICA) ---', '', '', ''],
     ['Concepto', 'Monto ($ MXN)', 'Medio de Pago', 'Destino'],
     ['Membresías cobradas con Tarjeta (POS)', cashSession.totalMembershipsCard, 'Terminal Bancaria', 'Cuenta Bancaria Gimnasio'],
+    ['Pases de Visita cobrados con Tarjeta (POS)', totalVisitsCard, 'Terminal Bancaria', 'Cuenta Bancaria Gimnasio'],
     ['Suplementos / Tienda con Tarjeta (POS)', cashSession.totalSalesCard, 'Terminal Bancaria', 'Cuenta Bancaria Gimnasio'],
     ['Membresías por Transferencia (SPEI)', cashSession.totalMembershipsTransfer || 0, 'Transferencia SPEI', 'Cuenta Bancaria Gimnasio'],
+    ['Pases de Visita por Transferencia (SPEI)', totalVisitsTransfer, 'Transferencia SPEI', 'Cuenta Bancaria Gimnasio'],
     ['Suplementos / Tienda por Transferencia (SPEI)', cashSession.totalSalesTransfer, 'Transferencia SPEI', 'Cuenta Bancaria Gimnasio'],
     ['TOTAL INGRESOS ELECTRÓNICOS EN BANCO', totalElectronic, 'Suma Bancaria', 'Depósitos directos a cuenta bancaria'],
     [],
@@ -113,7 +128,7 @@ export const exportShiftReportToExcel = (
   const salesHeader = [
     'Folio / Ticket',
     'Fecha y Hora',
-    'Tipo de Venta',
+    'Tipo de Cobro',
     'Cliente / Socio',
     'Método de Pago',
     'Productos / Conceptos',
@@ -124,7 +139,7 @@ export const exportShiftReportToExcel = (
 
   const salesRows = shiftSales.map(s => {
     const itemsDescription = s.items && s.items.length > 0
-      ? s.items.map(it => `${it.quantity}x ${it.product.name}`).join(' | ')
+      ? s.items.map((it: any) => `${it.quantity || 1}x ${it.product?.name || it.name || s.planName || 'Cobro'}`).join(' | ')
       : s.planName || 'Venta mostrador';
 
     const paymentLabel = s.paymentMethod === 'cash' 
@@ -133,7 +148,13 @@ export const exportShiftReportToExcel = (
       ? 'Tarjeta Bancaria' 
       : 'Transferencia';
 
-    const saleTypeLabel = s.saleType === 'membership' ? 'Membresía / Cuota' : 'Suplementos / Tienda';
+    const resolvedType = resolveSaleType(s);
+    const saleTypeLabel =
+      resolvedType === 'visit'
+        ? 'Pase de Visita'
+        : resolvedType === 'membership'
+          ? 'Membresía / Cuota'
+          : 'Suplementos / Tienda';
 
     return [
       s.folio || s.id,
@@ -233,10 +254,12 @@ export const exportIncomeReportToExcel = (
   const totalTransfer = sales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0);
   const avgTicket = totalSalesCount > 0 ? Math.round(grandTotal / totalSalesCount) : 0;
 
-  // Desglose por tipo de venta
-  const membershipSales = sales.filter(s => s.saleType === 'membership');
-  const storeSales = sales.filter(s => s.saleType !== 'membership');
+  // Desglose por tipo de venta (Membresías, Pases de Visita y Punto de Venta separados)
+  const membershipSales = sales.filter(s => resolveSaleType(s) === 'membership');
+  const visitSales = sales.filter(s => resolveSaleType(s) === 'visit');
+  const storeSales = sales.filter(s => resolveSaleType(s) === 'store');
   const totalMemberships = membershipSales.reduce((sum, s) => sum + s.total, 0);
+  const totalVisits = visitSales.reduce((sum, s) => sum + s.total, 0);
   const totalStore = storeSales.reduce((sum, s) => sum + s.total, 0);
 
   // Desglose por cajero
@@ -267,7 +290,8 @@ export const exportIncomeReportToExcel = (
     [],
     ['--- 2. INGRESOS POR TIPO DE OPERACIÓN ---', '', '', ''],
     ['Tipo de Venta / Servicio', 'Monto ($ MXN)', 'N° Operaciones', '% del Total'],
-    ['Membresías, Planes y Accesos', totalMemberships, membershipSales.length, grandTotal > 0 ? `${((totalMemberships / grandTotal) * 100).toFixed(1)}%` : '0%'],
+    ['Membresías y Planes', totalMemberships, membershipSales.length, grandTotal > 0 ? `${((totalMemberships / grandTotal) * 100).toFixed(1)}%` : '0%'],
+    ['Pases de Visita ($50)', totalVisits, visitSales.length, grandTotal > 0 ? `${((totalVisits / grandTotal) * 100).toFixed(1)}%` : '0%'],
     ['Punto de Venta (Suplementos y Tienda)', totalStore, storeSales.length, grandTotal > 0 ? `${((totalStore / grandTotal) * 100).toFixed(1)}%` : '0%'],
     [],
     ['--- 3. RECAUDACIÓN POR CAJERO / RESPONSABLE ---', '', '', ''],
@@ -319,7 +343,13 @@ export const exportIncomeReportToExcel = (
       ? 'Tarjeta Bancaria'
       : 'Transferencia SPEI';
 
-    const typeLabel = s.saleType === 'membership' ? 'Membresía' : 'Punto Venta';
+    const resolvedType = resolveSaleType(s);
+    const typeLabel =
+      resolvedType === 'visit'
+        ? 'Visita'
+        : resolvedType === 'membership'
+          ? 'Membresía'
+          : 'Punto Venta';
 
     return [
       s.folio || s.id,
@@ -356,4 +386,90 @@ export const exportIncomeReportToExcel = (
   const safeDate = new Date().toISOString().slice(0, 10);
   const fileName = `Reporte_Ingresos_${safePeriod}_${safeDate}.xlsx`;
   XLSX.writeFile(wb, fileName);
+};
+
+
+export const exportClientsToExcel = (clients: any[]) => {
+  const wb = XLSX.utils.book_new();
+
+  const titleRows = [
+    ['FITNESS LEGENDS PRO GYM - PADRÓN MAESTRO DE CLIENTES & MEMBRESÍAS'],
+    [`Generado el: ${new Date().toLocaleString('es-MX')}`],
+    [`Total registros: ${clients.length}`],
+    ['']
+  ];
+
+  const headers = [
+    'ID Socio',
+    'Nombre Completo',
+    'DNI / Documento',
+    'Teléfono',
+    'Correo Electrónico',
+    'Plan de Membresía',
+    'Costo Plan ($ MXN)',
+    'Fecha Inicio',
+    'Fecha Vencimiento',
+    'Días Restantes',
+    'Estado Membresía',
+    'Huella Enrolada',
+    'Asistencias Totales',
+    'Última Asistencia',
+    'Gasto en Tienda ($ MXN)',
+    'Contacto de Emergencia',
+    'Tel. Emergencia',
+    'Notas Médicas'
+  ];
+
+  const dataRows = clients.map(c => {
+    const { isExpired, isExpiring, daysRemaining: calcDays } = getMembershipStatus(c.membership);
+    const statusLabel = isExpired ? 'VENCIDA / MOROSA' : isExpiring ? 'POR VENCER' : 'ACTIVA VIGENTE';
+
+    return [
+      c.id,
+      c.fullName,
+      c.documentId || 'S/N',
+      c.phone || '',
+      c.email || '',
+      c.membership?.planName || 'Sin Plan',
+      c.membership?.price || 0,
+      c.membership?.startDate || '',
+      c.membership?.endDate || '',
+      calcDays,
+      statusLabel,
+      c.biometricRegistered ? 'SÍ (Enrolada)' : 'NO (Pendiente)',
+      c.checkInsCount || 0,
+      c.lastCheckIn ? new Date(c.lastCheckIn).toLocaleString('es-MX') : 'Sin registros',
+      c.totalSpentInStore || 0,
+      c.emergencyContact?.name || '',
+      c.emergencyContact?.phone || '',
+      c.medicalNotes || 'Sin notas'
+    ];
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet([...titleRows, headers, ...dataRows]);
+
+  ws['!cols'] = [
+    { wch: 14 },
+    { wch: 28 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 26 },
+    { wch: 30 },
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 20 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 18 },
+    { wch: 40 },
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Cartera de Socios');
+  const safeDate = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Cartera_Clientes_LegendsGym_${safeDate}.xlsx`);
 };

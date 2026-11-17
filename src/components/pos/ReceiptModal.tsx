@@ -198,7 +198,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           <div style={{ fontSize: '10px', lineHeight: '1.35', color: '#000000' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span style={{ fontWeight: 'bold' }}>FOLIO:</span>
-              <span style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{sale.folio}</span>
+              <span style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{sale.folio || sale.id}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>FECHA:</span>
@@ -206,11 +206,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>CLIENTE:</span>
-              <span style={{ fontWeight: 'bold' }}>{sale.clientName}</span>
+              <span style={{ fontWeight: 'bold' }}>{sale.clientName || 'Visitante'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
               <span>ATENDIÓ:</span>
-              <span>{sale.cashierName}</span>
+              <span>{sale.cashierName || 'Recepción (RP)'}</span>
             </div>
           </div>
 
@@ -224,19 +224,19 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px' }}>
-              {sale.items.map((item, idx) => (
+              {(Array.isArray(sale.items) ? sale.items : []).map((item: any, idx) => (
                 <div key={idx} style={{ marginBottom: '2px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontWeight: 'bold', textAlign: 'left', paddingRight: '6px' }}>
-                      {item.quantity}x {item.product.name}
+                      {item.quantity || 1}x {item.product?.name || item.name || sale.planName || 'Cobro'}
                     </span>
                     <span style={{ fontWeight: 'bold', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
-                      ${item.subtotal.toFixed(2)}
+                      ${Number(item.subtotal ?? item.total ?? sale.total ?? 0).toFixed(2)}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8.5px', color: '#555555', marginTop: '0.5px' }}>
-                    <span>{item.product.brand} - {item.product.flavor || 'Original'}</span>
-                    <span>@${item.unitPrice.toFixed(2)} c/u</span>
+                    <span>{item.product?.brand || 'LEGENDS GYM'}{item.product?.flavor ? ' - ' + item.product.flavor : ''}</span>
+                    <span>@${Number(item.unitPrice ?? item.price ?? sale.total ?? 0).toFixed(2)} c/u</span>
                   </div>
                 </div>
               ))}
@@ -249,26 +249,26 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           <div style={{ fontSize: '10.5px', lineHeight: '1.35', color: '#000000' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '1px' }}>
               <span>SUBTOTAL:</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.subtotal.toFixed(2)}</span>
+              <span style={{ fontFamily: 'monospace' }}>${Number(sale.subtotal ?? sale.total ?? 0).toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#555555', marginBottom: '1px' }}>
               <span>I.V.A. (16%):</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.tax.toFixed(2)}</span>
+              <span style={{ fontFamily: 'monospace' }}>${Number(sale.tax ?? 0).toFixed(2)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', fontSize: '13px', borderTop: '1px solid #000000', paddingTop: '3px', marginTop: '3px', color: '#000000' }}>
               <span>TOTAL A PAGAR:</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.total.toFixed(2)} MXN</span>
+              <span style={{ fontFamily: 'monospace' }}>${Number(sale.total ?? 0).toFixed(2)} MXN</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#333333', fontSize: '10px', marginTop: '2px' }}>
-              <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod}):</span>
-              <span style={{ fontFamily: 'monospace' }}>${sale.amountPaid.toFixed(2)}</span>
+              <span style={{ textTransform: 'capitalize' }}>PAGO ({sale.paymentMethod || 'cash'}):</span>
+              <span style={{ fontFamily: 'monospace' }}>${Number(sale.amountPaid ?? sale.total ?? 0).toFixed(2)}</span>
             </div>
             {sale.paymentMethod === 'cash' && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10.5px', color: '#000000', marginTop: '1px' }}>
                 <span>CAMBIO ENTREGADO:</span>
-                <span style={{ fontFamily: 'monospace' }}>${sale.changeGiven.toFixed(2)}</span>
+                <span style={{ fontFamily: 'monospace' }}>${Number(sale.changeGiven ?? 0).toFixed(2)}</span>
               </div>
             )}
           </div>

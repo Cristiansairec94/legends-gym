@@ -2,15 +2,31 @@ import React, { useState } from 'react';
 import { Client, MembershipPlanType, PaymentMethod, DEFAULT_CLIENT_AVATAR } from '../../types';
 import { useGym } from '../../context/GymContext';
 import { 
+  calculateMembershipDates,
+  calculateAgeFromBirthDate,
+  formatBirthDateToISO,
+  formatBirthDateToDisplay,
+  sanitizeBirthDateInput,
+  parseBirthDateParts,
+  getGroupPackageSize,
+  resizeGroupCompanions,
+  isGroupCompanionComplete,
+  GroupCompanionDraft
+} from '../../utils/membershipUtils';
+import { 
   X, 
   UserPlus, 
+  Users,
   ShieldAlert, 
   ShieldCheck,
   Sparkles, 
   Dumbbell, 
   Banknote, 
   CreditCard, 
-  ArrowRightLeft 
+  ArrowRightLeft,
+  Calendar,
+  Clock,
+  Check
 } from 'lucide-react';
 import { 
   getGymAvatar, 
@@ -20,8 +36,12 @@ import {
   FEMALE_GYM_PHOTOS, 
   MALE_GYM_SVG_AVATAR, 
   FEMALE_GYM_SVG_AVATAR,
-  getOfflineGymSvgAvatar
+  getOfflineGymSvgAvatar,
+  FEMALE_CLIENT_AVATAR,
+  MALE_CLIENT_AVATAR
 } from '../../utils/genderAvatar';
+import { BirthDatePickerField } from '../access/BirthDatePickerField';
+import { GroupCompanionsModal } from '../access/GroupCompanionsModal';
 
 interface ClientFormModalProps {
   onClose: () => void;
@@ -43,7 +63,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [avatarUrl, setAvatarUrl] = useState('');
   const [genderFilter, setGenderFilter] = useState<'male' | 'female'>('male');
   const [hasManuallySelectedPhoto, setHasManuallySelectedPhoto] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'CAT-PLAN-002');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'CAT-PLAN-004');
   const [planType, setPlanType] = useState<MembershipPlanType>('monthly');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [emergencyName, setEmergencyName] = useState('');
@@ -52,11 +72,59 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [medicalNotes, setMedicalNotes] = useState('');
   const [enrollNow, setEnrollNow] = useState(true);
 
+  const [birthDate, setBirthDate] = useState('');
+  const [birthDateDisplay, setBirthDateDisplay] = useState('');
+  const [age, setAge] = useState<number | string>('');
+
+  const handleBirthDateInputChange = (rawVal: string) => {
+    const val = sanitizeBirthDateInput(rawVal, birthDateDisplay);
+    setBirthDateDisplay(val);
+    if (!val.trim()) {
+      setBirthDate('');
+      setAge('');
+      return;
+    }
+    const calculatedAge = calculateAgeFromBirthDate(val);
+    if (calculatedAge !== null) {
+      setAge(calculatedAge);
+      setBirthDate(formatBirthDateToISO(val));
+    } else {
+      setBirthDate('');
+      setAge('');
+    }
+  };
+
+  const handleCalendarDateChange = (isoDate: string) => {
+    if (!isoDate) {
+      setBirthDate('');
+      setBirthDateDisplay('');
+      setAge('');
+      return;
+    }
+    setBirthDate(isoDate);
+    setBirthDateDisplay(formatBirthDateToDisplay(isoDate));
+    const calculatedAge = calculateAgeFromBirthDate(isoDate);
+    if (calculatedAge !== null) {
+      setAge(calculatedAge);
+    }
+  };
+
+  const handleAgeChange = (val: string) => {
+    setAge(val);
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num > 0 && num < 120 && !birthDateDisplay) {
+      const approxYear = new Date().getFullYear() - num;
+      setBirthDate(`${approxYear}-01-01`);
+      setBirthDateDisplay(`01/01/${approxYear}`);
+    }
+  };
+
   const DEFAULT_PLANS: { id: string; type: MembershipPlanType; name: string; price: number; duration: string; durationDays: number }[] = [
-    { id: 'CAT-PLAN-001', type: 'daily', name: 'Pase por Día (Day Pass)', price: 150, duration: '1 día', durationDays: 1 },
-    { id: 'CAT-PLAN-002', type: 'monthly', name: 'Mensualidad Estándar', price: 850, duration: '30 días', durationDays: 30 },
-    { id: 'CAT-PLAN-003', type: 'quarterly', name: 'Plan Trimestral Fuerza', price: 2300, duration: '90 días', durationDays: 90 },
-    { id: 'CAT-PLAN-004', type: 'annual', name: 'Membresía Black VIP Anual', price: 9500, duration: '365 días', durationDays: 365 },
+    { id: 'CAT-PLAN-002', type: 'weekly', name: 'Pase Semanal (Semana por persona)', price: 150, duration: '7 días', durationDays: 7 },
+    { id: 'CAT-PLAN-003', type: 'biweekly', name: 'Pase Quincenal (15 Días)', price: 250, duration: '15 días', durationDays: 15 },
+    { id: 'CAT-PLAN-004', type: 'monthly', name: 'Mensualidad Individual', price: 420, duration: '30 días', durationDays: 30 },
+    { id: 'CAT-PLAN-005', type: 'group', name: 'Paquete 3 Personas (Mensual)', price: 1100, duration: '30 días', durationDays: 30 },
+    { id: 'CAT-PLAN-006', type: 'group', name: 'Paquete 4 Personas (Mensual)', price: 1500, duration: '30 días', durationDays: 30 },
   ];
 
   const planOptions = catalogPlans && catalogPlans.length > 0
@@ -74,48 +142,116 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
       })
     : DEFAULT_PLANS;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const [groupCompanions, setGroupCompanions] = useState<GroupCompanionDraft[]>([]);
+  const [showGroupCompanionsModal, setShowGroupCompanionsModal] = useState(false);
+
+  const selectedPlan = planOptions.find(p => p.id === selectedPlanId) || planOptions.find(p => p.type === planType) || planOptions[0];
+  const activeGroupSize = getGroupPackageSize(selectedPlan?.name, selectedPlan?.type);
+  const requiredCompanionsCount = Math.max(0, activeGroupSize - 1);
+  const activeGroupCompanions = requiredCompanionsCount > 0
+    ? resizeGroupCompanions(groupCompanions, requiredCompanionsCount)
+    : [];
+  const completedCompanionsCount = activeGroupCompanions.filter(isGroupCompanionComplete).length;
+  const allGroupCompanionsReady =
+    requiredCompanionsCount === 0 || completedCompanionsCount === requiredCompanionsCount;
+
+  const performRegisterMembers = () => {
     if (!fullName.trim()) return;
 
-    const selectedPlan = planOptions.find(p => p.id === selectedPlanId) || planOptions.find(p => p.type === planType) || planOptions[0];
-    const now = new Date();
-    const end = new Date();
     const days = selectedPlan.durationDays || (selectedPlan.type === 'daily' ? 1 : selectedPlan.type === 'monthly' ? 30 : selectedPlan.type === 'quarterly' ? 90 : 365);
-    end.setDate(now.getDate() + days);
-
-    const daysRemaining = Math.max(1, Math.round((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    const calculatedDates = calculateMembershipDates(days);
 
     const finalDocId = documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`;
     const finalEmail = email.trim() || `${fullName.toLowerCase().replace(/\s+/g, '.') || 'cliente'}@email.com`;
+
+    const parsedBirth = birthDateDisplay.trim()
+      ? (parseBirthDateParts(birthDateDisplay) ? formatBirthDateToISO(birthDateDisplay) : '')
+      : formatBirthDateToISO(birthDate);
+    const finalBirthDate = parsedBirth || (age ? `${new Date().getFullYear() - Number(age)}-01-01` : undefined);
+
+    const groupNames = requiredCompanionsCount > 0
+      ? [fullName.trim(), ...activeGroupCompanions.map(c => c.fullName.trim())]
+      : [];
 
     const created = addMember({
       fullName: fullName.trim(),
       documentId: finalDocId,
       email: finalEmail,
       phone: phone.trim() || '+52 55 1234 5678',
-      avatarUrl: (avatarUrl && !avatarUrl.includes("rect width='128' height='128'"))
-        ? avatarUrl
-        : getGymAvatar(fullName.trim()),
+      gender: genderFilter,
+      birthDate: finalBirthDate,
+      avatarUrl: getGymAvatar(fullName.trim(), avatarUrl, genderFilter),
       emergencyContact: {
         name: emergencyName || 'Familiar de Contacto',
         phone: emergencyPhone || '+52 55 9999 8888',
         relationship: emergencyRel || 'Familiar',
       },
-      medicalNotes: medicalNotes || 'Apto para actividad física general.',
+      medicalNotes: requiredCompanionsCount > 0
+        ? `Titular de paquete grupal (${activeGroupSize} personas · ${selectedPlan.name}).`
+        : (medicalNotes || (age ? `Edad: ${age} años. Apto para actividad física general.` : 'Apto para actividad física general.')),
       biometricRegistered: true,
       membership: {
         planType: selectedPlan.type,
         planName: selectedPlan.name,
-        startDate: now.toISOString().slice(0, 10),
-        endDate: end.toISOString().slice(0, 10),
+        startDate: calculatedDates.startDate,
+        endDate: calculatedDates.endDate,
         price: selectedPlan.price,
         status: 'active',
-        daysRemaining,
+        daysRemaining: calculatedDates.daysRemaining,
       },
-    }, paymentMethod);
+    }, paymentMethod, requiredCompanionsCount > 0 ? {
+      groupSummaryNote: `Alta grupal (${activeGroupSize} personas): ${groupNames.join(', ')}`
+    } : undefined);
+
+    if (requiredCompanionsCount > 0) {
+      activeGroupCompanions.forEach((comp, idx) => {
+        const compName = comp.fullName.trim();
+        if (!compName) return;
+        const compParsed = comp.birthDateDisplay.trim()
+          ? (parseBirthDateParts(comp.birthDateDisplay) ? formatBirthDateToISO(comp.birthDateDisplay) : '')
+          : formatBirthDateToISO(comp.birthDate);
+        const compBirthDate = compParsed || (comp.age ? `${new Date().getFullYear() - Number(comp.age)}-01-01` : undefined);
+        const compDocId = `${Math.floor(10000000 + Math.random() * 90000000)}`;
+        addMember({
+          fullName: compName,
+          documentId: compDocId,
+          email: `${compName.toLowerCase().replace(/\s+/g, '.') || 'cliente'}@email.com`,
+          phone: comp.phone.trim() || phone.trim() || '+52 55 1234 5678',
+          gender: comp.gender,
+          birthDate: compBirthDate,
+          avatarUrl: getGymAvatar(compName, undefined, comp.gender),
+          emergencyContact: {
+            name: emergencyName || fullName.trim(),
+            phone: emergencyPhone || phone.trim() || '+52 55 9999 8888',
+            relationship: 'Grupo / Titular',
+          },
+          medicalNotes: `Integrante ${idx + 2}/${activeGroupSize} (${selectedPlan.name}) · Titular: ${fullName.trim()}`,
+          biometricRegistered: true,
+          membership: {
+            planType: selectedPlan.type,
+            planName: selectedPlan.name,
+            startDate: calculatedDates.startDate,
+            endDate: calculatedDates.endDate,
+            price: selectedPlan.price,
+            status: 'active',
+            daysRemaining: calculatedDates.daysRemaining,
+          },
+        }, paymentMethod, { skipSale: true });
+      });
+    }
 
     onClientCreated(created, enrollNow);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim()) return;
+    if (requiredCompanionsCount > 0 && !allGroupCompanionsReady) {
+      setGroupCompanions(resizeGroupCompanions(groupCompanions, requiredCompanionsCount));
+      setShowGroupCompanionsModal(true);
+      return;
+    }
+    performRegisterMembers();
   };
 
   return (
@@ -176,7 +312,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                     if (!hasManuallySelectedPhoto && val.trim()) {
                       const detected = detectGender(val);
                       setGenderFilter(detected);
-                      setAvatarUrl(getGymAvatar(val));
+                      setAvatarUrl(getGymAvatar(val, undefined, detected));
                     }
                   }}
                   placeholder="Ej. Rodrigo Silva Mendoza"
@@ -223,6 +359,96 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   className="w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
                 />
               </div>
+
+              {/* Fecha de Cumpleaños y Edad */}
+              <div>
+                <label className="text-xs font-semibold text-gym-muted block mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Fecha de Cumpleaños</span>
+                  </span>
+                  <span className="text-[10px] text-gym-muted font-normal">dd/mm/aaaa</span>
+                </label>
+                <BirthDatePickerField
+                  displayValue={birthDateDisplay}
+                  isoValue={birthDate}
+                  compact
+                  onInputChange={handleBirthDateInputChange}
+                  onSelectDate={handleCalendarDateChange}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gym-muted block mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Edad</span>
+                  </span>
+                  {age ? (
+                    <span className="text-[11px] text-emerald-400 font-bold animate-pulse flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Calculada ({age} años)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-amber-400 font-bold">(Automática)</span>
+                  )}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="8"
+                    max="110"
+                    value={age}
+                    onChange={(e) => handleAgeChange(e.target.value)}
+                    placeholder="Ej. 25"
+                    className={`w-full px-3 py-1.5 sm:py-2 bg-gym-surface rounded-xl border text-xs sm:text-sm font-bold text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 pr-14 ${
+                      age ? 'border-emerald-500/60 text-emerald-300' : 'border-gym-border'
+                    }`}
+                  />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gym-muted font-bold pointer-events-none">
+                    años
+                  </span>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-gym-muted block mb-1.5">
+                  Género e Imagen del Cliente (Mujer / Hombre)
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGenderFilter('female');
+                      setHasManuallySelectedPhoto(true);
+                      setAvatarUrl(FEMALE_CLIENT_AVATAR);
+                    }}
+                    className={`flex items-center justify-center gap-2.5 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all border cursor-pointer ${
+                      genderFilter === 'female'
+                        ? 'bg-pink-500/20 border-2 border-pink-400 text-white shadow-md'
+                        : 'bg-gym-surface border-gym-border text-gym-muted hover:text-white'
+                    }`}
+                  >
+                    <img src={FEMALE_CLIENT_AVATAR} alt="Mujer" className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 shrink-0" />
+                    <span>Mujer</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGenderFilter('male');
+                      setHasManuallySelectedPhoto(true);
+                      setAvatarUrl(MALE_CLIENT_AVATAR);
+                    }}
+                    className={`flex items-center justify-center gap-2.5 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all border cursor-pointer ${
+                      genderFilter === 'male'
+                        ? 'bg-blue-500/20 border-2 border-blue-400 text-white shadow-md'
+                        : 'bg-gym-surface border-gym-border text-gym-muted hover:text-white'
+                    }`}
+                  >
+                    <img src={MALE_CLIENT_AVATAR} alt="Hombre" className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 shrink-0" />
+                    <span>Hombre</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Membership Plan Selection */}
@@ -239,12 +465,15 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {planOptions.map((opt) => {
                   const isSelected = selectedPlanId ? selectedPlanId === opt.id : planType === opt.type;
+                  const optSize = getGroupPackageSize(opt.name, opt.type);
                   return (
                     <div
                       key={opt.id || opt.type}
                       onClick={() => {
                         setSelectedPlanId(opt.id);
                         setPlanType(opt.type);
+                        const nextReq = Math.max(0, optSize - 1);
+                        setGroupCompanions((prev) => resizeGroupCompanions(prev, nextReq));
                       }}
                       className={`p-2.5 rounded-xl border cursor-pointer transition-all relative group ${
                         isSelected
@@ -259,15 +488,76 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                         </span>
                       </div>
 
-                      <div className="mt-1.5 pt-1.5 border-t border-gym-border/40">
+                      <div className="mt-1.5 pt-1.5 border-t border-gym-border/40 flex items-center justify-between gap-2">
                         <span className="text-[10px] text-gym-muted block">
                           Vigencia: {opt.duration}
                         </span>
+                        {optSize > 1 && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-400/30 inline-flex items-center gap-1">
+                            <Users className="w-2.5 h-2.5" />
+                            <span>{optSize} personas</span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
                 })}
               </div>
+
+              {requiredCompanionsCount > 0 && (
+                <div
+                  className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+                    allGroupCompanionsReady
+                      ? 'bg-emerald-500/10 border-emerald-500/35'
+                      : 'bg-amber-500/10 border-amber-500/40'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Users className={`w-3.5 h-3.5 ${allGroupCompanionsReady ? 'text-emerald-400' : 'text-amber-400'}`} />
+                      <span>
+                        {allGroupCompanionsReady
+                          ? `✓ ${activeGroupSize} integrantes listos para registrar`
+                          : `Falta registrar ${requiredCompanionsCount - completedCompanionsCount} acompañantes más`}
+                      </span>
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        ✓ 1. {(fullName || 'Titular').trim().split(' ')[0]}
+                      </span>
+                      {activeGroupCompanions.map((c, idx) => {
+                        const done = isGroupCompanionComplete(c);
+                        return (
+                          <span
+                            key={idx}
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              done
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                : 'bg-black/30 text-zinc-400 border-white/10'
+                            }`}
+                          >
+                            {done ? `✓ ${idx + 2}. ${c.fullName.trim().split(' ')[0]}` : `${idx + 2}. Falta`}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGroupCompanions(resizeGroupCompanions(groupCompanions, requiredCompanionsCount));
+                      setShowGroupCompanionsModal(true);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer shrink-0 ${
+                      allGroupCompanionsReady
+                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                        : 'bg-amber-500 hover:bg-amber-400 text-black'
+                    }`}
+                  >
+                    {allGroupCompanionsReady ? 'Editar grupo' : `Registrar ${requiredCompanionsCount} acompañantes`}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Payment Method Selector */}
@@ -386,13 +676,31 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
               type="submit"
               className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm shadow-glow-gold transition-all"
             >
-              Guardar e Inscribir Cliente
+              {requiredCompanionsCount > 0 && !allGroupCompanionsReady
+                ? `Registrar ${requiredCompanionsCount - completedCompanionsCount} acompañantes y Guardar`
+                : requiredCompanionsCount > 0
+                  ? `Guardar e Inscribir ${activeGroupSize} Personas`
+                  : 'Guardar e Inscribir Cliente'}
             </button>
           </div>
 
         </form>
 
       </div>
+
+      <GroupCompanionsModal
+        isOpen={showGroupCompanionsModal && requiredCompanionsCount > 0}
+        planName={selectedPlan?.name || ''}
+        groupSize={activeGroupSize}
+        primaryName={fullName}
+        companions={activeGroupCompanions}
+        onChangeCompanions={setGroupCompanions}
+        onClose={() => setShowGroupCompanionsModal(false)}
+        onConfirmAndContinue={() => {
+          setShowGroupCompanionsModal(false);
+          performRegisterMembers();
+        }}
+      />
     </div>
   );
 };

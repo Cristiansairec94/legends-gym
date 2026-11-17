@@ -1,6 +1,6 @@
 export type UserRole = 'admin' | 'receptionist' | 'trainer';
 
-export type MembershipPlanType = 'daily' | 'monthly' | 'quarterly' | 'annual' | 'vip';
+export type MembershipPlanType = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annual' | 'vip' | 'group';
 
 export type MembershipStatus = 'active' | 'expiring_soon' | 'expired' | 'frozen';
 
@@ -23,7 +23,8 @@ export interface MembershipDetails {
 export interface Client {
   id: string;
   fullName: string;
-  documentId: string; // DNI / Cédula / CURP
+  gender?: 'male' | 'female';
+  documentId: string; // DNI / CÃ©dula / CURP
   email: string;
   phone: string;
   avatarUrl: string;
@@ -98,7 +99,7 @@ export interface Sale {
   cashierName: string;
   cashierRole: UserRole;
   notes?: string;
-  saleType?: 'store' | 'membership';
+  saleType?: 'store' | 'membership' | 'visit';
   planName?: string;
   planType?: MembershipPlanType;
 }
@@ -128,6 +129,9 @@ export interface CashRegisterSession {
   totalMembershipsCash: number;
   totalMembershipsCard: number;
   totalMembershipsTransfer: number;
+  totalVisitsCash?: number;
+  totalVisitsCard?: number;
+  totalVisitsTransfer?: number;
   expectedCash: number;
   actualCash?: number;
   cashDifference?: number;
@@ -138,10 +142,11 @@ export interface CashRegisterSession {
   withdrawnCash?: number;
 }
 
-// Configuración & Empleados
+// ConfiguraciÃ³n & Empleados
 export interface Employee {
   id: string;
   fullName: string;
+  gender?: 'male' | 'female';
   documentId: string;
   email: string;
   phone: string;
@@ -226,9 +231,9 @@ export type ExpenseCategory =
   | 'utilities' // Luz, agua, aire acondicionado
   | 'equipment' // Mantenimiento de pesas, poleas, caminadoras
   | 'supplements_stock' // Compra de suplementos a proveedores
-  | 'payroll' // Nómina de coaches, recepcionistas, limpieza
+  | 'payroll' // NÃ³mina de coaches, recepcionistas, limpieza
   | 'marketing' // Publicidad y redes sociales
-  | 'cleaning' // Insumos y sanitización
+  | 'cleaning' // Insumos y sanitizaciÃ³n
   | 'other';
 
 export interface Expense {
@@ -258,9 +263,33 @@ export interface SystemNotification {
   read: boolean;
   targetTab?: string;
   actionLabel?: string;
+  requestId?: string;
+  requestKind?: 'registration' | 'visit';
+  clientName?: string;
+  planName?: string;
+  planPrice?: number;
+  paymentMethod?: PaymentMethod;
+  completed?: boolean;
+  registrationDetails?: {
+    phone?: string;
+    email?: string;
+    birthDate?: string;
+    age?: number | string;
+    gender?: 'male' | 'female';
+    biometricEnrolled?: boolean;
+    selectedFinger?: string;
+  };
+  groupMembers?: Array<{
+    fullName: string;
+    gender?: 'male' | 'female';
+    birthDate?: string;
+    phone?: string;
+    biometricEnrolled?: boolean;
+    selectedFinger?: string;
+  }>;
 }
 
-// Sincronización y Respaldo (Offline-first)
+// SincronizaciÃ³n y Respaldo (Offline-first)
 export interface SyncState {
   isOnline: boolean;
   lastSyncedAt: string;
@@ -269,7 +298,7 @@ export interface SyncState {
   storageUsageKb: number;
 }
 
-// Auditoría de Seguridad de Accesos al Sistema
+// AuditorÃ­a de Seguridad de Accesos al Sistema
 export type SecurityEventType =
   | 'LOGIN_SUCCESS'
   | 'LOGIN_FAILED'

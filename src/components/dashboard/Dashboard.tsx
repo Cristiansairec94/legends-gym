@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGym } from '../../context/GymContext';
 import { isTodayDate } from '../../services/syncService';
+import { getLocalDateString, resolveSaleType } from '../../utils/membershipUtils';
 import { 
   Users, 
   Flame, 
@@ -9,8 +10,7 @@ import {
   Clock, 
   Fingerprint, 
   AlertTriangle, 
-  ArrowUpRight,
-  Dumbbell
+  ArrowUpRight
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -27,12 +27,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     activeMembersCount, 
     todayStoreSalesTotal,
     todayMembershipsSalesTotal,
+    todayVisitsSalesTotal,
     cashSession,
     activeBranch,
     isTerminalConnected
   } = useGym();
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getLocalDateString();
   const todayGrantedLogs = accessLogs.filter(l => (isTodayDate(l.timestamp) || l.timestamp.startsWith(todayStr)) && l.status === 'granted');
 
   // Dynamic peak hours calculation based on real check-in activity + baseline
@@ -72,16 +73,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     peak: s.count === maxSlotCount
   }));
 
-  const totalMembershipsRevenue = todayMembershipsSalesTotal > 0 
-    ? todayMembershipsSalesTotal 
-    : (cashSession.totalMembershipsCash + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0));
+  const sessionMembershipsTotal = cashSession.totalMembershipsCash + cashSession.totalMembershipsCard + (cashSession.totalMembershipsTransfer || 0);
+  const sessionVisitsTotal = (cashSession.totalVisitsCash || 0) + (cashSession.totalVisitsCard || 0) + (cashSession.totalVisitsTransfer || 0);
+
+  const totalMembershipsRevenue = todayMembershipsSalesTotal > 0 ? todayMembershipsSalesTotal : sessionMembershipsTotal;
+  const totalVisitsRevenue = todayVisitsSalesTotal > 0 ? todayVisitsSalesTotal : sessionVisitsTotal;
+  const totalGymAndVisitsToday = totalMembershipsRevenue + totalVisitsRevenue;
+
+  const accumulatedMembershipsRevenue = sales
+    .filter(s => resolveSaleType(s) === 'membership')
+    .reduce((acc, s) => acc + (s.total || 0), 0);
+
+  const accumulatedVisitsRevenue = sales
+    .filter(s => resolveSaleType(s) === 'visit')
+    .reduce((acc, s) => acc + (s.total || 0), 0);
 
   const storeSalesTotal = todayStoreSalesTotal > 0
     ? todayStoreSalesTotal
     : (cashSession.totalSalesCash + cashSession.totalSalesCard + cashSession.totalSalesTransfer);
 
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
-  const storeTicketsToday = sales.filter(s => s.timestamp.startsWith(todayStr) && s.saleType !== 'membership').length;
+  const storeTicketsToday = sales.filter(s => (isTodayDate(s.timestamp) || s.timestamp.startsWith(todayStr)) && resolveSaleType(s) === 'store').length;
 
   return (
     <div className="space-y-6">
@@ -232,22 +244,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </span>
         </div>
 
-        {/* Membresías Cobradas */}
+        {/* Membresías y Visitas Cobradas (separadas) */}
         <div 
           onClick={() => setActiveTab('incomes')}
           className="p-5 rounded-2xl bg-gradient-to-b from-[#151518] to-[#0f0f12] border border-white/[0.08] hover:border-purple-500/40 transition-all cursor-pointer shadow-lg hover:shadow-[0_8px_25px_rgba(168,85,247,0.12)] group hover:-translate-y-0.5 duration-200"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Ingresos Cuotas</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Membresías y Visitas</span>
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:scale-110 transition-transform">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
           <span className="text-3xl font-black text-white mt-2 block font-mono tracking-tight">
-            ${totalMembershipsRevenue.toLocaleString('es-MX')}
+            ${totalGymAndVisitsToday.toLocaleString('es-MX')}
           </span>
-          <span className="text-xs text-purple-400/80 mt-2 block font-semibold">
-            Mensualidades y renovaciones
+          <span className="text-xs text-purple-300/90 mt-2 block font-semibold">
+            Membresías: ${accumulatedMembershipsRevenue.toLocaleString('es-MX')} · Visitas: ${accumulatedVisitsRevenue.toLocaleString('es-MX')}
           </span>
         </div>
 

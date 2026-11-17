@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGym } from '../../context/GymContext';
 import { SystemCatalogPlan, MembershipPlanType } from '../../types';
 import { 
@@ -16,7 +16,11 @@ import {
   Edit2
 } from 'lucide-react';
 
-export const SystemCatalogs: React.FC = () => {
+interface SystemCatalogsProps {
+  section?: 'plans' | 'gym' | 'turnstile';
+}
+
+export const SystemCatalogs: React.FC<SystemCatalogsProps> = ({ section = 'plans' }) => {
   const { 
     catalogPlans, 
     addCatalogPlan, 
@@ -26,8 +30,6 @@ export const SystemCatalogs: React.FC = () => {
     updateGymSettings, 
     currentRole 
   } = useGym();
-
-  const [activeTab, setActiveTab] = useState<'plans' | 'gym' | 'turnstile'>('plans');
 
   // Gym settings local state
   const [gymName, setGymName] = useState(gymSettings.gymName);
@@ -39,6 +41,17 @@ export const SystemCatalogs: React.FC = () => {
   const [turnstileTimeout, setTurnstileTimeout] = useState(gymSettings.turnstileTimeoutSeconds);
   const [gracePeriod, setGracePeriod] = useState(gymSettings.allowGracePeriodDays);
 
+  useEffect(() => {
+    setGymName(gymSettings.gymName);
+    setLegalName(gymSettings.legalName);
+    setRfc(gymSettings.rfc);
+    setPhone(gymSettings.phone);
+    setAddress(gymSettings.address);
+    setEmail(gymSettings.email);
+    setTurnstileTimeout(gymSettings.turnstileTimeoutSeconds);
+    setGracePeriod(gymSettings.allowGracePeriodDays);
+  }, [gymSettings]);
+
   const [savedFeedback, setSavedFeedback] = useState(false);
 
   // New Plan modal state
@@ -46,7 +59,7 @@ export const SystemCatalogs: React.FC = () => {
   const [planName, setPlanName] = useState('');
   const [planType, setPlanType] = useState<MembershipPlanType>('monthly');
   const [planDays, setPlanDays] = useState(30);
-  const [planPrice, setPlanPrice] = useState(850);
+  const [planPrice, setPlanPrice] = useState(420);
   const [planBenefits, setPlanBenefits] = useState('Acceso 30 días, Acceso biométrico');
 
   const handleSaveGymSettings = (e: React.FormEvent) => {
@@ -92,19 +105,33 @@ export const SystemCatalogs: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-              <SlidersHorizontal className="w-5 h-5" />
+              {section === 'gym' ? (
+                <Building2 className="w-5 h-5" />
+              ) : section === 'turnstile' ? (
+                <Clock className="w-5 h-5" />
+              ) : (
+                <SlidersHorizontal className="w-5 h-5" />
+              )}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-black text-white tracking-wide uppercase">
-                  Catálogos de Sistema
+                  {section === 'gym'
+                    ? 'Datos del Gimnasio & Tickets'
+                    : section === 'turnstile'
+                    ? 'Parámetros Biométricos & Tolerancia'
+                    : 'Catálogos de Sistema'}
                 </h1>
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-gym-surface text-gray-300 border border-gym-border">
-                  Sistema
+                  {section === 'plans' ? `Planes y Membresías (${catalogPlans.length})` : 'Configuración'}
                 </span>
               </div>
               <p className="text-xs text-gym-muted mt-0.5">
-                Configuración de planes de membresía, precios de cuotas, datos fiscales del gimnasio y parámetros de acceso.
+                {section === 'gym'
+                  ? 'Identidad, razón social, RFC y datos de contacto impresos en recibos de venta.'
+                  : section === 'turnstile'
+                  ? 'Ajustes del sensor biométrico de huella y tolerancia de acceso para membresías.'
+                  : 'Configuración de planes de membresía y precios de cuotas.'}
               </p>
             </div>
           </div>
@@ -118,42 +145,8 @@ export const SystemCatalogs: React.FC = () => {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-gym-border pb-3">
-        <button
-          onClick={() => setActiveTab('plans')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'plans'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
-              : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
-          }`}
-        >
-          Planes y Membresías ({catalogPlans.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('gym')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'gym'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
-              : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
-          }`}
-        >
-          Datos del Gimnasio & Tickets
-        </button>
-        <button
-          onClick={() => setActiveTab('turnstile')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'turnstile'
-              ? 'bg-amber-500 text-black shadow-glow-gold'
-              : 'bg-gym-card text-gym-muted hover:text-white border border-gym-border'
-          }`}
-        >
-          Parámetros Biométricos & Tolerancia
-        </button>
-      </div>
-
-      {/* Tab 1: Plans Catalog */}
-      {activeTab === 'plans' && (
+      {/* Section 1: Plans Catalog */}
+      {section === 'plans' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-gym-muted">
@@ -240,7 +233,7 @@ export const SystemCatalogs: React.FC = () => {
       )}
 
       {/* Tab 2: Gym Settings */}
-      {activeTab === 'gym' && (
+      {section === 'gym' && (
         <form onSubmit={handleSaveGymSettings} className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-md space-y-5">
           <div className="border-b border-gym-border pb-3">
             <h3 className="font-bold text-base text-white flex items-center gap-2">
@@ -327,7 +320,7 @@ export const SystemCatalogs: React.FC = () => {
       )}
 
       {/* Tab 3: Turnstile & Biometrics Parameters */}
-      {activeTab === 'turnstile' && (
+      {section === 'turnstile' && (
         <form onSubmit={handleSaveGymSettings} className="bg-gym-card rounded-2xl border border-gym-border p-6 shadow-md space-y-5">
           <div className="border-b border-gym-border pb-3">
             <h3 className="font-bold text-base text-white flex items-center gap-2">

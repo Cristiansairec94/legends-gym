@@ -55,101 +55,102 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        className="bg-[#12161f] rounded-[28px] border border-white/10 w-full max-w-3xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.75)] relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        style={{ fontFamily: "'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-gym-border flex items-center justify-between bg-gym-surface/50">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#151a24]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400">
               <Clock className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-base sm:text-lg text-white tracking-wide uppercase">
-                  Desglose de Registro de Accesos
+                <h3 className="font-semibold text-base sm:text-lg text-white tracking-tight">
+                  Registro de accesos
                 </h3>
-                <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/25 px-2.5 py-0.5 rounded-full tabular-nums">
                   {totalEvents} eventos
                 </span>
               </div>
-              <p className="text-xs text-gym-muted mt-0.5">
-                Historial cronológico de validaciones del control de acceso biométrico
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Historial cronológico de validaciones biométricas
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-gym-surface hover:bg-gym-border/80 text-gym-muted hover:text-white transition-colors"
-            title="Cerrar modal"
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-zinc-400 hover:text-white transition-colors flex items-center justify-center cursor-pointer"
+            title="Cerrar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Quick Stats Summary Bar */}
-        <div className="grid grid-cols-3 gap-2 p-3 sm:p-4 bg-gym-bg/60 border-b border-gym-border text-center">
-          <div className="p-2.5 rounded-xl bg-gym-surface/70 border border-gym-border">
-            <span className="text-[11px] font-bold text-gym-muted uppercase block">Total Registros</span>
-            <span className="text-lg font-black text-white">{totalEvents}</span>
+        <div className="grid grid-cols-3 gap-2.5 p-3 sm:p-4 bg-[#10141c] border-b border-white/[0.08] text-center">
+          <div className="p-2.5 rounded-2xl bg-[#1b202b] border border-white/[0.06]">
+            <span className="text-[11px] font-medium text-zinc-400 block">Total registros</span>
+            <span className="text-lg font-semibold text-white tabular-nums">{totalEvents}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <span className="text-[11px] font-bold text-emerald-400 uppercase block">Autorizados</span>
-            <span className="text-lg font-black text-emerald-400">{grantedCount}</span>
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25">
+            <span className="text-[11px] font-medium text-emerald-300 block">Autorizados</span>
+            <span className="text-lg font-semibold text-emerald-400 tabular-nums">{grantedCount}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30">
-            <span className="text-[11px] font-bold text-red-400 uppercase block">Restringidos</span>
-            <span className="text-lg font-black text-red-400">{deniedCount}</span>
+          <div className="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/25">
+            <span className="text-[11px] font-medium text-rose-300 block">Restringidos</span>
+            <span className="text-lg font-semibold text-rose-400 tabular-nums">{deniedCount}</span>
           </div>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="p-3 sm:p-4 border-b border-gym-border bg-gym-surface/30 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="p-3 sm:p-4 border-b border-white/[0.08] bg-[#141822] flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por socio, plan o motivo..."
-              className="w-full pl-9 pr-3 py-1.5 bg-gym-surface rounded-xl border border-gym-border text-xs sm:text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-[#1b202b] rounded-full border border-white/12 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 transition-colors"
             />
           </div>
 
-          {/* Status Filter Buttons */}
-          <div className="flex items-center gap-1 bg-gym-surface p-1 rounded-xl border border-gym-border shrink-0">
+          {/* Status Filter Pills */}
+          <div className="flex items-center gap-1 bg-[#1b202b] p-1 rounded-full border border-white/10 shrink-0">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 statusFilter === 'all'
-                  ? 'bg-amber-500 text-black font-bold shadow-sm'
-                  : 'text-gym-muted hover:text-white'
+                  ? 'bg-amber-400 text-[#1a1200] font-semibold'
+                  : 'text-zinc-300 hover:text-white'
               }`}
             >
               Todos ({totalEvents})
             </button>
             <button
               onClick={() => setStatusFilter('granted')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 statusFilter === 'granted'
-                  ? 'bg-emerald-500 text-black font-bold shadow-sm'
-                  : 'text-gym-muted hover:text-white'
+                  ? 'bg-emerald-500 text-[#04140d] font-semibold'
+                  : 'text-zinc-300 hover:text-white'
               }`}
             >
               Exitosos ({grantedCount})
             </button>
             <button
               onClick={() => setStatusFilter('denied')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 statusFilter === 'denied'
-                  ? 'bg-red-500 text-white font-bold shadow-sm'
-                  : 'text-gym-muted hover:text-white'
+                  ? 'bg-rose-500 text-white font-semibold'
+                  : 'text-zinc-300 hover:text-white'
               }`}
             >
               Denegados ({deniedCount})
@@ -160,7 +161,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
           {currentRole === 'admin' && totalEvents > 0 && (
             <button
               onClick={clearAccessLogs}
-              className="px-3 py-1.5 text-xs font-semibold text-gym-muted hover:text-red-400 bg-gym-surface hover:bg-red-500/10 border border-gym-border hover:border-red-500/30 rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0"
+              className="px-3.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-rose-300 bg-[#1b202b] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 rounded-full flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer"
               title="Borrar todos los eventos registrados"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -299,13 +300,13 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
         </div>
 
         {/* Footer */}
-        <div className="p-3 sm:p-4 border-t border-gym-border bg-gym-surface/40 flex items-center justify-between">
-          <span className="text-xs text-gym-muted">
+        <div className="p-3.5 sm:p-4 border-t border-white/[0.08] bg-[#151a24] flex items-center justify-between">
+          <span className="text-xs text-zinc-400">
             Mostrando {filteredLogs.length} de {totalEvents} eventos registrados
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-gym-surface hover:bg-gym-surface/80 border border-gym-border text-xs font-bold text-white transition-colors"
+            className="px-5 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-xs font-medium text-white transition-colors cursor-pointer"
           >
             Cerrar
           </button>

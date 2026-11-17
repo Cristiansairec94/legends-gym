@@ -39,6 +39,7 @@ import { Client, MembershipPlanType, PaymentMethod } from '../../types';
 import gymBg4k from '../../assets/gym-background-4k.jpg';
 import { fetchMembersFromServer } from '../../services/syncService';
 import { getTerminalConfig } from './TerminalSyncModal';
+import { calculateMembershipDates } from '../../utils/membershipUtils';
 
 export interface SmartFitKioskProps {
   onOpenErp?: () => void;
@@ -68,8 +69,8 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
     emergencyContactName: '',
     emergencyContactPhone: '',
     selectedPlanType: 'monthly' as MembershipPlanType,
-    selectedPlanName: 'Mensualidad Estándar',
-    selectedPlanPrice: 850,
+    selectedPlanName: 'Mensualidad Individual',
+    selectedPlanPrice: 420,
     selectedPlanDurationDays: 30,
     paymentMethod: 'cash' as PaymentMethod,
   });
@@ -87,6 +88,10 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
   // Keyboard wedge scanner buffer (RFID cards / Barcode scanner)
   const keyBufferRef = useRef<string>('');
   const lastKeyTimeRef = useRef<number>(0);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const currentViewRef = useRef(currentView);
+  currentViewRef.current = currentView;
+  const executeScanMemberRef = useRef<(id: string) => void>(() => {});
   const serverVersionRef = useRef<number>(0);
 
   // Real-time clock tick
@@ -137,35 +142,65 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
     }
   };
 
-  // Keyboard wedge listener: scan RFID badge or barcode card from ANY screen
+  // Keyboard wedge listener: scan RFID badge or barcode card only during fast hardware bursts
   useEffect(() => {
+    const clearBuffer = () => {
+      keyBufferRef.current = '';
+      lastKeyTimeRef.current = 0;
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) {
+        clearBuffer();
         return;
       }
 
+      if (currentViewRef.current !== 'home' && currentViewRef.current !== 'member-access') {
+        clearBuffer();
+        return;
+      }
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.tagName === 'OPTION' ||
+          target.tagName === 'BUTTON' ||
+          target.tagName === 'A' ||
+          target.isContentEditable ||
+          (typeof target.closest === 'function' && Boolean(target.closest('button, a, [role="button"], input, textarea, select'))))
+      ) {
+        clearBuffer();
+        return;
+      }
+
+      if (e.key === 'Shift' || e.key === 'CapsLock') return;
+
       const now = Date.now();
-      if (now - lastKeyTimeRef.current > 250) {
+      if (now - lastKeyTimeRef.current > 80) {
         keyBufferRef.current = '';
       }
       lastKeyTimeRef.current = now;
 
       if (e.key === 'Enter') {
         const scannedCode = keyBufferRef.current.trim();
-        if (scannedCode.length >= 2) {
+        clearBuffer();
+        if (scannedCode.length >= 3 && /[a-zA-Z0-9]/.test(scannedCode)) {
           setCurrentView('member-access');
-          executeScanMember(scannedCode);
+          executeScanMemberRef.current(scannedCode);
         }
-        keyBufferRef.current = '';
-      } else if (e.key.length === 1) {
+      } else if (e.key.length === 1 && e.key !== ' ') {
         keyBufferRef.current += e.key;
+      } else {
+        clearBuffer();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMuted]);
+  }, []);
 
   // Countdown timer on success view to return to home
   useEffect(() => {
@@ -219,79 +254,93 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
       emergencyContactName: '',
       emergencyContactPhone: '',
       selectedPlanType: 'monthly',
-      selectedPlanName: 'Mensualidad Estándar',
-      selectedPlanPrice: 850,
+      selectedPlanName: 'Mensualidad Individual',
+      selectedPlanPrice: 420,
       selectedPlanDurationDays: 30,
       paymentMethod: 'cash',
     });
   };
 
-  // Plan catalog (Smart Fit style)
+  // Plan catalog
   const AVAILABLE_PLANS = [
+    {
+      id: 'plan-weekly',
+      type: 'weekly' as MembershipPlanType,
+      name: 'Pase Semanal (7 Días)',
+      price: 150,
+      durationDays: 7,
+      period: 'por semana',
+      badge: 'POR SEMANA',
+      recommended: false,
+      features: [
+        '7 días continuos de acceso completo',
+        'Ideal para prueba o entrenamiento semanal',
+        'Uso completo de pesas, cardio y regaderas',
+        'Acceso biométrico con huella'
+      ]
+    },
+    {
+      id: 'plan-biweekly',
+      type: 'biweekly' as MembershipPlanType,
+      name: 'Pase Quincenal (15 Días)',
+      price: 250,
+      durationDays: 15,
+      period: '15 días',
+      badge: 'QUINCENA',
+      recommended: false,
+      features: [
+        '15 días continuos de acceso completo',
+        'Área de pesas, máquinas y cardio',
+        'Uso de vestidores y regaderas',
+        'Acceso biométrico con huella'
+      ]
+    },
     {
       id: 'plan-monthly',
       type: 'monthly' as MembershipPlanType,
-      name: 'Plan Mensual Estándar',
-      price: 850,
+      name: 'Mensualidad Individual',
+      price: 420,
       durationDays: 30,
       period: 'por mes',
       badge: 'MÁS POPULAR',
       recommended: true,
       features: [
-        'Acceso total ilimitado a pesas y máquinas',
-        'Zona de cardio con pantallas interactivas',
-        'Vestidores, casilleros y regaderas con agua caliente',
-        'Asesoría de rutina con coach de sala',
-        'Sin cobro por mantenimiento anual'
+        'Acceso total ilimitado por 30 días',
+        'Área de pesas y cardio completa',
+        'Acceso biométrico con huella',
+        'Rutina de inducción con coach'
       ]
     },
     {
-      id: 'plan-weekly',
-      type: 'daily' as MembershipPlanType,
-      name: 'Plan Semanal (7 Días)',
-      price: 350,
-      durationDays: 7,
-      period: 'por semana',
-      badge: 'SIN COMPROMISO',
+      id: 'plan-group-3',
+      type: 'group' as MembershipPlanType,
+      name: 'Paquete 3 Personas (Mensual)',
+      price: 1100,
+      durationDays: 30,
+      period: '3 personas / mes',
+      badge: 'GRUPAL 3',
       recommended: false,
       features: [
-        '7 días continuos de acceso completo',
-        'Ideal para viajes, vacaciones o prueba',
-        'Uso completo de pesas, cardio y regaderas',
-        'Sin inscripción ni penalizaciones'
+        'Acceso mensual para 3 personas',
+        'Solo $366 MXN aprox. por persona',
+        'Acceso biométrico individual',
+        'Pesas y cardio ilimitado'
       ]
     },
     {
-      id: 'plan-daily',
-      type: 'daily' as MembershipPlanType,
-      name: 'Pase por Día (Day Pass)',
-      price: 150,
-      durationDays: 1,
-      period: 'por 1 día',
-      badge: 'VISITA RÁPIDA',
+      id: 'plan-group-4',
+      type: 'group' as MembershipPlanType,
+      name: 'Paquete 4 Personas (Mensual)',
+      price: 1500,
+      durationDays: 30,
+      period: '4 personas / mes',
+      badge: 'GRUPAL 4',
       recommended: false,
       features: [
-        'Acceso completo durante todo el día',
-        'Uso libre de todas las instalaciones',
-        'Entrenamiento único o visita ocasional',
-        'Paso libre instantáneo hoy'
-      ]
-    },
-    {
-      id: 'plan-vip',
-      type: 'vip' as MembershipPlanType,
-      name: 'Membresía Black VIP Anual',
-      price: 9500,
-      durationDays: 365,
-      period: 'anual (ahorro 20%)',
-      badge: 'VIP BLACK',
-      recommended: false,
-      features: [
-        'Acceso 365 días del año sin restricciones',
-        'Playera oficial Legends Gym de regalo',
-        'Casillero personal asignado todo el año',
-        '1 invitado gratis al mes (fin de semana)',
-        'Acceso preferencial multi-sucursales'
+        'Acceso mensual para 4 personas',
+        'Solo $375 MXN por persona',
+        'Acceso biométrico individual',
+        'Pesas y cardio ilimitado'
       ]
     }
   ];
@@ -318,8 +367,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
 
     const docId = formData.documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`;
 
-    const startDate = new Date().toISOString().slice(0, 10);
-    const endDate = new Date(Date.now() + (formData.selectedPlanDurationDays || 30) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const { startDate, endDate } = calculateMembershipDates(formData.selectedPlanDurationDays || 30);
 
     // Call GymContext addMember
     const newClient = addMember({
@@ -396,6 +444,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
       }
     }, 700);
   };
+  executeScanMemberRef.current = executeScanMember;
 
   return (
     <div className="relative min-h-screen h-screen w-full overflow-y-auto bg-[#07080c] text-white flex flex-col justify-between font-sans select-none z-0">
@@ -441,10 +490,13 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
 
           {/* Right Kiosk Info & Navigation */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Real-time Clock */}
+            {/* Real-time Date & Clock */}
             <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono font-bold text-amber-400">
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-zinc-200">{currentTime.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '')}</span>
+              <span className="text-zinc-500">•</span>
               <Clock className="w-3.5 h-3.5" />
-              <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+              <span>{currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
 
             {/* Access History Button */}
@@ -555,7 +607,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
               {/* CARD 2: SOY NUEVO • INSCRIBIRME (Planes) */}
               <div
                 onClick={() => {
-                  setFormData(prev => ({ ...prev, selectedPlanType: 'monthly', selectedPlanName: 'Plan Mensual Estándar', selectedPlanPrice: 850, selectedPlanDurationDays: 30 }));
+                  setFormData(prev => ({ ...prev, selectedPlanType: 'monthly', selectedPlanName: 'Mensualidad Individual', selectedPlanPrice: 420, selectedPlanDurationDays: 30 }));
                   setCurrentView('register');
                   setRegisterStep(1);
                 }}
@@ -590,7 +642,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
               {/* CARD 3: SOY VISITA • PASE DEL DÍA O SEMANA */}
               <div
                 onClick={() => {
-                  setFormData(prev => ({ ...prev, selectedPlanType: 'daily', selectedPlanName: 'Pase por Día (Day Pass)', selectedPlanPrice: 150, selectedPlanDurationDays: 1 }));
+                  setFormData(prev => ({ ...prev, selectedPlanType: 'daily', selectedPlanName: 'Visita por Día (1 Día)', selectedPlanPrice: 50, selectedPlanDurationDays: 1 }));
                   setCurrentView('visit');
                 }}
                 className="group relative bg-black/35 hover:bg-black/55 backdrop-blur-md rounded-3xl p-6 sm:p-7 border-2 border-white/20 hover:border-cyan-400 shadow-[0_15px_35px_rgba(0,0,0,0.6)] hover:shadow-[0_0_35px_rgba(6,182,212,0.4)] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden"
@@ -1009,24 +1061,24 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             {/* Opción de pase */}
             <div className="grid grid-cols-2 gap-3">
               <div
-                onClick={() => setFormData({ ...formData, selectedPlanType: 'daily', selectedPlanName: 'Pase por Día (Day Pass)', selectedPlanPrice: 150, selectedPlanDurationDays: 1 })}
+                onClick={() => setFormData({ ...formData, selectedPlanType: 'daily', selectedPlanName: 'Visita por Día (1 Día)', selectedPlanPrice: 50, selectedPlanDurationDays: 1 })}
                 className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                   formData.selectedPlanDurationDays === 1 ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.3)]' : 'bg-black/40 border-white/10'
                 }`}
               >
-                <span className="text-[10px] font-black uppercase text-cyan-400 block mb-1">Pase 1 Día</span>
-                <span className="text-2xl font-black text-white block">$150 MXN</span>
+                <span className="text-[10px] font-black uppercase text-cyan-400 block mb-1">Visita 1 Día</span>
+                <span className="text-2xl font-black text-white block">$50 MXN</span>
                 <span className="text-xs text-gray-400 block mt-1">Acceso total hoy</span>
               </div>
 
               <div
-                onClick={() => setFormData({ ...formData, selectedPlanType: 'daily', selectedPlanName: 'Plan Semanal (7 Días)', selectedPlanPrice: 350, selectedPlanDurationDays: 7 })}
+                onClick={() => setFormData({ ...formData, selectedPlanType: 'weekly', selectedPlanName: 'Pase Semanal (7 Días)', selectedPlanPrice: 150, selectedPlanDurationDays: 7 })}
                 className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                   formData.selectedPlanDurationDays === 7 ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.3)]' : 'bg-black/40 border-white/10'
                 }`}
               >
                 <span className="text-[10px] font-black uppercase text-cyan-400 block mb-1">Pase 7 Días</span>
-                <span className="text-2xl font-black text-white block">$350 MXN</span>
+                <span className="text-2xl font-black text-white block">$150 MXN</span>
                 <span className="text-xs text-gray-400 block mt-1">Una semana completa</span>
               </div>
             </div>
@@ -1132,7 +1184,13 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
             <div className="py-2">
               <FingerprintScanner
                 status={scanStatus}
-                onScanClick={() => executeScanMember('MEM-001')}
+                onScanClick={() => {
+                  if (searchQuery.trim()) {
+                    executeScanMember(searchQuery.trim());
+                  } else {
+                    searchInputRef.current?.focus();
+                  }
+                }}
                 clientName={verifiedMember?.fullName}
                 planName={verifiedMember?.membership?.planName}
                 clientPhoto={verifiedMember?.avatarUrl}
@@ -1148,6 +1206,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                 <div className="relative flex-1">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
+                    ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}

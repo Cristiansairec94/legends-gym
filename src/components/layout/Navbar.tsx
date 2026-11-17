@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
 import {  
   Clock, 
+  Calendar,
   Bell, 
   Cloud, 
   CloudOff, 
@@ -90,11 +91,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right / Controls Bar: Unified Single-Line Layout */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           
-          {/* Real-time Clock */}
+          {/* Real-time Date & Clock */}
           <div 
             className="hidden md:flex items-center gap-2.5 h-10 px-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-white/[0.06] to-white/[0.04] border border-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.12)] whitespace-nowrap shrink-0"
-            title="Hora actual del sistema en vivo"
+            title="Fecha y hora actual del sistema en vivo"
           >
+            <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="text-xs font-bold text-zinc-200 uppercase tracking-wide">
+              {currentTime.toLocaleDateString('es-MX', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '')}
+            </span>
+            <span className="text-white/25">•</span>
             <Clock className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="font-mono text-sm sm:text-base font-black text-white tracking-wider">
               {currentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}

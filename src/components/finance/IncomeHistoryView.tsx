@@ -1,34 +1,29 @@
 import React, { useState } from 'react';
 import { useGym } from '../../context/GymContext';
-import { Sale, PaymentMethod } from '../../types';
+import { Sale } from '../../types';
 import { 
   TrendingUp, 
   Search, 
   DollarSign, 
   CreditCard, 
   Banknote, 
-  Calendar, 
   Clock,
-  Filter, 
   Download, 
-  FileText, 
-  CheckCircle2, 
   Dumbbell, 
   ShoppingBag,
   UserCheck,
-  Eye,
-  X,
   Printer
 } from 'lucide-react';
 import { ReceiptModal } from '../pos/ReceiptModal';
 import { exportIncomeReportToExcel } from '../../utils/excelExport';
+import { resolveSaleType } from '../../utils/membershipUtils';
 
 export const IncomeHistoryView: React.FC = () => {
-  const { sales, todaySalesTotal, cashSession, gymSettings } = useGym();
+  const { sales, gymSettings } = useGym();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'store'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'membership' | 'visit' | 'store'>('all');
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
 
   type PeriodFilterType = 'all' | 'today' | 'week' | 'month' | 'year';
@@ -87,14 +82,18 @@ export const IncomeHistoryView: React.FC = () => {
 
   const filteredSales = sales.filter(s => {
     const matchesPeriod = isSaleInPeriod(s.timestamp, periodFilter);
-    const matchesSearch = s.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.cashierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (s.planName && s.planName.toLowerCase().includes(searchTerm.toLowerCase()));
+    const term = searchTerm.toLowerCase();
+    const folioStr = (s.folio || s.id || '').toLowerCase();
+    const clientStr = (s.clientName || '').toLowerCase();
+    const cashierStr = (s.cashierName || '').toLowerCase();
+    const matchesSearch = !term ||
+                          folioStr.includes(term) ||
+                          clientStr.includes(term) ||
+                          cashierStr.includes(term) ||
+                          Boolean(s.planName && s.planName.toLowerCase().includes(term));
     const matchesMethod = methodFilter === 'all' || s.paymentMethod === methodFilter;
-    const matchesType = typeFilter === 'all' || 
-                        (typeFilter === 'membership' && s.saleType === 'membership') ||
-                        (typeFilter === 'store' && s.saleType !== 'membership');
+    const saleType = resolveSaleType(s);
+    const matchesType = typeFilter === 'all' || saleType === typeFilter;
     return matchesPeriod && matchesSearch && matchesMethod && matchesType;
   });
 
@@ -124,7 +123,7 @@ export const IncomeHistoryView: React.FC = () => {
               Historial de Ingresos y Facturación
             </h1>
             <p className="text-xs text-gym-muted mt-1 max-w-xl">
-              Registro consolidado de cobro de membresías, pases diarios y ventas en el punto de venta.
+              Registro consolidado de cobro de membresías, pases de visita y ventas en el punto de venta.
             </p>
           </div>
 
@@ -307,6 +306,17 @@ export const IncomeHistoryView: React.FC = () => {
               <span>Membresías</span>
             </button>
             <button
+              onClick={() => setTypeFilter('visit')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                typeFilter === 'visit'
+                  ? 'bg-emerald-500 text-black'
+                  : 'text-gym-muted hover:text-white'
+              }`}
+            >
+              <UserCheck className="w-3 h-3" />
+              <span>Visitas</span>
+            </button>
+            <button
               onClick={() => setTypeFilter('store')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
                 typeFilter === 'store'
@@ -333,7 +343,7 @@ export const IncomeHistoryView: React.FC = () => {
             </button>
             <button
               onClick={() => setMethodFilter('cash')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 methodFilter === 'cash'
                   ? 'bg-emerald-500 text-black'
                   : 'text-gym-muted hover:text-white'
@@ -343,7 +353,7 @@ export const IncomeHistoryView: React.FC = () => {
             </button>
             <button
               onClick={() => setMethodFilter('card')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 methodFilter === 'card'
                   ? 'bg-blue-500 text-white'
                   : 'text-gym-muted hover:text-white'
@@ -353,7 +363,7 @@ export const IncomeHistoryView: React.FC = () => {
             </button>
             <button
               onClick={() => setMethodFilter('transfer')}
-              className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 methodFilter === 'transfer'
                   ? 'bg-purple-500 text-white'
                   : 'text-gym-muted hover:text-white'
@@ -428,14 +438,20 @@ export const IncomeHistoryView: React.FC = () => {
               ) : (
                 filteredSales.map((sale) => {
                   const dateObj = new Date(sale.timestamp);
-                  const itemsCount = sale.items.reduce((acc, i) => acc + i.quantity, 0);
-                  const isMembership = sale.saleType === 'membership';
+                  const itemsArr = Array.isArray(sale.items) ? sale.items : [];
+                  const itemsCount = itemsArr.reduce((acc, i) => acc + (i.quantity || 1), 0) || 1;
+                  const itemsSummary = itemsArr.length > 0
+                    ? itemsArr.map(i => `${i.quantity || 1}x ${i.product?.name || (i as any).name || sale.planName || 'Cobro'}`).join(', ')
+                    : (sale.planName || sale.notes || 'Cobro');
+                  const saleType = resolveSaleType(sale);
+                  const isVisit = saleType === 'visit';
+                  const isMembership = saleType === 'membership';
 
                   return (
                     <tr key={sale.id} className="hover:bg-gym-surface/40 transition-colors">
                       <td className="py-3 px-4">
                         <span className="font-mono font-bold text-white block">
-                          {sale.folio}
+                          {sale.folio || sale.id}
                         </span>
                         <span className="text-[11px] text-gym-muted">
                           {dateObj.toLocaleDateString('es-MX')} {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
@@ -443,7 +459,12 @@ export const IncomeHistoryView: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4">
-                        {isMembership ? (
+                        {isVisit ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            <UserCheck className="w-3 h-3" />
+                            Visita
+                          </span>
+                        ) : isMembership ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
                             <Dumbbell className="w-3 h-3" />
                             Membresía
@@ -458,7 +479,7 @@ export const IncomeHistoryView: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <div className="font-semibold text-gray-200">
-                          {sale.clientName}
+                          {sale.clientName || 'Visitante'}
                         </div>
                         {sale.clientId && (
                           <span className="text-[10px] text-gym-muted font-mono">
@@ -471,8 +492,8 @@ export const IncomeHistoryView: React.FC = () => {
                         <div className="text-gray-300">
                           {itemsCount} artículo(s)
                         </div>
-                        <p className="text-[10px] text-gym-muted truncate max-w-xs" title={sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}>
-                          {sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
+                        <p className="text-[10px] text-gym-muted truncate max-w-xs" title={itemsSummary}>
+                          {itemsSummary}
                         </p>
                       </td>
 
@@ -488,7 +509,7 @@ export const IncomeHistoryView: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-gym-muted font-medium">
-                        {sale.cashierName}
+                        {sale.cashierName || 'Recepción (RP)'}
                       </td>
 
                       <td className="py-3 px-4 text-right">

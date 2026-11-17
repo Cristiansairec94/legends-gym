@@ -21,246 +21,7 @@ try {
 }
 
 // Default initial members seed
-const DEFAULT_MEMBERS = [
-  {
-    id: 'MEM-001',
-    fullName: 'Carlos Mendoza',
-    documentId: '45892011',
-    email: 'carlos.mendoza@email.com',
-    phone: '+52 55 1234 5678',
-    birthDate: '1992-05-14',
-    emergencyContact: {
-      name: 'María Mendoza',
-      phone: '+52 55 9876 5432',
-      relationship: 'Esposa',
-    },
-    medicalNotes: 'Hipertensión leve controlada. Apto para levantamiento de fuerza.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_MENDOZA_001',
-    biometricTemplate: 'FP_THUMB_RIGHT_001',
-    membership: {
-      planType: 'vip',
-      planName: 'Membresía Black VIP Anual',
-      startDate: '2026-01-10',
-      endDate: '2027-01-10',
-      price: 9500,
-      status: 'active',
-      daysRemaining: 95,
-    },
-    checkInsCount: 142,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 3450,
-    createdAt: '2025-01-10',
-  },
-  {
-    id: 'MEM-002',
-    fullName: 'Valeria Ríos Gómez',
-    documentId: '78291034',
-    email: 'valeria.rios@email.com',
-    phone: '+52 55 4433 2211',
-    birthDate: '1998-11-20',
-    emergencyContact: {
-      name: 'Roberto Ríos',
-      phone: '+52 55 2211 4433',
-      relationship: 'Padre',
-    },
-    medicalNotes: 'Ninguna lesión. Entrenamiento de hipertrofia y glúteos.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_RIOS_002',
-    biometricTemplate: 'FP_INDEX_RIGHT_002',
-    membership: {
-      planType: 'monthly',
-      planName: 'Mensualidad Estándar',
-      startDate: '2026-09-25',
-      endDate: '2026-10-25',
-      price: 850,
-      status: 'active',
-      daysRemaining: 18,
-    },
-    checkInsCount: 28,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 1200,
-    createdAt: '2026-06-15',
-  },
-  {
-    id: 'MEM-003',
-    fullName: 'Alejandro Soto Vega',
-    documentId: '63901245',
-    email: 'alejandro.soto@email.com',
-    phone: '+52 55 7788 9900',
-    birthDate: '1989-03-30',
-    emergencyContact: {
-      name: 'Lorena Vega',
-      phone: '+52 55 3344 5566',
-      relationship: 'Hermana',
-    },
-    medicalNotes: 'Operación de menisco en 2023. Evitar sentadillas profundas sin vendaje.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_SOTO_003',
-    biometricTemplate: 'FP_THUMB_RIGHT_003',
-    membership: {
-      planType: 'quarterly',
-      planName: 'Plan Trimestral Fuerza',
-      startDate: '2026-07-09',
-      endDate: '2026-10-09',
-      price: 2300,
-      status: 'expiring_soon',
-      daysRemaining: 2,
-    },
-    checkInsCount: 56,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 2100,
-    createdAt: '2025-07-09',
-  },
-  {
-    id: 'MEM-004',
-    fullName: 'Sofía Domínguez',
-    documentId: '89104523',
-    email: 'sofia.dominguez@email.com',
-    phone: '+52 55 6655 4433',
-    birthDate: '1995-08-12',
-    emergencyContact: {
-      name: 'Andrés Domínguez',
-      phone: '+52 55 1199 8877',
-      relationship: 'Esposo',
-    },
-    medicalNotes: 'Alergia a la proteína de soya.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_DOMINGUEZ_004',
-    biometricTemplate: 'FP_INDEX_RIGHT_004',
-    membership: {
-      planType: 'monthly',
-      planName: 'Mensualidad Estándar',
-      startDate: '2026-09-02',
-      endDate: '2026-10-02',
-      price: 850,
-      status: 'expired',
-      daysRemaining: -5,
-    },
-    checkInsCount: 19,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 350,
-    createdAt: '2026-05-02',
-  },
-  {
-    id: 'MEM-005',
-    fullName: 'Mateo Guerrero',
-    documentId: '32091487',
-    email: 'mateo.guerrero@email.com',
-    phone: '+52 55 9900 1122',
-    birthDate: '2004-02-18',
-    emergencyContact: {
-      name: 'Patricia Guerrero',
-      phone: '+52 55 8822 3344',
-      relationship: 'Madre',
-    },
-    medicalNotes: 'Desarrollo muscular juvenil.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_GUERRERO_005',
-    biometricTemplate: 'FP_THUMB_LEFT_005',
-    membership: {
-      planType: 'monthly',
-      planName: 'Plan Estudiante Gym',
-      startDate: '2026-09-29',
-      endDate: '2026-10-29',
-      price: 650,
-      status: 'active',
-      daysRemaining: 22,
-    },
-    checkInsCount: 15,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 450,
-    createdAt: '2026-08-29',
-  },
-  {
-    id: 'MEM-006',
-    fullName: 'Laura Paredes Ruiz',
-    documentId: '54019283',
-    email: 'laura.paredes@email.com',
-    phone: '+52 55 3322 1100',
-    birthDate: '1997-07-04',
-    emergencyContact: {
-      name: 'Carmen Ruiz',
-      phone: '+52 55 4411 9988',
-      relationship: 'Madre',
-    },
-    medicalNotes: 'Inscripción reciente. Apta para actividad física.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_PAREDES_006',
-    biometricTemplate: 'FP_THUMB_RIGHT_006',
-    membership: {
-      planType: 'monthly',
-      planName: 'Mensualidad Estándar',
-      startDate: '2026-10-06',
-      endDate: '2026-11-06',
-      price: 850,
-      status: 'active',
-      daysRemaining: 30,
-    },
-    checkInsCount: 1,
-    totalSpentInStore: 850,
-    createdAt: '2026-10-06',
-  },
-  {
-    id: 'MEM-007',
-    fullName: 'Diego Alarcón Cruz',
-    documentId: '90812345',
-    email: 'diego.alarcon@email.com',
-    phone: '+52 55 8765 4321',
-    birthDate: '1991-09-17',
-    emergencyContact: {
-      name: 'Gabriel Alarcón',
-      phone: '+52 55 7766 5544',
-      relationship: 'Hermano',
-    },
-    medicalNotes: 'Entrenamiento funcional de alta intensidad.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_ALARCON_007',
-    biometricTemplate: 'FP_INDEX_RIGHT_007',
-    membership: {
-      planType: 'daily',
-      planName: 'Pase por Día (Day Pass)',
-      startDate: '2026-10-05',
-      endDate: '2026-10-05',
-      price: 150,
-      status: 'expired',
-      daysRemaining: -2,
-    },
-    checkInsCount: 4,
-    lastCheckIn: new Date().toISOString(),
-    totalSpentInStore: 180,
-    createdAt: '2026-09-01',
-  },
-  {
-    id: 'MEM-008',
-    fullName: 'Juan Solis',
-    documentId: '55892018',
-    email: 'juan.solis@email.com',
-    phone: '+52 55 6789 1234',
-    birthDate: '1994-04-12',
-    emergencyContact: {
-      name: 'Familiar de Contacto',
-      phone: '+52 55 9999 8888',
-      relationship: 'Familiar',
-    },
-    medicalNotes: 'Apto para actividad física general.',
-    biometricRegistered: true,
-    biometricHash: 'BIO_HASH_SOLIS_008',
-    biometricTemplate: 'FP_THUMB_RIGHT_008',
-    membership: {
-      planType: 'monthly',
-      planName: 'Mensualidad Estándar',
-      startDate: '2026-10-13',
-      endDate: '2026-11-12',
-      price: 850,
-      status: 'active',
-      daysRemaining: 30,
-    },
-    checkInsCount: 0,
-    totalSpentInStore: 850,
-    createdAt: '2026-10-13',
-  }
-];
+const DEFAULT_MEMBERS = [];
 
 // In-memory state with file backing
 let db = {
@@ -277,11 +38,148 @@ let db = {
   catalogPlans: [],
   branches: [],
   accessLogs: [],
+  pendingVisitRequests: [],
+  pendingRegistrationRequests: [],
   deletedMemberIds: [],
   deletedProductIds: [],
   deletedExpenseIds: [],
   deletedEmployeeIds: []
 };
+
+// Filter legacy removed catalog plans from disk or older clients
+const LEGACY_REMOVED_PLAN_IDS = new Set(['CAT-PLAN-001', 'CAT-PLAN-007', 'CAT-PLAN-008']);
+function isLegacyRemovedPlan(p) {
+  if (!p || !p.id) return true;
+  if (LEGACY_REMOVED_PLAN_IDS.has(p.id)) return true;
+  if (p.name === 'Mensualidad Estándar' && p.price === 850) return true;
+  if (p.name === 'Plan Trimestral Fuerza' && p.price === 2300) return true;
+  if (p.name === 'Membresía Black VIP Anual' && p.price === 9500) return true;
+  if (p.name === 'Pase por Día (Day Pass)' && p.price === 150) return true;
+  return false;
+}
+
+function isServerVisitSale(raw) {
+  if (!raw || typeof raw !== 'object') return false;
+  if (raw.saleType === 'visit') return true;
+  if (raw.source === 'terminal_visit_authorized') return true;
+  const id = String(raw.id || '').toUpperCase();
+  const folio = String(raw.folio || '').toUpperCase();
+  if (id.startsWith('SALE_VISIT') || id.startsWith('SALE-VISIT') || id.includes('_VISIT_')) return true;
+  if (folio.startsWith('VIS-')) return true;
+  const planName = String(raw.planName || '').toLowerCase();
+  if (planName.includes('visita')) return true;
+  const notes = String(raw.notes || '').toLowerCase();
+  if (notes.includes('pase de visita')) return true;
+  if (Array.isArray(raw.items)) {
+    return raw.items.some(it => {
+      const prodId = String(it?.product?.id || it?.id || '').toLowerCase();
+      const barcode = String(it?.product?.barcode || '').toUpperCase();
+      const name = String(it?.product?.name || it?.name || '').toLowerCase();
+      return (
+        prodId === 'prod_visit_pass' ||
+        prodId === 'item_visit_pass' ||
+        barcode === 'VIS-001' ||
+        name.includes('pase de visita')
+      );
+    });
+  }
+  return false;
+}
+
+// Normalize visit / membership sale records so ERP IncomeHistoryView and ReceiptModal never receive incomplete fields
+function normalizeServerSale(raw) {
+  if (!raw || typeof raw !== 'object') return raw;
+  const total = Number(raw.total ?? raw.amountPaid ?? 0);
+  const id = raw.id || 'SALE_' + Date.now();
+  const isVisit = isServerVisitSale(raw);
+  const isMembership = !isVisit && (raw.saleType === 'membership' || id.startsWith('SALE-REG') || id.startsWith('PLAN-'));
+  const resolvedSaleType = isVisit ? 'visit' : isMembership ? 'membership' : 'store';
+  const defaultTitle = raw.planName || (isVisit ? 'Pase de Visita' : 'Cobro de acceso');
+  const rawItems = Array.isArray(raw.items) && raw.items.length > 0 ? raw.items : null;
+  const items = rawItems
+    ? rawItems.map(it => {
+        const unitPrice = Number(it?.unitPrice ?? it?.price ?? total);
+        const qty = Number(it?.quantity ?? 1);
+        const prodName = it?.product?.name || it?.name || defaultTitle;
+        return {
+          product: it?.product && it.product.name
+            ? it.product
+            : {
+                id: it?.id || (isVisit ? 'ITEM_VISIT_PASS' : 'ITEM_GYM_COLLECTION'),
+                name: prodName,
+                brand: 'LEGENDS GYM',
+                category: 'gear',
+                price: unitPrice,
+                costPrice: 0,
+                stock: 999,
+                minStock: 0
+              },
+          quantity: qty,
+          unitPrice,
+          subtotal: Number(it?.subtotal ?? it?.total ?? unitPrice * qty)
+        };
+      })
+    : [{
+        product: {
+          id: isVisit ? 'ITEM_VISIT_PASS' : 'ITEM_GYM_COLLECTION',
+          name: defaultTitle,
+          brand: 'LEGENDS GYM',
+          category: 'gear',
+          price: total,
+          costPrice: 0,
+          stock: 999,
+          minStock: 0
+        },
+        quantity: 1,
+        unitPrice: total,
+        subtotal: total
+      }];
+
+  return {
+    ...raw,
+    id,
+    folio: raw.folio || (isVisit ? `VIS-${String(id).slice(-4)}` : id),
+    timestamp: raw.timestamp || new Date().toISOString(),
+    clientName: raw.clientName || 'Visitante del Día',
+    items,
+    subtotal: Number(raw.subtotal ?? total),
+    tax: Number(raw.tax ?? 0),
+    total,
+    paymentMethod: raw.paymentMethod || 'cash',
+    amountPaid: Number(raw.amountPaid ?? total),
+    changeGiven: Number(raw.changeGiven ?? 0),
+    cashierName: raw.cashierName || raw.authorizedBy || 'Recepción (RP)',
+    cashierRole: raw.cashierRole || 'admin',
+    saleType: resolvedSaleType,
+    planName: raw.planName || (isVisit ? 'Pase de Visita' : undefined)
+  };
+}
+
+function applyServerMembershipCash(session, amount, paymentMethod) {
+  if (!session || session.status !== 'open' || !(amount > 0)) return;
+  const method = paymentMethod || 'cash';
+  if (method === 'cash') {
+    session.totalMembershipsCash = (session.totalMembershipsCash || 0) + amount;
+    session.expectedCash = (session.expectedCash || 0) + amount;
+  } else if (method === 'card') {
+    session.totalMembershipsCard = (session.totalMembershipsCard || 0) + amount;
+  } else if (method === 'transfer') {
+    session.totalMembershipsTransfer = (session.totalMembershipsTransfer || 0) + amount;
+  }
+}
+
+function applyServerVisitCash(session, amount, paymentMethod) {
+  if (!session || session.status !== 'open' || !(amount > 0)) return;
+  const method = paymentMethod || 'cash';
+  if (method === 'cash') {
+    session.totalVisitsCash = (session.totalVisitsCash || 0) + amount;
+    session.expectedCash = (session.expectedCash || 0) + amount;
+  } else if (method === 'card') {
+    session.totalVisitsCard = (session.totalVisitsCard || 0) + amount;
+  } else if (method === 'transfer') {
+    session.totalVisitsTransfer = (session.totalVisitsTransfer || 0) + amount;
+  }
+}
 
 // Load existing database if available
 if (fs.existsSync(DB_FILE)) {
@@ -290,6 +188,12 @@ if (fs.existsSync(DB_FILE)) {
     const parsed = JSON.parse(raw);
     db = { ...db, ...parsed };
     if (!Array.isArray(db.deletedMemberIds)) db.deletedMemberIds = [];
+    if (Array.isArray(db.catalogPlans)) {
+      db.catalogPlans = db.catalogPlans.filter(p => !isLegacyRemovedPlan(p));
+    }
+    if (Array.isArray(db.sales)) {
+      db.sales = db.sales.map(normalizeServerSale);
+    }
     console.log(`[DB] Base de datos cargada desde ${DB_FILE} (${db.members.length} socios, ${db.accessLogs.length} accesos)`);
   } catch (e) {
     console.warn('[DB] No se pudo leer el archivo existente, usando base de datos limpia.');
@@ -309,18 +213,106 @@ for (const curM of db.members || []) {
   }
 }
 db.members = Array.from(mergedStartupMap.values());
-saveDbToDisk();
+
+
+// Load gender-specific client avatars (Female: left dumbbell silhouette, Male: right dumbbell curl illustration)
+let FEMALE_CLIENT_B64 = '';
+let MALE_CLIENT_B64 = '';
+try {
+  const femCandidate = [
+    path.resolve(__dirname, '../src/assets/avatars/female_client.png'),
+    path.resolve(__dirname, '../public/avatars/female_client.png'),
+    path.resolve(__dirname, '../dist/avatars/female_client.png'),
+  ].find(p => fs.existsSync(p));
+  const maleCandidate = [
+    path.resolve(__dirname, '../src/assets/avatars/male_client.png'),
+    path.resolve(__dirname, '../public/avatars/male_client.png'),
+    path.resolve(__dirname, '../dist/avatars/male_client.png'),
+  ].find(p => fs.existsSync(p));
+  if (femCandidate) FEMALE_CLIENT_B64 = 'data:image/png;base64,' + fs.readFileSync(femCandidate).toString('base64');
+  if (maleCandidate) MALE_CLIENT_B64 = 'data:image/png;base64,' + fs.readFileSync(maleCandidate).toString('base64');
+} catch {}
+
+const SERVER_FEMALE_NAMES = new Set([
+  'alondra','maria','mary','carmen','ana','valeria','sofia','andrea','valentina','camila',
+  'isabella','isabela','lucia','natalia','daniela','mariana','fernanda','gabriela','laura',
+  'paula','patricia','claudia','diana','carolina','brenda','alejandra','sara','sarah',
+  'monica','elena','rosa','jessica','yesica','vanessa','vanesa','karen','karla','carla',
+  'guadalupe','lupita','ximena','jimena','paulina','adriana','lorena','esmeralda','rocio',
+  'beatriz','teresa','gloria','margarita','leticia','silvia','yolanda','miriam','myriam',
+  'veronica','elizabeth','elisabeth','raquel','ruth','susana','ivonne','fatima','estefania',
+  'stephanie','monzerrat','monserrat','montserrat','rebeca','nayeli','marisol','araceli',
+  'aracely','arely','areli','clara','cecilia','blanca','alma','alicia','luz','olga','irma',
+  'juana','abigail','noemi','sarai','anahi','rubi','itzel','citlalli','xochitl','yazmin',
+  'yasmin','jasmin','jazmin','lizbeth','lizeth','lissette','jaqueline','jacqueline','kimberly',
+  'ashley','melanie','valery','nataly','nancy','fanny','yenny','jenny','jennifer','marifer',
+  'mafer','pilar','mercedes','consuelo','concepcion','dolores','lourdes','isabel','maribel',
+  'anabel','mabel','ester','esther','belen','soledad','trinidad','natividad','rosario',
+  'amparo','milagros','wendy','heidy','ingrid','astrid','edith','judith','estela','perla',
+  'dulce','estrella','cintia','cynthia','nadia','sonia','tania','katia','kenia','regina',
+  'renata','romina','aitana','alexa','alexandra','alison','allison','amanda','amelia',
+  'angela','angelica','antonia','ariadna','ariana','aurora','barbara','berenice','bianca'
+]);
+
+const SERVER_MALE_NAMES = new Set([
+  'samuel','carlos','juan','jose','pedro','miguel','alejandro','diego','mateo','jorge',
+  'luis','daniel','fernando','ricardo','eduardo','roberto','javier','david','sergio',
+  'mario','pablo','marcos','marco','andres','hector','rodrigo','gabriel','rafael','arturo',
+  'ivan','angel','raul','oscar','emilio','joaquin','manuel','francisco','antonio','enrique',
+  'cesar','hugo','victor','ramon','gustavo','felipe','alonso','alberto','gonzalo','esteban',
+  'mauricio','cristian','christian','kevin','brayan','brian','erik','eric','erick','ercik',
+  'ruben','julio','gerardo','adrian','martin','santiago','sebastian','lucas','leonardo',
+  'tomas','nicolas','emanuel','emmanuel','isaac','abraham','israel','isidro','ismael',
+  'uriel','azael','gael','axel','joel','noel','abel','fidel','ariel','omar','edgar','nestor',
+  'saul','paul','josue','noah','ian','alan','adair','aldair','yair','yahir','jair','efrain',
+  'benjamin','valentin','agustin','fermin','roman','dylan','brandon','jonathan','johan'
+]);
+
+function detectMemberGender(fullName, explicitGender) {
+  if (explicitGender === 'female' || explicitGender === 'male') return explicitGender;
+  if (!fullName || typeof fullName !== 'string') return 'male';
+  const clean = fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'male';
+  const first = parts[0];
+  const second = parts[1] || '';
+  if (first === 'maria' || (second && SERVER_FEMALE_NAMES.has(second) && (first === 'ma' || first === 'ma.'))) return 'female';
+  if (first === 'jose' && second === 'maria') return 'male';
+  if (SERVER_FEMALE_NAMES.has(first)) return 'female';
+  if (SERVER_MALE_NAMES.has(first)) return 'male';
+  if (second && SERVER_FEMALE_NAMES.has(second)) return 'female';
+  if (second && SERVER_MALE_NAMES.has(second)) return 'male';
+  if (first.endsWith('a') && !['luca','luka','borja','joshua','nikita','mustafa'].includes(first)) return 'female';
+  if (first.endsWith('eth') || first.endsWith('beth') || first.endsWith('zel')) return 'female';
+  return 'male';
+}
+
+function normalizeMemberAvatar(m) {
+  if (!m || typeof m !== 'object') return m;
+  const gender = detectMemberGender(m.fullName || m.name || '', m.gender);
+  const av = m.avatarUrl || '';
+  const targetB64 = gender === 'female' ? FEMALE_CLIENT_B64 : MALE_CLIENT_B64;
+  if (!targetB64) return { ...m, gender };
+  if (
+    !av ||
+    av.startsWith('preset:') ||
+    av.startsWith('gender:') ||
+    av.length > 150000 ||
+    av.includes('c2pa') ||
+    av.includes('unsplash.com') ||
+    av.includes('svg+xml') ||
+    av === FEMALE_CLIENT_B64 ||
+    av === MALE_CLIENT_B64
+  ) {
+    return { ...m, gender, avatarUrl: targetB64 };
+  }
+  return { ...m, gender };
+}
 
 function saveDbToDisk() {
   try {
     if (Array.isArray(db.members)) {
-      db.members = db.members.map(m => {
-        if (m && typeof m.avatarUrl === 'string' && m.avatarUrl.length > 150000) {
-          const { avatarUrl, ...rest } = m;
-          return rest;
-        }
-        return m;
-      });
+      db.members = db.members.map(m => normalizeMemberAvatar(m));
     }
     if (Array.isArray(db.accessLogs)) {
       db.accessLogs = db.accessLogs.map(l => {
@@ -331,7 +323,14 @@ function saveDbToDisk() {
         return l;
       });
     }
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+    const serialized = JSON.stringify(db, null, 2);
+    try {
+      fs.writeFileSync(DB_FILE, serialized, 'utf8');
+    } catch (writeErr) {
+      setTimeout(() => {
+        try { fs.writeFileSync(DB_FILE, serialized, 'utf8'); } catch {}
+      }, 250);
+    }
   } catch (e) {
     console.error('[DB] Error guardando en disco:', e);
   }
@@ -386,6 +385,16 @@ function parseJsonBody(req) {
 
 // Active Server-Sent Events (SSE) subscribers
 const sseClients = new Set();
+const recentVisitStatuses = new Map();
+
+function recordVisitStatus(reqId, entry) {
+  if (!reqId) return;
+  recentVisitStatuses.set(reqId, { ...entry, updatedAt: Date.now() });
+  if (recentVisitStatuses.size > 100) {
+    const oldestKey = recentVisitStatuses.keys().next().value;
+    if (oldestKey) recentVisitStatuses.delete(oldestKey);
+  }
+}
 
 function broadcastSseEvent(eventData) {
   const message = `data: ${JSON.stringify(eventData)}\n\n`;
@@ -399,15 +408,7 @@ function broadcastSseEvent(eventData) {
 }
 
 // Heartbeat ping every 15 seconds to keep SSE connections open indefinitely
-const pingInterval = setInterval(() => {
-  for (const client of sseClients) {
-    try {
-      client.write(': ping\n\n');
-    } catch {
-      sseClients.delete(client);
-    }
-  }
-}, 15000);
+let pingInterval = null;
 
 const server = http.createServer(async (req, res) => {
   setCorsHeaders(res);
@@ -572,7 +573,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { success: true, version: db.version, deletedId: body.memberId });
       }
 
-      return sendJson(res, 400, { error: 'Formato de actualización no válido' });
+      return sendJson(res, 400, { error: 'Formato de actualizaciÃ³n no vÃ¡lido' });
     }
 
     // 4. POST Access Log from Turnstile Terminal (Desktop Standalone App)
@@ -606,7 +607,7 @@ const server = http.createServer(async (req, res) => {
         db.updatedAt = new Date().toISOString();
         saveDbToDisk();
 
-        console.log(`[ACCESO] ${incomingLog.status === 'granted' ? '✅' : '❌'} ${incomingLog.clientName || 'Desconocido'} - ${incomingLog.reason || ''}`);
+        console.log(`[ACCESO] ${incomingLog.status === 'granted' ? 'âœ…' : 'âŒ'} ${incomingLog.clientName || 'Desconocido'} - ${incomingLog.reason || ''}`);
         
         // BROADCAST INSTANTLY TO ALL CONNECTED ERP DASHBOARDS VIA SSE (<50ms latency)
         broadcastSseEvent({
@@ -618,6 +619,326 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { success: true, logId: incomingLog.id });
       }
       return sendJson(res, 400, { error: 'Falta objeto log' });
+    }
+
+    // 4.1 GET Pending Visit Requests (optionally checking specific request status)
+    if ((pathname === '/api/sync/visit-requests' || pathname === '/api/visit-requests') && req.method === 'GET') {
+      if (!Array.isArray(db.pendingVisitRequests)) db.pendingVisitRequests = [];
+      const checkId = reqUrl.searchParams.get('id');
+      return sendJson(res, 200, {
+        requests: db.pendingVisitRequests,
+        statusEntry: checkId ? (recentVisitStatuses.get(checkId) || null) : null
+      });
+    }
+
+    // 4.2 POST New Visit Pass Request from Terminal
+    if ((pathname === '/api/sync/visit-request' || pathname === '/api/visit-request') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      if (!Array.isArray(db.pendingVisitRequests)) db.pendingVisitRequests = [];
+      
+      const reqId = body.id || ('VIS_' + Date.now());
+      const visitReq = {
+        id: reqId,
+        clientName: body.clientName || 'Visitante del Día',
+        cost: Number(body.cost) || 50,
+        timestamp: body.timestamp || Date.now(),
+        status: 'pending'
+      };
+
+      db.pendingVisitRequests = [visitReq, ...db.pendingVisitRequests.filter(r => r.id !== reqId)];
+      recordVisitStatus(reqId, { status: 'pending', clientName: visitReq.clientName, cost: visitReq.cost });
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[VISITA] 🔔 Solicitud de Pase de Visita recibida: ${visitReq.clientName} ($${visitReq.cost})`);
+
+      broadcastSseEvent({
+        type: 'VISIT_PASS_REQUESTED',
+        visitRequest: visitReq,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, { success: true, visitRequest: visitReq });
+    }
+
+    // 4.3 POST Authorize Visit Pass from ERP (RP) upon collecting $50
+    if ((pathname === '/api/sync/visit-authorize' || pathname === '/api/visit-authorize') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      if (!Array.isArray(db.pendingVisitRequests)) db.pendingVisitRequests = [];
+      
+      const reqId = body.id;
+      const existingStatus = reqId ? recentVisitStatuses.get(reqId) : null;
+      if (existingStatus && existingStatus.status === 'authorized') {
+        return sendJson(res, 200, {
+          success: true,
+          authorized: true,
+          duplicate: true,
+          cost: existingStatus.cost || 50,
+          clientName: existingStatus.clientName || 'Visitante del Día'
+        });
+      }
+
+      const existingReq = db.pendingVisitRequests.find(r => r.id === reqId);
+      const clientName = body.clientName || existingReq?.clientName || 'Visitante del Día';
+      const cost = Number(body.cost) || existingReq?.cost || 50;
+      const paymentMethod = body.paymentMethod || 'cash';
+      const authorizedBy = body.authorizedBy || 'Administrador (RP)';
+
+      // Remove from pending
+      db.pendingVisitRequests = db.pendingVisitRequests.filter(r => r.id !== reqId);
+      recordVisitStatus(reqId, { status: 'authorized', clientName, cost });
+
+      // Create official idempotent complete Sale record of $50 in ERP Ingresos
+      const saleId = body.sale?.id || (reqId ? `SALE_VISIT_${reqId}` : ('SALE_VISIT_' + Date.now()));
+      const existingSale = Array.isArray(db.sales) ? db.sales.find(s => s.id === saleId) : null;
+      const visitSale = existingSale || normalizeServerSale(body.sale || {
+        id: saleId,
+        folio: `VIS-${String(Date.now()).slice(-4)}`,
+        timestamp: new Date().toISOString(),
+        clientName: clientName,
+        items: [{
+          product: {
+            id: 'prod_visit_pass',
+            name: 'Pase de Visita',
+            brand: 'LEGENDS GYM',
+            category: 'gear',
+            price: cost,
+            costPrice: 0,
+            stock: 9999,
+            minStock: 0
+          },
+          quantity: 1,
+          unitPrice: cost,
+          subtotal: cost
+        }],
+        subtotal: cost,
+        tax: 0,
+        total: cost,
+        paymentMethod: paymentMethod,
+        amountPaid: cost,
+        changeGiven: 0,
+        cashierName: authorizedBy,
+        cashierRole: 'admin',
+        notes: `Pase de Visita de ${clientName} ($${cost})`,
+        saleType: 'visit',
+        planName: 'Pase de Visita',
+        source: 'terminal_visit_authorized'
+      });
+      if (!Array.isArray(db.sales)) db.sales = [];
+      if (!existingSale) {
+        db.sales = [visitSale, ...db.sales];
+        if (body.cashSession && body.cashSession.id) {
+          db.cashSession = body.cashSession;
+        } else {
+          applyServerVisitCash(db.cashSession, cost, paymentMethod);
+        }
+      }
+
+      // Record access log
+      const visitLog = {
+        id: 'LOG_VIS_' + Date.now(),
+        timestamp: new Date().toISOString(),
+        clientName: clientName,
+        planName: 'Visita ($' + cost + ')',
+        status: 'granted',
+        method: 'visit_pass',
+        reason: 'Visita Autorizada por RP'
+      };
+      if (!Array.isArray(db.accessLogs)) db.accessLogs = [];
+      db.accessLogs = [visitLog, ...db.accessLogs].slice(0, 1000);
+
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[VISITA] ✅ Pase de Visita AUTORIZADO por RP: ${clientName} - $${cost} cobrados`);
+
+      broadcastSseEvent({
+        type: 'VISIT_PASS_AUTHORIZED',
+        visitRequest: { id: reqId, clientName, cost, status: 'authorized' },
+        sale: visitSale,
+        cashSession: db.cashSession,
+        log: visitLog,
+        version: db.version,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, {
+        success: true,
+        authorized: true,
+        cost,
+        clientName,
+        saleId,
+        logId: visitLog.id
+      });
+    }
+
+    // 4.4 POST Reject Visit Pass from ERP
+    if ((pathname === '/api/sync/visit-reject' || pathname === '/api/visit-reject') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      const reqId = body.id;
+      if (!Array.isArray(db.pendingVisitRequests)) db.pendingVisitRequests = [];
+      db.pendingVisitRequests = db.pendingVisitRequests.filter(r => r.id !== reqId);
+      recordVisitStatus(reqId, { status: 'rejected', clientName: '' });
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[VISITA] ❌ Pase de Visita rechazado: ${reqId}`);
+
+      broadcastSseEvent({
+        type: 'VISIT_PASS_REJECTED',
+        visitRequest: { id: reqId, clientName: '', cost: 50, status: 'rejected' },
+        visitRequestId: reqId,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, { success: true, rejected: true, id: reqId });
+    }
+
+    // 4.5 GET Pending Member Registration Requests
+    if ((pathname === '/api/sync/registration-requests' || pathname === '/api/registration-requests') && req.method === 'GET') {
+      if (!Array.isArray(db.pendingRegistrationRequests)) db.pendingRegistrationRequests = [];
+      return sendJson(res, 200, {
+        requests: db.pendingRegistrationRequests
+      });
+    }
+
+    // 4.6 POST New Member Registration Request from Terminal
+    if ((pathname === '/api/sync/registration-request' || pathname === '/api/registration-request') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      if (!Array.isArray(db.pendingRegistrationRequests)) db.pendingRegistrationRequests = [];
+      
+      const reqId = body.id || ('REG_' + Date.now());
+      const regReq = {
+        id: reqId,
+        memberData: body.memberData || {},
+        paymentMethod: body.paymentMethod || 'cash',
+        timestamp: body.timestamp || Date.now(),
+        status: 'pending'
+      };
+
+      db.pendingRegistrationRequests = [regReq, ...db.pendingRegistrationRequests.filter(r => r.id !== reqId)];
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[REGISTRO] 🔔 Solicitud de Alta de Socio recibida: ${regReq.memberData.fullName || 'Nuevo Socio'} ($${regReq.memberData.planPrice || 0})`);
+
+      broadcastSseEvent({
+        type: 'MEMBER_REGISTRATION_REQUESTED',
+        registrationRequest: regReq,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, { success: true, registrationRequest: regReq });
+    }
+
+    // 4.7 POST Authorize Member Registration from ERP upon collecting payment
+    if ((pathname === '/api/sync/registration-authorize' || pathname === '/api/registration-authorize') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      if (!Array.isArray(db.pendingRegistrationRequests)) db.pendingRegistrationRequests = [];
+      
+      const reqId = body.id;
+      db.pendingRegistrationRequests = db.pendingRegistrationRequests.filter(r => r.id !== reqId);
+
+      const member = body.member;
+      const incomingMembers = Array.isArray(body.members) && body.members.length > 0
+        ? body.members.filter(m => m && m.id)
+        : (member && member.id ? [member] : []);
+      const primaryMember = incomingMembers[0] || member;
+      const sale = body.sale;
+      const paymentMethod = body.paymentMethod || 'cash';
+      const planPrice = Number(primaryMember?.membership?.price || sale?.total || 0);
+
+      if (incomingMembers.length > 0) {
+        if (!Array.isArray(db.members)) db.members = [];
+        const incomingIds = new Set(incomingMembers.map(m => m.id));
+        db.members = [...incomingMembers, ...db.members.filter(m => !incomingIds.has(m.id))];
+      }
+
+      const normalizedRegSale = sale && sale.id ? normalizeServerSale(sale) : null;
+      const existingRegSale = normalizedRegSale && Array.isArray(db.sales)
+        ? db.sales.find(s => s.id === normalizedRegSale.id)
+        : null;
+
+      if (normalizedRegSale) {
+        if (!Array.isArray(db.sales)) db.sales = [];
+        db.sales = [normalizedRegSale, ...db.sales.filter(s => s.id !== normalizedRegSale.id)];
+      }
+
+      if (body.cashSession && body.cashSession.id) {
+        db.cashSession = body.cashSession;
+      } else if (!existingRegSale && planPrice > 0) {
+        applyServerMembershipCash(db.cashSession, planPrice, paymentMethod);
+      }
+
+      const memberNamesList = incomingMembers.length > 1
+        ? incomingMembers.map(m => m.fullName).join(', ')
+        : (primaryMember?.fullName || 'Nuevo Socio');
+
+      const regLog = {
+        id: 'LOG_REG_' + Date.now(),
+        timestamp: new Date().toISOString(),
+        clientName: memberNamesList,
+        planName: primaryMember?.membership?.planName || 'Membresía',
+        status: 'granted',
+        method: 'membership_registration',
+        reason: incomingMembers.length > 1
+          ? `Alta Grupal (${incomingMembers.length} socios) y Pago Registrado en RP • Torniquete Abierto`
+          : 'Alta de Socio y Pago Registrado en RP • Torniquete Abierto'
+      };
+      if (!Array.isArray(db.accessLogs)) db.accessLogs = [];
+      db.accessLogs = [regLog, ...db.accessLogs].slice(0, 1000);
+
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[REGISTRO] ✅ Alta de Socio AUTORIZADA por RP: ${memberNamesList} - $${planPrice} cobrados`);
+
+      broadcastSseEvent({
+        type: 'MEMBER_REGISTRATION_AUTHORIZED',
+        registrationRequest: { id: reqId, memberData: primaryMember, status: 'authorized' },
+        member: primaryMember,
+        members: incomingMembers,
+        sale: normalizedRegSale || sale,
+        cashSession: db.cashSession,
+        log: regLog,
+        version: db.version,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, {
+        success: true,
+        authorized: true,
+        id: reqId,
+        memberId: primaryMember?.id,
+        memberIds: incomingMembers.map(m => m.id),
+        saleId: sale?.id
+      });
+    }
+
+    // 4.8 POST Reject Member Registration from ERP
+    if ((pathname === '/api/sync/registration-reject' || pathname === '/api/registration-reject') && req.method === 'POST') {
+      const body = await parseJsonBody(req);
+      const reqId = body.id;
+      if (!Array.isArray(db.pendingRegistrationRequests)) db.pendingRegistrationRequests = [];
+      db.pendingRegistrationRequests = db.pendingRegistrationRequests.filter(r => r.id !== reqId);
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk();
+
+      console.log(`[REGISTRO] ❌ Solicitud de Alta de Socio rechazada: ${reqId}`);
+
+      broadcastSseEvent({
+        type: 'MEMBER_REGISTRATION_REJECTED',
+        registrationRequestId: reqId,
+        timestamp: Date.now()
+      });
+
+      return sendJson(res, 200, { success: true, rejected: true, id: reqId });
     }
 
     // 5. GET Access Logs
@@ -644,7 +965,31 @@ const server = http.createServer(async (req, res) => {
         const { entity, changeType, item, itemId } = body;
         if (!entity) return sendJson(res, 400, { error: 'Falta campo entity' });
 
-        if (entity === 'products') {
+        if (entity === 'members') {
+          if (!Array.isArray(db.members)) db.members = [];
+          if (!Array.isArray(db.deletedMemberIds)) db.deletedMemberIds = [];
+          if (changeType === 'delete') {
+            const id = itemId || item?.id;
+            if (id) {
+              if (!db.deletedMemberIds.includes(id)) db.deletedMemberIds.push(id);
+              db.members = db.members.filter(m => m.id !== id);
+              broadcastSseEvent({ type: 'MEMBER_DELETED', memberId: id, version: db.version + 1, timestamp: Date.now() });
+              console.log(`[SYNC] Socio eliminado via database sync: ${id}`);
+            }
+          } else if (item && item.id) {
+            db.deletedMemberIds = db.deletedMemberIds.filter(id => id !== item.id);
+            const exists = db.members.some(m => m.id === item.id);
+            if (exists) {
+              db.members = db.members.map(m => m.id === item.id ? { ...m, ...item } : m);
+              broadcastSseEvent({ type: 'MEMBER_UPDATED', member: item, version: db.version + 1, timestamp: Date.now() });
+              console.log(`[SYNC] Socio actualizado via database sync: ${item.fullName || item.id}`);
+            } else {
+              db.members = [item, ...db.members];
+              broadcastSseEvent({ type: 'MEMBER_ADDED', member: item, version: db.version + 1, timestamp: Date.now() });
+              console.log(`[SYNC] Nuevo socio registrado via database sync: ${item.fullName || item.id}`);
+            }
+          }
+        } else if (entity === 'products') {
           if (!Array.isArray(db.products)) db.products = [];
           if (!Array.isArray(db.deletedProductIds)) db.deletedProductIds = [];
           if (changeType === 'delete') {
@@ -712,6 +1057,8 @@ const server = http.createServer(async (req, res) => {
           }
         } else if (entity === 'settings') {
           if (item) db.settings = { ...(db.settings || {}), ...item };
+        } else if (entity === 'terminalDesign') {
+          if (item) db.terminalDesign = item;
         } else if (entity === 'catalogPlans') {
           if (!Array.isArray(db.catalogPlans)) db.catalogPlans = [];
           if (changeType === 'delete') {
@@ -768,10 +1115,17 @@ const server = http.createServer(async (req, res) => {
           db.employees = Array.from(map.values());
         }
         if (incoming.settings) db.settings = { ...(db.settings || {}), ...incoming.settings };
+        if (incoming.terminalDesign) {
+          const curTs = new Date(db.terminalDesign?.updatedAt || 0).getTime();
+          const incTs = new Date(incoming.terminalDesign.updatedAt || 0).getTime();
+          if (!db.terminalDesign || incTs >= curTs) {
+            db.terminalDesign = incoming.terminalDesign;
+          }
+        }
         if (Array.isArray(incoming.catalogPlans)) {
           const map = new Map();
-          for (const p of db.catalogPlans || []) if (p && p.id) map.set(p.id, p);
-          for (const p of incoming.catalogPlans) if (p && p.id) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+          for (const p of db.catalogPlans || []) if (!isLegacyRemovedPlan(p)) map.set(p.id, p);
+          for (const p of incoming.catalogPlans) if (!isLegacyRemovedPlan(p)) map.set(p.id, { ...(map.get(p.id) || {}), ...p });
           db.catalogPlans = Array.from(map.values());
         }
         if (Array.isArray(incoming.accessLogs)) {
@@ -788,20 +1142,20 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { success: true, version: db.version, updatedAt: db.updatedAt, database: db });
       }
 
-      return sendJson(res, 400, { error: 'Formato no válido' });
+      return sendJson(res, 400, { error: 'Formato no vÃ¡lido' });
     }
 
     // Default 404
     return sendJson(res, 404, { error: 'Ruta no encontrada', path: pathname });
   } catch (err) {
-    console.error('[ERROR] Error en petición sync:', err);
-    return sendJson(res, 500, { error: 'Error interno del servidor de sincronización' });
+    console.error('[ERROR] Error en peticiÃ³n sync:', err);
+    return sendJson(res, 500, { error: 'Error interno del servidor de sincronizaciÃ³n' });
   }
 });
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.warn(`[SYNC SERVER] Puerto ${PORT} ya está en uso por otra instancia. Modo cliente LAN compartido activo.`);
+    console.warn(`[SYNC SERVER] Puerto ${PORT} ya estÃ¡ en uso por otra instancia. Modo cliente LAN compartido activo.`);
   } else {
     console.error('[SYNC SERVER] Error del servidor:', err);
   }
@@ -809,9 +1163,21 @@ server.on('error', (err) => {
 
 function startServer(port = PORT) {
   server.listen(port, '0.0.0.0', () => {
+    saveDbToDisk();
+    if (!pingInterval) {
+      pingInterval = setInterval(() => {
+        for (const client of sseClients) {
+          try {
+            client.write(': ping\n\n');
+          } catch {
+            sseClients.delete(client);
+          }
+        }
+      }, 15000);
+    }
     const ips = getLocalIpAddresses();
     console.log('\n======================================================');
-    console.log('   FITNESS LEGENDS - SERVIDOR DE SINCRONIZACIÓN LAN');
+    console.log('   FITNESS LEGENDS - SERVIDOR DE SINCRONIZACIÃ“N LAN');
     console.log('======================================================');
     console.log(`[*] Puerto activo: ${port}`);
     console.log('[*] Direcciones IP disponibles para conectar la terminal:');
@@ -834,3 +1200,4 @@ module.exports = {
   broadcastSseEvent,
   db
 };
+

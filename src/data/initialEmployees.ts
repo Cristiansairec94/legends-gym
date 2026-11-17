@@ -10,7 +10,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80',
     role: 'admin',
     username: 'admin.roberto',
-    password: 'admin123',
+    password: '1234',
     pin: '1234',
     jobTitle: 'Gerente General & Operaciones',
     shift: 'Turno Completo',
@@ -27,8 +27,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
     role: 'receptionist',
     username: 'camila.recepcion',
-    password: 'camila123',
-    pin: '2222',
+    password: '1234',
+    pin: '1234',
     jobTitle: 'Líder de Recepción & Atención a Socios',
     shift: 'Matutino (06:00 - 14:00)',
     status: 'active',
@@ -44,8 +44,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     role: 'trainer',
     username: 'marcos.coach',
-    password: 'coach123',
-    pin: '3333',
+    password: '1234',
+    pin: '1234',
     jobTitle: 'Head Coach • Fuerza & Hipertrofia',
     shift: 'Vespertino (14:00 - 22:00)',
     status: 'active',
@@ -61,8 +61,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
     role: 'receptionist',
     username: 'daniela.caja',
-    password: 'daniela123',
-    pin: '4444',
+    password: '1234',
+    pin: '1234',
     jobTitle: 'Cajera & Recepcionista Turno Tarde',
     shift: 'Vespertino (14:00 - 22:00)',
     status: 'active',
@@ -140,41 +140,85 @@ export const INITIAL_SETTINGS: GymSettings = {
   currencySymbol: 'MXN ($)',
 };
 
+export const LEGACY_REMOVED_PLAN_IDS = new Set(['CAT-PLAN-001', 'CAT-PLAN-007', 'CAT-PLAN-008']);
+
+export function filterLegacyCatalogPlans(plans: SystemCatalogPlan[]): SystemCatalogPlan[] {
+  return (plans || []).filter((p) => {
+    if (!p || !p.id) return false;
+    if (LEGACY_REMOVED_PLAN_IDS.has(p.id)) return false;
+    if (p.name === 'Mensualidad Estándar' && p.price === 850) return false;
+    if (p.name === 'Plan Trimestral Fuerza' && p.price === 2300) return false;
+    if (p.name === 'Membresía Black VIP Anual' && p.price === 9500) return false;
+    if (p.name === 'Pase por Día (Day Pass)' && p.price === 150) return false;
+    return true;
+  });
+}
+
 export const INITIAL_CATALOG_PLANS: SystemCatalogPlan[] = [
   {
-    id: 'CAT-PLAN-001',
-    name: 'Pase por Día (Day Pass)',
-    type: 'daily',
-    durationDays: 1,
-    price: 150,
-    benefits: ['Acceso ilimitado por 1 día', 'Área de pesas y cardio', 'Uso de regaderas y lockers'],
-    active: true,
+    "id": "CAT-PLAN-002",
+    "name": "Pase Semanal (Semana por persona)",
+    "type": "weekly",
+    "durationDays": 7,
+    "price": 150,
+    "benefits": [
+      "Acceso por 7 días",
+      "Área de pesas y cardio",
+      "Acceso biométrico con huella"
+    ],
+    "active": true
   },
   {
-    id: 'CAT-PLAN-002',
-    name: 'Mensualidad Estándar',
-    type: 'monthly',
-    durationDays: 30,
-    price: 850,
-    benefits: ['Acceso 30 días', 'Acceso biométrico con huella', 'Rutina de inducción', 'Clases grupales'],
-    active: true,
+    "id": "CAT-PLAN-003",
+    "name": "Pase Quincenal (15 Días)",
+    "type": "biweekly",
+    "durationDays": 15,
+    "price": 250,
+    "benefits": [
+      "Acceso por 15 días continuos",
+      "Área de pesas y cardio",
+      "Acceso biométrico con huella"
+    ],
+    "active": true
   },
   {
-    id: 'CAT-PLAN-003',
-    name: 'Plan Trimestral Fuerza',
-    type: 'quarterly',
-    durationDays: 90,
-    price: 2300,
-    benefits: ['Acceso 90 días', '10% descuento en tienda de suplementos', 'Evaluación InBody inicial', 'Acceso rápido con huella'],
-    active: true,
+    "id": "CAT-PLAN-004",
+    "name": "Mensualidad Individual",
+    "type": "monthly",
+    "durationDays": 30,
+    "price": 420,
+    "benefits": [
+      "Acceso completo 30 días",
+      "Acceso biométrico con huella",
+      "Rutina de inducción",
+      "Pesas y cardio"
+    ],
+    "active": true
   },
   {
-    id: 'CAT-PLAN-004',
-    name: 'Membresía Black VIP Anual',
-    type: 'annual',
-    durationDays: 365,
-    price: 9500,
-    benefits: ['Acceso VIP 365 días', 'Playera conmemorativa Legends', '15% de descuento en suplementos', 'Locker preferencial', 'Pases de cortesía para invitados (12 al año)'],
-    active: true,
+    "id": "CAT-PLAN-005",
+    "name": "Paquete 3 Personas (Mensual)",
+    "type": "group",
+    "durationDays": 30,
+    "price": 1100,
+    "benefits": [
+      "Acceso mensual para 3 personas ($366/persona)",
+      "Acceso biométrico individual",
+      "Pesas y cardio"
+    ],
+    "active": true
   },
+  {
+    "id": "CAT-PLAN-006",
+    "name": "Paquete 4 Personas (Mensual)",
+    "type": "group",
+    "durationDays": 30,
+    "price": 1500,
+    "benefits": [
+      "Acceso mensual para 4 personas ($375/persona)",
+      "Acceso biométrico individual",
+      "Pesas y cardio"
+    ],
+    "active": true
+  }
 ];

@@ -156,25 +156,26 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="bg-gym-card rounded-2xl border border-gym-border w-full max-w-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        className="bg-[#12161f] rounded-[28px] border border-white/10 w-full max-w-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.75)] relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        style={{ fontFamily: "'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-gym-border flex items-center justify-between bg-gym-surface/60">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#151a24]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
+            <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400">
               <Cpu className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-base sm:text-lg text-white tracking-wide uppercase flex items-center gap-2">
-                <span>Configuración de Terminal Independiente</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <h3 className="font-semibold text-base sm:text-lg text-white tracking-tight flex items-center gap-2 flex-wrap">
+                <span>Configuración de terminal</span>
+                <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
                   Equipo Standalone
                 </span>
               </h3>
-              <p className="text-xs text-gym-muted mt-0.5">
+              <p className="text-xs text-zinc-400 mt-0.5">
                 Ajustes de red local (LAN), sincronización de socios y periféricos de acceso
               </p>
             </div>
@@ -182,9 +183,9 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-gym-surface hover:bg-gym-border text-gym-muted hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-zinc-400 hover:text-white transition-colors flex items-center justify-center cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -193,36 +194,36 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
           
           {/* Status summary banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 rounded-xl bg-gym-surface/80 border border-gym-border">
-              <span className="text-[11px] font-bold text-gym-muted block mb-1">Estado de Enlace LAN</span>
+            <div className="p-3.5 rounded-2xl bg-[#1b202b] border border-white/[0.08]">
+              <span className="text-[11px] font-medium text-zinc-400 block mb-1">Estado de enlace LAN</span>
               <div className="flex items-center gap-2">
                 {serverStatus === 'connected' ? (
                   <>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold text-emerald-400">Enlazado a Servidor</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-semibold text-emerald-400">Enlazado a servidor</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    <span className="text-xs font-bold text-amber-300">Modo Autónomo Local</span>
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-xs font-semibold text-amber-300">Modo autónomo local</span>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-gym-surface/80 border border-gym-border">
-              <span className="text-[11px] font-bold text-gym-muted block mb-1">Socios en Caché Local</span>
+            <div className="p-3.5 rounded-2xl bg-[#1b202b] border border-white/[0.08]">
+              <span className="text-[11px] font-medium text-zinc-400 block mb-1">Socios en caché</span>
               <div className="flex items-center gap-2">
                 <Database className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-black text-white font-mono">{members.length} socios listos</span>
+                <span className="text-xs font-semibold text-white tabular-nums">{members.length} socios listos</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-gym-surface/80 border border-gym-border">
-              <span className="text-[11px] font-bold text-gym-muted block mb-1">Última Sincronización</span>
+            <div className="p-3.5 rounded-2xl bg-[#1b202b] border border-white/[0.08]">
+              <span className="text-[11px] font-medium text-zinc-400 block mb-1">Última sincronización</span>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gym-muted" />
-                <span className="text-xs font-mono text-gray-300">
+                <Clock className="w-4 h-4 text-zinc-400" />
+                <span className="text-xs tabular-nums text-zinc-200">
                   {lastSyncTime ? lastSyncTime.toLocaleTimeString('es-MX') : 'Reciente'}
                 </span>
               </div>
@@ -470,24 +471,24 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gym-border bg-gym-surface/80 flex items-center justify-between">
-          <span className="text-xs text-gym-muted">
-            Guardado automático en el almacenamiento local de este equipo.
+        <div className="p-4 border-t border-white/[0.08] bg-[#151a24] flex items-center justify-between gap-3">
+          <span className="text-xs text-zinc-400">
+            Guardado automático en el almacenamiento local.
           </span>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-gym-surface hover:bg-gym-border text-xs font-semibold text-gym-muted hover:text-white transition-colors"
+              className="px-4 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.13] text-xs font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-2 shadow-glow-gold transition-all"
+              className="px-5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-[#1a1200] text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>Guardar Configuración</span>
+              <span>Guardar configuración</span>
             </button>
           </div>
         </div>

@@ -43,7 +43,7 @@ class SoundEffects {
   playAccessGranted() {
     try {
       const timestamp = Date.now();
-      if (timestamp - this.lastGrantedTime < 500) return;
+      if (timestamp - this.lastGrantedTime < 2000) return;
       this.lastGrantedTime = timestamp;
 
       this.unlock();
@@ -108,7 +108,7 @@ class SoundEffects {
   playAccessDenied() {
     try {
       const timestamp = Date.now();
-      if (timestamp - this.lastDeniedTime < 500) return;
+      if (timestamp - this.lastDeniedTime < 2000) return;
       this.lastDeniedTime = timestamp;
 
       this.unlock();
@@ -166,6 +166,13 @@ class SoundEffects {
     } catch {
       // Audio fallback silent
     }
+  }
+
+  // Subtle chime for system notifications
+  playNotification() {
+    try {
+      this.playScanBlip();
+    } catch {}
   }
 
   // Cash register cha-ching sound for successful POS checkout

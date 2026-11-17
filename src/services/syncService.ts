@@ -10,9 +10,11 @@ import {
   Employee,
   RoleDefinition,
   GymSettings,
-  SystemCatalogPlan
+  SystemCatalogPlan,
+  PaymentMethod
 } from '../types';
 import { serializeGymAvatar } from '../utils/genderAvatar';
+import { TerminalEntryDesignConfig } from '../utils/terminalDesign';
 
 export interface SyncMessage {
   type: 
@@ -20,13 +22,23 @@ export interface SyncMessage {
     | 'MEMBER_UPDATED' 
     | 'MEMBER_DELETED' 
     | 'MEMBERS_REPLACED' 
+    | 'MEMBERS_CLEARED'
+    | 'DATABASE_UPDATED'
     | 'ACCESS_LOG_ADDED'
     | 'SALE_ADDED'
     | 'EXPENSE_ADDED'
     | 'PRODUCT_UPDATED'
     | 'CASH_SESSION_UPDATED'
     | 'BRANCH_UPDATED'
-    | 'NOTIFICATION_ADDED';
+    | 'NOTIFICATION_ADDED'
+    | 'VISIT_PASS_REQUESTED'
+    | 'VISIT_PASS_AUTHORIZED'
+    | 'VISIT_PASS_REJECTED'
+    | 'MEMBER_REGISTRATION_REQUESTED'
+    | 'MEMBER_REGISTRATION_AUTHORIZED'
+    | 'MEMBER_REGISTRATION_REJECTED'
+    | 'TERMINAL_DESIGN_UPDATED';
+  terminalDesign?: TerminalEntryDesignConfig;
   member?: Client;
   memberId?: string;
   members?: Client[];
@@ -38,6 +50,20 @@ export interface SyncMessage {
   cashSession?: CashRegisterSession;
   branch?: Branch;
   notification?: SystemNotification;
+  visitRequest?: {
+    id: string;
+    clientName: string;
+    cost: number;
+    timestamp: number;
+    status?: 'pending' | 'authorized' | 'rejected';
+  };
+  registrationRequest?: {
+    id: string;
+    memberData: any;
+    paymentMethod: PaymentMethod;
+    timestamp: number;
+    status?: 'pending' | 'authorized' | 'rejected';
+  };
   version?: number;
   sourceId?: string;
   timestamp: number;
@@ -127,8 +153,8 @@ export function getResolvedServerUrl(customUrl?: string): string {
     return window.location.origin;
   }
 
-  // Default for standalone desktop app: Cloud Vercel server
-  return CLOUD_SERVER_URL;
+  // Default for standalone desktop app: Local Desktop Sync Server first
+  return LOCAL_SERVER_URL;
 }
 
 /**
@@ -137,13 +163,23 @@ export function getResolvedServerUrl(customUrl?: string): string {
  * are always synchronized across both environments.
  */
 export function getSyncTargets(customUrl?: string): string[] {
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isFileOrElectron =
+    typeof window !== 'undefined' &&
+    (window.location.protocol === 'file:' || Boolean((window as any).electronAPI?.isElectron));
   const primary = getResolvedServerUrl(customUrl);
-  const targets = new Set<string>([primary]);
+  const targets = new Set<string>();
 
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    // Under HTTPS (like Vercel production), prevent Mixed Content by only using HTTPS endpoints
+  if (isHttps) {
+    if (primary) targets.add(primary);
+    targets.add(CLOUD_SERVER_URL);
+  } else if (isFileOrElectron) {
+    // Always prioritize local desktop sync server first so ERP <-> Terminal events arrive in <5ms
+    targets.add(LOCAL_SERVER_URL);
+    if (primary) targets.add(primary);
     targets.add(CLOUD_SERVER_URL);
   } else {
+    if (primary) targets.add(primary);
     targets.add(LOCAL_SERVER_URL);
     targets.add(CLOUD_SERVER_URL);
   }
@@ -432,60 +468,103 @@ export function subscribeToRemoteSync(
     return () => {};
   }
 
-  // Use local server for persistent SSE stream when on desktop/local, or custom URL if specified
-  const base = serverUrl && serverUrl.trim() ? getResolvedServerUrl(serverUrl) : LOCAL_SERVER_URL;
-  let eventSource: EventSource | null = null;
-  let isClosed = false;
-  let reconnectTimer: any = null;
+  const isHttps = window.location.protocol === 'https:';
+  const resolvedCustom = serverUrl && serverUrl.trim() ? getResolvedServerUrl(serverUrl) : '';
+  const bases = new Set<string>();
+  if (!isHttps) {
+    bases.add(LOCAL_SERVER_URL);
+  }
+  if (resolvedCustom) {
+    bases.add(resolvedCustom);
+  }
+  if (bases.size === 0) {
+    bases.add(CLOUD_SERVER_URL);
+  }
 
-  const connect = () => {
-    if (isClosed) return;
-    try {
-      eventSource = new EventSource(`${base}/api/sync/events`);
+  const seenEventTimestamps = new Map<string, number>();
+  const cleanups: Array<() => void> = [];
 
-      eventSource.onmessage = (event) => {
-        try {
-          if (!event.data || event.data.trim() === ': ping' || event.data.trim() === ': connected') return;
-          const parsed = JSON.parse(event.data);
-          if (parsed && parsed.type) {
-            callback(parsed);
+  bases.forEach((base) => {
+    let eventSource: EventSource | null = null;
+    let isClosed = false;
+    let reconnectTimer: any = null;
+
+    const connect = () => {
+      if (isClosed) return;
+      try {
+        eventSource = new EventSource(`${base}/api/sync/events`);
+
+        eventSource.onmessage = (event) => {
+          try {
+            if (!event.data || event.data.trim() === ': ping' || event.data.trim() === ': connected') return;
+            const parsed = JSON.parse(event.data);
+            if (parsed && parsed.type) {
+              const dedupeId =
+                parsed.registrationRequest?.id ||
+                parsed.visitRequest?.id ||
+                parsed.visitRequestId ||
+                parsed.registrationRequestId ||
+                parsed.member?.id ||
+                parsed.log?.id ||
+                '';
+              const isRequestLifecycleEvent =
+                parsed.type.startsWith('VISIT_PASS_') ||
+                parsed.type.startsWith('MEMBER_REGISTRATION_');
+              const key = isRequestLifecycleEvent
+                ? `${parsed.type}:${dedupeId}`
+                : `${parsed.type}:${dedupeId}:${parsed.timestamp || ''}`;
+              const now = Date.now();
+              if (dedupeId) {
+                const prevTs = seenEventTimestamps.get(key);
+                if (prevTs && now - prevTs < 30000) return;
+                seenEventTimestamps.set(key, now);
+                if (seenEventTimestamps.size > 200) {
+                  const firstKey = seenEventTimestamps.keys().next().value;
+                  if (firstKey) seenEventTimestamps.delete(firstKey);
+                }
+              }
+              callback(parsed);
+            }
+          } catch {
+            // ignore parsing error
           }
-        } catch {
-          // ignore parsing error
-        }
-      };
+        };
 
-      eventSource.onerror = () => {
-        if (eventSource) {
-          eventSource.close();
-          eventSource = null;
-        }
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          if (!isClosed && !reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+              reconnectTimer = null;
+              connect();
+            }, 3000);
+          }
+        };
+      } catch {
         if (!isClosed && !reconnectTimer) {
           reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
             connect();
-          }, 3000);
+          }, 5000);
         }
-      };
-    } catch {
-      if (!isClosed && !reconnectTimer) {
-        reconnectTimer = setTimeout(() => {
-          reconnectTimer = null;
-          connect();
-        }, 5000);
       }
-    }
-  };
+    };
 
-  connect();
+    connect();
+    cleanups.push(() => {
+      isClosed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+    });
+  });
 
   return () => {
-    isClosed = true;
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    if (eventSource) {
-      eventSource.close();
-      eventSource = null;
-    }
+    cleanups.forEach((fn) => fn());
   };
 }
 
@@ -521,6 +600,9 @@ export interface SyncedDatabase {
   catalogPlans?: SystemCatalogPlan[];
   branches?: Branch[];
   accessLogs?: AccessLog[];
+  pendingVisitRequests?: any[];
+  pendingRegistrationRequests?: any[];
+  terminalDesign?: TerminalEntryDesignConfig;
 }
 
 /**
@@ -618,7 +700,7 @@ export async function pushFullDatabaseToServer(
  * to all sync servers so all devices update in real time
  */
 export async function pushEntityChangeToServer(
-  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs',
+  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs' | 'terminalDesign',
   changeType: 'add' | 'update' | 'delete',
   item: any,
   itemId?: string,
@@ -651,3 +733,296 @@ export async function pushEntityChangeToServer(
 }
 
 
+
+async function postToSyncTargetsFirstSuccess<T = any>(
+  endpoint: string,
+  payload: Record<string, any>,
+  serverUrl?: string,
+  timeoutMs = 3500
+): Promise<T | null> {
+  const targets = getSyncTargets(serverUrl);
+  if (targets.length === 0) return null;
+
+  return new Promise<T | null>((resolve) => {
+    let settled = false;
+    let remaining = targets.length;
+
+    targets.forEach(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch(`${base}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = (await res.json()) as T;
+          if (!settled) {
+            settled = true;
+            resolve(json);
+          }
+          return;
+        }
+      } catch {}
+      remaining -= 1;
+      if (remaining === 0 && !settled) {
+        settled = true;
+        resolve(null);
+      }
+    });
+  });
+}
+
+/**
+ * Visit Pass Turnstile Synchronization Methods
+ */
+export async function pushVisitRequestToServer(
+  request: { id: string; clientName: string; cost: number; timestamp?: number },
+  serverUrl?: string
+): Promise<{ success: boolean; visitRequest?: any }> {
+  broadcastLocalSync({
+    type: 'VISIT_PASS_REQUESTED',
+    visitRequest: { ...request, timestamp: request.timestamp || Date.now(), status: 'pending' }
+  });
+
+  const json = await postToSyncTargetsFirstSuccess<{ visitRequest?: any }>(
+    '/api/sync/visit-request',
+    request,
+    serverUrl
+  );
+  return { success: true, visitRequest: json?.visitRequest || request };
+}
+
+export async function pushVisitAuthorizeToServer(
+  authorization: { id: string; clientName?: string; cost?: number; paymentMethod?: string; authorizedBy?: string; sale?: any; cashSession?: any },
+  serverUrl?: string
+): Promise<{ success: boolean; authorized?: boolean }> {
+  broadcastLocalSync({
+    type: 'VISIT_PASS_AUTHORIZED',
+    visitRequest: {
+      id: authorization.id,
+      clientName: authorization.clientName || 'Visitante del Día',
+      cost: authorization.cost || 50,
+      timestamp: Date.now(),
+      status: 'authorized'
+    },
+    sale: authorization.sale,
+    cashSession: authorization.cashSession
+  });
+
+  await postToSyncTargetsFirstSuccess('/api/sync/visit-authorize', authorization, serverUrl);
+  return { success: true, authorized: true };
+}
+
+export async function pushVisitRejectToServer(
+  requestId: string,
+  serverUrl?: string
+): Promise<{ success: boolean }> {
+  broadcastLocalSync({
+    type: 'VISIT_PASS_REJECTED',
+    visitRequest: { id: requestId, clientName: '', cost: 50, timestamp: Date.now(), status: 'rejected' }
+  });
+
+  await postToSyncTargetsFirstSuccess('/api/sync/visit-reject', { id: requestId }, serverUrl, 3000);
+  return { success: true };
+}
+
+export async function fetchPendingVisitRequestsFromServer(
+  serverUrl?: string
+): Promise<Array<{ id: string; clientName: string; cost: number; timestamp: number }>> {
+  const targets = getSyncTargets(serverUrl);
+  for (const base of targets) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${base}/api/sync/visit-requests`, { signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.requests)) return json.requests;
+      }
+    } catch {}
+  }
+  return [];
+}
+
+/**
+ * Checks the server-side status ('pending' | 'authorized' | 'rejected') of a specific visit request ID.
+ */
+export async function fetchVisitRequestStatusFromServer(
+  requestId: string,
+  serverUrl?: string
+): Promise<{ status: 'pending' | 'authorized' | 'rejected' | 'unknown'; clientName?: string }> {
+  if (!requestId) return { status: 'unknown' };
+  const targets = getSyncTargets(serverUrl);
+  for (const base of targets) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(
+        `${base}/api/sync/visit-requests?id=${encodeURIComponent(requestId)}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timer);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.statusEntry && json.statusEntry.status) {
+          return {
+            status: json.statusEntry.status,
+            clientName: json.statusEntry.clientName,
+          };
+        }
+        if (Array.isArray(json.requests)) {
+          const found = json.requests.find((r: any) => r && r.id === requestId);
+          if (found) return { status: 'pending', clientName: found.clientName };
+        }
+      }
+    } catch {}
+  }
+  return { status: 'unknown' };
+}
+
+/**
+ * Push Member Registration Request from Terminal to all servers (Local + Cloud)
+ */
+export async function pushRegistrationRequestToServer(
+  regRequest: { id: string; memberData: any; paymentMethod: PaymentMethod; timestamp?: number },
+  serverUrl?: string
+): Promise<{ success: boolean; registrationRequest?: any }> {
+  broadcastLocalSync({
+    type: 'MEMBER_REGISTRATION_REQUESTED',
+    registrationRequest: {
+      id: regRequest.id,
+      memberData: regRequest.memberData,
+      paymentMethod: regRequest.paymentMethod,
+      timestamp: regRequest.timestamp || Date.now(),
+      status: 'pending'
+    }
+  });
+
+  const targets = getSyncTargets(serverUrl);
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${base}/api/sync/registration-request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(regRequest),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          return json.registrationRequest || regRequest;
+        }
+      } catch {}
+      return null;
+    })
+  );
+  return { success: true, registrationRequest: results.find(Boolean) || regRequest };
+}
+
+/**
+ * Authorize Member Registration upon collecting payment in ERP (RP)
+ */
+export async function pushRegistrationAuthorizeToServer(
+  authData: { id: string; member: any; members?: any[]; sale?: any; cashSession?: any; paymentMethod?: PaymentMethod; authorizedBy?: string },
+  serverUrl?: string
+): Promise<{ success: boolean; authorized?: boolean }> {
+  broadcastLocalSync({
+    type: 'MEMBER_REGISTRATION_AUTHORIZED',
+    registrationRequest: {
+      id: authData.id,
+      memberData: authData.member,
+      paymentMethod: authData.paymentMethod || 'cash',
+      timestamp: Date.now(),
+      status: 'authorized'
+    },
+    member: authData.member,
+    members: authData.members,
+    sale: authData.sale,
+    cashSession: authData.cashSession
+  });
+
+  const targets = getSyncTargets(serverUrl);
+  await Promise.allSettled(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        await fetch(`${base}/api/sync/registration-authorize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(authData),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+      } catch {}
+    })
+  );
+  return { success: true, authorized: true };
+}
+
+/**
+ * Reject Member Registration from ERP
+ */
+export async function pushRegistrationRejectToServer(
+  requestId: string,
+  serverUrl?: string
+): Promise<{ success: boolean }> {
+  broadcastLocalSync({
+    type: 'MEMBER_REGISTRATION_REJECTED',
+    registrationRequest: {
+      id: requestId,
+      memberData: null,
+      paymentMethod: 'cash',
+      timestamp: Date.now(),
+      status: 'rejected'
+    }
+  });
+
+  const targets = getSyncTargets(serverUrl);
+  await Promise.allSettled(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        await fetch(`${base}/api/sync/registration-reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: requestId }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+      } catch {}
+    })
+  );
+  return { success: true };
+}
+
+/**
+ * Fetch pending registration requests from server
+ */
+export async function fetchPendingRegistrationRequestsFromServer(
+  serverUrl?: string
+): Promise<Array<{ id: string; memberData: any; paymentMethod: PaymentMethod; timestamp: number }>> {
+  const targets = getSyncTargets(serverUrl);
+  for (const base of targets) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${base}/api/sync/registration-requests`, { signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.requests)) return json.requests;
+      }
+    } catch {}
+  }
+  return [];
+}

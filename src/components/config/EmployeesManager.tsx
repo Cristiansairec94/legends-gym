@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useGym } from '../../context/GymContext';
 import { Employee, UserRole, DEFAULT_EMPLOYEE_AVATAR } from '../../types';
+import { getLocalDateString } from '../../utils/membershipUtils';
 import { 
   Users, 
   UserPlus, 
@@ -198,7 +199,7 @@ export const EmployeesManager: React.FC = () => {
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || editingEmployee.password || '123456',
+        password: password.trim() || editingEmployee.password || '1234',
         pin: pin.trim() || editingEmployee.pin || '1234',
         jobTitle: jobTitle.trim() || editingEmployee.jobTitle,
         shift,
@@ -213,12 +214,12 @@ export const EmployeesManager: React.FC = () => {
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || '123456',
+        password: password.trim() || '1234',
         pin: pin.trim() || '1234',
         jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : role === 'trainer' ? 'Entrenador de Piso' : 'Recepcionista'),
         shift,
         status: 'active',
-        hireDate: new Date().toISOString().slice(0, 10),
+        hireDate: getLocalDateString(),
         salaryMonthly: 12000,
       });
     }

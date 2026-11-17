@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('window:fullscreen-changed', handler);
     return () => ipcRenderer.removeListener('window:fullscreen-changed', handler);
   },
+  reload: () => ipcRenderer.send('window:reload'),
+  hardReload: () => ipcRenderer.send('window:hard-reload'),
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
   close: () => ipcRenderer.send('window:close'),

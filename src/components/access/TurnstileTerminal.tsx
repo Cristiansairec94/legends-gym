@@ -37,14 +37,21 @@ export const TurnstileTerminal: React.FC = () => {
   } | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [scanHint, setScanHint] = useState('');
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('legends_terminal_bg_version') !== 'v9_zoom_caminadoras_8k') {
-      localStorage.setItem('legends_terminal_bg_version', 'v9_zoom_caminadoras_8k');
-      localStorage.setItem('legends_terminal_bg', gymBg);
-      return gymBg;
+    if (typeof window !== 'undefined') {
+      try {
+        const ver = localStorage.getItem('legends_turnstile_bg_ver');
+        if (ver !== 'v12_bulletproof_gym_bg') {
+          localStorage.setItem('legends_turnstile_bg_ver', 'v12_bulletproof_gym_bg');
+          localStorage.removeItem('legends_terminal_bg');
+          return gymBg;
+        }
+      } catch {}
     }
-    return localStorage.getItem('legends_terminal_bg') || gymBg;
+    return gymBg;
   });
 
   // Trigger simulated scan
@@ -96,31 +103,24 @@ export const TurnstileTerminal: React.FC = () => {
     }, 1100);
   };
 
-  // Default quick scan if user just clicks the fingerprint sensor directly
+  // Direct sensor pad click: scan only when a member query/ID was explicitly entered
   const handleDirectPadClick = () => {
-    // If there is a search query, use it; otherwise test with active member 1
-    if (searchQuery.trim()) {
-      executeScan(searchQuery.trim());
+    const query = searchQuery.trim();
+    if (query) {
+      setScanHint('');
+      executeScan(query);
     } else {
-      executeScan('MEM-001'); // Carlos Mendoza
+      setScanHint('Ingresa el nombre, ID o cédula del socio antes de validar acceso');
+      searchInputRef.current?.focus();
     }
   };
 
   const toggleFullScreen = () => {
-    const electronAPI = (window as any).electronAPI;
-    if (!isFullScreen) {
-      if (electronAPI?.enterFullScreen) {
-        electronAPI.enterFullScreen();
-      } else if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
       setIsFullScreen(true);
     } else {
-      if (electronAPI?.exitFullScreen) {
-        electronAPI.exitFullScreen();
-      } else if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
+      document.exitFullscreen().catch(() => {});
       setIsFullScreen(false);
     }
   };
@@ -132,10 +132,7 @@ export const TurnstileTerminal: React.FC = () => {
         <IndependentTerminalApp 
           isEmbeddedFullScreen={true} 
           onExitFullScreen={() => {
-            const electronAPI = (window as any).electronAPI;
-            if (electronAPI?.exitFullScreen) {
-              electronAPI.exitFullScreen();
-            } else if (document.fullscreenElement) {
+            if (document.fullscreenElement) {
               document.exitFullscreen().catch(() => {});
             }
             setIsFullScreen(false);
@@ -151,8 +148,16 @@ export const TurnstileTerminal: React.FC = () => {
       {/* Real Gym Background Photo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
         <img
-          src={bgImage}
+          src={bgImage || gymBg}
           alt="Fitness Legends Gym Background"
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== gymBg) {
+              target.src = gymBg;
+            } else {
+              target.src = './gym-background.jpg';
+            }
+          }}
           style={{
             filter: 'brightness(1.04) contrast(1.06) saturate(1.06)',
             objectPosition: 'center center',
@@ -242,7 +247,13 @@ export const TurnstileTerminal: React.FC = () => {
           </button>
 
           <button
-            onClick={() => window.open('?mode=terminal', '_blank', 'width=1280,height=850')}
+            onClick={() => {
+              if ((window as any).electronAPI?.isElectron) {
+                toggleFullScreen();
+              } else {
+                window.open('?mode=terminal', '_blank', 'width=1280,height=850');
+              }
+            }}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-xs font-black text-amber-300 transition-all shadow-glow-gold"
             title="Abrir Kiosco de Autoservicio y Registro estilo Smart Fit"
           >
@@ -310,17 +321,21 @@ export const TurnstileTerminal: React.FC = () => {
                 <div className="relative flex-1">
                   <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
+                    ref={searchInputRef}
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && searchQuery && executeScan(searchQuery)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (scanHint) setScanHint('');
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && searchQuery.trim() && executeScan(searchQuery.trim())}
                     placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
                     className="w-full pl-9 pr-3 py-2 bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-zinc-300 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/40 transition-colors shadow-inner"
                   />
                 </div>
                 <button
-                  onClick={() => searchQuery && executeScan(searchQuery)}
-                  disabled={!searchQuery || scanStatus === 'scanning'}
+                  onClick={() => searchQuery.trim() && executeScan(searchQuery.trim())}
+                  disabled={!searchQuery.trim() || scanStatus === 'scanning'}
                   className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all"
                 >
                   Entrada
@@ -342,6 +357,9 @@ export const TurnstileTerminal: React.FC = () => {
                   Salida
                 </button>
               </div>
+              {scanHint && (
+                <p className="mt-2 text-xs text-amber-300 font-medium">{scanHint}</p>
+              )}
             </div>
 
 

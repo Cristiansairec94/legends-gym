@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGym } from '../../context/GymContext';
 import { 
   Fingerprint, 
@@ -18,6 +18,9 @@ import {
   Receipt,
   TrendingUp,
   Cloud,
+  Palette,
+  Building2,
+  Clock,
   LogOut
 } from 'lucide-react';
 
@@ -29,6 +32,15 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const { currentRole, lowStockProductsCount, currentUser, logout } = useGym();
   const [isConfigOpen, setIsConfigOpen] = useState(true);
+  const [isClientsOpen, setIsClientsOpen] = useState(
+    activeTab === 'clients' || activeTab === 'config_catalogs'
+  );
+
+  useEffect(() => {
+    if (activeTab === 'config_catalogs') {
+      setIsClientsOpen(true);
+    }
+  }, [activeTab]);
 
   const menuItems = [
     {
@@ -99,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
   ];
 
   return (
-    <aside className="w-64 bg-gym-card border-r border-gym-border flex flex-col justify-between shrink-0 h-[calc(100vh-61px)]">
+    <aside className="w-64 bg-gym-card/92 backdrop-blur-md border-r border-gym-border/80 flex flex-col justify-between shrink-0 h-[calc(100vh-61px)]">
       {/* Navigation Links */}
       <div className="p-3 space-y-1 overflow-y-auto">
         <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gym-muted flex items-center justify-between">
@@ -111,6 +123,102 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           const isAllowed = item.roles.includes(currentRole);
           const isActive = activeTab === item.id;
           const isPos = item.id === 'pos';
+          const isClients = item.id === 'clients';
+          const isClientsChildActive = isClients && activeTab === 'config_catalogs';
+
+          if (isClients) {
+            return (
+              <div key={item.id} className="space-y-1">
+                <div
+                  className={`w-full flex items-center rounded-xl font-medium text-xs transition-all ${
+                    !isAllowed
+                      ? 'opacity-35 cursor-not-allowed text-zinc-500'
+                      : isActive
+                      ? 'bg-gradient-to-r from-white/[0.12] via-white/[0.06] to-transparent text-white border-l-4 border-l-white border-y border-r border-white/15 shadow-sm font-black'
+                      : isClientsChildActive
+                      ? 'bg-white/[0.06] text-white border border-white/15 font-bold'
+                      : 'text-zinc-400 hover:bg-white/[0.05] hover:text-white border border-transparent'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isAllowed) return;
+                      if (activeTab === 'clients') {
+                        setIsClientsOpen((prev) => !prev);
+                      } else {
+                        setActiveTab('clients');
+                        setIsClientsOpen(true);
+                      }
+                    }}
+                    disabled={!isAllowed}
+                    className="flex-1 flex items-center justify-between px-3 py-2 text-left min-w-0"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span
+                        className={
+                          isActive || isClientsChildActive
+                            ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                            : 'text-zinc-400'
+                        }
+                      >
+                        {item.icon}
+                      </span>
+                      <span className="truncate">{item.label}</span>
+                    </div>
+
+                    {!isAllowed && (
+                      <span className="text-[9px] text-gym-muted uppercase font-semibold">
+                        Bloq
+                      </span>
+                    )}
+                  </button>
+
+                  {isAllowed && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsClientsOpen((prev) => !prev);
+                      }}
+                      title={isClientsOpen ? 'Contraer submenú' : 'Desplegar subtemas'}
+                      aria-label={isClientsOpen ? 'Contraer submenú de Clientes y Membresías' : 'Desplegar submenú de Clientes y Membresías'}
+                      className="pr-2.5 pl-1 py-2 text-zinc-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+                    >
+                      {isClientsOpen ? (
+                        <ChevronUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {isAllowed && isClientsOpen && (
+                  <div className="ml-4 pl-2.5 border-l-2 border-gym-border/80 space-y-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('config_catalogs')}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                        activeTab === 'config_catalogs'
+                          ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                          : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <SlidersHorizontal
+                          className={`w-3.5 h-3.5 shrink-0 ${
+                            activeTab === 'config_catalogs' ? 'text-amber-300' : 'text-zinc-400'
+                          }`}
+                        />
+                        <span className="truncate">Catálogos de sistema</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          }
 
           return (
             <button
@@ -201,18 +309,51 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             {isConfigOpen && (
               <div className="ml-4 pl-2.5 border-l-2 border-gym-border/80 space-y-1 mt-1">
                 
-                {/* Subitem 1: Catálogos de sistema */}
+                {/* Subitem 1: Diseño Visual de Pantalla de Acceso */}
                 <button
-                  onClick={() => setActiveTab('config_catalogs')}
+                  onClick={() => setActiveTab('config_terminal_design')}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
-                    activeTab === 'config_catalogs'
+                    activeTab === 'config_terminal_design'
                       ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
                       : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <SlidersHorizontal className={`w-3.5 h-3.5 ${activeTab === 'config_catalogs' ? 'text-white' : 'text-zinc-400'}`} />
-                    <span>Catálogos de sistema</span>
+                    <Palette className={`w-3.5 h-3.5 ${activeTab === 'config_terminal_design' ? 'text-amber-300' : 'text-zinc-400'}`} />
+                    <span>Diseño de Entrada</span>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                    Editor
+                  </span>
+                </button>
+
+                {/* Subitem 2: Datos del Gimnasio & Tickets */}
+                <button
+                  onClick={() => setActiveTab('config_gym_tickets')}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                    activeTab === 'config_gym_tickets'
+                      ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building2 className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_gym_tickets' ? 'text-amber-300' : 'text-zinc-400'}`} />
+                    <span className="leading-tight">Datos del Gimnasio & Tickets</span>
+                  </div>
+                </button>
+
+                {/* Subitem 3: Parámetros Biométricos & Tolerancia */}
+                <button
+                  onClick={() => setActiveTab('config_biometrics')}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-left ${
+                    activeTab === 'config_biometrics'
+                      ? 'bg-white/10 text-white border border-white/20 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Clock className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'config_biometrics' ? 'text-amber-300' : 'text-zinc-400'}`} />
+                    <span className="leading-tight">Parámetros Biométricos & Tolerancia</span>
                   </div>
                 </button>
 

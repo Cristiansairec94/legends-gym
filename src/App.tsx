@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { Users, Zap } from 'lucide-react';
+﻿import React, { useState } from 'react';
 import { GymProvider, useGym } from './context/GymContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -12,6 +13,7 @@ import { CartDrawer } from './components/pos/CartDrawer';
 import { EmployeesManager } from './components/config/EmployeesManager';
 import { RolesManager } from './components/config/RolesManager';
 import { SystemCatalogs } from './components/config/SystemCatalogs';
+import { TerminalDesignStudio } from './components/config/TerminalDesignStudio';
 import { ProductsCatalog } from './components/products/ProductsCatalog';
 import { ExpensesManager } from './components/finance/ExpensesManager';
 import { IncomeHistoryView } from './components/finance/IncomeHistoryView';
@@ -20,17 +22,31 @@ import { DataSyncModal } from './components/config/DataSyncModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { SupervisorPinModal } from './components/auth/SupervisorPinModal';
 import { IndependentTerminalApp } from './components/access/IndependentTerminalApp';
+import { VisitAuthorizationBanner } from './components/access/VisitAuthorizationBanner';
+import { BorderlessFullscreenControl } from './components/layout/BorderlessFullscreenControl';
+import gymDumbbellBg from './assets/gym-dumbbell-background.jpg';
+
+export const isClientsMode = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.get('mode') === 'clients' || searchParams.get('tab') === 'clients') return true;
+  return false;
+};
 
 export const isTerminalMode = (): boolean => {
   if (typeof window === 'undefined') return false;
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get('mode') === 'main' || searchParams.get('mode') === 'pos' || searchParams.get('tab') === 'pos') return false;
-  if (searchParams.get('mode') === 'terminal' || searchParams.get('terminal') === 'true') return true;
-  if (window.location.pathname.toLowerCase().includes('terminal')) return true;
+  const queryMode = searchParams.get('mode');
+  if (queryMode === 'main' || queryMode === 'pos' || searchParams.get('tab') === 'pos') return false;
+  if (queryMode === 'terminal' || searchParams.get('terminal') === 'true') return true;
+  const electronAppMode = (window as any).electronAPI?.appMode;
+  if (electronAppMode === 'main') return false;
+  if (electronAppMode === 'terminal') return true;
+  const fileName = window.location.pathname.split('/').pop()?.toLowerCase() || '';
+  if (fileName.includes('terminal')) return true;
   if (window.location.hash.includes('terminal')) return true;
   if (localStorage.getItem('legends_device_mode') === 'main' || localStorage.getItem('legends_device_mode') === 'pos') return false;
   if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
-  if ((window as any).electronAPI?.appMode === 'terminal') return true;
   return false;
 };
 
@@ -72,18 +88,34 @@ const MainLayout: React.FC = () => {
   }, [currentRole, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col font-sans select-none sm:select-auto">
+    <div className="min-h-screen bg-[#07080b] text-gym-text flex flex-col font-sans select-none sm:select-auto relative overflow-hidden">
+      {/* Background Layer: Gym Dumbbells Texture & Ambient Lighting (OpciÃ³n 1) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <img
+          src={gymDumbbellBg}
+          alt="Gym Dumbbell Background"
+          className="w-full h-full object-cover filter brightness-[0.38] contrast-[1.12] saturate-[0.85]"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,rgba(245,158,11,0.08)_0%,rgba(0,0,0,0.65)_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/70" />
+      </div>
       
       {/* Top Navbar matching Panadería Brito */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenCart={() => setIsCartOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        onOpenNotifications={() => setIsNotificationsOpen(prev => !prev)}
         onOpenSync={() => setIsSyncModalOpen(true)}
       />
 
-      <div className="flex-1 flex overflow-hidden">
+      {/* Floating Real-Time Visit Pass / Registration Waiting Notice */}
+      <VisitAuthorizationBanner
+        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        isHidden={isNotificationsOpen}
+      />
+
+      <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Navigation Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -92,7 +124,7 @@ const MainLayout: React.FC = () => {
           activeTab === 'pos' 
             ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col h-[calc(100vh-61px)]' 
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
-        } bg-gradient-to-b from-gym-bg to-[#07080c]`}>
+        } bg-black/25 backdrop-blur-[0.5px]`}>
           <div className={activeTab === 'pos' ? 'w-full h-full flex flex-col max-w-[1800px] mx-auto' : 'max-w-7xl mx-auto'}>
             {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
             {activeTab === 'access' && <TurnstileTerminal />}
@@ -111,7 +143,10 @@ const MainLayout: React.FC = () => {
             {activeTab === 'cash' && <CashRegisterView />}
             
             {/* Configuración Módulos */}
-            {activeTab === 'config_catalogs' && <SystemCatalogs />}
+            {activeTab === 'config_catalogs' && <SystemCatalogs section="plans" />}
+            {activeTab === 'config_gym_tickets' && <SystemCatalogs section="gym" />}
+            {activeTab === 'config_biometrics' && <SystemCatalogs section="turnstile" />}
+            {activeTab === 'config_terminal_design' && <TerminalDesignStudio />}
             {activeTab === 'config_roles' && <RolesManager />}
             {activeTab === 'config_employees' && <EmployeesManager />}
             {activeTab === 'config_sync' && (
@@ -162,17 +197,22 @@ const MainLayout: React.FC = () => {
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useGym();
   const [terminalMode] = useState<boolean>(() => isTerminalMode());
+  const [terminalView, setTerminalView] = useState<'terminal' | 'clients'>('terminal');
 
   // Independent Turnstile terminal mode for separate computer
   if (terminalMode) {
     return <IndependentTerminalApp />;
   }
 
-  if (!isAuthenticated) {
-    return <LoginScreen />;
-  }
-
-  return <MainLayout />;
+  return (
+    <>
+      <BorderlessFullscreenControl
+        revealKey={isAuthenticated}
+        alignNavbarGap={isAuthenticated}
+      />
+      {isAuthenticated ? <MainLayout /> : <LoginScreen />}
+    </>
+  );
 };
 
 export default function App() {

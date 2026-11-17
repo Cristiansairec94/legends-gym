@@ -1,555 +1,554 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGym } from '../../context/GymContext';
-import { Client, DEFAULT_CLIENT_AVATAR } from '../../types';
+import { Client, MembershipPlanType } from '../../types';
 import { getGymAvatar, getOfflineGymSvgAvatar, detectGender } from '../../utils/genderAvatar';
+import { getMembershipStatus } from '../../utils/membershipUtils';
+import { sounds } from '../../services/audio';
+
+// Modals
 import { ClientFormModal } from './ClientFormModal';
 import { ClientEditModal } from './ClientEditModal';
 import { ClientDetailModal } from './ClientDetailModal';
 import { BiometricEnrollModal } from './BiometricEnrollModal';
 import { RenewMembershipModal } from './RenewMembershipModal';
+import { ClientCredentialModal } from './ClientCredentialModal';
+
 import { 
   Users, 
-  UserPlus, 
   Search, 
   Fingerprint, 
   RefreshCw, 
   Eye, 
   Trash2, 
-  Phone,
-  Mail,
-  Pencil,
-  LayoutGrid,
-  List,
-  ChevronRight
+  Phone, 
+  Mail, 
+  Pencil, 
+  LayoutGrid, 
+  List, 
+  ChevronRight,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Award,
+  Crown,
+  Share2,
+  QrCode,
+  Receipt,
+  DoorOpen,
+  ArrowUpDown,
+  Filter,
+  X,
+  Sparkles,
+  Zap,
+  Activity,
+  Calendar,
+  MessageCircle,
+  ShieldCheck,
+  Flame,
+  Check,
+  AlertCircle,
+  Maximize2
 } from 'lucide-react';
 
 export const ClientList: React.FC = () => {
-  const { members, deleteMember, currentRole } = useGym();
+  const { 
+    members, 
+    deleteMember, 
+    currentRole, 
+    verifyBiometricAccess,
+    todayCheckInsCount,
+    activeBranch,
+    clearMembersCache,
+    forceSync
+  } = useGym();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Filters & Search
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring_soon' | 'expired' | 'no_fingerprint'>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'urgency' | 'checkins' | 'name' | 'recent'>('recent');
+  const [viewMode, setViewMode] = useState<'table' | 'grid' | 'desk'>('table');
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedClientForDetail, setSelectedClientForDetail] = useState<Client | null>(null);
+  const [detailInitialTab, setDetailInitialTab] = useState<'dossier' | 'payments'>('dossier');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [selectedClientForEdit, setSelectedClientForEdit] = useState<Client | null>(null);
   const [selectedClientForEnroll, setSelectedClientForEnroll] = useState<Client | null>(null);
   const [selectedClientForRenew, setSelectedClientForRenew] = useState<Client | null>(null);
+  const [selectedClientForCredential, setSelectedClientForCredential] = useState<Client | null>(null);
 
-  // Filter logic
-  const filteredMembers = members.filter((member) => {
-    const matchesSearch = 
-      member.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      member.documentId.toLowerCase().includes(search.toLowerCase()) ||
-      member.phone.toLowerCase().includes(search.toLowerCase()) ||
-      member.id.toLowerCase().includes(search.toLowerCase());
+  // Live Toast for Quick Turnstile / Access Test
+  const [accessToast, setAccessToast] = useState<{
+    visible: boolean;
+    granted: boolean;
+    clientName: string;
+    message: string;
+  } | null>(null);
 
-    if (!matchesSearch) return false;
+  // Quick Turnstile Access Simulator
+  const handleQuickAccessCheck = (e: React.MouseEvent, client: Client) => {
+    e.stopPropagation();
+    const result = verifyBiometricAccess(client.id);
 
-    if (statusFilter === 'all') return true;
-    if (statusFilter === 'active') return member.membership.status === 'active' && member.membership.daysRemaining > 5;
-    if (statusFilter === 'expiring_soon') return member.membership.status === 'expiring_soon' || (member.membership.daysRemaining <= 5 && member.membership.daysRemaining >= 0);
-    if (statusFilter === 'expired') return member.membership.status === 'expired' || member.membership.daysRemaining < 0;
-    if (statusFilter === 'no_fingerprint') return !member.biometricRegistered;
+    if (result.granted) {
+      setAccessToast({
+        visible: true,
+        granted: true,
+        clientName: client.fullName,
+        message: `¡Pase Autorizado! Torniquete 1 Abierto • ${client.membership.planName}`,
+      });
+    } else {
+      setAccessToast({
+        visible: true,
+        granted: false,
+        clientName: client.fullName,
+        message: result.reason || 'Acceso denegado: membresía inactiva o vencida',
+      });
+    }
 
-    return true;
-  });
+    setTimeout(() => {
+      setAccessToast(null);
+    }, 4000);
+  };
 
-  // Summary counts
+  // One-click WhatsApp message builder
+  const handleSendWhatsApp = (e: React.MouseEvent, client: Client) => {
+    e.stopPropagation();
+    if (!client.phone) return;
+
+    const { isExpired, isExpiring, daysRemaining: calcDays } = getMembershipStatus(client.membership);
+
+    let message = '';
+    if (isExpired) {
+      const daysOverdue = Math.abs(calcDays);
+      message = `Hola ${client.fullName}! Te saludamos de Legends Pro Gym. Te recordamos que tu membresía (${client.membership.planName}) venció hace ${daysOverdue} días. ¡Te extrañamos entrenando! Puedes pasar a recepción a renovarla y mantener tu condición al máximo.`;
+    } else if (isExpiring) {
+      message = `Hola ${client.fullName}! Te saludamos de Legends Pro Gym. Te recordamos cordialmente que tu membresía (${client.membership.planName}) vence en ${calcDays} días (${client.membership.endDate}). Puedes renovar en caja con efectivo, tarjeta o transferencia para evitar interrupciones en tu acceso.`;
+    } else {
+      message = `Hola ${client.fullName}! Te saludamos de Legends Pro Gym. Tu membresía (${client.membership.planName}) se encuentra activa y vigente. ¿Tienes alguna duda o solicitud especial en tu entrenamiento? ¡Estamos a tu orden!`;
+    }
+
+    const cleanPhone = client.phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  // Filter & Sort Logic
+  const filteredMembers = useMemo(() => {
+    return members
+      .filter((member) => {
+        // Search query
+        const q = search.toLowerCase().trim();
+        const matchesSearch = 
+          !q ||
+          member.fullName.toLowerCase().includes(q) ||
+          member.documentId.toLowerCase().includes(q) ||
+          member.phone.toLowerCase().includes(q) ||
+          member.id.toLowerCase().includes(q) ||
+          member.email.toLowerCase().includes(q) ||
+          member.membership.planName.toLowerCase().includes(q);
+
+        if (!matchesSearch) return false;
+
+        // Status Filter dynamically calculated according to expiration date
+        const statusInfo = getMembershipStatus(member.membership);
+
+        if (statusFilter === 'active' && !statusInfo.isActive) return false;
+        if (statusFilter === 'expiring_soon' && !statusInfo.isExpiring) return false;
+        if (statusFilter === 'expired' && !statusInfo.isExpired) return false;
+
+        // Plan Tier Filter
+        if (tierFilter !== 'all') {
+          const planNameLower = member.membership.planName.toLowerCase();
+          const planType = member.membership.planType;
+          if (tierFilter === 'vip' && planType !== 'vip' && !planNameLower.includes('vip') && !planNameLower.includes('black')) return false;
+          if (tierFilter === 'monthly' && planType !== 'monthly' && !planNameLower.includes('mensual')) return false;
+          if (tierFilter === 'quarterly' && planType !== 'quarterly' && !planNameLower.includes('trimestral')) return false;
+          if (tierFilter === 'weekly' && planType !== 'weekly' && !planNameLower.includes('semana')) return false;
+          if (tierFilter === 'biweekly' && planType !== 'biweekly' && !planNameLower.includes('quincena')) return false;
+          if (tierFilter === 'group' && planType !== 'group' && !planNameLower.includes('paquete')) return false;
+          if (tierFilter === 'daily' && planType !== 'daily' && !planNameLower.includes('día') && !planNameLower.includes('dia') && !planNameLower.includes('pass')) return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'urgency') {
+          // Sort by days remaining ascending (expired/expiring first)
+          const aDays = getMembershipStatus(a.membership).daysRemaining;
+          const bDays = getMembershipStatus(b.membership).daysRemaining;
+          return aDays - bDays;
+        }
+        if (sortBy === 'checkins') {
+          return (b.checkInsCount || 0) - (a.checkInsCount || 0);
+        }
+        if (sortBy === 'name') {
+          return a.fullName.localeCompare(b.fullName);
+        }
+        if (sortBy === 'recent') {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          if (bTime !== aTime) return bTime - aTime;
+          return (b.id || '').localeCompare(a.id || '', undefined, { numeric: true });
+        }
+        return 0;
+      });
+  }, [members, search, statusFilter, tierFilter, sortBy]);
+
+  // Counts for KPI Summary
   const totalCount = members.length;
-  const activeCount = members.filter(m => m.membership.daysRemaining > 5).length;
-  const expiringCount = members.filter(m => m.membership.daysRemaining <= 5 && m.membership.daysRemaining >= 0).length;
-  const expiredCount = members.filter(m => m.membership.daysRemaining < 0).length;
-  const noFingerprintCount = members.filter(m => !m.biometricRegistered).length;
+  const activeCount = members.filter(m => getMembershipStatus(m.membership).isActive).length;
+  const expiringCount = members.filter(m => getMembershipStatus(m.membership).isExpiring).length;
+  const expiredCount = members.filter(m => getMembershipStatus(m.membership).isExpired).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5 w-full">
       
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
-        <div>
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
-            <h1 className="text-xl font-black text-white tracking-wide uppercase">
-              Cartera de Clientes & Membresías
-            </h1>
+      {/* Dynamic Access Test Toast */}
+      {accessToast && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl border shadow-2xl backdrop-blur-md max-w-md animate-fade-in flex items-start gap-3 ${
+          accessToast.granted 
+            ? 'bg-[#0b1d14]/95 border-emerald-500/60 shadow-emerald-500/20 text-white' 
+            : 'bg-[#21090a]/95 border-red-500/60 shadow-red-500/20 text-white'
+        }`}>
+          <div className={`p-2 rounded-xl shrink-0 ${
+            accessToast.granted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+          }`}>
+            {accessToast.granted ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
           </div>
-          <p className="text-sm text-gym-muted mt-1">
-            Administración de expedientes, vigencias, enrolamiento biométrico y renovaciones. • <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Conectado 100% a Torniquetes</span>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-extrabold text-sm flex items-center justify-between">
+              <span>{accessToast.clientName}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider bg-black/40">
+                {accessToast.granted ? 'CONCEDIDO' : 'DENEGADO'}
+              </span>
+            </h4>
+            <p className="text-xs text-zinc-300 mt-0.5 leading-snug">{accessToast.message}</p>
+          </div>
+          <button 
+            onClick={() => setAccessToast(null)} 
+            className="text-zinc-400 hover:text-white p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 1. TOP HEADER BANNER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-zinc-800">
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-wide uppercase flex items-center gap-2">
+            <Users className="w-6 h-6 text-amber-400" />
+            <span>Clientes</span>
+          </h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            {totalCount} {totalCount === 1 ? 'cliente registrado' : 'clientes registrados'}
           </p>
         </div>
 
-        {/* Add client button (only admin & receptionist) */}
-        {currentRole !== 'trainer' && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {currentRole === 'admin' && (
+            <button
+              onClick={() => {
+                if (window.confirm('¿Seguro que deseas vaciar la lista de clientes?')) {
+                  clearMembersCache();
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all"
+              title="Vaciar lista de clientes"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Limpiar</span>
+            </button>
+          )}
+
           <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
+            onClick={async () => {
+              setIsRefreshing(true);
+              try {
+                if (forceSync) await forceSync();
+              } finally {
+                setTimeout(() => setIsRefreshing(false), 500);
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#181924] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs font-bold transition-all"
+            title="Actualizar socios en vivo"
           >
-            <UserPlus className="w-4 h-4 stroke-[2.5]" />
-            <span>Nuevo Cliente</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Actualizar</span>
           </button>
-        )}
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div 
-          onClick={() => setStatusFilter('all')}
-          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-            statusFilter === 'all' ? 'bg-amber-500/15 border-amber-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
-          }`}
-        >
-          <span className="text-xs text-gym-muted block">Total Cartera</span>
-          <span className="text-2xl font-black text-white">{totalCount}</span>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter('active')}
-          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-            statusFilter === 'active' ? 'bg-emerald-500/15 border-emerald-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
-          }`}
-        >
-          <span className="text-xs text-emerald-400 font-semibold block">Activos Vigentes</span>
-          <span className="text-2xl font-black text-emerald-400">{activeCount}</span>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter('expiring_soon')}
-          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-            statusFilter === 'expiring_soon' ? 'bg-amber-500/15 border-amber-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
-          }`}
-        >
-          <span className="text-xs text-amber-400 font-semibold block">Por Vencer (&le; 5 días)</span>
-          <span className="text-2xl font-black text-amber-400">{expiringCount}</span>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter('expired')}
-          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-            statusFilter === 'expired' ? 'bg-red-500/15 border-red-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
-          }`}
-        >
-          <span className="text-xs text-red-400 font-semibold block">Vencidos / Morosos</span>
-          <span className="text-2xl font-black text-red-400">{expiredCount}</span>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter('no_fingerprint')}
-          className={`p-3.5 rounded-xl border cursor-pointer transition-all col-span-2 lg:col-span-1 ${
-            statusFilter === 'no_fingerprint' ? 'bg-purple-500/15 border-purple-500' : 'bg-gym-card border-gym-border hover:border-gym-border/80'
-          }`}
-        >
-          <span className="text-xs text-purple-400 font-semibold block">Sin Huella Enrolada</span>
-          <span className="text-2xl font-black text-purple-400">{noFingerprintCount}</span>
         </div>
       </div>
 
-      {/* Search and Filters Bar */}
-      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      {/* 2. SEARCH & FILTER BAR */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#12131a] p-3 rounded-2xl border border-zinc-800">
+        {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, DNI, teléfono o ID..."
-            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+            placeholder="Buscar por nombre, teléfono o ID..."
+            className="w-full pl-9 pr-8 py-2 bg-[#181924] rounded-xl border border-zinc-700 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
           />
+          {search && (
+            <button 
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-2 overflow-x-auto">
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {[
-              { id: 'all', label: 'Todos' },
-              { id: 'active', label: 'Activos' },
-              { id: 'expiring_soon', label: 'Por Vencer' },
-              { id: 'expired', label: 'Vencidos' },
-              { id: 'no_fingerprint', label: 'Sin Huella' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
-                  statusFilter === tab.id
-                    ? 'bg-amber-500 text-black font-bold'
-                    : 'bg-gym-surface text-gym-muted hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        {/* Status Filters */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {[
+            { id: 'all', label: 'Todos', count: totalCount },
+            { id: 'active', label: 'Activos', count: activeCount },
+            { id: 'expiring_soon', label: 'Por vencer', count: expiringCount },
+            { id: 'expired', label: 'Vencidos', count: expiredCount },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                statusFilter === tab.id
+                  ? 'bg-amber-500 text-black shadow-md'
+                  : 'bg-[#181924] text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                statusFilter === tab.id ? 'bg-black/30 text-black font-black' : 'bg-black/50 text-zinc-400'
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
 
-          {/* View Mode Toggle: Recuadros vs Tabla */}
-          <div className="flex items-center bg-gym-surface p-1 rounded-xl border border-gym-border shrink-0 ml-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              title="Vista minimalista en recuadros"
-              className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
-                viewMode === 'grid'
-                  ? 'bg-amber-500 text-black shadow-sm font-bold'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="hidden sm:inline">Recuadros</span>
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              title="Vista en tabla"
-              className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ${
-                viewMode === 'table'
-                  ? 'bg-amber-500 text-black shadow-sm font-bold'
-                  : 'text-gym-muted hover:text-white'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              <span className="hidden sm:inline">Tabla</span>
-            </button>
-          </div>
+        {/* Plan & Sort Filter */}
+        <div className="flex items-center gap-2">
+          <select
+            value={tierFilter}
+            onChange={(e) => setTierFilter(e.target.value)}
+            className="bg-[#181924] border border-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-amber-400"
+          >
+            <option value="all">Todos los Planes</option>
+            <option value="monthly">Mensualidades ($420)</option>
+            <option value="weekly">Semanales ($100)</option>
+            <option value="biweekly">Quincenales ($250)</option>
+            <option value="group">Paquetes 3/4 Personas</option>
+            <option value="quarterly">Trimestrales</option>
+            <option value="vip">VIP / Black</option>
+            <option value="daily">Pases de Día ($150)</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="bg-[#181924] border border-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-amber-400"
+          >
+            <option value="recent">Más Recientes</option>
+            <option value="name">Nombre (A - Z)</option>
+            <option value="urgency">Próximos a Vencer</option>
+          </select>
         </div>
       </div>
 
-      {/* Main Content: Recuadros (Grid) or Table */}
-      {viewMode === 'grid' ? (
-        filteredMembers.length === 0 ? (
-          <div className="bg-gym-card rounded-2xl border border-gym-border p-12 text-center text-gym-muted">
-            <Users className="w-12 h-12 mx-auto mb-3 opacity-30 text-amber-400" />
-            <p className="font-semibold text-white">No se encontraron clientes</p>
-            <p className="text-xs text-gym-muted mt-1">Prueba cambiando los filtros o el término de búsqueda.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-            {filteredMembers.map((member) => {
-              const isExpired = member.membership.status === 'expired' || member.membership.daysRemaining < 0;
-              const isExpiring = member.membership.daysRemaining <= 5 && !isExpired;
-
-              return (
-                <div
-                  key={member.id}
-                  onClick={() => setSelectedClientForDetail(member)}
-                  className="group relative bg-gym-card hover:bg-[#16161c] rounded-2xl border border-gym-border hover:border-amber-500/50 p-4 transition-all duration-200 cursor-pointer shadow-md hover:shadow-glow-gold/15 flex flex-col justify-between"
-                  title="Haz clic para abrir el expediente completo"
-                >
-                  <div>
-                    {/* Top Row: Status badge & Biometrics */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
-                        isExpired 
-                          ? 'bg-red-500/15 text-red-400 border-red-500/30' 
-                          : isExpiring 
-                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
-                          : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                      }`}>
-                        {isExpired ? 'Vencida' : isExpiring ? 'Por Vencer' : 'Activa'}
-                      </span>
-
-                      {member.biometricRegistered ? (
-                        <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium" title="Huella biométrica enrolada">
-                          <Fingerprint className="w-3.5 h-3.5" />
-                          <span>Huella OK</span>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedClientForEnroll(member);
-                          }}
-                          className="flex items-center gap-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
-                          title="Haz clic para enrolar huella"
-                        >
-                          <Fingerprint className="w-3 h-3" />
-                          <span>Sin huella</span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Avatar & Client Identification */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="relative shrink-0">
-                        <img
-                          src={getGymAvatar(member.fullName, member.avatarUrl)}
-                          alt={member.fullName}
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
-                          }}
-                          className="w-12 h-12 rounded-xl object-cover border border-gym-border group-hover:border-amber-400/60 transition-colors"
-                        />
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gym-card ${
-                          isExpired ? 'bg-red-500' : isExpiring ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`} />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors truncate">
-                          {member.fullName}
-                        </h3>
-                        <p className="text-[11px] text-gym-muted font-mono truncate">
-                          DNI: {member.documentId || 'S/N'}
-                        </p>
-                        <p className="text-[10px] text-gym-muted/80 font-mono">
-                          ID: {member.id}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Membership Details Mini-Box */}
-                    <div className="bg-gym-surface/70 rounded-xl p-2.5 border border-gym-border/60 mb-2.5 space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-white truncate max-w-[65%]">
-                          {member.membership.planName}
-                        </span>
-                        <span className="text-amber-400 font-bold font-mono text-[11px]">
-                          ${member.membership.price}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-gym-muted">
-                        <span>Vigencia:</span>
-                        <span className={`font-semibold font-mono ${
-                          isExpired ? 'text-red-400' : isExpiring ? 'text-amber-400' : 'text-emerald-400'
-                        }`}>
-                          {member.membership.daysRemaining >= 0 
-                            ? `${member.membership.daysRemaining} días restantes`
-                            : `Venció hace ${Math.abs(member.membership.daysRemaining)} d`}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Contact snippet */}
-                    {member.phone && (
-                      <div className="flex items-center gap-1.5 text-xs text-gym-muted truncate mb-1">
-                        <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span className="truncate">{member.phone}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Card Footer: Ver expediente + Acciones rápidas */}
-                  <div className="border-t border-gym-border/60 pt-2.5 mt-2 flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-amber-400 group-hover:text-amber-300 flex items-center gap-0.5 transition-colors">
-                      Expediente
-                      <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </span>
-
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      {currentRole !== 'trainer' && (
-                        <button
-                          onClick={() => setSelectedClientForEdit(member)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-blue-500/20 text-gym-muted hover:text-blue-400 transition-colors"
-                          title="Editar datos"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      {currentRole !== 'trainer' && (
-                        <button
-                          onClick={() => setSelectedClientForRenew(member)}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-emerald-500/20 text-gym-muted hover:text-emerald-400 transition-colors"
-                          title="Renovar membresía"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      {currentRole === 'admin' && (
-                        <button
-                          onClick={() => {
-                            if (confirm(`¿Eliminar socio ${member.fullName}?`)) {
-                              deleteMember(member.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 transition-colors"
-                          title="Eliminar socio"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )
+      {/* 3. CLIENT LIST TABLE */}
+      {filteredMembers.length === 0 ? (
+        <div className="bg-[#101117] rounded-2xl border border-zinc-800 p-10 text-center max-w-md mx-auto my-6">
+          <h3 className="font-bold text-white text-base">
+            No hay clientes registrados
+          </h3>
+          <p className="text-xs text-zinc-400 mt-1">
+            {members.length === 0
+              ? 'Los nuevos socios registrados desde la terminal aparecerán aquí automáticamente.'
+              : 'No hay clientes que coincidan con la búsqueda.'}
+          </p>
+          {members.length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setStatusFilter('all');
+                  setTierFilter('all');
+                }}
+                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs"
+              >
+                Restablecer filtros
+              </button>
+            </div>
+          )}
+        </div>
       ) : (
-        /* Members Table View */
-        <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
-          <div className="overflow-x-auto">
+        <div className="bg-[#101117] rounded-2xl border border-zinc-800 overflow-hidden shadow-lg">
+          <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
-                  <th className="p-4">Socio</th>
-                  <th className="p-4">Contacto</th>
-                  <th className="p-4">Membresía / Plan</th>
-                  <th className="p-4">Estado & Vigencia</th>
-                  <th className="p-4 text-center">Acceso Huella</th>
-                  <th className="p-4 text-right">Acciones</th>
+                <tr className="border-b border-zinc-800 bg-[#141520] text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  <th className="py-3 px-4">ID</th>
+                  <th className="py-3 px-4">Cliente</th>
+                  <th className="py-3 px-4">Teléfono</th>
+                  <th className="py-3 px-4">Plan</th>
+                  <th className="py-3 px-4">Vencimiento</th>
+                  <th className="py-3 px-4">Estado</th>
+                  <th className="py-3 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gym-border/40 text-sm">
-                {filteredMembers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-8 text-center text-gym-muted">
-                      No se encontraron clientes que coincidan con los criterios.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMembers.map((member) => {
-                    const isExpired = member.membership.status === 'expired' || member.membership.daysRemaining < 0;
-                    const isExpiring = member.membership.daysRemaining <= 5 && !isExpired;
+              <tbody className="divide-y divide-zinc-800/60 text-sm">
+                {filteredMembers.map((member) => {
+                  const { isExpired, isExpiring, daysRemaining: calcDays } = getMembershipStatus(member.membership);
 
-                    return (
-                      <tr 
-                        key={member.id}
-                        className="hover:bg-gym-surface/40 transition-colors"
-                      >
-                        {/* Member Info */}
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={getGymAvatar(member.fullName, member.avatarUrl)}
-                              alt={member.fullName}
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
-                              }}
-                              className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0"
-                            />
-                            <div>
-                              <div className="font-bold text-white hover:text-amber-400 cursor-pointer" onClick={() => setSelectedClientForDetail(member)}>
-                                {member.fullName}
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-gym-muted font-mono mt-0.5">
-                                <span>ID: {member.id}</span>
-                                <span>•</span>
-                                <span>DNI: {member.documentId}</span>
-                              </div>
-                            </div>
+                  return (
+                    <tr 
+                      key={member.id}
+                      className="hover:bg-white/[0.03] transition-colors"
+                    >
+                      {/* ID */}
+                      <td className="py-3 px-4">
+                        <span className="font-mono font-bold text-xs text-amber-400/90">
+                          {member.id}
+                        </span>
+                      </td>
+
+                      {/* CLIENTE */}
+                      <td className="py-3 px-4">
+                        <div 
+                          className="flex items-center gap-3 cursor-pointer group/item"
+                          onClick={() => setSelectedClientForDetail(member)}
+                        >
+                          <img
+                            src={getGymAvatar(member.fullName, member.avatarUrl, member.gender)}
+                            alt={member.fullName}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = getOfflineGymSvgAvatar(detectGender(member.fullName));
+                            }}
+                            className="w-9 h-9 rounded-full object-cover border border-zinc-700 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <span className="font-bold text-white group-hover/item:text-amber-400 text-sm block truncate">
+                              {member.fullName}
+                            </span>
+                            {member.gender && (
+                              <span className="text-[11px] text-zinc-400">
+                                {member.gender === 'female' ? 'Mujer' : 'Hombre'}
+                              </span>
+                            )}
                           </div>
-                        </td>
+                        </div>
+                      </td>
 
-                        {/* Contact */}
-                        <td className="p-4 text-xs text-gym-muted">
-                          <div className="flex items-center gap-1.5 text-gray-200">
-                            <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                      {/* TELÉFONO */}
+                      <td className="py-3 px-4">
+                        {member.phone ? (
+                          <button
+                            onClick={(e) => handleSendWhatsApp(e, member)}
+                            className="inline-flex items-center gap-1.5 text-zinc-300 hover:text-emerald-400 text-xs font-mono transition-colors"
+                            title="Enviar WhatsApp"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                             <span>{member.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-gym-muted mt-1">
-                            <Mail className="w-3.5 h-3.5 text-blue-400" />
-                            <span>{member.email}</span>
-                          </div>
-                        </td>
+                          </button>
+                        ) : (
+                          <span className="text-zinc-500 text-xs">-</span>
+                        )}
+                      </td>
 
-                        {/* Plan */}
-                        <td className="p-4">
-                          <span className="font-bold text-white block text-xs">
+                      {/* PLAN */}
+                      <td className="py-3 px-4">
+                        <div>
+                          <span className="text-sm font-semibold text-white block">
                             {member.membership.planName}
                           </span>
-                          <span className="text-[11px] text-amber-400 font-mono">
-                            ${member.membership.price} MXN
+                          <span className="text-xs text-amber-400 font-mono">
+                            ${member.membership.price.toLocaleString()} MXN
                           </span>
-                        </td>
+                        </div>
+                      </td>
 
-                        {/* Status */}
-                        <td className="p-4">
-                          <div className="flex flex-col items-start gap-1">
-                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                              isExpired 
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                                : isExpiring 
-                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
-                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            }`}>
-                              {isExpired ? 'Vencida' : isExpiring ? 'Por Vencer' : 'Activa'}
-                            </span>
-                            <span className="text-[11px] text-gym-muted font-mono">
-                              {member.membership.daysRemaining >= 0 
-                                ? `${member.membership.daysRemaining} días restantes`
-                                : `Venció hace ${Math.abs(member.membership.daysRemaining)} días`}
-                            </span>
-                          </div>
-                        </td>
+                      {/* VENCIMIENTO */}
+                      <td className="py-3 px-4">
+                        <div className="text-xs font-mono">
+                          <span className="text-zinc-200 block">
+                            {member.membership.endDate}
+                          </span>
+                          <span className={`text-[11px] ${
+                            isExpired ? 'text-red-400 font-bold' : isExpiring ? 'text-amber-400' : 'text-zinc-400'
+                          }`}>
+                            {calcDays > 0 ? `${calcDays} días` : calcDays === 0 ? 'Vence hoy' : `Vencido (${Math.abs(calcDays)} d)`}
+                          </span>
+                        </div>
+                      </td>
 
-                        {/* Biometric Status */}
-                        <td className="p-4 text-center">
-                          {member.biometricRegistered ? (
-                            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Huella activa para acceso">
-                              <Fingerprint className="w-4 h-4" />
-                              <span>Enrolada</span>
-                            </div>
-                          ) : (
+                      {/* ESTADO */}
+                      <td className="py-3 px-4">
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                          isExpired 
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                            : isExpiring 
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        }`}>
+                          {isExpired ? 'Vencido' : isExpiring ? 'Por vencer' : 'Activo'}
+                        </span>
+                      </td>
+
+                      {/* ACCIONES */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedClientForDetail(member)}
+                            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors"
+                            title="Ver detalles"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setSelectedClientForEdit(member)}
+                            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setSelectedClientForRenew(member)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors"
+                            title="Renovar plan"
+                          >
+                            Renovar
+                          </button>
+                          {currentRole === 'admin' && (
                             <button
-                              onClick={() => setSelectedClientForEnroll(member)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-colors"
-                              title="Haz clic para capturar su huella digital"
+                              onClick={() => {
+                                if (window.confirm(`¿Eliminar al cliente ${member.fullName}?`)) {
+                                  deleteMember(member.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-colors"
+                              title="Eliminar"
                             >
-                              <Fingerprint className="w-4 h-4" />
-                              <span>Capturar</span>
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => setSelectedClientForDetail(member)}
-                              className="p-1.5 rounded-lg bg-gym-surface hover:bg-gym-surface/80 text-gym-muted hover:text-white transition-colors"
-                              title="Ver expediente completo"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-
-                            {currentRole !== 'trainer' && (
-                              <button
-                                onClick={() => setSelectedClientForEdit(member)}
-                                className="px-2 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors flex items-center gap-1"
-                                title="Editar datos del cliente"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Editar</span>
-                              </button>
-                            )}
-
-                            {currentRole !== 'trainer' && (
-                              <button
-                                onClick={() => setSelectedClientForRenew(member)}
-                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors flex items-center gap-1"
-                                title="Renovar membresía"
-                              >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Renovar</span>
-                              </button>
-                            )}
-
-                            {currentRole === 'admin' && (
-                              <button
-                                onClick={() => {
-                                  if (confirm(`¿Eliminar socio ${member.fullName}?`)) {
-                                    deleteMember(member.id);
-                                  }
-                                }}
-                                className="p-1.5 rounded-lg bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 transition-colors"
-                                title="Eliminar socio"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* Add Client Modal */}
+      {/* 1. Add Client Modal */}
       {showAddModal && (
         <ClientFormModal
           onClose={() => setShowAddModal(false)}
@@ -562,7 +561,7 @@ export const ClientList: React.FC = () => {
         />
       )}
 
-      {/* Edit Client Modal */}
+      {/* 2. Edit Client Modal */}
       {selectedClientForEdit && (
         <ClientEditModal
           client={selectedClientForEdit}
@@ -573,10 +572,11 @@ export const ClientList: React.FC = () => {
         />
       )}
 
-      {/* Detail Modal */}
+      {/* 3. Detail Dossier Modal */}
       {selectedClientForDetail && (
         <ClientDetailModal
           client={selectedClientForDetail}
+          initialTab={detailInitialTab}
           onClose={() => setSelectedClientForDetail(null)}
           onEdit={() => {
             const client = selectedClientForDetail;
@@ -596,7 +596,7 @@ export const ClientList: React.FC = () => {
         />
       )}
 
-      {/* Biometric Enroll Wizard Modal */}
+      {/* 4. Biometric Fingerprint Capture Wizard */}
       {selectedClientForEnroll && (
         <BiometricEnrollModal
           client={selectedClientForEnroll}
@@ -605,11 +605,19 @@ export const ClientList: React.FC = () => {
         />
       )}
 
-      {/* Renew Modal */}
+      {/* 5. Renew Membership Modal */}
       {selectedClientForRenew && (
         <RenewMembershipModal
           client={selectedClientForRenew}
           onClose={() => setSelectedClientForRenew(null)}
+        />
+      )}
+
+      {/* 6. Digital Credential Pass with QR & Barcode */}
+      {selectedClientForCredential && (
+        <ClientCredentialModal
+          client={selectedClientForCredential}
+          onClose={() => setSelectedClientForCredential(null)}
         />
       )}
 

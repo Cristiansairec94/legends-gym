@@ -20,12 +20,15 @@ import {
   INITIAL_EMPLOYEES, 
   INITIAL_ROLES, 
   INITIAL_SETTINGS, 
-  INITIAL_CATALOG_PLANS 
+  INITIAL_CATALOG_PLANS,
+  filterLegacyCatalogPlans
 } from '../data/initialEmployees';
 import { INITIAL_BRANCHES } from '../data/initialBranches';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
 import { getGymAvatar, serializeGymAvatar } from '../utils/genderAvatar';
 import { hashSecret, signSessionPayload, verifySessionSignature } from '../utils/securityCrypto';
+import { getMembershipStatus } from '../utils/membershipUtils';
+import { TerminalEntryDesignConfig, cloneDefaultTerminalDesign, mergeWithDefaultTerminalDesign } from '../utils/terminalDesign';
 
 const KEYS = {
   MEMBERS: 'legends_members_v1',
@@ -50,7 +53,8 @@ const KEYS = {
   ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v1',
   SECURITY_ALERT: 'legends_security_alert_v1',
   SECURITY_AUDIT: 'legends_security_audit_v1',
-  LOGIN_LOCKOUT: 'legends_login_lockout_v1'
+  LOGIN_LOCKOUT: 'legends_login_lockout_v1',
+  TERMINAL_DESIGN: 'legends_terminal_design_v1'
 };
 
 
@@ -73,11 +77,53 @@ export const storage = {
     } catch {}
   },
 
+  clearMembers(): void {
+    try {
+      localStorage.setItem(KEYS.MEMBERS, '[]');
+      localStorage.setItem(KEYS.DELETED_MEMBER_IDS, '[]');
+      localStorage.setItem(KEYS.ACCESS_LOGS, '[]');
+      localStorage.setItem('legends_demo_cache_purged_2026_v3', 'true');
+    } catch (e) {
+      console.error('Error clearing members storage:', e);
+    }
+  },
+
   getMembers(): Client[] {
     try {
       const deletedIds = this.getDeletedMemberIds();
       const data = localStorage.getItem(KEYS.MEMBERS);
-      const savedList: Client[] = data ? JSON.parse(data) : [];
+      let savedList: Client[] = data ? JSON.parse(data) : [];
+
+      // ONE-TIME CLEAN SLATE: Purge all legacy demo / mock member cache completely
+      const CLEAN_SLATE_KEY = 'legends_clean_slate_2026_v5';
+      if (!localStorage.getItem(CLEAN_SLATE_KEY)) {
+        savedList = [];
+        localStorage.setItem(KEYS.MEMBERS, '[]');
+        localStorage.setItem(KEYS.ACCESS_LOGS, '[]');
+        localStorage.setItem(KEYS.DELETED_MEMBER_IDS, '[]');
+        localStorage.setItem(CLEAN_SLATE_KEY, 'true');
+      }
+
+      // Filter out any known demo mock member names
+      const DEMO_NAMES = new Set([
+        'carlos mendoza',
+        'valeria ríos gómez',
+        'valeria rios gomez',
+        'valeria ríos',
+        'valeria rios',
+        'alejandro soto vega',
+        'alejandro soto',
+        'sofía domínguez',
+        'sofia dominguez',
+        'mateo guerrero',
+        'camila navarro',
+        'ricardo vargas luna',
+        'ricardo vargas',
+        'juan solís',
+        'juan solis'
+      ]);
+      savedList = savedList.filter(m => !DEMO_NAMES.has((m.fullName || '').toLowerCase().trim()));
+
       const mergedMap = new Map<string, Client>();
 
       // Ensure baseline INITIAL_MEMBERS (including Juan Solis MEM-008) are present unless explicitly deleted
@@ -95,13 +141,25 @@ export const storage = {
       }
 
       const list = Array.from(mergedMap.values());
-      return list.map(m => ({
-        ...m,
-        biometricRegistered: m.biometricRegistered !== undefined ? m.biometricRegistered : true,
-        biometricHash: m.biometricHash || `BIO_HASH_${m.id}`,
-        biometricTemplate: m.biometricTemplate || `FP_THUMB_RIGHT_${m.id}`,
-        avatarUrl: getGymAvatar(m.fullName, m.avatarUrl)
-      }));
+      return list.map(m => {
+        let membership = m.membership;
+        if (membership) {
+          const statusInfo = getMembershipStatus(membership);
+          membership = {
+            ...membership,
+            daysRemaining: statusInfo.daysRemaining,
+            status: membership.status === 'frozen' ? 'frozen' : statusInfo.status
+          };
+        }
+        return {
+          ...m,
+          membership: membership || m.membership,
+          biometricRegistered: m.biometricRegistered !== undefined ? m.biometricRegistered : true,
+          biometricHash: m.biometricHash || `BIO_HASH_${m.id}`,
+          biometricTemplate: m.biometricTemplate || `FP_THUMB_RIGHT_${m.id}`,
+          avatarUrl: getGymAvatar(m.fullName, m.avatarUrl)
+        };
+      });
     } catch {
       return INITIAL_MEMBERS.map(m => ({
         ...m,
@@ -159,46 +217,7 @@ export const storage = {
   getAccessLogs(): AccessLog[] {
     try {
       const data = localStorage.getItem(KEYS.ACCESS_LOGS);
-      if (data) return JSON.parse(data);
-
-      return [
-        {
-          id: 'LOG-001',
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-          clientId: 'MEM-001',
-          clientName: 'Carlos Mendoza',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-          status: 'granted',
-          reason: 'Acceso Autorizado - Membresía Black VIP',
-          planName: 'Membresía Black VIP Anual',
-          daysRemaining: 95,
-          method: 'fingerprint',
-        },
-        {
-          id: 'LOG-002',
-          timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-          clientId: 'MEM-002',
-          clientName: 'Valeria Ríos Gómez',
-          avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-          status: 'granted',
-          reason: 'Acceso Autorizado - Mensualidad',
-          planName: 'Mensualidad Estándar',
-          daysRemaining: 18,
-          method: 'fingerprint',
-        },
-        {
-          id: 'LOG-003',
-          timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-          clientId: 'MEM-004',
-          clientName: 'Sofía Domínguez',
-          avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
-          status: 'denied',
-          reason: 'Acceso Denegado: Cuota vencida hace 5 días',
-          planName: 'Mensualidad Estándar',
-          daysRemaining: -5,
-          method: 'fingerprint',
-        },
-      ];
+      return data ? JSON.parse(data) : [];
     } catch {
       return [];
     }
@@ -219,7 +238,10 @@ export const storage = {
         const parsed: CashRegisterSession = JSON.parse(data);
         return {
           ...parsed,
-          totalMembershipsTransfer: parsed.totalMembershipsTransfer || 0
+          totalMembershipsTransfer: parsed.totalMembershipsTransfer || 0,
+          totalVisitsCash: parsed.totalVisitsCash || 0,
+          totalVisitsCard: parsed.totalVisitsCard || 0,
+          totalVisitsTransfer: parsed.totalVisitsTransfer || 0
         };
       }
 
@@ -300,21 +322,25 @@ export const storage = {
       const tabUserRaw = sessionStorage.getItem(KEYS.TAB_SESSION_USER);
       const winName = window.name || '';
 
-      // If legacy localStorage session exists without a valid tab lock, kill it immediately
-      if (legacyUser && !rawLock) {
-        localStorage.removeItem(KEYS.CURRENT_USER);
+      // If no active session in this window, treat as clean startup
+      if (!tabToken || !tabUserRaw) {
+        if (rawLock) {
+          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
+        }
+        if (legacyUser) {
+          localStorage.removeItem(KEYS.CURRENT_USER);
+        }
+        return null;
       }
 
       if (rawLock) {
         const lock = JSON.parse(rawLock);
         const isSameTab =
-          Boolean(tabToken) &&
-          Boolean(tabUserRaw) &&
           tabToken === lock.token &&
           winName === lock.token;
 
         if (!isSameTab) {
-          // Security Violation: URL was copied & pasted into a new tab or duplicated!
+          // Security Violation: Active session hijacked or copied across tabs!
           const breachMsg =
             '⚠️ Sesión cerrada por seguridad: Se detectó el intento de copiar y abrir el enlace en otra pestaña o ventana. Por protección del sistema, debes iniciar sesión nuevamente.';
           localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
@@ -421,6 +447,11 @@ export const storage = {
 
   getSecurityAlert(): string | null {
     try {
+      // If no tab session active, do not display old alerts
+      if (typeof window !== 'undefined' && !sessionStorage.getItem(KEYS.TAB_SESSION_USER)) {
+        localStorage.removeItem(KEYS.SECURITY_ALERT);
+        return null;
+      }
       return localStorage.getItem(KEYS.SECURITY_ALERT);
     } catch {
       return null;
@@ -599,11 +630,37 @@ export const storage = {
     }
   },
 
+  // Terminal Entry Design
+  getTerminalDesign(): TerminalEntryDesignConfig {
+    try {
+      const data = localStorage.getItem(KEYS.TERMINAL_DESIGN);
+      return data ? mergeWithDefaultTerminalDesign(JSON.parse(data)) : cloneDefaultTerminalDesign();
+    } catch {
+      return cloneDefaultTerminalDesign();
+    }
+  },
+
+  saveTerminalDesign(design: TerminalEntryDesignConfig): void {
+    try {
+      localStorage.setItem(KEYS.TERMINAL_DESIGN, JSON.stringify(design));
+    } catch (e) {
+      console.error('Error saving terminal design:', e);
+    }
+  },
+
   // Catalog Plans
   getCatalogPlans(): SystemCatalogPlan[] {
     try {
+      const CATALOG_V3_KEY = 'legends_catalog_pricing_2026_v3';
+      if (!localStorage.getItem(CATALOG_V3_KEY)) {
+        localStorage.setItem(KEYS.CATALOG_PLANS, JSON.stringify(INITIAL_CATALOG_PLANS));
+        localStorage.setItem(CATALOG_V3_KEY, 'true');
+        return INITIAL_CATALOG_PLANS;
+      }
       const data = localStorage.getItem(KEYS.CATALOG_PLANS);
-      return data ? JSON.parse(data) : INITIAL_CATALOG_PLANS;
+      if (!data) return INITIAL_CATALOG_PLANS;
+      const filtered = filterLegacyCatalogPlans(JSON.parse(data));
+      return filtered.length > 0 ? filtered : INITIAL_CATALOG_PLANS;
     } catch {
       return INITIAL_CATALOG_PLANS;
     }
@@ -732,7 +789,8 @@ export const storage = {
       settings: this.getSettings(),
       catalogPlans: this.getCatalogPlans(),
       branches: this.getBranches(),
-      expenses: this.getExpenses()
+      expenses: this.getExpenses(),
+      terminalDesign: this.getTerminalDesign()
     };
     return JSON.stringify(backup, null, 2);
   },
@@ -751,6 +809,7 @@ export const storage = {
       if (data.catalogPlans) this.saveCatalogPlans(data.catalogPlans);
       if (data.branches) this.saveBranches(data.branches);
       if (data.expenses) this.saveExpenses(data.expenses);
+      if (data.terminalDesign) this.saveTerminalDesign(mergeWithDefaultTerminalDesign(data.terminalDesign));
       return true;
     } catch (e) {
       console.error('Failed to import database:', e);

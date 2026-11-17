@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="silver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+  </defs>
+  <rect x="15" y="15" width="270" height="270" rx="25" fill="#020617" stroke="url(#silver)" stroke-width="6"/>
+  <rect x="30" y="30" width="240" height="240" rx="18" fill="#0b0f19" stroke="#334155" stroke-width="1"/>
+  <text x="150" y="105" fill="#f8fafc" font-size="30" font-weight="900" text-anchor="middle" letter-spacing="3" font-family="sans-serif">BLACK</text>
+  <text x="150" y="135" fill="#38bdf8" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="4" font-family="sans-serif">PASS</text>
+  <rect x="60" y="155" width="180" height="2" fill="#475569"/>
+  <text x="150" y="185" fill="#f8fafc" font-size="13" font-weight="600" text-anchor="middle" font-family="sans-serif">SPONSOR & ATHLETE</text>
+  <text x="150" y="210" fill="#eab308" font-size="12" font-weight="bold" text-anchor="middle" font-family="sans-serif">BENEFICIOS EXCLUSIVOS POS</text>
+</svg>

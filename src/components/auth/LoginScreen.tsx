@@ -22,6 +22,8 @@ import {
   Check
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import gymBg from '../../assets/gym-background.jpg';
+import logoImg from '../../assets/logo.png';
 
 export const LoginScreen: React.FC = () => {
   const { login, employees, securityAlert, clearSecurityAlert, securityAuditLogs } = useGym();
@@ -160,6 +162,20 @@ export const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gym-bg text-gym-text flex flex-col justify-between relative overflow-hidden select-none">
       
+      {/* Background Legends Gym Photo (LEYENDS GYM - CLUB FITNESS) */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <img
+          src={gymBg}
+          alt="Fitness Legends Gym Background"
+          style={{
+            filter: 'brightness(0.35) contrast(1.15) saturate(1.05)',
+            objectPosition: 'center 26%',
+          }}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+      </div>
+      
       {/* Background Ambient Glows */}
       <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] bg-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-10%] w-[550px] h-[550px] bg-amber-600/10 rounded-full blur-[140px] pointer-events-none" />
@@ -178,7 +194,7 @@ export const LoginScreen: React.FC = () => {
       <header className="relative z-10 px-6 py-5 flex items-center justify-between border-b border-white/5 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-black border border-amber-500/50 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.25)]">
-            <img src="/logo.png" alt="LEYENDS Logo" className="w-full h-full object-contain" />
+            <img src={logoImg} alt="LEYENDS Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -636,9 +652,8 @@ export const LoginScreen: React.FC = () => {
                 {showDemoHints && (
                   <div className="mt-2 pt-2.5 border-t border-gym-border/80 text-[11px] text-gym-muted space-y-1">
                     <p className="font-bold text-gray-300">Credenciales para entorno de evaluación:</p>
-                    <p>• Admin (Roberto): Clave <code className="text-white font-mono">admin123</code> | PIN <code className="text-white font-mono">1234</code></p>
-                    <p>• Recepción (Camila): Clave <code className="text-white font-mono">camila123</code> | PIN <code className="text-white font-mono">2222</code></p>
-                    <p>• Coach (Marcos): Clave <code className="text-white font-mono">coach123</code> | PIN <code className="text-white font-mono">3333</code></p>
+                    <p className="text-white font-bold">• Contraseña & PIN para TODOS los perfiles: <span className="text-amber-400 font-mono text-sm px-1.5 py-0.5 rounded bg-amber-400/20 border border-amber-400/30">1234</span></p>
+                    <p className="text-gray-400 text-[10px]">Válido para Administrador, Recepción, Entrenadores y PIN de Supervisor.</p>
                   </div>
                 )}
               </div>
