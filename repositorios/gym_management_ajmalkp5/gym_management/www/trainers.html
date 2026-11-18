@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trainers - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+
+<style>
+.trainer-card-inner {
+    cursor: pointer;
+}
+
+.trainer-details {
+    margin-top:10px;
+    font-size:14px;
+    color:#555;
+    display:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html">Plans</a></li>
+    <li><a href="trainers.html" class="active">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <h1 class="page-title">Our Trainers</h1>
+  <p class="page-subtitle">Certified pros ready to push you to your best.</p>
+
+  <div class="grid grid-3" id="trainerContainer"></div>
+
+  <div style="margin-top:20px;text-align:center;">
+    <button id="prevBtn" class="btn btn-outline">Prev</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn" class="btn btn-outline">Next</button>
+  </div>
+
+</div>
+
+<script>
+
+let currentPage = 1;
+const pageSize = 4;
+let totalRecords = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadTrainers(currentPage);
+
+    document.getElementById("prevBtn").onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadTrainers(currentPage);
+        }
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+        if (currentPage * pageSize < totalRecords) {
+            currentPage++;
+            loadTrainers(currentPage);
+        }
+    };
+});
+
+async function loadTrainers(page) {
+
+    const res = await fetch(
+        `/api/method/gym_management.web_api.web.get_trainers?page=${page}&page_length=${pageSize}`,
+        { credentials: "include" }
+    );
+
+    const json = await res.json();
+    const result = json.message;
+
+    const container = document.getElementById("trainerContainer");
+    container.innerHTML = "";
+
+    totalRecords = result.total || 0;
+
+    result.data.forEach(t => {
+
+        const initial = (t.trainer_name || "T")[0];
+
+        const card = document.createElement("div");
+        card.className = "trainer-card";
+
+        card.innerHTML = `
+            <div class="trainer-card-inner">
+                <div class="img-box">${initial}</div>
+                <div class="info">
+                    <h3>${t.trainer_name}</h3>
+                    <div class="role">${t.specialization || ""}</div>
+                    <div class="meta">${t.experience || 0} years experience</div>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    updatePagination();
+}
+
+function updatePagination() {
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    document.getElementById("pageInfo").innerText =
+        `Page ${currentPage} of ${totalPages || 1}`;
+
+    document.getElementById("prevBtn").disabled = currentPage === 1;
+
+    document.getElementById("nextBtn").disabled =
+        currentPage >= totalPages;
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,821 @@
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$4So8ph6m5COnrfPxOqphwU$s2zS116tHDYoMfFEYA6uG/3LDjgLXotWtbpteZ3CA3A=",
+    "last_login": "2025-11-30T20:20:31.697Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-11-12T20:37:16.133Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$6HFgRfmBxwZuZulKmdRnpE$bhEzoQmDsREwhKoC/Esqs8FPLpGE8Vx4W5gCA55v5bI=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "Artsanlop",
+    "first_name": "Arturo",
+    "last_name": "Santos Lopez",
+    "email": "santos.lopez@outlook.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-18T18:39:27.370Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$GFLby7rajQP7iTPmoUl2HU$7Y+RLBe2/J2ayhsWQTlMLdjaf78b3XxTKDGtQd1kWEs=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "Gina_0326",
+    "first_name": "Joely Georgina",
+    "last_name": "Balam Reyes",
+    "email": "reyesjoely448@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-19T23:06:32.257Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$b0lUsiOqHXxQDPp9pXGGgQ$Zj1sD5EZLPDw5AVox44hqDk//NMr6S5elhgi+2yrhfs=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "MaferH",
+    "first_name": "Maria Fernanda",
+    "last_name": "Horta Hernandez",
+    "email": "mafer.horta@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-21T22:11:42.095Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 27,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$ps8VHyavXq7NJjgYJFCcbO$LrdirdNTliKdDqg25MnH+uTqEiLxNoTWmIk4eH1drwI=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "leona",
+    "first_name": "leonardo",
+    "last_name": "castillo",
+    "email": "leonardo24aldair@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-24T23:05:13.943Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 31,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$uWDx87mVFhIiNDAVdRimqT$3rx37Dfv06xSPLK3CRZ5dFE/YSIiGAMqtRjMA/qdsSw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "profemarcelo",
+    "first_name": "Marcelo",
+    "last_name": "Segovia",
+    "email": "marcelogpe.segoviacam@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-28T00:09:14.145Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "1859c60647c542227ea94bc57ee10f39ef5cc6a7",
+  "fields": {
+    "user": 3,
+    "created": "2025-11-26T22:01:10.119Z"
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "5aea6c519482635670cdc90fdbf10c650d3d1166",
+  "fields": {
+    "user": 27,
+    "created": "2025-11-26T22:03:56.642Z"
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "8322ae550cfef3e73d40992a1336ece3546f0eee",
+  "fields": {
+    "user": 1,
+    "created": "2025-11-18T17:40:41.054Z"
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "bfd7991e715207fc667147ed5172b762c8cd4591",
+  "fields": {
+    "user": 2,
+    "created": "2025-11-26T23:10:55.991Z"
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "fea531e32746aa458dfb7efc78eca08622fe7a55",
+  "fields": {
+    "user": 31,
+    "created": "2025-11-28T00:14:34.127Z"
+  }
+},
+{
+  "model": "gymapp.membershiptype",
+  "pk": 4,
+  "fields": {
+    "name": "FullData",
+    "price": "4500.00",
+    "duration_days": 365,
+    "image": "memberships/FULLDATA.png"
+  }
+},
+{
+  "model": "gymapp.membershiptype",
+  "pk": 5,
+  "fields": {
+    "name": "FitData Flex",
+    "price": "500.00",
+    "duration_days": 30,
+    "image": "memberships/FLEX_FITDATA.png"
+  }
+},
+{
+  "model": "gymapp.membershiptype",
+  "pk": 6,
+  "fields": {
+    "name": "FitData Day Pass",
+    "price": "80.00",
+    "duration_days": 1,
+    "image": "memberships/DAY_PASS.png"
+  }
+},
+{
+  "model": "gymapp.membershiptype",
+  "pk": 7,
+  "fields": {
+    "name": "FitData Study",
+    "price": "250.00",
+    "duration_days": 30,
+    "image": "memberships/STUDY_FITDATA.png"
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 4,
+  "fields": {
+    "user": 2,
+    "membership_type": 6,
+    "start_date": "2025-11-30",
+    "end_date": "2025-11-30",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 5,
+  "fields": {
+    "user": 1,
+    "membership_type": 4,
+    "start_date": "2025-11-18",
+    "end_date": "2026-11-18",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 6,
+  "fields": {
+    "user": 3,
+    "membership_type": 6,
+    "start_date": "2025-11-24",
+    "end_date": "2025-11-24",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 12,
+  "fields": {
+    "user": 5,
+    "membership_type": 5,
+    "start_date": "2025-11-21",
+    "end_date": "2025-12-21",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 28,
+  "fields": {
+    "user": 27,
+    "membership_type": 6,
+    "start_date": "2025-11-24",
+    "end_date": "2025-11-24",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.usermembership",
+  "pk": 31,
+  "fields": {
+    "user": 31,
+    "membership_type": 5,
+    "start_date": "2025-11-28",
+    "end_date": "2025-12-28",
+    "is_active": true
+  }
+},
+{
+  "model": "gymapp.producto",
+  "pk": 1,
+  "fields": {
+    "nombre": "Agua Ciel Purificada 1L",
+    "precio": "35.00",
+    "stock": 24,
+    "imagen": "productos/botella_ciel-removebg-preview.png"
+  }
+},
+{
+  "model": "gymapp.producto",
+  "pk": 2,
+  "fields": {
+    "nombre": "Agua Ciel Purificada 600ml",
+    "precio": "20.00",
+    "stock": 20,
+    "imagen": "productos/aguaciel_1024x-removebg-preview_MjMLY1C.png"
+  }
+},
+{
+  "model": "gymapp.producto",
+  "pk": 3,
+  "fields": {
+    "nombre": "Gold Standard 100% Whey 5 Lb",
+    "precio": "1400.00",
+    "stock": 9,
+    "imagen": "productos/optimun-gold-standard-100-whey-5lb-removebg-preview.png"
+  }
+},
+{
+  "model": "gymapp.producto",
+  "pk": 4,
+  "fields": {
+    "nombre": "Nature Valley Sweet & Protein",
+    "precio": "18.00",
+    "stock": 20,
+    "imagen": "productos/58242210-1600-auto-removebg-preview_wRyc26X.png"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 8,
+  "fields": {
+    "cliente": 3,
+    "fecha": "2025-11-20T21:15:13.520Z",
+    "total": "70.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 2, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-335C5C"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 9,
+  "fields": {
+    "cliente": 5,
+    "fecha": "2025-11-21T22:11:42.411Z",
+    "total": "500.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'nombre': 'Flex FitData', 'precio': 500.00, 'cantidad': 1}]",
+    "folio": "V-03A1F1"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 18,
+  "fields": {
+    "cliente": 3,
+    "fecha": "2025-11-24T17:43:30.148Z",
+    "total": "80.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'nombre': 'Renovación: FitData Day Pass', 'precio': 80.00, 'cantidad': 1}]",
+    "folio": "V-41BB9D"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 19,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-24T17:48:56.466Z",
+    "total": "35.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-86D9AD"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 20,
+  "fields": {
+    "cliente": 5,
+    "fecha": "2025-11-24T17:59:00.392Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-FAFD19"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 21,
+  "fields": {
+    "cliente": 27,
+    "fecha": "2025-11-24T23:05:14.298Z",
+    "total": "80.00",
+    "metodo_pago": "TRANSFERENCIA",
+    "detalle_productos": "[{'nombre': 'FitData Day Pass', 'precio': 80.00, 'cantidad': 1}]",
+    "folio": "V-9BF9C8"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 22,
+  "fields": {
+    "cliente": 3,
+    "fecha": "2025-11-24T23:09:37.203Z",
+    "total": "1435.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}, {'id': 3, 'cantidad': 1, 'nombre': 'Gold Standard 100% Whey 5 Lb', 'precio': 1400}]",
+    "folio": "V-653A1A"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 23,
+  "fields": {
+    "cliente": 3,
+    "fecha": "2025-11-24T23:25:44.060Z",
+    "total": "80.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'nombre': 'Renovación: FitData Day Pass', 'precio': 80.00, 'cantidad': 1}]",
+    "folio": "V-5551A8"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 24,
+  "fields": {
+    "cliente": 27,
+    "fecha": "2025-11-25T17:39:24.220Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-C1A078"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 25,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T17:44:16.536Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-8A9023"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 26,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T17:48:03.880Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-64D71C"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 28,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T18:15:12.378Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-12B45B"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 29,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T18:24:11.761Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-AD5115"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 30,
+  "fields": {
+    "cliente": 3,
+    "fecha": "2025-11-25T18:27:00.568Z",
+    "total": "18.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 4, 'cantidad': 1, 'nombre': 'Nature Valley Sweet & Protein', 'precio': 18}]",
+    "folio": "V-A1B42C"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 31,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T18:38:14.871Z",
+    "total": "1400.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 3, 'cantidad': 1, 'nombre': 'Gold Standard 100% Whey 5 Lb', 'precio': 1400}]",
+    "folio": "V-F459E5"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 32,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T19:05:06.220Z",
+    "total": "80.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'nombre': 'Renovación: FitData Day Pass', 'precio': 80.00, 'cantidad': 1}]",
+    "folio": "V-8AA168"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 34,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-25T19:26:01.388Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-3529B5"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 36,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-26T17:39:16.253Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-EFB65D"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 37,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-26T17:46:26.025Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-00F052"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 38,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-26T17:52:48.048Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-03C37F"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 39,
+  "fields": {
+    "cliente": 31,
+    "fecha": "2025-11-28T00:09:14.481Z",
+    "total": "500.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'nombre': 'Membresía: FitData Flex', 'precio': 500.00, 'cantidad': 1}]",
+    "folio": "V-DADB17"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 40,
+  "fields": {
+    "cliente": 31,
+    "fecha": "2025-11-28T00:17:02.258Z",
+    "total": "1435.00",
+    "metodo_pago": "EFECTIVO",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}, {'id': 3, 'cantidad': 1, 'nombre': 'Gold Standard 100% Whey 5 Lb', 'precio': 1400}]",
+    "folio": "V-5A7992"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 41,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-28T00:18:14.501Z",
+    "total": "35.00",
+    "metodo_pago": "TRANSFERENCIA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-F060C8"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 42,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-29T19:22:03.518Z",
+    "total": "35.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-4E3BC0"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 43,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-29T19:29:36.033Z",
+    "total": "35.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-91A94C"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 44,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-29T19:33:39.218Z",
+    "total": "35.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-FA9461"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 45,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-30T17:21:08.990Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-25033B"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 46,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-30T17:35:36.303Z",
+    "total": "20.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 2, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 600ml', 'precio': 20}]",
+    "folio": "V-33F8FC"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 47,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-30T17:36:55.131Z",
+    "total": "35.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'id': 1, 'cantidad': 1, 'nombre': 'Agua Ciel Purificada 1L', 'precio': 35}]",
+    "folio": "V-0A94B2"
+  }
+},
+{
+  "model": "gymapp.venta",
+  "pk": 50,
+  "fields": {
+    "cliente": 2,
+    "fecha": "2025-11-30T18:25:24.567Z",
+    "total": "80.00",
+    "metodo_pago": "TARJETA",
+    "detalle_productos": "[{'nombre': 'Renovación: FitData Day Pass', 'precio': 80.00, 'cantidad': 1}]",
+    "folio": "V-A40B98"
+  }
+},
+{
+  "model": "gymapp.entradainventario",
+  "pk": 1,
+  "fields": {
+    "producto": 1,
+    "cantidad": 20,
+    "fecha": "2025-11-25T21:14:39.863Z",
+    "usuario": 1
+  }
+},
+{
+  "model": "gymapp.entradainventario",
+  "pk": 2,
+  "fields": {
+    "producto": 2,
+    "cantidad": 5,
+    "fecha": "2025-11-25T21:17:41.236Z",
+    "usuario": 1
+  }
+},
+{
+  "model": "gymapp.entradainventario",
+  "pk": 3,
+  "fields": {
+    "producto": 3,
+    "cantidad": 3,
+    "fecha": "2025-11-25T21:21:43.200Z",
+    "usuario": 1
+  }
+},
+{
+  "model": "gymapp.entradainventario",
+  "pk": 4,
+  "fields": {
+    "producto": 3,
+    "cantidad": 2,
+    "fecha": "2025-11-25T21:23:24.180Z",
+    "usuario": 1
+  }
+},
+{
+  "model": "gymapp.entradainventario",
+  "pk": 6,
+  "fields": {
+    "producto": 4,
+    "cantidad": 2,
+    "fecha": "2025-11-27T13:12:23.030Z",
+    "usuario": 1
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 1,
+  "fields": {
+    "nombre": "Arturo",
+    "apellido": "Santos Lopez",
+    "email": "santos.lopez@outlook.com",
+    "telefono": "9811852169",
+    "fecha_inscripcion": "2025-11-26",
+    "fecha_vencimiento": "2025-11-30",
+    "avatar_color": "#DC2626",
+    "qr_code": "FD-B29F194B5E5D",
+    "user": 2
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 12,
+  "fields": {
+    "nombre": "admin",
+    "apellido": "",
+    "email": "admin@temp.com",
+    "telefono": "",
+    "fecha_inscripcion": "2025-12-01",
+    "fecha_vencimiento": null,
+    "avatar_color": "#059669",
+    "qr_code": "FD-6C7859FA8468",
+    "user": 1
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 13,
+  "fields": {
+    "nombre": "Joely",
+    "apellido": "Georgina Balam Reyes",
+    "email": "reyesjoely448@gmail.com",
+    "telefono": "",
+    "fecha_inscripcion": "2025-12-01",
+    "fecha_vencimiento": null,
+    "avatar_color": "#0891B2",
+    "qr_code": "FD-4C272B282916",
+    "user": 3
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 14,
+  "fields": {
+    "nombre": "Maria",
+    "apellido": "Fernanda Horta Hernandez",
+    "email": "mafer.horta@gmail.com",
+    "telefono": "",
+    "fecha_inscripcion": "2025-12-01",
+    "fecha_vencimiento": null,
+    "avatar_color": "#059669",
+    "qr_code": "FD-F9377C16B68C",
+    "user": 5
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 15,
+  "fields": {
+    "nombre": "leonardo",
+    "apellido": "castillo",
+    "email": "leonardo24aldair@gmail.com",
+    "telefono": "",
+    "fecha_inscripcion": "2025-12-01",
+    "fecha_vencimiento": null,
+    "avatar_color": "#0891B2",
+    "qr_code": "FD-2722E1756EAF",
+    "user": 27
+  }
+},
+{
+  "model": "gymapp.miembro",
+  "pk": 16,
+  "fields": {
+    "nombre": "Marcelo",
+    "apellido": "Segovia",
+    "email": "marcelogpe.segoviacam@gmail.com",
+    "telefono": "",
+    "fecha_inscripcion": "2025-12-01",
+    "fecha_vencimiento": null,
+    "avatar_color": "#4F46E5",
+    "qr_code": "FD-456D63576648",
+    "user": 31
+  }
+},
+{
+  "model": "gymapp.asistencia",
+  "pk": 6,
+  "fields": {
+    "miembro": 1,
+    "fecha_hora_entrada": "2025-11-30T18:26:30.887Z",
+    "fecha_hora_salida": "2025-11-30T18:34:47.463Z",
+    "acceso_permitido": true,
+    "observacion": "Acceso Permitido"
+  }
+},
+{
+  "model": "gymapp.healthprofile",
+  "pk": 1,
+  "fields": {
+    "miembro": 1,
+    "edad": 19,
+    "condicion_corazon": false,
+    "presion_alta": false,
+    "lesiones_recientes": false,
+    "medicamentos": false,
+    "comentarios": "no",
+    "actualizado": "2025-11-30T20:08:59.304Z"
+  }
+}
+]

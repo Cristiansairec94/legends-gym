@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - FitZone Gym</title>
+
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css">
+</head>
+
+<body>
+
+<div class="auth-wrapper">
+
+  <div class="auth-card">
+
+    <h1>Welcome Back</h1>
+    <p class="sub">Login to your FitZone account</p>
+
+    <form id="loginForm">
+
+      <div class="form-group">
+          <label>Email</label>
+          <input type="text" id="email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        Login
+      </button>
+
+    </form>
+
+    <p class="auth-link">
+      New here? <a href="/register">Create account</a>
+    </p>
+
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        try {
+
+            const url =
+                `/api/method/gym_management.web_api.login.login_user` +
+                `?email=${encodeURIComponent(email)}` +
+                `&password=${encodeURIComponent(password)}`;
+
+            const response = await fetch(url);
+
+            const data = await response.json();
+
+
+            const result = data.message || data;
+
+            if (result.status === "success") {
+
+                alert("Login Success");
+
+                if (result.role === "admin") {
+                    window.location.href = "/app";   
+                } else {
+                    window.location.href = "/";  
+                }
+            }
+
+            else if (result.status === "register") {
+
+                alert("Account not found");
+                window.location.href = "/register";
+
+            }
+
+            else if (result.status === "invalid_password") {
+
+                alert("Wrong password");
+
+            }
+
+            else {
+
+                alert(result.message || "Error");
+
+            }
+
+        }
+
+        catch (err) {
+
+            alert("Server error");
+
+        }
+
+    });
+
+});
+</script>
+
+</body>
+</html>

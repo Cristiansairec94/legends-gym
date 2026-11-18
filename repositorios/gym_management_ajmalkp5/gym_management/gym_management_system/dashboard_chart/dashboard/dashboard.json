@@ -1,0 +1,41 @@
+{
+ "based_on": "creation",
+ "chart_name": "Dashboard",
+ "chart_type": "Count",
+ "color": "#9c4141",
+ "creation": "2026-05-20 13:18:10.877814",
+ "currency": "INR",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "document_type": "Gym Member",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Gym Member\",\"status\",\"=\",\"Active\",false]]",
+ "group_by_type": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "modified": "2026-05-20 13:18:49.499834",
+ "modified_by": "Administrator",
+ "module": "Gym Management System",
+ "name": "Dashboard",
+ "number_of_groups": 0,
+ "owner": "Administrator",
+ "parent_document_type": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Gym Manager"
+  }
+ ],
+ "show_values_over_chart": 0,
+ "source": "",
+ "time_interval": "Daily",
+ "timeseries": 1,
+ "timespan": "Last Week",
+ "type": "Donut",
+ "use_report_chart": 0,
+ "value_based_on": "",
+ "y_axis": []
+}

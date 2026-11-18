@@ -1,0 +1,125 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:LKR-{YY}{MM}-{###}",
+ "creation": "2023-02-03 13:17:36.067353",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "membership_no",
+  "date_of_booking",
+  "start_time",
+  "no_of_hours",
+  "end_time",
+  "route",
+  "is_published"
+ ],
+ "fields": [
+  {
+   "fieldname": "membership_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Membership No",
+   "options": "Gym Member",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_booking",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date of Booking",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Start Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "no_of_hours",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "No of Hours",
+   "options": "1\n2\n3\n4\n5\n6\n7\n8",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Route"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_published",
+   "fieldtype": "Check",
+   "label": "Is Published"
+  }
+ ],
+ "has_web_view": 1,
+ "index_web_pages_for_search": 1,
+ "is_published_field": "is_published",
+ "links": [],
+ "modified": "2023-02-15 14:31:35.830733",
+ "modified_by": "Administrator",
+ "module": "Gym Management",
+ "name": "Gym Locker Booking",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Trainer",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Member",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "route": "gym_management/gym_locker_booking",
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

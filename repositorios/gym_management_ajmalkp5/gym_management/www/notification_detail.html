@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notification - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+    <li><a href="notifications.html" class="notif-bell active">🔔</a></li>
+    <li><a href="profiles.html"><div class="avatar"></div></a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="detail-hero">
+    <h1></h1>
+    <p class="meta">2 hours ago · Billing</p>
+  </div>
+  <div class="detail-body">
+    <h2>Details</h2>
+    <p>Your Premium membership has been renewed successfully. The next billing date is December 19, 2026.</p>
+
+    <h2>Transaction</h2>
+    <p>Amount: $63.72<br/>Method: Visa ending in 4242<br/>Reference: TXN-20261119-002</p>
+
+    <div style="margin-top:24px;">
+      <a href="payment-history.html" class="btn btn-primary">View Payment History</a>
+      <a href="notifications.html" class="btn btn-outline" style="margin-left:10px;">Back to Notifications</a>
+    </div>
+  </div>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (!id) {
+        alert("Invalid Notification");
+        return;
+    }
+
+    loadNotification(id);
+});
+
+async function loadNotification(id) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.notification.get_notification_detail?name=${id}`,
+            { credentials: "include" }
+        );
+
+        const json = await res.json();
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            alert("Notification not found");
+            return;
+        }
+
+        const data = result.data;
+
+        document.querySelector(".detail-hero h1").innerText =
+            data.title || "Notification";
+
+        document.querySelector(".meta").innerText =
+            new Date(data.date).toLocaleString();
+
+        const body = document.querySelector(".detail-body");
+
+        body.innerHTML = `
+            <h2>Details</h2>
+            <p>${data.message || ""}</p>
+
+            <div style="margin-top:24px;">
+                <a href="notifications.html" class="btn btn-primary">Back</a>
+            </div>
+        `;
+
+    } catch (err) {
+        alert("Server error");
+    }
+}
+
+</script>
+</body>
+</html>

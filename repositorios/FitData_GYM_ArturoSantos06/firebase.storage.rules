@@ -1,0 +1,156 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function maxDietFileSize() {
+      return 10 * 1024 * 1024;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userDocExists() {
+      return isAuthenticated() &&
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function userRoleIs(roleValue) {
+      return userDocExists() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == roleValue;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'ADMIN' ||
+        request.auth.token.role == 'admin' ||
+        userRoleIs('admin') ||
+        userRoleIs('ADMIN')
+      );
+    }
+
+    function isTrainer() {
+      return isAuthenticated() && (
+        request.auth.token.trainer == true ||
+        request.auth.token.role == 'ENTRENADOR' ||
+        request.auth.token.role == 'TRAINER' ||
+        request.auth.token.role == 'entrenador' ||
+        request.auth.token.role == 'trainer' ||
+        userRoleIs('entrenador') ||
+        userRoleIs('trainer') ||
+        userRoleIs('ENTRENADOR') ||
+        userRoleIs('TRAINER')
+      );
+    }
+
+    function isNutritionist() {
+      return isAuthenticated() && (
+        request.auth.token.nutriologo == true ||
+        request.auth.token.nutritionist == true ||
+        request.auth.token.role == 'NUTRITIONIST' ||
+        request.auth.token.role == 'nutritionist' ||
+        request.auth.token.role == 'NUTRIOLOGO' ||
+        request.auth.token.role == 'nutriologo' ||
+        request.auth.token.role == 'NUTRI' ||
+        request.auth.token.role == 'nutri' ||
+        userRoleIs('nutritionist') ||
+        userRoleIs('NUTRITIONIST') ||
+        userRoleIs('nutriologo') ||
+        userRoleIs('nutri') ||
+        userRoleIs('NUTRIOLOGO') ||
+        userRoleIs('NUTRI')
+      );
+    }
+
+    function isPrivilegedStaff() {
+      return isAdmin() || isTrainer() || isNutritionist();
+    }
+
+    function ownsMember(memberId) {
+      return isAuthenticated() &&
+        firestore.exists(/databases/(default)/documents/miembros/$(memberId)) && (
+          firestore.get(/databases/(default)/documents/miembros/$(memberId)).data.userId == request.auth.uid ||
+          firestore.get(/databases/(default)/documents/miembros/$(memberId)).data.authUid == request.auth.uid
+        );
+    }
+
+    // Productos - publico read, admin write
+    match /productos/{productId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Membresias - publico read, admin write
+    match /memberships/{membershipId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Avatares - read publico, write owner/admin
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Adjuntos de rutinas
+    match /trainerRoutines/{memberId}/{fileName} {
+      allow read: if isPrivilegedStaff() || ownsMember(memberId);
+      allow write: if isPrivilegedStaff() &&
+                   request.resource != null &&
+                   request.resource.size <= maxDietFileSize() &&
+                   request.resource.contentType.matches('application/pdf|image/jpeg|image/png');
+      allow delete: if isPrivilegedStaff();
+    }
+
+      // Fotos para catalogo de maquinas de mantenimiento
+      match /mantenimiento/maquinas/{fileName} {
+        allow read: if true;
+        allow write: if isAdmin() &&
+          request.resource != null &&
+          request.resource.size <= maxDietFileSize() &&
+          request.resource.contentType.matches('image/jpeg|image/png|image/webp');
+        allow delete: if isAdmin();
+      }
+
+      // Fotos adjuntas por clientes al reportar mantenimiento
+      match /mantenimiento/reportes/{fileName} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() &&
+          request.resource != null &&
+          request.resource.size <= maxDietFileSize() &&
+          request.resource.contentType.matches('image/jpeg|image/png|image/webp');
+        allow delete: if isAdmin() || isAuthenticated();
+      }
+
+    // Repositorio digital de dietas (ruta legacy)
+    match /dietas/{memberId}/{fileName} {
+      allow read: if isPrivilegedStaff() || ownsMember(memberId);
+      allow write: if (isPrivilegedStaff() || ownsMember(memberId)) &&
+        request.resource != null &&
+        request.resource.size <= maxDietFileSize() &&
+        request.resource.contentType.matches('application/pdf|image/jpeg|image/png');
+      allow delete: if isPrivilegedStaff() || ownsMember(memberId);
+    }
+
+    // Repositorio digital de dietas (ruta actual)
+    match /dietFiles/{memberId}/{fileName} {
+      allow read: if isPrivilegedStaff() || ownsMember(memberId);
+      allow write: if (isPrivilegedStaff() || ownsMember(memberId)) &&
+        request.resource != null &&
+        request.resource.size <= maxDietFileSize() &&
+        request.resource.contentType.matches('application/pdf|image/jpeg|image/png');
+      allow delete: if isPrivilegedStaff() || ownsMember(memberId);
+    }
+    
+    // Archivos de chat (imágenes, documentos, etc.)
+    match /chat_attachments/{chatId}/{fileName} {
+      allow read, write: if isAuthenticated() && (chatId.matches('.*' + request.auth.uid + '.*') || isPrivilegedStaff());
+    }
+
+    // Denegar todo lo demas por defecto
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

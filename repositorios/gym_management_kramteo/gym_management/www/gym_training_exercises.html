@@ -1,0 +1,147 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Gym Training Plans") }}{% endblock %}
+{% block header %}<h1>{{ _("Gym Training Plans") }}</h1>{% endblock %}
+
+{% block page_content %}
+
+<head>
+    <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+    <meta name=Generator content="Microsoft Word 15 (filtered)">
+    <style>
+     /* Font Definitions */
+     @font-face
+        {font-family:"Cambria Math";
+        panose-1:2 4 5 3 5 4 6 3 2 4;}
+    @font-face
+        {font-family:DengXian;
+        panose-1:2 1 6 0 3 1 1 1 1 1;}
+    @font-face
+        {font-family:Calibri;
+        panose-1:2 15 5 2 2 2 4 3 2 4;}
+    @font-face
+        {font-family:"\@DengXian";
+        panose-1:2 1 6 0 3 1 1 1 1 1;}
+     /* Style Definitions */
+     p.MsoNormal, li.MsoNormal, div.MsoNormal
+        {margin-top:0cm;
+        margin-right:0cm;
+        margin-bottom:8.0pt;
+        margin-left:0cm;
+        line-height:107%;
+        font-size:11.0pt;
+        font-family:"Calibri",sans-serif;}
+    .MsoChpDefault
+        {font-family:"Calibri",sans-serif;}
+    .MsoPapDefault
+        {margin-bottom:8.0pt;
+        line-height:107%;}
+    @page WordSection1
+        {size:595.3pt 841.9pt;
+        margin:36.0pt 36.0pt 36.0pt 36.0pt;}
+    div.WordSection1
+        {page:WordSection1;}
+    </style>
+    
+    </head>
+    
+    <body lang=EN-SG style='word-wrap:break-word'>
+    
+    <div class=WordSection1>
+    
+    <p class=MsoNormal style='line-height:normal'><b><u>Gym Training Plans </u></b></p>
+    
+    <p class=MsoNormal style='line-height:normal'>&nbsp;</p>
+
+    {% for record in trg_plan %}
+    
+    <p class=MsoNormal style='line-height:normal'>Exercise Plan Name - {{ record[0] }} </p>
+    <p class=MsoNormal style='line-height:normal'>Trainer Name - {{ trainer[record[1]] }} </p>
+    
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+     style='border-collapse:collapse;border:none'>
+     <tr>
+      <td width=47 valign=top style='width:35.2pt;border:solid windowtext 1.0pt;
+      background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>S/No</span></b></p>
+      </td>
+      <td width=161 valign=top style='width:120.5pt;border:solid windowtext 1.0pt;
+      border-left:none;background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>Exercise Name</span></b></p>
+      </td>
+      <td width=211 valign=top style='width:157.95pt;border:solid windowtext 1.0pt;
+      border-left:none;background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>Exercise Description</span></b></p>
+      </td>
+      <td width=73 valign=top style='width:54.65pt;border:solid windowtext 1.0pt;
+      border-left:none;background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>Start Tim</span></b></p>
+      </td>
+      <td width=66 valign=top style='width:49.65pt;border:solid windowtext 1.0pt;
+      border-left:none;background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>Duration</span></b></p>
+      </td>
+      <td width=85 valign=top style='width:63.75pt;border:solid windowtext 1.0pt;
+      border-left:none;background:#BFBFBF;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><b><span
+      style='font-size:8.0pt;color:black'>Day</span></b></p>
+      </td>
+     </tr>
+
+     {% for plan in trg_det[record[2]] %}
+     <tr>
+      <td width=47 valign=top style='width:35.2pt;border:solid windowtext 1.0pt;
+      border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'> {{loop.index}} </span></p>
+      </td>
+      <td width=161 valign=top style='width:120.5pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'> {{plan[0]}} </span></p>
+      </td>
+      <td width=211 valign=top style='width:157.95pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'>{{plan[1]}}</span></p>
+      </td>
+      <td width=73 valign=top style='width:54.65pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'>{{plan[2]}}</span></p>
+      </td>
+      <td width=66 valign=top style='width:49.65pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'>{{plan[3]}}</span></p>
+      </td>
+      <td width=85 valign=top style='width:63.75pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+      style='font-size:8.0pt'>{{plan[4]}}</span></p>
+      </td>
+     </tr>
+     {% endfor %}
+    </table>
+    
+    <p class=MsoNormal style='line-height:normal'>&nbsp;</p>
+    
+    <p class=MsoNormal style='line-height:normal'>&nbsp;</p>
+
+    {% endfor %}
+    
+    </div>
+    
+    </body>
+
+{% endblock %}

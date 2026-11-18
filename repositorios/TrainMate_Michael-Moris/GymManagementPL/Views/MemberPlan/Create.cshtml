@@ -1,0 +1,75 @@
+﻿@model GymManagementBLL.ViewModels.MemberPlanViewModels.CreateMemberPlanViewModel
+@{
+    ViewData["Title"] = "Create Membership";
+}
+
+@if (ViewData.ModelState["InvalidData"]?.Errors.Count > 0)
+{
+    <div id="Alert" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @Html.ValidationMessage("InvalidData")
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+
+                        <!-- Member Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="MemberId" class="form-label"></label>
+                            <select asp-for="MemberId"
+                                    class="form-select"
+                                    asp-items="@(ViewBag.Members ?? new SelectList(Enumerable.Empty<object>(), "Id", "Name"))">
+                                <option value="">--- Select Member ---</option>
+                            </select>
+                            <span asp-validation-for="MemberId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Plan Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="PlanId" class="form-label"></label>
+                            <select asp-for="PlanId"
+                                    class="form-select"
+                                    asp-items="@(ViewBag.Plans ?? new SelectList(Enumerable.Empty<object>(), "Id", "Name"))">
+                                <option value="">--- Select Plan ---</option>
+                            </select>
+                            <span asp-validation-for="PlanId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">Create Membership</button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alertBox = document.getElementById("Alert");
+            if (alertBox) {
+                setTimeout(() => {
+                    alertBox.style.transition = "opacity 0.5s ease";
+                    alertBox.style.opacity = "0";
+                    setTimeout(() => alertBox.remove(), 500);
+                }, 1500);
+            }
+        });
+    </script>
+}

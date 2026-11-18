@@ -1,0 +1,26 @@
+:root { color-scheme: light; font-family: Inter, system-ui, sans-serif; background: #f1f6ff; color: #202124; }
+* { box-sizing: border-box; }
+body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at top, #cfdeff, #f1f6ff 55%); }
+.card { width: min(620px, 100%); padding: clamp(28px, 6vw, 54px); border: 1px solid #e3ded5; border-radius: 24px; background: #fff; box-shadow: 0 24px 70px rgba(20, 37, 65, .14); }
+.eyebrow { color: #00549a; font-weight: 900; letter-spacing: .14em; }
+h1 { margin: 12px 0; font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1; }
+p { color: #5f6368; line-height: 1.6; }
+.reference { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 20px 0; padding: 14px 16px; border: 1px solid #e3ded5; border-radius: 14px; color: #202124; background: #fff; }
+.reference span { min-width: 0; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+.reference small { display: block; margin-bottom: 4px; color: #6f6b65; font-family: Inter, system-ui, sans-serif; font-size: .75rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.copy-reference { min-width: 64px; min-height: 44px; flex: 0 0 auto; padding: 8px 12px; border: 1px solid #00549a; border-radius: 999px; color: #00549a; background: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.status { margin: 24px 0; padding: 14px 16px; border-left: 4px solid #0b62f5; background: #e6eeff; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.button { display: inline-block; min-height: 48px; margin: 4px 8px 4px 0; padding: 13px 20px; border: 2px solid #0b62f5; border-radius: 999px; color: #171717; background: #0b62f5; font: inherit; font-weight: 800; line-height: 1.2; text-decoration: none; cursor: pointer; }
+.button[href] { background: #fff; }
+.button:disabled { border-color: #d8d1c7; color: #6f6b65; background: #e2e6ec; cursor: wait; }
+.button:focus-visible { outline: 3px solid #00549a; outline-offset: 4px; }
+.copy-reference:focus-visible { outline: 3px solid #00549a; outline-offset: 3px; }
+[hidden] { display: none !important; }
+@media (max-width: 480px) {
+  body { padding: 16px; }
+  .card { padding: 28px 22px; border-radius: 20px; }
+  .reference { align-items: flex-start; }
+  .actions, .button { width: 100%; }
+  .button { margin-right: 0; text-align: center; }
+}

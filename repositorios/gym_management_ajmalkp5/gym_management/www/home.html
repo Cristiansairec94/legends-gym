@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FitZone Gym - Home</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html" class="active">Home</a></li>
+    <li><a href="plans.html">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+    <li><a href="training_schedule.html">Schedule</a></li>
+    <li><a href="notifications.html" class="notif-bell">🔔</a></li>
+    <li><a href="profiles.html"><div class="avatar"></div></a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="detail-hero">
+    <h1>Welcome to FitZone 💪</h1>
+    <p class="meta">Your fitness journey starts here. Browse plans, meet trainers, and crush your goals.</p>
+    <div style="margin-top:20px;">
+      <a href="plans.html" class="btn btn-primary">View Plans</a>
+      <a href="trainers.html" class="btn btn-outline" style="border-color:#fff;color:#fff;margin-left:10px;">Meet Trainers</a>
+    </div>
+  </div>
+
+  <div class="stats-row">
+
+  <a style="text-decoration:none;color:inherit;">
+    <div class="stat-box">
+      <div class="num" id="activeMembers">0</div>
+      <div class="label">Active Members</div>
+    </div>
+  </a>
+
+  <a href="trainers.html" style="text-decoration:none;color:inherit;">
+    <div class="stat-box">
+      <div class="num" id="trainers">0</div>
+      <div class="label">Expert Trainers</div>
+    </div>
+  </a>
+
+  <a href="plans.html" style="text-decoration:none;color:inherit;">
+    <div class="stat-box">
+      <div class="num" id="plans">0</div>
+      <div class="label">Class Programs</div>
+    </div>
+  </a>
+
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+
+    try {
+
+        const res = await fetch(
+            "/api/method/gym_management.web_api.web.get_dashboard_stats",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+
+        console.log("FULL RESPONSE:", json);
+
+        const result = json.message;   
+
+        if (result && result.status === "success") {
+
+            const data = result.data;
+
+            document.getElementById("activeMembers").innerText = data.active_members;
+            document.getElementById("trainers").innerText = data.trainers;
+            document.getElementById("plans").innerText = data.plans;
+
+        } else {
+            // console.log("Invalid API response", result);
+        }
+
+    } catch (err) {
+        // console.error("Dashboard API error:", err);
+    }
+
+});
+</script>
+</body>
+</html>

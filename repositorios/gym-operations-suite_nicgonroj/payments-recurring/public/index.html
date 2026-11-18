@@ -1,0 +1,1923 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Inscripción y pago | Demo Gym</title>
+  <style>
+    :root {
+      --accent: #0b62f5;
+      --accent-strong: #00549a;
+      --accent-soft: #dce7ff;
+      --ink: #171717;
+      --surface: #ffffff;
+      --raised: #ffffff;
+      --border: #e3ded5;
+      --text: #202124;
+      --muted: #5f6368;
+      --danger: #b42318;
+      --success: #176b3a;
+      --r-sm: 10px;
+      --r-md: 16px;
+      --r-lg: 24px;
+      --shadow: 0 20px 55px rgba(20, 37, 65, .11);
+      --focus: 0 0 0 4px rgba(18, 105, 243, .28);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-width: 320px;
+      min-height: 100dvh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 92% 4%, rgba(11, 98, 245, .14), transparent 30rem),
+        linear-gradient(150deg, #f1f6ff 0%, #ffffff 55%, #fffdf9 100%);
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    button, input { font: inherit; }
+    button, label, summary { touch-action: manipulation; }
+    button, summary { cursor: pointer; }
+    a { color: var(--accent-strong); }
+    h1, h2, h3, p { margin-top: 0; }
+    :focus-visible { outline: 3px solid var(--accent-strong); outline-offset: 3px; }
+    /* Route headings receive announcement focus, not an editable-field outline. */
+    h1[tabindex="-1"]:focus-visible, h2[tabindex="-1"]:focus-visible { outline: none; }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 12px;
+      left: 12px;
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      color: var(--ink);
+      background: var(--accent);
+      font-weight: 800;
+      transform: translateY(-160%);
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    .site-header { padding: 20px 0 8px; }
+    .header-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+    .header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+    .header-actions a { display: inline-flex; min-height: 44px; align-items: center; font-size: 14px; font-weight: 750; text-underline-offset: 3px; }
+    .brand { display: inline-flex; align-items: center; color: var(--text); text-decoration: none; }
+    .brand-logo {
+      display: block;
+      font-size: clamp(20px, 2.4vw, 24px);
+      font-weight: 850;
+      letter-spacing: -.02em;
+      color: var(--accent-strong);
+    }
+    .secure-badge {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid rgba(18, 105, 243, .46);
+      border-radius: 999px;
+      color: #003474;
+      background: #dce7ff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .secure-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(18, 105, 243, .14); }
+
+    .hero { max-width: 800px; padding: 24px 0; }
+    .eyebrow { margin-bottom: 10px; color: var(--accent-strong); font-size: 13px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { max-width: 780px; margin-bottom: 10px; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; letter-spacing: -.035em; }
+    .hero-copy { max-width: 680px; margin-bottom: 20px; color: var(--muted); font-size: clamp(17px, 2.4vw, 20px); }
+    .trust-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; margin: 0; list-style: none; }
+    .trust-list li {
+      display: inline-flex;
+      min-height: 36px;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid #d7dee8;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .86);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .trust-list svg, .mini-benefits svg { width: 17px; height: 17px; flex: 0 0 17px; color: var(--accent-strong); }
+
+    .community-card, .enrollment-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      background: rgba(255, 255, 255, .97);
+      box-shadow: var(--shadow);
+    }
+    .community-card {
+      display: grid;
+      gap: 26px;
+      padding: 24px;
+      margin-bottom: 28px;
+      border-color: rgba(18, 105, 243, .35);
+      background: linear-gradient(135deg, #dce7ff, #ffffff);
+    }
+    .community-intro h2 { max-width: 520px; margin-bottom: 8px; font-size: clamp(25px, 4vw, 36px); line-height: 1.13; letter-spacing: -.025em; }
+    .community-intro p:last-child { max-width: 650px; margin-bottom: 0; color: #3d4b5f; }
+    .benefit-grid { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+    .benefit-item {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 11px;
+      align-items: center;
+      min-height: 66px;
+      padding: 12px;
+      border: 1px solid rgba(0, 65, 180, .14);
+      border-radius: var(--r-sm);
+      background: rgba(255, 255, 255, .78);
+    }
+    .benefit-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 10px; color: var(--ink); background: var(--accent); }
+    .benefit-icon svg { width: 21px; height: 21px; }
+    .benefit-item strong, .benefit-item small { display: block; }
+    .benefit-item strong { font-size: 14px; line-height: 1.28; }
+    .benefit-item small { color: var(--muted); font-size: 12px; }
+
+    .enrollment-card { padding: 20px; margin-bottom: 20px; }
+    #inscripcion { scroll-margin-top: 20px; }
+    .checkout-layout { display: grid; gap: 24px; align-items: start; }
+    .checkout-layout > * { min-width: 0; }
+    .order-panel .other-options { margin-bottom: 0; }
+    .details-panel .form-heading { margin: 0 0 18px; }
+    .details-panel .form-heading h3 { margin-bottom: 6px; font-size: 24px; }
+    .details-panel .form-heading p { font-size: 14px; }
+    .field-error:empty { display: none; }
+    .summary-mode { margin: 0; color: var(--muted); font-size: 14px; }
+    .summary-frequency { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .summary-today { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .summary-today span { font-weight: 700; }
+    .summary-today strong { color: var(--accent-strong); font-size: 34px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .summary-first-charge { display: grid; gap: 7px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .summary-first-charge[hidden] { display: none; }
+    .summary-first-charge div { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 14px; }
+    .summary-first-charge strong { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+    .summary-first-charge .first-charge-total { color: var(--text); font-weight: 850; }
+    .summary-first-charge .first-charge-total strong { color: var(--accent-strong); }
+    .summary-normal { margin: -8px 0 0; color: var(--muted); font-size: 13px; }
+    .summary-normal s { margin-left: 4px; }
+    .summary-matricula { margin: 0; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    .summary-matricula[data-waived="true"] { padding: 14px 0 14px 14px; border: 0; border-top: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0; background: #fff; color: var(--ink); }
+    .summary-matricula[data-waived="true"] strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 16px; }
+    .summary-details { font-size: 13px; }
+    .summary-details summary { min-height: 44px; display: flex; align-items: center; gap: 8px; color: var(--accent-strong); font-weight: 700; }
+    .summary-details summary::before { content: "+"; }
+    .summary-details[open] summary::before { content: "−"; }
+    .summary-details p { margin: 0 0 8px; }
+    .community-details { margin: 0 0 40px; border: 1px solid var(--border); border-radius: var(--r-md); background: white; }
+    .community-details > summary { min-height: 54px; padding: 15px 20px; font-weight: 750; }
+    .community-details .community-card { margin: 0; border: 0; border-radius: 0 0 var(--r-md) var(--r-md); box-shadow: none; }
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 0 20px;
+      margin: 0 0 26px;
+      border-bottom: 1px solid #d5dce7;
+      list-style: none;
+    }
+    .journey li { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 12px; font-weight: 750; }
+    .journey strong {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      place-items: center;
+      border: 1px solid #cfc8bd;
+      border-radius: 50%;
+      color: #5f6368;
+    }
+    .journey li[data-state="active"] { color: var(--text); }
+    .journey li[data-state="active"] strong,
+    .journey li[data-state="done"] strong { border-color: var(--accent); color: var(--ink); background: var(--accent); }
+    .journey li[data-state="done"] { color: var(--muted); }
+
+    .step-panel[hidden] { display: none; }
+    .section-heading { margin-bottom: 22px; }
+    .section-heading h2 { margin-bottom: 7px; font-size: clamp(27px, 4vw, 38px); line-height: 1.12; letter-spacing: -.03em; }
+    .section-heading h1 { margin-bottom: 7px; font-size: clamp(27px, 4vw, 38px); line-height: 1.12; letter-spacing: -.03em; }
+    .section-heading p:last-child { max-width: 690px; margin-bottom: 0; color: var(--muted); }
+
+    .plan-grid { display: grid; gap: 14px; }
+    .plan-card {
+      display: grid;
+      gap: 18px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      background: var(--raised);
+      transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+    .plan-card:hover { border-color: #2a65c5; }
+    .plan-card:focus-within { box-shadow: var(--focus); }
+    .plan-card.is-selected { border-color: var(--accent); background: linear-gradient(145deg, #dce7ff, #fffdf8); box-shadow: inset 0 0 0 1px var(--accent); }
+    .plan-tag {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      padding: 4px 9px;
+      margin-bottom: 12px;
+      border: 1px solid #6999ed;
+      border-radius: 999px;
+      color: #003474;
+      background: #dce7ff;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .plan-card h3 { margin-bottom: 6px; font-size: 25px; line-height: 1.1; }
+    .plan-description { min-height: 48px; margin-bottom: 0; color: var(--muted); font-size: 14px; }
+    .price-block { display: grid; gap: 3px; font-variant-numeric: tabular-nums; }
+    .regular-price { color: var(--muted); font-size: 13px; }
+    .regular-price strong { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+    .offer-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+    .offer-price strong { color: var(--accent-strong); font-size: clamp(31px, 5vw, 39px); line-height: 1; }
+    .offer-price span { color: var(--muted); font-weight: 700; }
+    .price-caption, .savings-copy { margin: 5px 0 0; font-size: 13px; }
+    .savings-copy { color: var(--success); font-weight: 800; }
+    .mini-benefits { display: grid; gap: 7px; padding: 0; margin: 0; color: #3f3f46; font-size: 13px; list-style: none; }
+    .mini-benefits li { display: flex; gap: 8px; }
+
+    .btn {
+      display: inline-flex;
+      min-height: 50px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 12px 18px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-weight: 900;
+      text-align: center;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+    }
+    .btn-primary { color: var(--ink); background: var(--accent); box-shadow: 0 10px 25px rgba(18, 105, 243,.18); }
+    .btn-primary:hover:not(:disabled) { background: #3a85ff; }
+    .btn-primary:active:not(:disabled) { background: #005ce6; }
+    .btn-secondary { border-color: var(--border); color: var(--ink); background: #fff; }
+    .btn-secondary:hover { border-color: var(--accent-strong); background: var(--accent-soft); }
+    .btn-secondary:active { background: #b8cfff; }
+    .btn-link {
+      min-height: 44px;
+      padding: 8px 4px;
+      border: 0;
+      color: var(--accent-strong);
+      background: transparent;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .btn-link:active:not(:disabled) { color: #003a6f; }
+    .btn-link:disabled { cursor: not-allowed; opacity: .5; }
+    .btn:disabled { cursor: not-allowed; opacity: .5; box-shadow: none; }
+
+    .plan-disclaimer, .checkout-note {
+      padding: 13px 14px;
+      border-radius: var(--r-sm);
+      color: var(--muted);
+      background: #f7f6f4;
+      font-size: 12px;
+    }
+    .plan-disclaimer { margin: 16px 0 0; }
+    .checkout-note { margin-top: 16px; border: 1px solid #e3ded5; }
+
+    .selection-summary {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(18, 105, 243,.4);
+      border-radius: var(--r-md);
+      background: #f1f6ff;
+    }
+    .selection-top { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 10px; }
+    .selection-top small { display: block; margin-bottom: 3px; color: #00397a; font-size: 11px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .selection-top h3 { margin-bottom: 0; font-size: 25px; }
+    .summary-price-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .summary-price-point { display: grid; gap: 3px; padding: 12px; border: 1px solid #ded8ce; border-radius: var(--r-sm); background: rgba(255,255,255,.88); }
+    .summary-price-point span { color: var(--muted); font-size: 12px; }
+    .summary-price-point strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .summary-price-point.regular strong { color: var(--text); }
+    .summary-price-point.regular.has-discount strong { color: var(--muted); text-decoration: line-through; }
+    .summary-price-point.offer { border-color: rgba(18, 105, 243,.5); }
+    .summary-price-point.offer strong { color: var(--accent-strong); font-size: 27px; }
+    .summary-facts { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .summary-facts li { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 14px; }
+    .summary-facts strong { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+    .summary-facts .savings { color: var(--success); font-weight: 850; }
+
+    details.other-options { margin-bottom: 24px; border: 1px solid var(--border); border-radius: var(--r-md); background: #ffffff; }
+    details.other-options > summary {
+      position: relative;
+      min-height: 54px;
+      padding: 15px 50px 15px 16px;
+      color: var(--text);
+      font-weight: 850;
+      list-style: none;
+    }
+    details.other-options > summary::-webkit-details-marker { display: none; }
+    details.other-options > summary::after {
+      content: "+";
+      position: absolute;
+      top: 50%;
+      right: 17px;
+      color: var(--accent-strong);
+      font-size: 25px;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+    details.other-options[open] > summary::after { content: "−"; }
+    .other-options-body { padding: 4px 16px 18px; }
+    fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+    legend { width: 100%; margin-bottom: 10px; font-size: 14px; font-weight: 850; }
+    .option-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+    .option-choice { position: relative; display: block; cursor: pointer; }
+    .option-choice input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .option-body {
+      display: grid;
+      min-height: 62px;
+      place-content: center;
+      gap: 2px;
+      padding: 10px;
+      border: 1px solid #d8d2c8;
+      border-radius: var(--r-sm);
+      background: var(--raised);
+      text-align: center;
+      transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+    .option-choice input:focus-visible + .option-body { outline: 3px solid var(--accent-strong); outline-offset: 2px; box-shadow: var(--focus); }
+    .option-choice input:checked + .option-body { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+    .option-choice input:disabled + .option-body { cursor: not-allowed; opacity: .58; }
+    .option-body strong { font-size: 14px; }
+    .option-body small { color: var(--muted); font-size: 11px; }
+    .mode-group { margin-top: 18px; }
+    .provider-group { margin-top: 22px; }
+    .provider-group .option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .provider-group[hidden] { display: none; }
+    .option-note { margin: 13px 0 0; color: var(--muted); font-size: 12px; }
+    .availability-note {
+      display: none;
+      gap: 8px;
+      align-items: start;
+      padding: 13px;
+      margin-top: 14px;
+      border: 1px solid rgba(18, 105, 243,.4);
+      border-radius: var(--r-sm);
+      color: #003070;
+      background: #e6eeff;
+      font-size: 13px;
+    }
+    .availability-note[data-visible="true"] { display: grid; }
+    .availability-note .btn-link { justify-self: start; }
+
+    .form-heading { margin: 28px 0 18px; }
+    .form-heading h2 { margin-bottom: 6px; font-size: clamp(25px,4vw,34px); line-height: 1.15; }
+    .form-heading p { max-width: 680px; margin-bottom: 0; color: var(--muted); }
+    .form-grid { display: grid; gap: 16px; }
+    .field { display: grid; align-content: start; gap: 7px; }
+    .field label { font-size: 14px; font-weight: 850; }
+    .required { color: var(--accent-strong); }
+    .field input {
+      width: 100%;
+      min-height: 50px;
+      padding: 12px 14px;
+      border: 1px solid #5a5a5a;
+      border-radius: var(--r-sm);
+      color: var(--text);
+      background: #ffffff;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .field input::placeholder { color: #757575; }
+    .field input:focus { border-color: var(--accent); outline: 0; box-shadow: var(--focus); }
+    .field input[aria-invalid="true"] { border-color: var(--danger); }
+    .helper, .field-error { min-height: 20px; margin: 0; font-size: 13px; }
+    .helper { color: var(--muted); }
+    .field-error { color: var(--danger); }
+
+    .consent-list { display: grid; gap: 10px; margin-top: 20px; }
+    .check-row {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 11px;
+      align-items: start;
+      min-height: 48px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: #ffffff;
+      cursor: pointer;
+    }
+    .check-row input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); }
+    .check-row span { font-size: 14px; }
+
+    .form-error-summary {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,180,171,.58);
+      border-radius: var(--r-sm);
+      color: var(--danger);
+      background: #fff1f0;
+    }
+    .form-error-summary[data-visible="true"] { display: block; }
+    .checkout-area { display: grid; gap: 12px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .checkout-area .btn-primary { width: 100%; }
+    .checkout-requirements { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+    .secure-copy { display: flex; justify-content: center; gap: 8px; color: var(--muted); font-size: 12px; text-align: center; }
+    .secure-copy svg { width: 18px; height: 18px; flex: 0 0 18px; color: var(--accent-strong); }
+
+    dialog { width: min(520px, calc(100% - 28px)); padding: 0; border: 1px solid var(--border); border-radius: var(--r-lg); color: var(--text); background: #ffffff; box-shadow: var(--shadow); }
+    dialog::backdrop { background: rgba(0,0,0,.72); }
+    .dialog-body { padding: 24px; }
+    .dialog-status { display: grid; width: 48px; height: 48px; margin-bottom: 16px; place-items: center; border-radius: 50%; color: var(--ink); background: var(--accent); }
+    .dialog-status svg { width: 25px; height: 25px; }
+    dialog h2 { margin-bottom: 8px; font-size: 27px; }
+    dialog p { color: var(--muted); }
+    .dialog-summary { padding: 14px; border-radius: var(--r-sm); background: #f7f6f4; font-size: 14px; }
+    .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .site-footer { padding: 0 0 36px; color: #666666; font-size: 12px; text-align: center; }
+    .whatsapp-float { --whatsapp-green: #25d366; --whatsapp-hover: #128c7e; position: fixed; right: 24px; bottom: 24px; z-index: 10; display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--whatsapp-hover); border-radius: 50%; background: var(--whatsapp-green); box-shadow: 0 3px 12px #0002; transition: background .18s; }
+    .whatsapp-float svg { color: #fff;  width: 28px; height: 28px; }
+    .whatsapp-float:hover { background: var(--whatsapp-hover); }
+    .whatsapp-float:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+    .site-footer { padding-bottom: 104px; }
+    @media (max-width: 760px) {
+      /* Reserve a bottom rail; the contact link never covers fields or the payment action. */
+      .whatsapp-float { right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+      body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+      body::after { content: ''; position: fixed; inset: auto 0 0; height: calc(76px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--border); z-index: 9; pointer-events: none; }
+      html { scroll-padding-bottom: 90px; }
+    }
+
+    @media (min-width: 620px) {
+      .community-card, .enrollment-card { padding: 28px; }
+      .benefit-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .option-grid { grid-template-columns: repeat(4,1fr); }
+      .mode-grid { grid-template-columns: repeat(2,1fr); }
+      .form-grid { grid-template-columns: repeat(2,1fr); }
+      .field:first-child { grid-column: 1 / -1; }
+    }
+    @media (min-width: 820px) {
+      .plan-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .plan-card { padding: 22px; }
+      .community-card { grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); align-items: center; }
+      .checkout-layout { grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: 32px; }
+      .order-panel .option-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .shell { width: min(1120px, calc(100% - 64px)); }
+      .enrollment-card { padding: 34px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (max-width: 600px) {
+      .header-row { flex-wrap: nowrap; }
+      .brand-logo { font-size: 20px; }
+      .header-actions { display: grid; justify-items: end; gap: 0; }
+      .secure-badge { font-size: 11px; padding: 6px 9px; }
+      .selection-top h3 { font-size: 22px; }
+      .selection-top .btn-link { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#inscripcion">Ir a la inscripción</a>
+
+  <header class="site-header">
+    <div class="shell header-row">
+      <a class="brand" href="#contenido-principal" aria-label="Demo Gym: ir al inicio del formulario">
+        <span class="brand-logo" aria-hidden="true">Demo Gym</span>
+      </a>
+      <div class="header-actions">
+        <a id="back-to-plans" href="https://demogym.example/#planes">Volver a los planes</a>
+        <span class="secure-badge" id="environment-badge"><span class="secure-dot" aria-hidden="true"></span><span id="environment-label">Inscripción online · pago seguro</span></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell" id="contenido-principal">
+    <section class="hero" id="enrollment-intro" aria-labelledby="page-title">
+      <p class="eyebrow">Comunidad Demo Gym</p>
+      <h1 id="page-title">Empieza tu camino en Demo Gym.</h1>
+      <p class="hero-copy">Tu plan, tus datos y el pago seguro. Nosotros te acompañamos a avanzar.</p>
+    </section>
+
+    <section class="enrollment-card" id="inscripcion" aria-label="Inscripción a Demo Gym">
+      <ol class="journey" aria-label="Etapas de la inscripción">
+        <li data-journey="1" data-state="active" aria-current="step"><strong>1</strong><span>Elige tu plan</span></li>
+        <li data-journey="2" data-state="pending"><strong>2</strong><span>Tus datos</span></li>
+        <li data-journey="3" data-state="pending"><strong>3</strong><span>Pago seguro</span></li>
+      </ol>
+
+      <form id="enrollment-form" method="post" action="api/inscripciones.php" data-checkout-endpoint="api/inscripciones.php" data-availability-endpoint="api/disponibilidad.php" novalidate>
+        <noscript>
+          <div class="availability-note" data-visible="true" role="status">
+            Activa JavaScript para comprobar la disponibilidad del pago y continuar de forma segura.
+          </div>
+        </noscript>
+        <input id="selected-plan" name="plan" type="hidden">
+
+        <section class="step-panel" data-step="1" aria-labelledby="step-1-title">
+          <div class="section-heading">
+            <h2 id="step-1-title" tabindex="-1">¿Cuántos días quieres entrenar?</h2>
+            <p>El mismo acompañamiento en ambos planes. Después puedes ajustar la duración y el pago.</p>
+          </div>
+
+          <div class="plan-grid" role="list">
+            <article class="plan-card" data-plan-card="inicio" role="listitem">
+              <div><span class="plan-tag">2 días por semana</span><h3>Plan Inicio</h3><p class="plan-description">Entrena dos días a la semana, crea constancia y avanza acompañado.</p></div>
+              <div class="price-block">
+                <span class="regular-price">Precio normal <strong>$19.990/mes</strong></span>
+                <span class="offer-price"><strong>$16.990</strong><span>/mes</span></span>
+                <p class="price-caption">12 cuotas · total $203.880</p>
+                <p class="savings-copy">Ahorras $36.000 en el período</p>
+              </div>
+              <button class="btn btn-primary" type="button" data-select-plan="inicio" aria-pressed="false">Elegir Plan Inicio</button>
+            </article>
+
+            <article class="plan-card" data-plan-card="pro" role="listitem">
+              <div><span class="plan-tag">Todos los días de apertura</span><h3>Plan Pro</h3><p class="plan-description">Entrena a tu ritmo durante nuestros días de apertura y lleva tu proceso al siguiente nivel.</p></div>
+              <div class="price-block">
+                <span class="regular-price">Precio normal <strong>$29.990/mes</strong></span>
+                <span class="offer-price"><strong>$25.490</strong><span>/mes</span></span>
+                <p class="price-caption">12 cuotas · total $305.880</p>
+                <p class="savings-copy">Ahorras 15% · $54.000 en el período</p>
+              </div>
+              <button class="btn btn-primary" type="button" data-select-plan="pro" aria-pressed="false">Elegir Plan Pro</button>
+            </article>
+          </div>
+
+          <p class="plan-disclaimer"><span id="plan-period-copy">Precios para el plan anual (12 meses), con cargo mensual automático.</span> Duraciones disponibles: 1, 3, 6 o 12 meses. <strong id="plan-matricula-copy">Todos los planes online incluyen una matrícula única de $15.000 al inscribirte.</strong></p>
+        </section>
+
+        <section class="step-panel" data-step="2" aria-labelledby="step-2-title" hidden>
+          <div class="section-heading">
+            <h1 id="step-2-title" tabindex="-1">Completa tu inscripción</h1>
+            <p>Tu plan ya está elegido. Solo faltan tus datos para continuar.</p>
+          </div>
+
+          <div class="checkout-layout">
+          <div class="order-panel">
+          <div class="selection-summary" aria-live="polite">
+              <div class="selection-top">
+                <div><h3 id="summary-plan">Plan seleccionado</h3><p class="summary-frequency" id="summary-frequency"></p></div>
+                <button class="btn-link" id="change-plan" type="button">Cambiar plan</button>
+              </div>
+              <p class="summary-mode" id="summary-mode">Plan anual (12 meses) · cargo mensual automático</p>
+              <div class="summary-today"><span id="summary-primary-label">Cobro de hoy</span><strong id="summary-today">—</strong></div>
+              <div class="summary-first-charge" id="summary-first-charge" hidden>
+                <div><span>Matrícula</span><strong id="summary-first-charge-fee">+ $15.000</strong></div>
+                <div class="first-charge-total"><span>Total hoy</span><strong id="summary-first-charge-total">—</strong></div>
+              </div>
+              <p class="summary-normal" id="summary-regular-box"><span id="summary-regular-label">Precio mensual normal</span> <s id="summary-regular-value">—</s></p>
+              <ul class="summary-facts">
+                <li><span id="summary-charges-label">Cargos mensuales</span><strong id="summary-charges">—</strong></li>
+                <li id="summary-fee-row" hidden><span>Matrícula</span><strong id="summary-fee">—</strong></li>
+                <li><span id="summary-total-label">Total a pagar</span><strong id="summary-total">—</strong></li>
+              </ul>
+              <p class="summary-matricula" id="summary-matricula"><strong id="summary-matricula-title">Matrícula</strong> <span id="summary-matricula-copy">Revisa el beneficio de tu elección.</span></p>
+              <details class="summary-details" id="savings-details"><summary>Ver descuento y ahorro</summary><p>Descuento aplicado: <strong id="summary-discount">—</strong>. Ahorras <strong id="summary-savings">—</strong> en el período.</p></details>
+          </div>
+
+          <details class="other-options" id="other-options">
+            <summary>Cambiar duración o forma de pago</summary>
+            <div class="other-options-body">
+              <fieldset>
+                <legend>Duración</legend>
+                <div class="option-grid">
+                  <label class="option-choice"><input type="radio" name="duration" value="1"><span class="option-body"><strong>1 mes</strong></span></label>
+                  <label class="option-choice"><input type="radio" name="duration" value="3"><span class="option-body"><strong>3 meses</strong></span></label>
+                  <label class="option-choice"><input type="radio" name="duration" value="6"><span class="option-body"><strong>6 meses</strong></span></label>
+                  <label class="option-choice"><input type="radio" name="duration" value="12" checked><span class="option-body"><strong>Anual · 12 meses</strong></span></label>
+                </div>
+              </fieldset>
+              <fieldset class="mode-group" id="payment-group">
+                <legend>Forma de pago</legend>
+                <div class="option-grid mode-grid">
+                  <label class="option-choice"><input type="radio" name="payment_mode" value="automatic" checked><span class="option-body"><strong>Cargo mensual automático</strong><small id="automatic-option-copy">12 cargos automáticos</small></span></label>
+                  <label class="option-choice"><input type="radio" name="payment_mode" value="prepaid"><span class="option-body"><strong>Pagar todo ahora</strong><small>Pago único seguro en Mercado Pago</small></span></label>
+                </div>
+              </fieldset>
+              <p class="option-note" id="payment-comparison-note">El resumen se actualiza al cambiar tu elección.</p>
+            </div>
+          </details>
+          <div class="availability-note" id="availability-note" data-visible="false">
+            <span id="availability-copy" role="status" aria-live="polite">Esta alternativa todavía no está habilitada para pago online.</span>
+            <button class="btn-link" id="retry-availability" type="button" aria-describedby="availability-copy" hidden>Volver a comprobar disponibilidad</button>
+            <button class="btn-link" id="retry-checkout" type="button" hidden>Comprobar mi intento</button>
+            <a class="btn-link" id="availability-status-link" hidden>Consultar el estado de mi inscripción</a>
+            <button class="btn-link" id="start-new-enrollment-inline" type="button" hidden>Realizar otra inscripción</button>
+            <button class="btn-link" id="use-online-option" type="button">Elegir una opción disponible</button>
+          </div>
+          </div>
+
+          <div class="details-panel">
+          <div class="form-heading">
+            <h3>Tus datos</h3>
+            <p>Para identificar tu inscripción y enviarte la confirmación.</p>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="full-name">Nombre y apellido <span class="required" aria-hidden="true">*</span></label>
+              <input id="full-name" name="full_name" type="text" autocomplete="name" minlength="3" required aria-describedby="full-name-error" placeholder="Ej.: Ana Pérez">
+              <p class="field-error" id="full-name-error" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="phone">WhatsApp <span class="required" aria-hidden="true">*</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="phone-help phone-error" placeholder="+56 9 1234 5678">
+              <p class="helper" id="phone-help">Número móvil chileno de 9 dígitos.</p>
+              <p class="field-error" id="phone-error" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="email">Correo electrónico <span class="required" aria-hidden="true">*</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error" placeholder="tu@correo.cl">
+              <p class="field-error" id="email-error" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="consent-list">
+            <p class="helper" id="consent-selection-notice" role="status" hidden>Revisa y acepta las condiciones de esta elección.</p>
+            <label class="check-row">
+              <input id="necessary-consent" name="necessary_consent" type="checkbox" required aria-describedby="consent-error">
+              <span>Acepto las condiciones del plan y el uso de mis datos para gestionar la inscripción y el pago. <span class="required" aria-hidden="true">*</span></span>
+            </label>
+            <p class="field-error" id="consent-error" aria-live="polite"></p>
+            <label class="check-row">
+              <input id="marketing-consent" name="marketing_consent" type="checkbox">
+              <span><strong>Opcional.</strong> Quiero recibir consejos, novedades y beneficios de Comunidad Demo Gym por WhatsApp y correo.</span>
+            </label>
+          </div>
+
+          <fieldset class="provider-group" id="provider-group" hidden>
+            <legend>Medio de pago</legend>
+            <div class="option-grid">
+              <label class="option-choice"><input type="radio" name="payment_provider" value="mercadopago" checked><span class="option-body"><strong>Tarjeta</strong><small>Crédito, débito o prepago · Mercado Pago</small></span></label>
+              <label class="option-choice"><input type="radio" name="payment_provider" value="khipu"><span class="option-body"><strong>Transferencia bancaria</strong><small>Desde tu banco, sin tarjeta · Khipu</small></span></label>
+            </div>
+          </fieldset>
+
+          <div class="form-error-summary" id="form-error-summary" role="alert" tabindex="-1">Revisa los campos marcados antes de continuar.</div>
+          <div class="checkout-area">
+            <button class="btn btn-primary" id="submit-button" type="submit" aria-describedby="checkout-requirements secure-copy" disabled>Comprobando pago online…</button>
+            <p class="checkout-requirements" id="checkout-requirements" aria-live="polite">Estamos comprobando que esta opción esté disponible.</p>
+            <span class="secure-copy" id="secure-copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+              <span id="secure-copy-text">El pago se realiza en Mercado Pago. Tu inscripción se confirma al validar el pago.</span>
+            </span>
+          </div>
+          </div>
+          </div>
+        </section>
+      </form>
+    </section>
+
+    <details class="community-details">
+    <summary>¿Qué incluye ser parte de Comunidad Demo Gym?</summary>
+    <section class="community-card" aria-labelledby="community-title">
+      <div class="community-intro">
+        <p class="eyebrow">Más que venir a entrenar</p>
+        <h2 id="community-title">Aquí te conocemos, te guiamos y celebramos tus avances.</h2>
+        <p>Ser parte de Demo Gym significa contar con un espacio completo y con personas que se preocupan por tu bienestar, tu experiencia y tus resultados.</p>
+      </div>
+      <ul class="benefit-grid">
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"></path></svg></span>
+          <span><strong>Todo el gimnasio para ti</strong><small>Entrena con acceso a todas nuestras áreas.</small></span>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20V10M18 20V4M6 20v-4"></path></svg></span>
+          <span><strong>Te acompañamos a lograr resultados</strong><small>No tienes que descubrir el camino por tu cuenta.</small></span>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+          <span><strong>Evaluamos tu avance cada mes</strong><small>Revisamos contigo cómo vas y qué necesitas ajustar.</small></span>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></span>
+          <span><strong>Una rutina hecha para ti</strong><small>Entrenamiento diseñado según tus metas y necesidades.</small></span>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22c4-2 7-6 7-11V5l-7-3-7 3v6c0 5 3 9 7 11z"></path><path d="M9 12h6"></path></svg></span>
+          <span><strong>Un plan nutricional para apoyarte</strong><small>Diseñado para acompañar tus objetivos.</small></span>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg></span>
+          <span><strong>Clases para moverte en comunidad</strong><small>Boxing, entrenamiento funcional y clases colectivas.</small></span>
+        </li>
+      </ul>
+    </section>
+    </details>
+  </main>
+
+  <footer class="site-footer shell">Demo Gym · Inscripción online segura · Pagos procesados por Mercado Pago</footer>
+
+  <dialog id="checkout-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-body">
+      <div class="dialog-status" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v5"></path><path d="M12 17h.01"></path></svg></div>
+      <h2 id="dialog-title">No pudimos abrir el pago</h2>
+      <p id="dialog-message">Intenta nuevamente. Si el problema continúa, podremos retomar tu inscripción sin crear un cobro duplicado.</p>
+      <div class="dialog-summary" id="dialog-summary"></div>
+      <p><strong>No se confirmó ningún cargo desde esta pantalla.</strong></p>
+      <div class="dialog-actions">
+        <a class="btn btn-secondary" id="check-status-link" href="retorno.php" hidden>Consultar estado</a>
+        <button class="btn btn-secondary" id="start-new-enrollment" type="button" hidden>Realizar otra inscripción</button>
+        <button class="btn btn-primary" id="close-dialog" type="button">Revisar e intentar nuevamente</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var plans = {
+        inicio: { name: "Plan Inicio", base: 19990, automatic: { 3: [18990,56970,5], 6: [17990,107940,10], 12: [16990,203880,15] }, prepaid: { 3: [55170,8], 6: [105540,12], 12: [196680,18] } },
+        pro: { name: "Plan Pro", base: 29990, automatic: { 3: [28490,85470,5], 6: [26990,161940,10], 12: [25490,305880,15] }, prepaid: { 3: [82770,8], 6: [158340,12], 12: [295080,18] } }
+      };
+
+      var state = { step: 1, plan: null, duration: 12, mode: "automatic", provider: "mercadopago" };
+      var form = document.getElementById("enrollment-form");
+      var durationInputs = Array.prototype.slice.call(document.querySelectorAll('input[name="duration"]'));
+      var modeInputs = Array.prototype.slice.call(document.querySelectorAll('input[name="payment_mode"]'));
+      var paymentGroup = document.getElementById("payment-group");
+      var providerGroup = document.getElementById("provider-group");
+      var providerInputs = Array.prototype.slice.call(document.querySelectorAll('input[name="payment_provider"]'));
+      var paymentComparisonNote = document.getElementById("payment-comparison-note");
+      var dialog = document.getElementById("checkout-dialog");
+      var submitButton = document.getElementById("submit-button");
+      var checkoutEndpoint = form.getAttribute("data-checkout-endpoint") || "api/inscripciones.php";
+      var availabilityEndpoint = form.getAttribute("data-availability-endpoint") || "api/disponibilidad.php";
+      var checkoutAttempt = { fingerprintHash: null, key: null };
+      var isSubmitting = false;
+      var selectionTouched = false;
+      var availabilitySchemaVersion = "dgym-checkout-availability-v2";
+      var pricingVersion = "2026-10-06-v4";
+      var paymentModeContract = {
+        automatic: { checkoutType: "subscription", allowedDurations: [3,6,12] },
+        single: { checkoutType: "preference", allowedDurations: [1] },
+        prepaid: { checkoutType: "preference", allowedDurations: [3,6,12] }
+      };
+      var checkoutAvailability = { resolved: false, enabled: false, preflightReady: false, preflightStatus: null, pricingVersion: null, paymentOptions: {}, offers: {}, khipuModes: [] };
+      var availabilityRequestSequence = 0;
+      var availabilityRequestController = null;
+      var checkoutHold = { blocked: false, reference: null, reconcileAllowed: false, completed: false };
+      var consentTextVersion = "2026-09-21-v1";
+      var attemptStorageKey = "dgym_checkout_attempt_v2";
+      var holdStorageKey = "dgym_checkout_hold_v2";
+      var checkoutHandoffPrefix = "dgym_checkout_handoff_v1:";
+      var checkoutHandoffTtlMilliseconds = 10 * 60 * 1000;
+      var attributionKeys = ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","gclid","fbclid"];
+      var isLocalPreview = window.location.protocol === "file:" || ["localhost", "127.0.0.1", "[::1]"].indexOf(window.location.hostname) !== -1;
+      var summarizedSelectionKey = null;
+
+      function syncSelectionUrl() {
+        var target = new URL(window.location.href);
+        if (hasPlan(state.plan)) target.searchParams.set("plan", state.plan);
+        else target.searchParams.delete("plan");
+        target.searchParams.set("duration", String(state.duration));
+        target.searchParams.set("mode", state.mode);
+        try { window.history.replaceState(window.history.state, "", target.href); }
+        catch (error) { /* Some file previews disallow history updates; selection remains usable. */ }
+      }
+
+      function updateBackLink() {
+        syncSelectionUrl();
+        var target = isLocalPreview
+          ? new URL("landing-demo.html", window.location.href)
+          : new URL("https://demogym.example/");
+        target.search = "";
+        target.searchParams.set("duration", String(state.duration));
+        target.searchParams.set("mode", state.mode);
+        if (state.plan) target.searchParams.set("plan", state.plan);
+        var incoming = new URLSearchParams(window.location.search);
+        attributionKeys.forEach(function (key) {
+          var value = incoming.get(key);
+          if (value && value.trim()) target.searchParams.set(key, value.trim().slice(0, 500));
+        });
+        target.hash = "planes";
+        document.getElementById("back-to-plans").href = target.href;
+      }
+
+      function currency(value) {
+        return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(value);
+      }
+
+      function hasPlan(planId) {
+        return typeof planId === "string" && Object.prototype.hasOwnProperty.call(plans, planId);
+      }
+
+      function selectionFromQuery(search) {
+        var params = new URLSearchParams(search);
+        var requestedDuration = params.get("duration");
+        var duration = ["1", "3", "6", "12"].indexOf(requestedDuration) !== -1 ? Number(requestedDuration) : 12;
+        var requestedMode = params.get("mode");
+        return {
+          plan: hasPlan(params.get("plan")) ? params.get("plan") : null,
+          duration: duration,
+          mode: duration === 1 ? "single" : requestedMode === "prepaid" ? "prepaid" : "automatic",
+          explicit: hasPlan(params.get("plan")) || ["1", "3", "6", "12"].indexOf(requestedDuration) !== -1
+        };
+      }
+
+      function durationLabel(duration) {
+        return Number(duration) === 12 ? "Anual · 12 meses" : duration + (Number(duration) === 1 ? " mes" : " meses");
+      }
+
+      function matriculaWaived(paymentMode, duration) {
+        return false;
+      }
+
+      function offerKey(planId, paymentMode, duration) {
+        return planId + "|" + paymentMode + "|" + duration;
+      }
+
+      function offerFor(planId, paymentMode, selectedDuration) {
+        if (!hasPlan(planId)) return null;
+        var plan = plans[planId];
+        var duration = Number(selectedDuration);
+        var regularTotal = plan.base * duration;
+
+        if (duration === 1 && paymentMode === "single") {
+          var enrollmentFee = 15000;
+          var singleTotal = plan.base + enrollmentFee;
+          return { planId: planId, planName: plan.name, paymentMode: "single", checkoutType: "preference", duration: 1, regularMonthly: plan.base, installmentAmount: singleTotal, regularTotal: regularTotal, planAmount: plan.base, enrollmentFeeAmount: enrollmentFee, chargeAmount: singleTotal, chargeCount: 1, total: singleTotal, today: singleTotal, discount: 0, savings: 0, currency: "CLP", modeLabel: "1 mes · pago único con matrícula" };
+        }
+
+        if (paymentMode === "prepaid" && plan.prepaid[duration]) {
+          var prepaid = plan.prepaid[duration];
+          var prepaidFee = 15000;
+          var prepaidTotal = prepaid[0] + prepaidFee;
+          return { planId: planId, planName: plan.name, paymentMode: "prepaid", checkoutType: "preference", duration: duration, regularMonthly: plan.base, installmentAmount: Math.round(prepaid[0] / duration), regularTotal: regularTotal, planAmount: prepaid[0], enrollmentFeeAmount: prepaidFee, chargeAmount: prepaidTotal, chargeCount: 1, total: prepaidTotal, today: prepaidTotal, discount: prepaid[1], savings: regularTotal - prepaid[0], currency: "CLP", modeLabel: duration + " meses · pago único con matrícula" };
+        }
+
+        if (paymentMode === "automatic" && plan.automatic[duration]) {
+          var automatic = plan.automatic[duration];
+          var automaticFee = 15000;
+          var firstAutomaticCharge = automatic[0] + automaticFee;
+          return { planId: planId, planName: plan.name, paymentMode: "automatic", checkoutType: "subscription", duration: duration, regularMonthly: plan.base, installmentAmount: automatic[0], regularTotal: regularTotal, planAmount: automatic[1], enrollmentFeeAmount: automaticFee, chargeAmount: firstAutomaticCharge, chargeCount: duration, total: automatic[1] + automaticFee, today: firstAutomaticCharge, discount: automatic[2], savings: regularTotal - automatic[1], currency: "CLP", modeLabel: duration + " meses · matrícula y cargo mensual automático" };
+        }
+
+        return null;
+      }
+
+      function getOffer() {
+        return offerFor(state.plan, state.mode, state.duration);
+      }
+
+      function selectionAvailable(planId, paymentMode, duration) {
+        var option = checkoutAvailability.paymentOptions[paymentMode];
+        return checkoutAvailability.enabled
+          && option
+          && option.durations.indexOf(Number(duration)) !== -1
+          && Boolean(checkoutAvailability.offers[offerKey(planId, paymentMode, Number(duration))]);
+      }
+
+      function firstAvailableSelection(planId) {
+        var priorities = [
+          ["automatic",12], ["prepaid",12], ["automatic",6], ["prepaid",6],
+          ["automatic",3], ["prepaid",3], ["single",1]
+        ];
+        for (var index = 0; index < priorities.length; index += 1) {
+          if (selectionAvailable(planId, priorities[index][0], priorities[index][1])) {
+            return { mode: priorities[index][0], duration: priorities[index][1] };
+          }
+        }
+        return null;
+      }
+
+      function khipuAvailableFor(paymentMode) {
+        return checkoutAvailability.enabled === true
+          && Array.isArray(checkoutAvailability.khipuModes)
+          && checkoutAvailability.khipuModes.indexOf(paymentMode) !== -1;
+      }
+
+      function selectedProvider() {
+        return state.provider === "khipu" && khipuAvailableFor(state.mode) ? "khipu" : "mercadopago";
+      }
+
+      function syncProviderOptions() {
+        // La transferencia solo existe para un pago único; con cargo automático
+        // o sin Khipu habilitado se usa Mercado Pago. La preferencia del socio se
+        // conserva: recargar la disponibilidad no debe cambiar la solicitud que
+        // "Comprobar mi intento" necesita repetir exactamente.
+        var available = khipuAvailableFor(state.mode);
+        var provider = selectedProvider();
+        providerGroup.hidden = !available;
+        providerInputs.forEach(function (input) {
+          input.checked = input.value === provider;
+          input.disabled = isSubmitting || !available;
+        });
+        document.getElementById("secure-copy-text").textContent = provider === "khipu"
+          ? "La transferencia se realiza en Khipu desde tu banco. Tu inscripción se confirma al validar el pago."
+          : "El pago se realiza en Mercado Pago. Tu inscripción se confirma al validar el pago.";
+      }
+
+      function checkoutReadiness() {
+        if (!state.plan) return { ready: false, code: "plan_required", message: "Selecciona un plan para continuar." };
+        if (isLocalPreview) return { ready: false, code: "preview_only", message: "Estás en una vista previa. Puedes revisar las opciones y completar los campos, pero aquí no se realizan cobros." };
+        if (!checkoutAvailability.resolved) return { ready: false, code: "availability_pending", message: "Estamos comprobando la disponibilidad del pago online." };
+        if (checkoutAvailability.requestFailed) return { ready: false, code: "availability_unavailable", message: "No pudimos comprobar el pago online. Tus datos siguen aquí; vuelve a comprobar la disponibilidad para continuar." };
+        if (!checkoutAvailability.preflightReady) return { ready: false, code: "preflight_unavailable", message: "El pago online está temporalmente no disponible. Puedes revisar los planes y volver más tarde." };
+        if (!checkoutAvailability.enabled) return { ready: false, code: "checkout_disabled", message: "El pago online está temporalmente en preparación. Puedes revisar los planes y volver más tarde." };
+        if (checkoutHold.blocked) return {
+          ready: false,
+          code: "checkout_held",
+          message: (checkoutHold.completed
+            ? "Tu inscripción anterior ya fue creada."
+            : "Tu solicitud anterior quedó en revisión para evitar un cobro duplicado.")
+            + (checkoutHold.reference ? " Referencia: " + checkoutHold.reference + "." : "")
+            + (checkoutHold.reconcileAllowed
+              ? " Usa “Comprobar mi intento” para consultar exactamente la misma solicitud."
+              : " Consulta su estado o elige “Realizar otra inscripción” para iniciar una contratación independiente.")
+        };
+        if (!getOffer()) return { ready: false, code: "catalog_mismatch", message: "La combinación elegida no corresponde al tarifario vigente." };
+        if (!selectionAvailable(state.plan, state.mode, state.duration)) return { ready: false, code: "selection_unavailable", message: "Esta combinación todavía no está disponible para pago online. Elige otra alternativa habilitada para continuar." };
+        if (!document.getElementById("necessary-consent").checked) return { ready: false, code: "consent_required", message: "Acepta las condiciones del plan y el uso necesario de tus datos para habilitar el pago." };
+        return { ready: true, code: "ready", message: selectedProvider() === "khipu"
+          ? "Todo listo. Continuarás al sitio seguro de Khipu para transferir desde tu banco."
+          : "Todo listo. Continuarás al sitio seguro de Mercado Pago." };
+      }
+
+      function showStep(step, scroll) {
+        state.step = step;
+        document.getElementById("enrollment-intro").hidden = step !== 1;
+        Array.prototype.forEach.call(document.querySelectorAll(".step-panel"), function (panel) {
+          panel.hidden = Number(panel.getAttribute("data-step")) !== step;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll("[data-journey]"), function (item) {
+          var itemStep = Number(item.getAttribute("data-journey"));
+          item.setAttribute("data-state", itemStep < step ? "done" : itemStep === step ? "active" : "pending");
+          if (itemStep === step) item.setAttribute("aria-current", "step");
+          else item.removeAttribute("aria-current");
+        });
+        var heading = document.getElementById("step-" + step + "-title");
+        if (heading) heading.focus({ preventScroll: true });
+        var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (scroll !== false) document.getElementById("inscripcion").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      }
+
+      function selectPlan(planId, advance, initial) {
+        if (!hasPlan(planId)) return;
+        state.plan = planId;
+        selectionTouched = true;
+        document.getElementById("selected-plan").value = planId;
+        durationInputs.forEach(function (input) { input.checked = Number(input.value) === state.duration; });
+        modeInputs.forEach(function (input) { input.checked = input.value === state.mode; });
+        Array.prototype.forEach.call(document.querySelectorAll("[data-plan-card]"), function (card) {
+          var selected = card.getAttribute("data-plan-card") === planId;
+          card.classList.toggle("is-selected", selected);
+          var button = card.querySelector("[data-select-plan]");
+          if (button) button.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
+        applyDurationMode();
+        if (advance) showStep(2, !initial);
+      }
+
+      function updatePlanCards() {
+        Array.prototype.forEach.call(document.querySelectorAll("[data-plan-card]"), function (card) {
+          var offer = offerFor(card.getAttribute("data-plan-card"), state.mode, state.duration);
+          if (!offer) return;
+          var isAutomatic = offer.paymentMode === "automatic";
+          card.querySelector(".regular-price").hidden = offer.savings === 0;
+          card.querySelector(".regular-price strong").textContent = isAutomatic ? currency(offer.regularMonthly) + "/mes" : currency(offer.regularTotal);
+          card.querySelector(".offer-price strong").textContent = currency(isAutomatic ? offer.installmentAmount : offer.chargeAmount);
+          card.querySelector(".offer-price span").textContent = isAutomatic ? "/mes" : "pago único";
+          card.querySelector(".price-caption").textContent = offer.paymentMode === "single"
+            ? "Plan " + currency(offer.planAmount) + " + matrícula " + currency(offer.enrollmentFeeAmount)
+            : (isAutomatic ? offer.chargeCount + " cargos mensuales · matrícula en el primero" : durationLabel(offer.duration) + " · matrícula incluida") + " · total " + currency(offer.total);
+          card.querySelector(".savings-copy").hidden = offer.savings === 0;
+          card.querySelector(".savings-copy").textContent = "Ahorras " + currency(offer.savings) + " en el período";
+        });
+        document.getElementById("plan-period-copy").textContent = "Precios para " + durationLabel(state.duration).toLowerCase() + (state.mode === "automatic" ? ", con cargo mensual automático." : ", con pago único.");
+        document.getElementById("plan-matricula-copy").textContent = state.mode === "automatic"
+          ? "Matrícula única de $15.000 incluida solo en el primer cargo; las cuotas siguientes mantienen su valor normal."
+          : "Matrícula única de $15.000 incluida en el pago online mostrado.";
+      }
+
+      function updateSummary() {
+        var offer = getOffer();
+        if (!offer) return;
+        var currentSelectionKey = offerKey(state.plan, state.mode, state.duration);
+        var necessaryConsent = document.getElementById("necessary-consent");
+        if (summarizedSelectionKey !== null && summarizedSelectionKey !== currentSelectionKey && necessaryConsent.checked) {
+          necessaryConsent.checked = false;
+          necessaryConsent.removeAttribute("aria-invalid");
+          document.getElementById("consent-error").textContent = "";
+          document.getElementById("consent-selection-notice").hidden = false;
+        }
+        summarizedSelectionKey = currentSelectionKey;
+        var hasDiscount = offer.discount > 0;
+        var isAutomatic = offer.paymentMode === "automatic";
+        var isSingle = offer.paymentMode === "single";
+        var regularBox = document.getElementById("summary-regular-box");
+        document.getElementById("summary-plan").textContent = plans[state.plan].name;
+        document.getElementById("summary-frequency").textContent = { inicio: "2 días por semana", pro: "Todos los días de apertura" }[state.plan];
+        document.getElementById("summary-mode").textContent = durationLabel(offer.duration) + " · " + (isAutomatic ? "cargo mensual automático" : "pago único");
+        document.getElementById("summary-discount").textContent = hasDiscount ? offer.discount + "%" : "0% · precio normal";
+        document.getElementById("summary-savings").textContent = currency(offer.savings);
+        document.getElementById("summary-primary-label").textContent = isAutomatic ? "Mensualidad" : "Cobro de hoy";
+        document.getElementById("summary-charges-label").textContent = isAutomatic ? "Mensualidades del plan" : isSingle ? "Plan por 1 mes" : "Forma de pago";
+        document.getElementById("summary-charges").textContent = isAutomatic
+          ? offer.chargeCount + " de " + currency(offer.installmentAmount)
+          : isSingle ? currency(offer.planAmount) : "1 pago de " + currency(offer.chargeAmount);
+        document.getElementById("summary-first-charge").hidden = !isAutomatic;
+        document.getElementById("summary-first-charge-fee").textContent = "+ " + currency(offer.enrollmentFeeAmount);
+        document.getElementById("summary-first-charge-total").textContent = currency(offer.today);
+        document.getElementById("summary-fee-row").hidden = isAutomatic;
+        document.getElementById("summary-fee").textContent = currency(offer.enrollmentFeeAmount);
+        document.getElementById("summary-total-label").textContent = isAutomatic ? "Total del contrato" : "Total a pagar";
+        document.getElementById("summary-total").textContent = currency(offer.total);
+        document.getElementById("summary-today").textContent = currency(isAutomatic ? offer.installmentAmount : offer.today);
+        document.getElementById("summary-matricula").setAttribute("data-waived", "false");
+        document.getElementById("summary-matricula-title").textContent = "Matrícula incluida · $15.000";
+        document.getElementById("summary-matricula-copy").textContent = isAutomatic
+          ? "Se cobra una sola vez junto a la primera mensualidad; no se repite en las cuotas siguientes."
+          : "Se cobra una sola vez dentro del pago online mostrado.";
+        document.getElementById("summary-regular-label").textContent = isAutomatic
+          ? "Precio mensual normal"
+          : isSingle
+            ? "Precio normal de 1 mes"
+            : "Precio normal: " + currency(offer.regularMonthly) + "/mes × " + offer.duration;
+        document.getElementById("summary-regular-value").textContent = isAutomatic ? currency(offer.regularMonthly) + "/mes" : currency(offer.regularTotal);
+        regularBox.hidden = !hasDiscount;
+        document.getElementById("savings-details").hidden = !hasDiscount;
+        document.getElementById("automatic-option-copy").textContent = Number(state.duration) === 1 ? "No aplica" : state.duration + " cargos automáticos";
+        updateBackLink();
+        syncCheckoutReadiness();
+      }
+
+      function syncOptionAvailability() {
+        var shouldRestrict = checkoutAvailability.resolved && checkoutAvailability.enabled && state.plan;
+        durationInputs.forEach(function (input) {
+          var duration = Number(input.value);
+          var modes = duration === 1 ? ["single"] : ["automatic","prepaid"];
+          input.disabled = isSubmitting || Boolean(shouldRestrict && !modes.some(function (mode) {
+            return selectionAvailable(state.plan, mode, duration);
+          }));
+        });
+        modeInputs.forEach(function (input) {
+          input.disabled = isSubmitting || Number(state.duration) === 1 || Boolean(shouldRestrict && !selectionAvailable(state.plan, input.value, state.duration));
+        });
+      }
+
+      function syncCheckoutReadiness() {
+        var readiness = checkoutReadiness();
+        var offer = getOffer();
+        var availableAlternative = state.plan ? firstAvailableSelection(state.plan) : null;
+        var availabilityStatusLink = document.getElementById("availability-status-link");
+        var retryCheckoutButton = document.getElementById("retry-checkout");
+        var retryAvailabilityButton = document.getElementById("retry-availability");
+        var startNewEnrollmentInline = document.getElementById("start-new-enrollment-inline");
+        var canSwitchToOnline = readiness.code === "selection_unavailable" && Boolean(availableAlternative);
+        var shouldShowAvailability = !readiness.ready && readiness.code !== "consent_required" && readiness.code !== "plan_required";
+        syncOptionAvailability();
+        syncProviderOptions();
+        document.getElementById("availability-copy").textContent = readiness.message;
+        document.getElementById("availability-note").setAttribute("data-visible", shouldShowAvailability ? "true" : "false");
+        document.getElementById("checkout-requirements").textContent = readiness.message;
+        document.getElementById("checkout-requirements").hidden = shouldShowAvailability;
+        availabilityStatusLink.hidden = true;
+        availabilityStatusLink.removeAttribute("href");
+        if (checkoutHold.blocked && checkoutHold.reference) {
+          availabilityStatusLink.href = "retorno.php?ref=" + encodeURIComponent(checkoutHold.reference);
+          availabilityStatusLink.hidden = false;
+        }
+        var canReconcileSelection = Boolean(state.plan && offer);
+        retryCheckoutButton.hidden = !(checkoutHold.blocked && checkoutHold.reconcileAllowed && canReconcileSelection);
+        retryCheckoutButton.disabled = isSubmitting || !canReconcileSelection;
+        startNewEnrollmentInline.hidden = !(checkoutHold.blocked && !checkoutHold.reconcileAllowed);
+        startNewEnrollmentInline.disabled = isSubmitting;
+        retryAvailabilityButton.hidden = readiness.code !== "availability_unavailable";
+        retryAvailabilityButton.disabled = isSubmitting || !checkoutAvailability.resolved;
+        document.getElementById("use-online-option").hidden = !canSwitchToOnline;
+        submitButton.disabled = isSubmitting || !readiness.ready;
+        submitButton.textContent = isSubmitting
+          ? "Preparando pago seguro…"
+          : readiness.ready && offer && offer.paymentMode !== "automatic"
+            ? "Pagar " + currency(offer.today) + (selectedProvider() === "khipu" ? " hoy por transferencia" : " hoy en Mercado Pago")
+            : readiness.ready
+              ? "Pagar " + currency(offer.today) + " hoy y activar " + (offer.chargeCount - 1) + " cargos de " + currency(offer.installmentAmount)
+              : readiness.code === "consent_required"
+                ? "Acepta las condiciones para continuar"
+                : readiness.code === "availability_pending"
+                  ? "Comprobando pago online…"
+                  : readiness.code === "preview_only"
+                    ? "Pago desactivado en vista previa"
+                    : "Opción aún no disponible online";
+      }
+
+      function applyDurationMode() {
+        var isSingle = Number(state.duration) === 1;
+        paymentGroup.hidden = isSingle;
+        paymentComparisonNote.textContent = isSingle
+          ? "1 mes se paga una sola vez, sin cargos recurrentes."
+          : "El resumen se actualiza al cambiar tu elección.";
+        modeInputs.forEach(function (input) { input.disabled = isSingle; });
+        if (isSingle) {
+          state.mode = "single";
+        } else {
+          state.mode = state.mode === "prepaid" ? "prepaid" : "automatic";
+        }
+        durationInputs.forEach(function (input) { input.checked = Number(input.value) === state.duration; });
+        modeInputs.forEach(function (input) { input.checked = input.value === state.mode; });
+        updatePlanCards();
+        updateBackLink();
+        updateSummary();
+      }
+
+      function useOnlineOption() {
+        var availableSelection = firstAvailableSelection(state.plan);
+        if (!availableSelection) return;
+        state.duration = availableSelection.duration;
+        state.mode = availableSelection.mode;
+        selectionTouched = true;
+        durationInputs.forEach(function (input) { input.checked = Number(input.value) === state.duration; });
+        modeInputs.forEach(function (input) { input.checked = input.value === state.mode; });
+        applyDurationMode();
+      }
+
+      function normalizePhone(value) {
+        var digits = value.replace(/\D/g, "");
+        if (digits.length === 9 && digits.charAt(0) === "9") return "56" + digits;
+        if (digits.length === 11 && digits.slice(0,3) === "569") return digits;
+        return null;
+      }
+
+      function setFieldError(input, message) {
+        input.setAttribute("aria-invalid", message ? "true" : "false");
+        var target = document.getElementById(input.id + "-error");
+        if (target) target.textContent = message;
+        return !message;
+      }
+
+      function validateName() {
+        var input = document.getElementById("full-name");
+        return setFieldError(input, input.value.trim().length >= 3 ? "" : "Ingresa tu nombre y apellido.");
+      }
+
+      function validatePhone() {
+        var input = document.getElementById("phone");
+        return setFieldError(input, normalizePhone(input.value) ? "" : "Ingresa un celular chileno válido, por ejemplo +56 9 1234 5678.");
+      }
+
+      function validateEmail() {
+        var input = document.getElementById("email");
+        return setFieldError(input, input.value.trim() && input.validity.valid ? "" : "Ingresa un correo válido.");
+      }
+
+      function validateConsent() {
+        var input = document.getElementById("necessary-consent");
+        if (input.checked) document.getElementById("consent-selection-notice").hidden = true;
+        document.getElementById("consent-error").textContent = input.checked ? "" : "Debes aceptar las condiciones para continuar.";
+        input.setAttribute("aria-invalid", input.checked ? "false" : "true");
+        return input.checked;
+      }
+
+      function validateRequiredFields() {
+        var validations = [validateName(), validatePhone(), validateEmail(), validateConsent()];
+        var firstInvalid = form.querySelector('[aria-invalid="true"]');
+        var errorSummary = document.getElementById("form-error-summary");
+        if (validations.indexOf(false) !== -1) {
+          errorSummary.setAttribute("data-visible", "true");
+          errorSummary.focus();
+          if (firstInvalid) firstInvalid.focus();
+          return false;
+        }
+        errorSummary.setAttribute("data-visible", "false");
+        return true;
+      }
+
+      function readAttribution() {
+        var params = new URLSearchParams(window.location.search);
+        var safeReferrer = null;
+        if (document.referrer) {
+          try {
+            var referrerUrl = new URL(document.referrer);
+            safeReferrer = /^https?:$/.test(referrerUrl.protocol) ? referrerUrl.origin.slice(0, 500) : null;
+          } catch (error) {
+            safeReferrer = null;
+          }
+        }
+        var attribution = { referrer: safeReferrer };
+        attributionKeys.forEach(function (key) {
+          var value = params.get(key);
+          attribution[key] = value ? value.trim().slice(0, 500) || null : null;
+        });
+        return attribution;
+      }
+
+      function isRecord(value) {
+        return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+      }
+
+      function normalizedDurations(value, allowedDurations) {
+        if (!Array.isArray(value)) return null;
+        var unique = [];
+        for (var index = 0; index < value.length; index += 1) {
+          var duration = value[index];
+          if (!Number.isInteger(duration) || allowedDurations.indexOf(duration) === -1 || unique.indexOf(duration) !== -1) return null;
+          unique.push(duration);
+        }
+        return unique.sort(function (left, right) { return left - right; });
+      }
+
+      function availabilityOfferMatches(record, expected) {
+        return isRecord(record)
+          && record.plan_id === expected.planId
+          && record.plan_name === expected.planName
+          && record.payment_mode === expected.paymentMode
+          && record.duration_months === expected.duration
+          && record.checkout_type === expected.checkoutType
+          && record.regular_monthly_amount === expected.regularMonthly
+          && record.installment_amount === expected.installmentAmount
+          && record.regular_total_amount === expected.regularTotal
+          && record.plan_amount === expected.planAmount
+          && record.enrollment_fee_amount === expected.enrollmentFeeAmount
+          && record.total_amount === expected.total
+          && record.charge_amount === expected.chargeAmount
+          && record.charge_count === expected.chargeCount
+          && record.discount_percent === expected.discount
+          && record.currency === expected.currency
+          && (!("savings_amount" in record) || record.savings_amount === expected.savings)
+          && (!("today_amount" in record) || record.today_amount === expected.today);
+      }
+
+      function parseCheckoutAvailability(result) {
+        var validUnavailableStatuses = ["unavailable", "runtime_dependency_missing", "local_configuration_invalid", "database_schema_unavailable"];
+        if (!isRecord(result)
+          || result.schema_version !== availabilitySchemaVersion
+          || result.pricing_version !== pricingVersion
+          || result.consent_text_version !== consentTextVersion
+          || typeof result.checkout_enabled !== "boolean"
+          || !isRecord(result.payment_options)
+          || !Array.isArray(result.offers)
+          || !isRecord(result.preflight)
+          || typeof result.preflight.ready !== "boolean"
+          || typeof result.preflight.status !== "string") {
+          throw new Error("availability_response_invalid");
+        }
+        if ((result.preflight.ready && result.preflight.status !== "ready")
+          || (!result.preflight.ready && validUnavailableStatuses.indexOf(result.preflight.status) === -1)
+          || (result.checkout_enabled && !result.preflight.ready)) {
+          throw new Error("availability_preflight_invalid");
+        }
+
+        var expectedModes = Object.keys(paymentModeContract).sort();
+        if (Object.keys(result.payment_options).sort().join("|") !== expectedModes.join("|")) {
+          throw new Error("availability_payment_options_invalid");
+        }
+
+        var paymentOptions = {};
+        expectedModes.forEach(function (mode) {
+          var received = result.payment_options[mode];
+          var expected = paymentModeContract[mode];
+          var durations = isRecord(received) ? normalizedDurations(received.durations, expected.allowedDurations) : null;
+          if (!durations
+            || durations.join("|") !== expected.allowedDurations.join("|")
+            || received.checkout_type !== expected.checkoutType) {
+            throw new Error("availability_payment_option_invalid");
+          }
+          paymentOptions[mode] = { checkoutType: expected.checkoutType, durations: durations };
+        });
+
+        var expectedOffers = {};
+        Object.keys(plans).forEach(function (planId) {
+          expectedModes.forEach(function (mode) {
+            paymentModeContract[mode].allowedDurations.forEach(function (duration) {
+              var expectedOffer = offerFor(planId, mode, duration);
+              expectedOffers[offerKey(planId, mode, duration)] = expectedOffer;
+            });
+          });
+        });
+
+        if (result.offers.length !== Object.keys(expectedOffers).length) {
+          throw new Error("availability_offer_count_invalid");
+        }
+
+        var offers = {};
+        result.offers.forEach(function (record) {
+          var key = isRecord(record) ? offerKey(record.plan_id, record.payment_mode, record.duration_months) : "";
+          var expectedOffer = expectedOffers[key];
+          if (!expectedOffer || offers[key] || !availabilityOfferMatches(record, expectedOffer)) {
+            throw new Error("availability_offer_invalid");
+          }
+          offers[key] = record;
+        });
+
+        if (Object.keys(offers).length !== Object.keys(expectedOffers).length) {
+          throw new Error("availability_offer_set_invalid");
+        }
+
+        // Campo opcional y aditivo: si falta o no tiene la forma esperada, la
+        // transferencia simplemente no se ofrece y Mercado Pago sigue igual.
+        var khipuModes = [];
+        var khipuProvider = isRecord(result.payment_providers) ? result.payment_providers.khipu : null;
+        if (result.checkout_enabled && isRecord(khipuProvider) && khipuProvider.enabled === true && Array.isArray(khipuProvider.payment_modes)) {
+          khipuModes = ["single", "prepaid"].filter(function (mode) {
+            return khipuProvider.payment_modes.indexOf(mode) !== -1;
+          });
+        }
+
+        return {
+          resolved: true,
+          enabled: result.checkout_enabled,
+          preflightReady: result.preflight.ready,
+          preflightStatus: result.preflight.status,
+          pricingVersion: result.pricing_version,
+          paymentOptions: paymentOptions,
+          offers: offers,
+          khipuModes: khipuModes
+        };
+      }
+
+      function loadCheckoutAvailability() {
+        var requestSequence = ++availabilityRequestSequence;
+        if (availabilityRequestController) availabilityRequestController.abort();
+        var controller = typeof AbortController === "function" ? new AbortController() : null;
+        availabilityRequestController = controller;
+        checkoutAvailability = { resolved: false, enabled: false, preflightReady: false, preflightStatus: null, pricingVersion: null, paymentOptions: {}, offers: {}, khipuModes: [] };
+        syncCheckoutReadiness();
+        var timeout;
+        var deadline = new Promise(function (resolve, reject) {
+          timeout = window.setTimeout(function () {
+            reject(new Error("availability_request_timeout"));
+            if (controller) controller.abort();
+          }, 10000);
+        });
+        // The deadline also covers reading JSON and browsers without AbortController.
+        var request = Promise.resolve().then(function () {
+          return fetch(availabilityEndpoint, {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: { "Accept": "application/json" },
+            signal: controller ? controller.signal : undefined
+          });
+        }).then(function (response) {
+          if (!response.ok) throw new Error("availability_request_failed");
+          return response.json();
+        });
+        return Promise.race([request, deadline]).then(function (result) {
+          if (requestSequence !== availabilityRequestSequence) return;
+          checkoutAvailability = parseCheckoutAvailability(result);
+          if (state.plan && !selectionTouched && !selectionAvailable(state.plan, state.mode, state.duration)) {
+            var availableDefault = firstAvailableSelection(state.plan);
+            if (availableDefault) {
+              state.duration = availableDefault.duration;
+              state.mode = availableDefault.mode;
+              durationInputs.forEach(function (input) { input.checked = Number(input.value) === state.duration; });
+              modeInputs.forEach(function (input) { input.checked = input.value === state.mode; });
+              applyDurationMode();
+            }
+          }
+        }).catch(function () {
+          if (requestSequence !== availabilityRequestSequence) return;
+          checkoutAvailability = { resolved: true, enabled: false, preflightReady: false, preflightStatus: "unavailable", pricingVersion: null, paymentOptions: {}, offers: {}, requestFailed: true };
+        }).finally(function () {
+          window.clearTimeout(timeout);
+          if (requestSequence !== availabilityRequestSequence) return;
+          availabilityRequestController = null;
+          syncCheckoutReadiness();
+        });
+      }
+
+      function createPayload() {
+        return {
+          schema_version: "dgym-enrollment-v1",
+          pricing_version: pricingVersion,
+          person: {
+            full_name: document.getElementById("full-name").value.trim(),
+            phone_e164: "+" + normalizePhone(document.getElementById("phone").value),
+            email: document.getElementById("email").value.trim().toLowerCase()
+          },
+          // payment_provider solo viaja para Khipu: la solicitud de Mercado Pago no cambia.
+          selection: selectedProvider() === "khipu"
+            ? { plan_id: state.plan, duration_months: Number(state.duration), payment_mode: state.mode, payment_provider: "khipu" }
+            : { plan_id: state.plan, duration_months: Number(state.duration), payment_mode: state.mode },
+          consents: {
+            necessary_processing: true,
+            marketing: document.getElementById("marketing-consent").checked,
+            text_version: consentTextVersion
+          },
+          attribution: readAttribution()
+        };
+      }
+
+      function createIdempotencyKey() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+        if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+          var bytes = new Uint8Array(16);
+          window.crypto.getRandomValues(bytes);
+          bytes[6] = (bytes[6] & 15) | 64;
+          bytes[8] = (bytes[8] & 63) | 128;
+          return Array.prototype.map.call(bytes, function (byte, index) {
+            var value = byte.toString(16).padStart(2, "0");
+            return [4,6,8,10].indexOf(index) !== -1 ? "-" + value : value;
+          }).join("");
+        }
+        throw new Error("secure_random_unavailable");
+      }
+
+      function payloadFingerprint(payload) {
+        if (!window.crypto || !window.crypto.subtle || typeof window.TextEncoder !== "function") {
+          return Promise.reject(new Error("secure_fingerprint_unavailable"));
+        }
+        var bytes = new window.TextEncoder().encode(JSON.stringify(payload));
+        return window.crypto.subtle.digest("SHA-256", bytes).then(function (digest) {
+          return Array.prototype.map.call(new Uint8Array(digest), function (byte) {
+            return byte.toString(16).padStart(2, "0");
+          }).join("");
+        });
+      }
+
+      function validStoredAttempt(value, fingerprintHash) {
+        return value
+          && value.fingerprintHash === fingerprintHash
+          && /^[a-f0-9]{64}$/.test(value.fingerprintHash)
+          && typeof value.key === "string"
+          && /^[A-Za-z0-9._:-]{16,128}$/.test(value.key);
+      }
+
+      function storedCheckoutAttempt() {
+        try { return JSON.parse(window.sessionStorage.getItem(attemptStorageKey) || "null"); }
+        catch (error) { return null; }
+      }
+
+      function persistSessionRecord(key, value, errorCode, retryMode) {
+        var serialized = JSON.stringify(value);
+        try {
+          window.sessionStorage.setItem(key, serialized);
+          if (window.sessionStorage.getItem(key) !== serialized) throw new Error("storage_verification_failed");
+        } catch (storageError) {
+          var error = new Error(errorCode);
+          error.code = errorCode;
+          error.retryMode = retryMode;
+          throw error;
+        }
+      }
+
+      function idempotencyKeyFor(payload) {
+        return payloadFingerprint(payload).then(function (fingerprintHash) {
+          if (checkoutAttempt.fingerprintHash !== fingerprintHash || !checkoutAttempt.key) {
+            var storedAttempt = storedCheckoutAttempt();
+            if (validStoredAttempt(storedAttempt, fingerprintHash)) {
+              checkoutAttempt = storedAttempt;
+            } else {
+              checkoutAttempt = { fingerprintHash: fingerprintHash, key: createIdempotencyKey() };
+              persistSessionRecord(
+                attemptStorageKey,
+                checkoutAttempt,
+                "checkout_safety_storage_unavailable",
+                "same_idempotency_key"
+              );
+            }
+          }
+          return checkoutAttempt.key;
+        });
+      }
+
+      function existingIdempotencyKeyFor(payload) {
+        return payloadFingerprint(payload).then(function (fingerprintHash) {
+          var existingAttempt = validStoredAttempt(checkoutAttempt, fingerprintHash)
+            ? checkoutAttempt
+            : storedCheckoutAttempt();
+          if (!validStoredAttempt(existingAttempt, fingerprintHash)) {
+            var mismatch = new Error("checkout_retry_mismatch");
+            mismatch.code = "checkout_retry_mismatch";
+            mismatch.retryMode = "reconcile_before_retry";
+            throw mismatch;
+          }
+          checkoutAttempt = existingAttempt;
+          return checkoutAttempt.key;
+        });
+      }
+
+      function resetCheckoutAttempt() {
+        checkoutAttempt = { fingerprintHash: null, key: null };
+        try { window.sessionStorage.removeItem(attemptStorageKey); }
+        catch (error) { /* El próximo envío generará una clave nueva en memoria. */ }
+      }
+
+      function restoreCheckoutSafetyState() {
+        try {
+          window.sessionStorage.removeItem("dgym_checkout_attempt_v1");
+          window.sessionStorage.removeItem("dgym_checkout_hold_v1");
+          var storedHold = JSON.parse(window.sessionStorage.getItem(holdStorageKey) || "null");
+          var storedReference = storedHold && typeof storedHold.reference === "string" && /^DGYM-[0-9]{8}-[A-F0-9]{32}$/.test(storedHold.reference)
+            ? storedHold.reference
+            : null;
+          if (storedHold && storedHold.blocked === true) {
+            checkoutHold = {
+              blocked: true,
+              reference: storedReference,
+              reconcileAllowed: storedHold.reconcileAllowed === true,
+              completed: storedHold.completed === true
+            };
+            // Tras recargar, el intento retenido debe repetirse con el mismo medio de pago.
+            if (storedHold.provider === "khipu") state.provider = "khipu";
+          }
+        } catch (error) {
+          checkoutHold = { blocked: false, reference: null, reconcileAllowed: false, completed: false };
+        }
+      }
+
+      function clearCheckoutHold() {
+        checkoutHold = { blocked: false, reference: null, reconcileAllowed: false, completed: false };
+        try { window.sessionStorage.removeItem(holdStorageKey); }
+        catch (error) { /* La navegación continúa con el estado seguro en memoria. */ }
+      }
+
+      function holdCompletedEnrollment(reference) {
+        checkoutHold = { blocked: true, reference: reference, reconcileAllowed: false, completed: true };
+        try {
+          persistSessionRecord(
+            holdStorageKey,
+            checkoutHold,
+            "checkout_hold_storage_unavailable",
+            "status_only"
+          );
+        } catch (error) {
+          error.reference = reference;
+          throw error;
+        }
+      }
+
+      function startNewEnrollment() {
+        clearCheckoutHold();
+        resetCheckoutAttempt();
+        var necessaryConsent = document.getElementById("necessary-consent");
+        necessaryConsent.checked = false;
+        document.getElementById("consent-selection-notice").hidden = false;
+        validateConsent();
+        if (dialog.open) dialog.close();
+        syncCheckoutReadiness();
+        necessaryConsent.focus();
+      }
+
+      function trustedMercadoPagoDestination(value) {
+        if (typeof value !== "string") return null;
+        try {
+          var url = new URL(value);
+          var hostname = url.hostname.toLowerCase();
+          var mercadoPagoSuffixes = [
+            "mercadopago.cl", "mercadopago.com", "mercadopago.com.ar", "mercadopago.com.br",
+            "mercadopago.com.mx", "mercadopago.com.co", "mercadopago.com.pe", "mercadopago.com.uy"
+          ];
+          var allowed = mercadoPagoSuffixes.some(function (suffix) {
+            return hostname === suffix || hostname.endsWith("." + suffix);
+          });
+          return url.protocol === "https:"
+            && !url.username
+            && !url.password
+            && !url.port
+            && allowed
+            ? { url: url.href, provider: "mercado_pago" }
+            : null;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function trustedCheckoutUrl(value, provider) {
+        if (provider !== "khipu") return trustedMercadoPagoDestination(value) !== null;
+        if (typeof value !== "string") return false;
+        try {
+          var url = new URL(value);
+          var hostname = url.hostname.toLowerCase();
+          if (url.username || url.password || url.port) return false;
+          return url.protocol === "https:" && (hostname === "khipu.com" || hostname.endsWith(".khipu.com"));
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function checkoutHandoffKey(reference) {
+        return checkoutHandoffPrefix + reference;
+      }
+
+      function persistMercadoPagoHandoff(reference, checkoutUrl) {
+        var destination = trustedMercadoPagoDestination(checkoutUrl);
+        if (!/^DGYM-[0-9]{8}-[A-F0-9]{32}$/.test(reference) || !destination) {
+          var invalid = new Error("invalid_checkout_response");
+          invalid.code = "invalid_checkout_response";
+          invalid.retryMode = "status_only";
+          invalid.reference = reference;
+          throw invalid;
+        }
+        var now = Date.now();
+        var handoff = {
+          version: 1,
+          status: "ready",
+          reference: reference,
+          provider: destination.provider,
+          checkoutUrl: destination.url,
+          createdAt: now,
+          expiresAt: now + checkoutHandoffTtlMilliseconds
+        };
+        persistSessionRecord(
+          checkoutHandoffKey(reference),
+          handoff,
+          "checkout_handoff_storage_unavailable",
+          "status_only"
+        );
+        return handoff;
+      }
+
+      function safeErrorMessage(error) {
+        var code = error && error.code;
+        var messages = {
+          automatic_duration_not_enabled: "Esta duración todavía no está habilitada para cargo automático.",
+          payment_combination_not_enabled: "Esta combinación todavía no está habilitada para pago online.",
+          payment_option_not_enabled: "Esta combinación todavía no está habilitada para pago online.",
+          prepaid_duration_not_enabled: "Esta duración todavía no está habilitada para pagar todo ahora.",
+          single_month_not_enabled: "El pago por un mes todavía no está habilitado online.",
+          invalid_payment_mode: "La modalidad elegida no es válida. Actualiza la página y vuelve a intentarlo.",
+          invalid_request: "Hay datos que no pudimos validar. Revisa el formulario y vuelve a intentarlo.",
+          pricing_version_not_enabled: "El tarifario aún no está habilitado para cobros públicos.",
+          consent_version_not_enabled: "Las condiciones del plan cambiaron. Actualiza la página antes de continuar.",
+          idempotency_conflict: "Este intento ya fue usado con otros datos. Actualiza la página antes de volver a intentarlo.",
+          checkout_safety_storage_unavailable: "Este navegador no pudo guardar la protección del intento. No enviamos el pago; habilita el almacenamiento del sitio o usa otro navegador.",
+          checkout_hold_storage_unavailable: "La inscripción fue creada, pero este navegador no pudo guardar su estado de seguridad. Consulta la referencia antes de continuar al pago.",
+          checkout_handoff_storage_unavailable: "La inscripción fue creada, pero este navegador no pudo preparar el enlace seguro al pago. Consulta la referencia para continuar sin crear otra inscripción.",
+          rate_limited: "Recibimos varios intentos seguidos. Espera un momento antes de volver a probar.",
+          service_not_configured: "La conexión segura con Mercado Pago todavía está en configuración.",
+          mercado_pago_request_rejected: "Mercado Pago rechazó la solicitud antes de crear el pago. No se realizó ningún cargo; puedes intentarlo nuevamente.",
+          local_checkout_unavailable: "El pago online está temporalmente no disponible. Puedes volver a intentarlo más tarde sin crear una inscripción duplicada.",
+          mercado_pago_unavailable: "No pudimos abrir Mercado Pago. Puedes intentarlo nuevamente; generaremos un nuevo intento seguro.",
+          checkout_creation_uncertain: "No pudimos confirmar el resultado de la solicitud en Mercado Pago. Para evitar un cobro duplicado, no inicies otro pago hasta comprobar este mismo intento.",
+          checkout_retry_mismatch: "Para comprobar el intento anterior, vuelve a ingresar exactamente el mismo plan, medio de pago, datos y consentimientos. No crearemos un pago nuevo.",
+          payment_rejected: "El pago no fue aprobado. Consulta el estado con tu referencia para reintentar con el mismo u otro medio de pago.",
+          subscription_payment_rejected: "Mercado Pago informó un cargo rechazado. Consulta el estado con tu referencia para reintentar sin completar nuevamente el formulario.",
+          preference_payment_status_check: "La inscripción ya está guardada. Consulta su estado para verificar los pagos antes de continuar.",
+          subscription_payment_status_check: "La inscripción ya está guardada. Consulta su estado para verificar los pagos antes de continuar.",
+          checkout_reuse_blocked: "Esta inscripción ya avanzó. No abriremos otro checkout; consulta su estado con la referencia.",
+          invalid_payment_provider: "El medio de pago elegido no es válido. Actualiza la página y vuelve a intentarlo.",
+          payment_provider_not_enabled: "La transferencia no está disponible para esta forma de pago. Elige tarjeta para continuar.",
+          payment_provider_unavailable: "El pago por transferencia no está disponible en este momento. Puedes elegir tarjeta para continuar.",
+          khipu_unavailable: "No pudimos abrir el pago por transferencia. Puedes intentarlo nuevamente o elegir tarjeta.",
+          khipu_payment_status_check: "La inscripción ya está guardada. Consulta su estado para verificar la transferencia antes de continuar.",
+          invalid_checkout_response: "La respuesta del pago no coincidió con tu elección. No te redirigiremos hasta comprobarla."
+        };
+        return messages[code] || "No pudimos preparar el pago en este momento. Intenta nuevamente en unos minutos.";
+      }
+
+      function showCheckoutError(error) {
+        var offer = getOffer();
+        var selectedPlan = plans[state.plan] || null;
+        var retryMode = error && error.retryMode;
+        var validReference = error && typeof error.reference === "string" && /^DGYM-[0-9]{8}-[A-F0-9]{32}$/.test(error.reference) ? error.reference : null;
+        var uncertain = retryMode === "reconcile_before_retry" || (error && error.code === "checkout_creation_uncertain");
+        var statusOnly = retryMode === "status_only" || (error && error.code === "checkout_reuse_blocked");
+        var holdReference = validReference || checkoutHold.reference || null;
+        var completedEnrollment = checkoutHold.completed === true;
+        var statusLink = document.getElementById("check-status-link");
+        var newEnrollmentButton = document.getElementById("start-new-enrollment");
+        statusLink.hidden = true;
+        statusLink.removeAttribute("href");
+        newEnrollmentButton.hidden = true;
+        if (uncertain || statusOnly) {
+          checkoutHold = { blocked: true, reference: holdReference, reconcileAllowed: uncertain && !statusOnly, completed: completedEnrollment };
+          try {
+            window.sessionStorage.setItem(holdStorageKey, JSON.stringify({
+              blocked: true,
+              reference: holdReference,
+              reconcileAllowed: uncertain && !statusOnly,
+              completed: completedEnrollment,
+              provider: selectedProvider()
+            }));
+          } catch (storageError) { /* El bloqueo sigue activo en memoria. */ }
+          if (holdReference) {
+            statusLink.href = "retorno.php?ref=" + encodeURIComponent(holdReference);
+            statusLink.hidden = false;
+          }
+          document.getElementById("dialog-title").textContent = statusOnly ? "Esta inscripción ya avanzó" : "Tu solicitud quedó en revisión";
+          document.getElementById("close-dialog").textContent = "Entendido";
+          newEnrollmentButton.hidden = !statusOnly;
+          syncCheckoutReadiness();
+        } else {
+          document.getElementById("dialog-title").textContent = "No pudimos abrir el pago";
+          document.getElementById("close-dialog").textContent = "Cerrar e intentar nuevamente";
+        }
+        document.getElementById("dialog-message").textContent = safeErrorMessage(error);
+        document.getElementById("dialog-summary").textContent = selectedPlan && offer
+          ? selectedPlan.name + " · " + offer.modeLabel + " · " + currency(offer.today) + " hoy, con matrícula única de $15.000 incluida." + (holdReference ? " Referencia: " + holdReference + "." : "")
+          : "No se creó un pago nuevo." + (holdReference ? " Referencia: " + holdReference + "." : "");
+        if (typeof dialog.showModal === "function") dialog.showModal();
+        else alert(safeErrorMessage(error));
+      }
+
+      function setSubmitting(nextSubmitting) {
+        isSubmitting = nextSubmitting;
+        form.setAttribute("aria-busy", nextSubmitting ? "true" : "false");
+        Array.prototype.forEach.call(form.querySelectorAll("#full-name, #phone, #email, #necessary-consent, #marketing-consent, [data-select-plan], #change-plan, #use-online-option, #retry-checkout, #retry-availability, #start-new-enrollment, #start-new-enrollment-inline"), function (control) {
+          control.disabled = nextSubmitting;
+        });
+        submitButton.setAttribute("aria-busy", nextSubmitting ? "true" : "false");
+        syncCheckoutReadiness();
+      }
+
+      function restoreCheckoutAfterBack(event) {
+        if (!event.persisted) return;
+        // BFCache keeps the form values. Revalidate availability only; returning
+        // from Mercado Pago never submits or starts a new payment automatically.
+        loadCheckoutAvailability();
+        setSubmitting(false);
+      }
+
+      function ambiguousCheckoutFailure(error) {
+        if (!error || typeof error !== "object") return true;
+        return ["same_idempotency_key", "new_idempotency_key", "reconcile_before_retry", "status_only"].indexOf(error.retryMode) === -1;
+      }
+
+      function validCheckoutResponse(result, expectedOffer, provider) {
+        var khipu = provider === "khipu";
+        return isRecord(result)
+          && result.next_action === (khipu ? "khipu" : "mercado_pago")
+          && result.checkout_type === (khipu ? "khipu_transfer" : expectedOffer.checkoutType)
+          && result.payment_mode === expectedOffer.paymentMode
+          && typeof result.enrollment_id === "string"
+          && /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(result.enrollment_id)
+          && typeof result.reference === "string"
+          && /^DGYM-[0-9]{8}-[A-F0-9]{32}$/.test(result.reference)
+          && trustedCheckoutUrl(result.checkout_url, provider);
+      }
+
+      function requestCheckout(payload, reconcileOnly) {
+        var controller = typeof AbortController === "function" ? new AbortController() : null;
+        var timeout = controller ? window.setTimeout(function () { controller.abort(); }, 20000) : null;
+        var idempotencyKey = reconcileOnly ? existingIdempotencyKeyFor(payload) : idempotencyKeyFor(payload);
+        return idempotencyKey.then(function (idempotencyKey) {
+          return fetch(checkoutEndpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Accept": "application/json", "Content-Type": "application/json", "X-Idempotency-Key": idempotencyKey },
+            body: JSON.stringify(payload),
+            signal: controller ? controller.signal : undefined
+          }).then(function (response) {
+            return response.text().then(function (text) {
+              var body;
+              try { body = text ? JSON.parse(text) : {}; }
+              catch (error) { body = {}; }
+              if (!response.ok) {
+                var apiError = new Error("checkout_request_failed");
+                var errorBody = body && body.error && typeof body.error === "object" ? body.error : {};
+                apiError.code = errorBody.code;
+                apiError.httpStatus = response.status;
+                apiError.retryable = errorBody.retryable === true;
+                apiError.retryMode = typeof errorBody.retry_mode === "string" ? errorBody.retry_mode : null;
+                apiError.reference = typeof errorBody.reference === "string" ? errorBody.reference : null;
+                throw apiError;
+              }
+              return body;
+            });
+          });
+        }).finally(function () {
+          if (timeout) window.clearTimeout(timeout);
+        });
+      }
+
+      function continueCheckout(payload, reconcileOnly) {
+        var expectedOffer = offerFor(payload.selection.plan_id, payload.selection.payment_mode, payload.selection.duration_months);
+        setSubmitting(true);
+        requestCheckout(payload, reconcileOnly).then(function (result) {
+          if (!expectedOffer || !validCheckoutResponse(result, expectedOffer, payload.selection.payment_provider)) {
+            var invalidResponse = new Error("invalid_checkout_response");
+            invalidResponse.code = "invalid_checkout_response";
+            invalidResponse.retryMode = "reconcile_before_retry";
+            invalidResponse.reference = result && typeof result.reference === "string"
+              && /^DGYM-[0-9]{8}-[A-F0-9]{32}$/.test(result.reference)
+              ? result.reference
+              : null;
+            throw invalidResponse;
+          }
+          // La clave cumplió su función cuando el backend aceptó y vinculó este
+          // checkout. Un envío posterior, aun con los mismos datos y plan, es una
+          // inscripción nueva e independiente; los reintentos del pago actual se
+          // hacen desde retorno.php usando la referencia recibida.
+          holdCompletedEnrollment(result.reference);
+          if (result.next_action === "khipu") {
+            window.location.assign(result.checkout_url);
+            resetCheckoutAttempt();
+            return;
+          }
+          resetCheckoutAttempt();
+          try {
+            persistMercadoPagoHandoff(result.reference, result.checkout_url);
+          } catch (handoffError) {
+            handoffError.reference = result.reference;
+            handoffError.retryMode = "status_only";
+            throw handoffError;
+          }
+          window.location.assign("retorno.php?ref=" + encodeURIComponent(result.reference) + "&continue=1");
+        }).catch(function (error) {
+          setSubmitting(false);
+          if (ambiguousCheckoutFailure(error)) {
+            if (!error || typeof error !== "object") error = new Error("checkout_creation_uncertain");
+            error.retryMode = "reconcile_before_retry";
+            if (!error.code) error.code = "checkout_creation_uncertain";
+          }
+          if (error && error.retryMode === "new_idempotency_key") resetCheckoutAttempt();
+          showCheckoutError(error);
+        });
+      }
+
+      Array.prototype.forEach.call(document.querySelectorAll("[data-select-plan]"), function (button) {
+        button.addEventListener("click", function () {
+          if (!isSubmitting) selectPlan(button.getAttribute("data-select-plan"), true);
+        });
+      });
+      document.getElementById("change-plan").addEventListener("click", function () { if (!isSubmitting) showStep(1); });
+      document.getElementById("use-online-option").addEventListener("click", function () { if (!isSubmitting) useOnlineOption(); });
+      document.getElementById("retry-availability").addEventListener("click", function () {
+        if (!isSubmitting && checkoutAvailability.resolved && checkoutAvailability.requestFailed) loadCheckoutAvailability();
+      });
+      document.getElementById("retry-checkout").addEventListener("click", function () {
+        if (isSubmitting || !checkoutHold.blocked || !checkoutHold.reconcileAllowed) return;
+        if (!state.plan || !getOffer()) {
+          showStep(1);
+          return;
+        }
+        if (!validateRequiredFields()) return;
+        continueCheckout(createPayload(), true);
+      });
+
+      durationInputs.forEach(function (input) {
+        input.addEventListener("change", function () {
+          if (isSubmitting) return;
+          selectionTouched = true;
+          state.duration = Number(input.value);
+          applyDurationMode();
+        });
+      });
+      modeInputs.forEach(function (input) {
+        input.addEventListener("change", function () {
+          if (isSubmitting) return;
+          selectionTouched = true;
+          state.mode = input.value;
+          updatePlanCards();
+          updateSummary();
+        });
+      });
+      providerInputs.forEach(function (input) {
+        input.addEventListener("change", function () {
+          if (isSubmitting || !input.checked) return;
+          state.provider = input.value === "khipu" ? "khipu" : "mercadopago";
+          syncCheckoutReadiness();
+        });
+      });
+
+      document.getElementById("full-name").addEventListener("blur", validateName);
+      document.getElementById("phone").addEventListener("blur", validatePhone);
+      document.getElementById("email").addEventListener("blur", validateEmail);
+      document.getElementById("necessary-consent").addEventListener("change", function () {
+        validateConsent();
+        syncCheckoutReadiness();
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (submitButton.disabled || !checkoutReadiness().ready) return;
+        if (!validateRequiredFields()) return;
+        continueCheckout(createPayload(), false);
+      });
+
+      document.getElementById("close-dialog").addEventListener("click", function () { dialog.close(); });
+      document.getElementById("start-new-enrollment").addEventListener("click", startNewEnrollment);
+      document.getElementById("start-new-enrollment-inline").addEventListener("click", startNewEnrollment);
+      dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
+      window.addEventListener("pageshow", restoreCheckoutAfterBack);
+
+      var requestedSelection = selectionFromQuery(window.location.search);
+      if (isLocalPreview) document.getElementById("environment-label").textContent = "Vista previa · sin cobros";
+      restoreCheckoutSafetyState();
+      state.duration = requestedSelection.duration;
+      state.mode = requestedSelection.mode;
+      selectionTouched = requestedSelection.explicit;
+      applyDurationMode();
+      if (requestedSelection.plan) selectPlan(requestedSelection.plan, true, true);
+      syncCheckoutReadiness();
+      loadCheckoutAvailability();
+    }());
+  </script>
+  <a class="whatsapp-float" href="https://wa.me/56900000000?text=Hola%2C%20vengo%20del%20formulario%20de%20inscripci%C3%B3n%20de%20la%20p%C3%A1gina%20de%20Demo%20Gym%20y%20necesito%20orientaci%C3%B3n." target="_blank" rel="noopener" aria-label="Consultar por WhatsApp sobre mi inscripción (abre en otra pestaña)" title="¿Necesitas orientación?"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.4A8.5 8.5 0 1 1 21 11.5z"></path></svg></a>
+<script src="assets/qr-recepcion.js" defer></script>
+</body>
+</html>

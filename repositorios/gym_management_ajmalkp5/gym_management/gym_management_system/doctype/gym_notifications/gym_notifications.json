@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-18 15:48:35.556335",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "expiry_reminder_days",
+  "enable_email",
+  "enable_whatsapp",
+  "enable_sms"
+ ],
+ "fields": [
+  {
+   "fieldname": "expiry_reminder_days",
+   "fieldtype": "Int",
+   "label": "Expiry Reminder Days"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_email",
+   "fieldtype": "Check",
+   "label": "Enable Email"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_whatsapp",
+   "fieldtype": "Check",
+   "label": "Enable WhatsApp"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_sms",
+   "fieldtype": "Check",
+   "label": "Enable SMS"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-05-18 15:49:40.560505",
+ "modified_by": "Administrator",
+ "module": "Gym Management System",
+ "name": "Gym Notifications",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

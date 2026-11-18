@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_LastSelectedProfileId>C:\Users\alelo\source\repos\ImpresionPOS58\ImpresionPOS58\Properties\PublishProfiles\FolderProfile21.pubxml</_LastSelectedProfileId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="Camara.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Dashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ModificarCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Panel1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Producto1Card.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="ProductoCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RegistroUsuario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="REPORTES\Dashboard1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\AgregarCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\ClienteCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\Contabilidad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\AgregarMembresia.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\EliminarVentas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\EliminarVentasMembresia.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\Inventario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\Membresias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\ModificarProducto.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\Producto2Card.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="VENTANAS\RenovarCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

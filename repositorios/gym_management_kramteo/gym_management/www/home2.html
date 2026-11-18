@@ -1,0 +1,30 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Gym Membership Types") }}{% endblock %}
+{% block header %}<h1>{{ _("Gym Membership Types") }}</h1>{% endblock %}
+
+{% block page_content %}
+
+<div>
+	<p class="demo_class"> The following are a list of membership available for our members to choose from: </p>
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=671>
+        <tr>
+            <th>S/N</th>
+            <th>Membership Type</th>
+            <th>Annual Price</th>
+            <th>Monthly Free Access Hours</th>
+            <th>Excess Hours Charging Rate</th>
+        </tr>
+        {% for membership in data %}
+        <tr>
+            <td> {{ loop.index }} </td>
+            <td> {{ membership[0] }} </td>
+            <td> {{ membership[1] }} </td>
+            <td> {{ membership[2] }} </td>
+            <td> {{ membership[3] }} </td>
+        </tr>
+        {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

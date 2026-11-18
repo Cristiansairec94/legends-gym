@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plan Details - FitZone</title>
+
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html" class="active">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+    <li><a href="notifications.html">🔔</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="detail-hero" id="heroSection">
+
+    <img
+      id="bannerImage"
+      src=""
+      style="width:100%;max-height:350px;object-fit:cover;border-radius:20px;margin-bottom:20px;display:none;"
+    >
+
+    <h1 id="planName">Loading...</h1>
+
+    <p class="meta" id="planMeta"></p>
+
+  </div>
+
+  <div class="detail-body">
+
+    <h2>Description</h2>
+
+    <div id="description"></div>
+
+    <h2 style="margin-top:30px;">What's Included</h2>
+
+    <ul
+      id="featuresList"
+      style="margin:14px 0 20px 20px;color:var(--gray);"
+    >
+    </ul>
+
+    <h2>Duration</h2>
+
+    <p id="durationText"></p>
+
+    <h2>Cancellation Policy</h2>
+
+    <div id="cancelPolicy"></div>
+
+    <h2>Refund Policy</h2>
+
+    <div id="refundPolicy"></div>
+
+    <div style="margin-top:24px;">
+
+      <a
+        id="paymentBtn"
+        href="#"
+        class="btn btn-primary"
+      >
+        Proceed to Payment
+      </a>
+
+      <a
+        href="plans.html"
+        class="btn btn-outline"
+        style="margin-left:10px;"
+      >
+        Back to Plans
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const plan = params.get("plan");
+
+    if (!plan) {
+        alert("Invalid plan");
+        return;
+    }
+
+    loadPlan(plan);
+
+});
+
+async function loadPlan(plan) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.get_plan_details?plan=${plan}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+
+        // console.log(json);
+
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            alert("Plan not found");
+            return;
+        }
+
+        const data = result.data;
+
+        document.getElementById("paymentBtn").href =
+        `payment.html?plan=${data.name}`;
+
+        document.getElementById("planName").innerText =
+            data.plan_name;
+
+        let metaText =
+            `₹${data.amount} / ${data.duration_type}`;
+
+        if (data.is_popular) {
+            metaText += " • Most Popular";
+        }
+
+        document.getElementById("planMeta").innerText =
+            metaText;
+
+        document.getElementById("description").innerHTML =
+            data.detailed_description || "";
+
+        document.getElementById("durationText").innerText =
+            `${data.duration_days} days membership`;
+
+        if (data.banner_image) {
+
+            const img = document.getElementById("bannerImage");
+
+            img.src = data.banner_image;
+            img.style.display = "block";
+        }
+
+        const featureList =
+            document.getElementById("featuresList");
+
+        featureList.innerHTML = "";
+
+        if (data.features && data.features.length > 0) {
+
+            data.features.forEach(feature => {
+
+                const li = document.createElement("li");
+
+                li.innerHTML =
+                    `<strong>${feature.feature_title}</strong>
+                     - ${feature.description}`;
+
+                featureList.appendChild(li);
+
+            });
+
+        }
+
+        document.getElementById("cancelPolicy").innerHTML =
+            data.cancellation_policy || "No policy available";
+
+        document.getElementById("refundPolicy").innerHTML =
+            data.refund_policy || "No refund policy available";
+
+    }
+
+    catch (err) {
+
+        // console.error(err);
+
+        alert("Server Error");
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

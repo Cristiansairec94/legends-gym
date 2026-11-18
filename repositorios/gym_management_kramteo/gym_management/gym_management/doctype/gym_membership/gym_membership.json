@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:membership_type",
+ "creation": "2023-02-01 11:26:49.503049",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "membership_type",
+  "annual_price",
+  "free_access_hours",
+  "excess_hours_charging_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "membership_type",
+   "fieldtype": "Data",
+   "label": "Membership Type",
+   "unique": 1
+  },
+  {
+   "fieldname": "annual_price",
+   "fieldtype": "Currency",
+   "label": "Annual Price"
+  },
+  {
+   "fieldname": "free_access_hours",
+   "fieldtype": "Int",
+   "label": "Free Access Hours (Monthly)"
+  },
+  {
+   "fieldname": "excess_hours_charging_rate",
+   "fieldtype": "Currency",
+   "label": "Excess Hours Charging Rate"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-02-27 13:37:43.517827",
+ "modified_by": "Administrator",
+ "module": "Gym Management",
+ "name": "Gym Membership",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Trainer",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Gym Member",
+   "select": 1,
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

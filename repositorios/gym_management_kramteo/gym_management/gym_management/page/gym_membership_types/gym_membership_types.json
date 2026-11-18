@@ -1,0 +1,35 @@
+{
+ "content": null,
+ "creation": "2023-02-13 15:11:37.556419",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2023-02-27 12:02:41.456022",
+ "modified_by": "Administrator",
+ "module": "Gym Management",
+ "name": "gym-membership-types",
+ "owner": "Administrator",
+ "page_name": "gym-membership-types",
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Gym Admin"
+  },
+  {
+   "role": "Gym Trainer"
+  },
+  {
+   "role": "Gym Member"
+  },
+  {
+   "role": "Guest"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Gym Membership Types"
+}

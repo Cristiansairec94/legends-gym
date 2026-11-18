@@ -1,0 +1,23 @@
+<div>
+	<p class="demo_class"> Number of Membership Types: {{ data.length }} </p>
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=671>
+        <tr>
+            <th>S/N</th>
+            <th>Membership Type</th>
+            <th>Annual Price</th>
+            <th>Monthly Free Access Hours</th>
+            <th>Excess Hours Charging Rate</th>
+        </tr>
+        {% index = 0 %}
+        {% for membership in data %}
+        <tr>
+            {% index = index + 1 %}
+            <td> {{ index }} </td>
+            <td> {{ membership.membership_type }} </td>
+            <td> {{ membership.annual_price }} </td>
+            <td> {{ membership.free_access_hours }} </td>
+            <td> {{ membership.excess_hours_charging_rate }} </td>
+        </tr>
+        {% endfor %}
+  </table>
+</div>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notifications - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html">Payments</a></li>
+    <li><a href="notifications.html" class="notif-bell active">🔔</a></li>
+    <li><a href="profiles.html"><div class="avatar"></div></a></li>
+  </ul>
+</nav>
+
+<div class="notif-list" id="notifList"></div>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadNotifications();
+});
+
+async function loadNotifications(page = 1) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.notification.get_notifications?page=${page}&page_length=20`,
+            { credentials: "include" }
+        );
+
+        const json = await res.json();
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            alert("Failed to load notifications");
+            return;
+        }
+
+        const container = document.getElementById("notifList");
+        container.innerHTML = "";
+
+        result.data.forEach(n => {
+
+            const icon = getIcon(n.subject);
+
+            const item = document.createElement("a");
+
+            item.href = `notification_detail.html?id=${n.name}`;
+
+            item.className = "notif-item " + (n.read ? "" : "unread");
+
+            item.innerHTML = `
+                <div class="icon">${icon}</div>
+                <div class="body">
+                    <h4>${n.subject}</h4>
+                    <p>${n.email_content || ""}</p>
+                    <div class="time">${new Date(n.creation).toLocaleString()}</div>
+                </div>
+            `;
+
+            container.appendChild(item);
+        });
+
+    } catch (err) {
+        // console.error(err);
+    }
+}
+
+function getIcon(title) {
+
+    if (!title) return "🔔";
+
+    title = title.toLowerCase();
+
+    if (title.includes("payment")) return "💳";
+    if (title.includes("class")) return "📅";
+    if (title.includes("offer")) return "🎉";
+    if (title.includes("trainer")) return "📩";
+
+    return "🔔";
+}
+
+</script>
+</body>
+</html>

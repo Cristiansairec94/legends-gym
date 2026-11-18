@@ -1,0 +1,32 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "System Notification",
+ "condition": "doc.status == \"Active\"",
+ "creation": "2026-05-20 12:15:41.599947",
+ "date_changed": "end_date",
+ "days_in_advance": 7,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Gym Membership",
+ "enabled": 1,
+ "event": "Days Before",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Add your message hereDear {{ doc.member_name }},\n\nYour membership will expire on {{ doc.end_date }}.\n\nPlease renew your membership.",
+ "message_type": "Markdown",
+ "modified": "2026-05-20 12:15:41.599947",
+ "modified_by": "Administrator",
+ "module": "Gym Management System",
+ "name": "Membership Expiry - 7 Days",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "owner",
+   "receiver_by_role": "Member"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "subject": "Membership Expiring Soon"
+}

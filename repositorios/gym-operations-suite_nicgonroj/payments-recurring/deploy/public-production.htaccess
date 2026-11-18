@@ -1,0 +1,43 @@
+Options -Indexes
+
+# Rutas privadas de ejemplo (fuera de public_html). No contienen credenciales.
+SetEnv DGYM_APP_ROOT /home/demo/apps/dgym-app
+SetEnv DGYM_PRIVATE_CONFIG_FILE /home/demo/private/dgym.php
+SetEnv DGYM_IDENTITY_HMAC_SECRET_FILE /home/demo/dgym-secrets/dgym-identity-hmac.secret
+
+# Perfil de producción: abrir el gate solo con credenciales productivas y aprobación explícita.
+SetEnv APP_ENV production
+SetEnv DGYM_CHECKOUT_ENABLED true
+SetEnv DGYM_ALLOWED_AUTOMATIC_DURATIONS 3,6,12
+SetEnv DGYM_ALLOWED_SINGLE_DURATIONS 1
+SetEnv DGYM_ALLOWED_PREPAID_DURATIONS 3,6,12
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} !^demogym\.example(?::443)?$ [NC]
+  RewriteRule ^ https://demogym.example%{REQUEST_URI} [R=308,L,NE]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'"
+  <Files "index.html">
+    Header always set Cache-Control "no-store, no-cache, max-age=0, must-revalidate"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+  </Files>
+</IfModule>
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+</IfModule>

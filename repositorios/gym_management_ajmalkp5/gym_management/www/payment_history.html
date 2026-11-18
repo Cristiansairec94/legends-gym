@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Payment History - FitZone</title>
+<link rel="stylesheet" href="/assets/gym_management/css/styles.css" />
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="logo">Fit<span>Zone</span></div>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="plans.html">Plans</a></li>
+    <li><a href="trainers.html">Trainers</a></li>
+    <li><a href="membership.html">My Membership</a></li>
+    <li><a href="payment_history.html" class="active">Payments</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <h1 class="page-title">Payment History</h1>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Method</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="paymentBody"></tbody>
+
+    </table>
+  </div>
+
+  <div style="margin-top:20px;text-align:center;">
+    <button id="prevBtn" class="btn btn-outline">Prev</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn" class="btn btn-outline">Next</button>
+  </div>
+
+</div>
+
+<script>
+
+let currentPage = 1;
+const pageSize = 5;
+let totalRecords = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadPayments(currentPage);
+
+    document.getElementById("prevBtn").onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadPayments(currentPage);
+        }
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+        if (currentPage * pageSize < totalRecords) {
+            currentPage++;
+            loadPayments(currentPage);
+        }
+    };
+});
+
+async function loadPayments(page) {
+
+    try {
+
+        const res = await fetch(
+            `/api/method/gym_management.web_api.web.get_payment_history?page=${page}&page_length=${pageSize}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const json = await res.json();
+        const result = json.message;
+
+        if (!result || result.status !== "success") {
+            alert("Failed to load payments");
+            return;
+        }
+
+        const tbody = document.getElementById("paymentBody");
+        tbody.innerHTML = "";
+
+        totalRecords = result.total || 0;
+
+        result.data.forEach(p => {
+
+            const tr = document.createElement("tr");
+
+            const date = p.creation
+                ? new Date(p.creation).toLocaleDateString()
+                : "-";
+
+            tr.innerHTML = `
+                <td>${date}</td>
+                <td>Membership Payment</td>
+                <td>${p.payment_method || "Online"}</td>
+                <td>₹${p.paid_amount || 0}</td>
+                <td>${p.status || "Paid"}</td>
+            `;
+
+            tbody.appendChild(tr);
+
+        });
+
+        updatePagination();
+
+    } catch (err) {
+        // console.error(err);
+    }
+}
+
+function updatePagination() {
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    document.getElementById("pageInfo").innerText =
+        `Page ${currentPage} of ${totalPages || 1}`;
+
+    document.getElementById("prevBtn").disabled = currentPage === 1;
+
+    document.getElementById("nextBtn").disabled =
+        currentPage >= totalPages;
+}
+
+</script>
+
+</body>
+</html>
