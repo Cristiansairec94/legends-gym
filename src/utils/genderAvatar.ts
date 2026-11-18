@@ -142,11 +142,11 @@ export function detectGender(fullName: string): 'male' | 'female' {
  */
 export function serializeGymAvatar(avatarUrl?: string): string | undefined {
   if (!avatarUrl) return undefined;
-  if (avatarUrl === 'preset:female' || avatarUrl === 'gender:female') {
-    return femaleClientBase64;
+  if (avatarUrl === 'preset:female' || avatarUrl === 'gender:female' || avatarUrl === femaleClientBase64) {
+    return 'gender:female';
   }
-  if (avatarUrl === 'preset:male' || avatarUrl === 'gender:male') {
-    return maleClientBase64;
+  if (avatarUrl === 'preset:male' || avatarUrl === 'gender:male' || avatarUrl === maleClientBase64) {
+    return 'gender:male';
   }
   // Old gym room presets ('preset:0'..'preset:3') or oversized base64 strings (>600KB) are cleared so getGymAvatar resolves by gender
   if (avatarUrl.startsWith('preset:') || avatarUrl.length > 600000) {

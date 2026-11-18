@@ -188,7 +188,7 @@ export const TERMINAL_THEME_PRESETS: Array<{
 ];
 
 export const DEFAULT_TERMINAL_DESIGN: TerminalEntryDesignConfig = {
-  version: 4,
+  version: 5,
   updatedAt: '2026-11-16T00:00:00.000Z',
   theme: 'legends-gold',
   background: {
@@ -201,10 +201,10 @@ export const DEFAULT_TERMINAL_DESIGN: TerminalEntryDesignConfig = {
   },
   layout: {
     mode: 'group',
-    topPct: 35,
-    leftPct: 12,
-    widthPct: 76,
-    heightPct: 34,
+    topPct: 33,
+    leftPct: 10,
+    widthPct: 80,
+    heightPct: 38,
     gapPx: 14,
     arrangement: 'hero-center',
     cardOrder: ['new', 'member', 'visit'],
@@ -282,7 +282,7 @@ export function mergeWithDefaultTerminalDesign(raw: any): TerminalEntryDesignCon
     ? raw.layout.cardOrder.filter((id: any): id is TerminalCardId => id === 'new' || id === 'visit' || id === 'member')
     : [];
   const rawVersion = Number(raw.version || 1);
-  const needsLayoutUpgrade = rawVersion < 3;
+  const needsLayoutUpgrade = rawVersion < 5;
   const needsMemberNoImageUpgrade = rawVersion < 4;
   const fullOrder: TerminalCardId[] = needsLayoutUpgrade
     ? ['new', 'member', 'visit']
@@ -318,7 +318,7 @@ export function mergeWithDefaultTerminalDesign(raw: any): TerminalEntryDesignCon
   return {
     ...base,
     ...raw,
-    version: 4,
+    version: 5,
     background: { ...base.background, ...(raw.background || {}) },
     layout: mergedLayout,
     shape: mergedShape,

@@ -17,7 +17,6 @@ import {
   Edit3, 
   X,
   CheckCircle2,
-  Clock,
   Upload,
   Camera,
   KeyRound,
@@ -26,7 +25,7 @@ import {
   EyeOff,
   User,
   Lock,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 
 export const EmployeesManager: React.FC = () => {
@@ -51,8 +50,10 @@ export const EmployeesManager: React.FC = () => {
   const [pin, setPin] = useState('1234');
   const [showPassword, setShowPassword] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
-  const [shift, setShift] = useState<Employee['shift']>('Matutino (06:00 - 14:00)');
   const [salaryMonthly, setSalaryMonthly] = useState<number>(12000);
+  const [usernameEditedManually, setUsernameEditedManually] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saveToast, setSaveToast] = useState<string | null>(null);
 
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch = 
@@ -137,12 +138,14 @@ export const EmployeesManager: React.FC = () => {
   // Auto-sugerir nombre de usuario basado en el nombre completo
   const handleNameChange = (val: string) => {
     setFullName(val);
-    if (!editingEmployee && (!username || username === '')) {
+    setFormError('');
+    if (!editingEmployee && !usernameEditedManually) {
       const clean = val
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .trim()
+        .replace(/[^a-z0-9\s.]/g, '')
         .replace(/\s+/g, '.');
       setUsername(clean);
     }
@@ -157,12 +160,13 @@ export const EmployeesManager: React.FC = () => {
     setAvatarUrl(DEFAULT_EMPLOYEE_AVATAR);
     setRole('receptionist');
     setUsername('');
+    setUsernameEditedManually(false);
     setPassword('');
     setPin('1234');
     setShowPassword(false);
     setJobTitle('');
-    setShift('Matutino (06:00 - 14:00)');
     setSalaryMonthly(12000);
+    setFormError('');
     setShowAddModal(true);
   };
 
@@ -175,55 +179,111 @@ export const EmployeesManager: React.FC = () => {
     setAvatarUrl(emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR);
     setRole(emp.role);
     setUsername(emp.username || '');
+    setUsernameEditedManually(true);
     setPassword(emp.password?.startsWith('lg_hash$') ? '' : (emp.password || ''));
     setPin(emp.pin?.startsWith('lg_hash$') ? '' : (emp.pin || ''));
     setShowPassword(false);
     setJobTitle(emp.jobTitle);
-    setShift(emp.shift);
     setSalaryMonthly(emp.salaryMonthly);
+    setFormError('');
     setShowAddModal(true);
   };
 
   const handleSaveEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim()) return;
+    setFormError('');
 
-    const finalUsername = username.trim().toLowerCase().replace(/\s+/g, '') || `${fullName.toLowerCase().replace(/\s+/g, '.')}`;
+    const cleanName = fullName.trim();
+    if (!cleanName) {
+      setFormError('Ingresa el nombre completo del empleado.');
+      return;
+    }
+
+    const finalUsername =
+      username.trim().toLowerCase().replace(/\s+/g, '') ||
+      cleanName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s.]/g, '')
+        .replace(/\s+/g, '.');
+
+    if (!finalUsername) {
+      setFormError('Ingresa un nombre de usuario válido para acceder al sistema.');
+      return;
+    }
+
+    const duplicateUser = employees.find(
+      (emp) =>
+        emp.id !== editingEmployee?.id &&
+        (emp.username?.toLowerCase() === finalUsername || emp.email?.toLowerCase() === `${finalUsername}@legendsgym.com`)
+    );
+    if (duplicateUser) {
+      setFormError(`El usuario @${finalUsername} ya está asignado a ${duplicateUser.fullName}. Elige otro usuario.`);
+      return;
+    }
+
+    const cleanPassword = password.trim();
+    const cleanPin = pin.trim();
+
+    if (!editingEmployee && !cleanPassword) {
+      setFormError('Ingresa una contraseña para el nuevo empleado (o haz clic en "Generar").');
+      return;
+    }
 
     if (editingEmployee) {
-      updateEmployee(editingEmployee.id, {
-        fullName: fullName.trim(),
+      const updates: Partial<Employee> = {
+        fullName: cleanName,
         documentId: documentId.trim() || editingEmployee.documentId,
         email: editingEmployee.email || `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || editingEmployee.phone,
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || editingEmployee.password || '1234',
-        pin: pin.trim() || editingEmployee.pin || '1234',
         jobTitle: jobTitle.trim() || editingEmployee.jobTitle,
-        shift,
+        shift: 'Turno Completo',
         salaryMonthly: editingEmployee.salaryMonthly ?? 12000,
-      });
+      };
+      if (cleanPassword) {
+        updates.password = cleanPassword;
+      } else if (!editingEmployee.password) {
+        updates.password = '123456';
+      }
+      if (cleanPin) {
+        updates.pin = cleanPin;
+      } else if (!editingEmployee.pin) {
+        updates.pin = '1234';
+      }
+
+      updateEmployee(editingEmployee.id, updates);
+      setSaveToast(
+        cleanPassword
+          ? `Perfil y nueva contraseña de ${cleanName} guardados correctamente`
+          : `Perfil de ${cleanName} actualizado correctamente`
+      );
     } else {
       addEmployee({
-        fullName: fullName.trim(),
+        fullName: cleanName,
         documentId: documentId.trim() || `${Math.floor(10000000 + Math.random() * 90000000)}`,
         email: `${finalUsername}@legendsgym.com`,
         phone: phone.trim() || '+52 55 0000 0000',
         avatarUrl: avatarUrl || DEFAULT_EMPLOYEE_AVATAR,
         role,
         username: finalUsername,
-        password: password.trim() || '1234',
-        pin: pin.trim() || '1234',
-        jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : role === 'trainer' ? 'Entrenador de Piso' : 'Recepcionista'),
-        shift,
+        password: cleanPassword,
+        pin: cleanPin || '1234',
+        jobTitle: jobTitle.trim() || (role === 'admin' ? 'Administrador' : 'Recepcionista'),
+        shift: 'Turno Completo',
         status: 'active',
         hireDate: getLocalDateString(),
         salaryMonthly: 12000,
       });
+      setRoleFilter('all');
+      setSearch('');
+      setSaveToast(`Empleado ${cleanName} (@${finalUsername}) registrado con su contraseña`);
     }
 
+    setTimeout(() => setSaveToast(null), 4000);
     setShowAddModal(false);
     setEditingEmployee(null);
   };
@@ -235,7 +295,7 @@ export const EmployeesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gym-card p-5 rounded-2xl border border-gym-border shadow-md">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="p-2 rounded-xl bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
               <Users className="w-5 h-5" />
             </div>
             <div>
@@ -243,28 +303,36 @@ export const EmployeesManager: React.FC = () => {
                 <h1 className="text-xl font-black text-white tracking-wide uppercase">
                   Gestión de Empleados
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-950/70 text-amber-300 border border-amber-500/40 shadow-sm">
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-crimson-950/70 text-crimson-300 border border-crimson-500/40 shadow-sm">
                   Personal
                 </span>
               </div>
               <p className="text-xs text-gym-muted mt-0.5">
-                Administración del staff operativo: credenciales de acceso, roles, turnos y sueldos.
+                Administración del staff operativo: credenciales de acceso, roles y sueldos.
               </p>
             </div>
           </div>
         </div>
 
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-glow-gold transition-all"
-        >
-          <UserPlus className="w-4 h-4 stroke-[2.5]" />
-          <span>Nuevo Empleado</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {saveToast && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{saveToast}</span>
+            </div>
+          )}
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-sm shadow-glow-crimson transition-all"
+          >
+            <UserPlus className="w-4 h-4 stroke-[2.5]" />
+            <span>Nuevo Empleado</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <span className="text-xs text-gym-muted block uppercase font-bold">Total Personal</span>
           <span className="text-2xl font-black text-white mt-1 block">{employees.length}</span>
@@ -273,7 +341,7 @@ export const EmployeesManager: React.FC = () => {
 
         <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <span className="text-xs text-gym-muted block uppercase font-bold">Nómina Mensual Base</span>
-          <span className="text-2xl font-black text-amber-400 font-mono mt-1 block">
+          <span className="text-2xl font-black text-crimson-400 font-mono mt-1 block">
             ${totalMonthlyPayroll.toLocaleString()} MXN
           </span>
           <span className="text-xs text-gym-muted mt-1 block">Personal en nómina</span>
@@ -286,173 +354,196 @@ export const EmployeesManager: React.FC = () => {
           </span>
           <span className="text-xs text-gym-muted mt-1 block">Atención & Caja</span>
         </div>
-
-        <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
-          <span className="text-xs text-gym-muted block uppercase font-bold">Coaches & Trainers</span>
-          <span className="text-2xl font-black text-emerald-400 mt-1 block">
-            {employees.filter(e => e.role === 'trainer').length}
-          </span>
-          <span className="text-xs text-gym-muted mt-1 block">Piso & Clases</span>
-        </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
+      <div className="bg-gym-card p-4 rounded-2xl border border-gym-border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-gym-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, usuario, puesto..."
-            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 'admin', label: 'Administradores' },
-            { id: 'receptionist', label: 'Recepción' },
-            { id: 'trainer', label: 'Entrenadores' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setRoleFilter(tab.id as typeof roleFilter)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
-                roleFilter === tab.id
-                  ? 'bg-amber-500 text-black font-bold'
-                  : 'bg-gym-surface text-gym-muted hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 justify-between md:justify-end">
+          {/* Filtros por Rol */}
+          <div className="flex items-center gap-1.5 overflow-x-auto">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'admin', label: 'Administradores' },
+              { id: 'receptionist', label: 'Recepción' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setRoleFilter(tab.id as typeof roleFilter)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                  roleFilter === tab.id
+                    ? 'bg-crimson-500 text-white font-bold'
+                    : 'bg-gym-surface text-gym-muted hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
         </div>
       </div>
 
-      {/* Employees Table */}
-      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gym-border bg-gym-surface/40 text-[11px] font-bold uppercase tracking-wider text-gym-muted">
-                <th className="p-4">Empleado</th>
-                <th className="p-4">Puesto / Cargo</th>
-                <th className="p-4">Rol & Usuario</th>
-                <th className="p-4">Turno Asignado</th>
-                <th className="p-4">Sueldo Base</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gym-border/40 text-sm">
-              {filteredEmployees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-gym-surface/40 transition-colors">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
-                        alt={emp.fullName}
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
-                        }}
-                        className="w-10 h-10 rounded-full object-cover border border-gym-border shrink-0 bg-gym-surface"
-                      />
-                      <div>
-                        <div 
-                          onClick={() => handleOpenEditModal(emp)}
-                          className="font-bold text-white text-xs hover:text-amber-400 cursor-pointer transition-colors"
-                          title="Clic para editar"
-                        >
-                          {emp.fullName}
-                        </div>
-                        <div className="text-[11px] text-gym-muted font-mono">{emp.id} • {emp.phone}</div>
-                      </div>
-                    </div>
-                  </td>
+      {/* Estado Vacío */}
+      {filteredEmployees.length === 0 && (
+        <div className="bg-gym-card p-12 rounded-2xl border border-gym-border text-center">
+          <Users className="w-12 h-12 text-gym-muted mx-auto mb-3 opacity-40" />
+          <h3 className="text-base font-bold text-white">No se encontraron empleados</h3>
+          <p className="text-xs text-gym-muted mt-1">
+            Intenta modificando los filtros de búsqueda o registra un nuevo colaborador.
+          </p>
+        </div>
+      )}
 
-                  <td className="p-4">
-                    <span className="font-semibold text-white text-xs block">{emp.jobTitle}</span>
-                    <span className="text-[10px] text-gym-muted">Desde {emp.hireDate}</span>
-                  </td>
+      {/* Vista: Cuadros / Tarjetas */}
+      {filteredEmployees.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredEmployees.map((emp) => (
+            <div
+              key={emp.id}
+              className="bg-gym-card rounded-2xl border border-gym-border hover:border-crimson-400/50 p-5 shadow-lg flex flex-col justify-between transition-all relative overflow-hidden group hover:shadow-glow-crimson/10"
+            >
+              {/* Barra superior de color según rol */}
+              <div className={`absolute top-0 left-0 right-0 h-1.5 ${
+                emp.role === 'admin'
+                  ? 'bg-gradient-to-r from-crimson-500 to-crimson-300'
+                  : 'bg-gradient-to-r from-blue-500 to-blue-300'
+              }`} />
 
-                  <td className="p-4">
-                    <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border inline-block ${
-                      emp.role === 'admin'
-                        ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                        : emp.role === 'receptionist'
-                        ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                        : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                    }`}>
-                      {emp.role === 'admin' ? 'Administrador' : emp.role === 'receptionist' ? 'Recepción' : 'Coach / Trainer'}
+              <div>
+                {/* Header de la Tarjeta: Rol & Estado */}
+                <div className="flex items-center justify-between gap-2 mb-3.5 pt-1">
+                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-lg border ${
+                    emp.role === 'admin'
+                      ? 'bg-crimson-500/15 text-crimson-400 border-crimson-500/30'
+                      : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                  }`}>
+                    {emp.role === 'admin' ? 'Administrador' : 'Recepción'}
+                  </span>
+
+                  <button
+                    onClick={() => updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' })}
+                    className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                      emp.status === 'active'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
+                    }`}
+                    title="Clic para alternar estado"
+                  >
+                    {emp.status === 'active' ? '● Activo' : '○ Inactivo'}
+                  </button>
+                </div>
+
+                {/* Perfil: Foto + Nombre + Puesto */}
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="relative shrink-0">
+                    <img
+                      src={emp.avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
+                      alt={emp.fullName}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = DEFAULT_EMPLOYEE_AVATAR;
+                      }}
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-gym-border group-hover:border-crimson-400/60 bg-gym-surface shadow-md transition-colors"
+                    />
+                    <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-gym-card ${
+                      emp.status === 'active' ? 'bg-emerald-400 ring-2 ring-emerald-500/30' : 'bg-gray-500'
+                    }`} />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 
+                      onClick={() => handleOpenEditModal(emp)}
+                      className="font-black text-white text-sm truncate hover:text-crimson-400 cursor-pointer transition-colors"
+                      title="Clic para editar empleado"
+                    >
+                      {emp.fullName}
+                    </h3>
+                    <p className="text-xs font-semibold text-gray-300 truncate mt-0.5">
+                      {emp.jobTitle}
+                    </p>
+                    <span className="text-[11px] text-gym-muted font-mono block mt-0.5">
+                      {emp.id} • {emp.phone}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bloques de Datos Clave (Detalles en cajas) */}
+                <div className="space-y-2 bg-gym-surface/40 p-3 rounded-xl border border-gym-border/60 text-xs">
+                  {/* Usuario de Acceso */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
+                      <KeyRound className="w-3.5 h-3.5 text-crimson-400 shrink-0" />
+                      <span>Usuario:</span>
                     </span>
                     {emp.username ? (
-                      <div className="text-[11px] text-gray-300 font-mono mt-1 flex items-center gap-1">
-                        <KeyRound className="w-3 h-3 text-amber-400/80 shrink-0" />
-                        <span className="text-amber-400 font-bold">@{emp.username}</span>
-                      </div>
+                      <span className="font-mono font-bold text-crimson-400 text-xs">
+                        @{emp.username}
+                      </span>
                     ) : (
-                      <div className="text-[10px] text-gym-muted italic mt-0.5">Sin usuario</div>
+                      <span className="text-[10px] text-gym-muted italic">Sin asignar</span>
                     )}
-                  </td>
+                  </div>
 
-                  <td className="p-4 text-xs text-gray-300">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-gym-muted" />
-                      <span>{emp.shift}</span>
-                    </div>
-                  </td>
+                  {/* Sueldo Base */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gym-muted flex items-center gap-1.5 text-[11px]">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Sueldo Base:</span>
+                    </span>
+                    <span className="font-mono font-bold text-white text-xs">
+                      ${emp.salaryMonthly ? emp.salaryMonthly.toLocaleString() : '0'} MXN
+                    </span>
+                  </div>
 
-                  <td className="p-4 font-mono font-bold text-xs text-amber-400">
-                    ${emp.salaryMonthly.toLocaleString()} MXN
-                  </td>
+                  {/* Fecha de Ingreso */}
+                  <div className="flex items-center justify-between pt-1 border-t border-gym-border/40 text-[10px] text-gym-muted">
+                    <span>Alta en nómina:</span>
+                    <span className="font-mono">{emp.hireDate}</span>
+                  </div>
+                </div>
+              </div>
 
-                  <td className="p-4">
-                    <button
-                      onClick={() => {
-                        updateEmployee(emp.id, { status: emp.status === 'active' ? 'inactive' : 'active' });
-                      }}
-                      className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
-                        emp.status === 'active'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                          : 'bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30'
-                      }`}
-                      title="Clic para cambiar estado"
-                    >
-                      {emp.status === 'active' ? 'Activo' : 'Inactivo'}
-                    </button>
-                  </td>
+              {/* Botones de Acción */}
+              <div className="pt-3.5 mt-3.5 border-t border-gym-border/60 flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenEditModal(emp)}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-crimson-500/15 hover:bg-crimson-500 text-crimson-400 hover:text-white border border-crimson-500/30 text-xs font-extrabold transition-all shadow-sm group cursor-pointer"
+                  title="Editar empleado, rol y credenciales"
+                >
+                  <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (emp.id === 'EMP-000' || emp.username?.toLowerCase() === 'admin') {
+                      alert('El usuario Administrador Principal no puede ser eliminado ya que es la cuenta maestra de acceso.');
+                      return;
+                    }
+                    if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
+                      deleteEmployee(emp.id);
+                    }
+                  }}
+                  className="p-2 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
+                  title="Eliminar empleado"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenEditModal(emp)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-bold transition-all shadow-sm group cursor-pointer"
-                        title="Editar empleado, rol y credenciales"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                        <span>Editar</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`¿Eliminar al empleado ${emp.fullName}?`)) {
-                            deleteEmployee(emp.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-xl bg-gym-surface hover:bg-red-500/20 text-gym-muted hover:text-red-400 border border-gym-border/60 hover:border-red-500/30 transition-all cursor-pointer"
-                        title="Eliminar empleado"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
 
       {/* Modal Agregar / Editar Empleado */}
       {showAddModal && (
@@ -463,9 +554,9 @@ export const EmployeesManager: React.FC = () => {
             <div className="p-4 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
               <div className="flex items-center gap-2">
                 {editingEmployee ? (
-                  <Edit3 className="w-5 h-5 text-amber-400" />
+                  <Edit3 className="w-5 h-5 text-crimson-400" />
                 ) : (
-                  <UserPlus className="w-5 h-5 text-amber-400" />
+                  <UserPlus className="w-5 h-5 text-crimson-400" />
                 )}
                 <h3 className="font-bold text-base text-white">
                   {editingEmployee ? 'Editar Empleado' : 'Registrar Nuevo Empleado'}
@@ -483,7 +574,7 @@ export const EmployeesManager: React.FC = () => {
             </div>
 
             {/* Formulario con scroll independiente */}
-            <form onSubmit={handleSaveEmployee} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveEmployee} noValidate className="p-6 space-y-4 overflow-y-auto flex-1">
               
               {/* Sección de Foto de Perfil: Subir y Eliminar */}
               <div className="bg-gym-surface/50 p-4 rounded-xl border border-gym-border space-y-3">
@@ -509,7 +600,7 @@ export const EmployeesManager: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
+                      className="px-3 py-1.5 rounded-lg bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
                       title="Subir imagen desde tu equipo"
                     >
                       <Upload className="w-3.5 h-3.5" />
@@ -536,7 +627,7 @@ export const EmployeesManager: React.FC = () => {
                     <img
                       src={avatarUrl || DEFAULT_EMPLOYEE_AVATAR}
                       alt="Foto del empleado"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-md ring-2 ring-amber-500/30 bg-gym-surface cursor-pointer"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-crimson-400 shadow-md ring-2 ring-crimson-500/30 bg-gym-surface cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
                       title="Clic para cambiar imagen"
                     />
@@ -584,15 +675,15 @@ export const EmployeesManager: React.FC = () => {
                   value={fullName}
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="Ej. Andrés Navarro López"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                 />
               </div>
 
               {/* APARTADO: CREDENCIALES & ROL DE ACCESO AL SISTEMA */}
-              <div className="bg-gym-surface/60 p-4 rounded-xl border border-amber-500/40 space-y-3.5 shadow-sm">
+              <div className="bg-gym-surface/60 p-4 rounded-xl border border-crimson-500/40 space-y-3.5 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b border-gym-border/60">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <div className="p-1.5 rounded-lg bg-crimson-500/20 text-crimson-400 border border-crimson-500/30">
                       <KeyRound className="w-4 h-4" />
                     </div>
                     <div>
@@ -604,7 +695,7 @@ export const EmployeesManager: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-crimson-500/15 text-crimson-300 border border-crimson-500/30">
                     Seguridad
                   </span>
                 </div>
@@ -614,7 +705,7 @@ export const EmployeesManager: React.FC = () => {
                   <label className="text-xs font-bold text-white block mb-1.5">
                     Rol que tendrá en el sistema: *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {[
                       {
                         id: 'receptionist' as UserRole,
@@ -625,20 +716,12 @@ export const EmployeesManager: React.FC = () => {
                         badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
                       },
                       {
-                        id: 'trainer' as UserRole,
-                        title: 'Coach / Trainer',
-                        badge: 'Coach',
-                        desc: 'Expedientes, clases y entrenamientos',
-                        borderSelected: 'border-emerald-400 bg-emerald-500/15 text-emerald-300',
-                        badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-                      },
-                      {
                         id: 'admin' as UserRole,
                         title: 'Administrador',
                         badge: 'Admin',
                         desc: 'Control total, nómina, finanzas y roles',
-                        borderSelected: 'border-amber-400 bg-amber-500/15 text-amber-300',
-                        badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                        borderSelected: 'border-crimson-400 bg-crimson-500/15 text-crimson-300',
+                        badgeBg: 'bg-crimson-500/20 text-crimson-300 border-crimson-500/40',
                       },
                     ].map((r) => {
                       const isSelected = role === r.id;
@@ -649,7 +732,7 @@ export const EmployeesManager: React.FC = () => {
                           onClick={() => setRole(r.id)}
                           className={`p-2.5 rounded-xl border text-left transition-all ${
                             isSelected
-                              ? `${r.borderSelected} ring-1 ring-amber-400/40 shadow-sm`
+                              ? `${r.borderSelected} ring-1 ring-crimson-400/40 shadow-sm`
                               : 'border-gym-border bg-gym-surface/40 hover:border-gray-500 text-gym-muted'
                           }`}
                         >
@@ -658,7 +741,7 @@ export const EmployeesManager: React.FC = () => {
                               {r.badge}
                             </span>
                             <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-amber-400 bg-amber-400' : 'border-gray-500'
+                              isSelected ? 'border-crimson-400 bg-crimson-400' : 'border-gray-500'
                             }`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
                             </div>
@@ -678,16 +761,21 @@ export const EmployeesManager: React.FC = () => {
                       Nombre de Usuario *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 text-xs font-mono font-bold">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-crimson-400 text-xs font-mono font-bold">
                         @
                       </span>
                       <input
                         type="text"
                         required
                         value={username}
-                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                        onChange={(e) => {
+                          const clean = e.target.value.toLowerCase().replace(/\s+/g, '');
+                          setUsername(clean);
+                          setUsernameEditedManually(clean.length > 0);
+                          setFormError('');
+                        }}
                         placeholder="andres.navarro"
-                        className="w-full pl-8 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400"
+                        className="w-full pl-8 pr-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-crimson-400"
                       />
                     </div>
                     <span className="text-[10px] text-gym-muted block mt-0.5">Identificador único</span>
@@ -696,12 +784,12 @@ export const EmployeesManager: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-gym-muted block">
-                        Contraseña *
+                        {editingEmployee ? 'Nueva Contraseña' : 'Contraseña *'}
                       </label>
                       <button
                         type="button"
                         onClick={generateRandomPassword}
-                        className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 transition-colors"
+                        className="text-[10px] text-crimson-400 hover:text-crimson-300 font-bold flex items-center gap-1 transition-colors"
                         title="Generar contraseña automática"
                       >
                         <Sparkles className="w-3 h-3" />
@@ -713,9 +801,12 @@ export const EmployeesManager: React.FC = () => {
                         type={showPassword ? 'text' : 'password'}
                         required={!editingEmployee}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setFormError('');
+                        }}
                         placeholder={editingEmployee ? 'Vacío = mantener actual' : '••••••••'}
-                        className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-amber-400 font-mono"
+                        className="w-full pl-3 pr-10 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted focus:outline-none focus:border-crimson-400 font-mono"
                       />
                       <button
                         type="button"
@@ -726,7 +817,13 @@ export const EmployeesManager: React.FC = () => {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    <span className="text-[10px] text-gym-muted block mt-0.5">Clave de acceso</span>
+                    <span className="text-[10px] block mt-0.5">
+                      {editingEmployee && editingEmployee.password ? (
+                        <span className="text-emerald-400 font-semibold">✓ Guardada (escribe solo para cambiarla)</span>
+                      ) : (
+                        <span className="text-gym-muted">Clave de acceso</span>
+                      )}
+                    </span>
                   </div>
 
                   <div>
@@ -739,39 +836,24 @@ export const EmployeesManager: React.FC = () => {
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                       placeholder="1234"
-                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-amber-400 tracking-widest text-center"
+                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white placeholder-gym-muted font-mono focus:outline-none focus:border-crimson-400 tracking-widest text-center"
                     />
                     <span className="text-[10px] text-gym-muted block mt-0.5">Acceso rápido en caja</span>
                   </div>
                 </div>
               </div>
 
-              {/* Cargo y Puesto */}
-              <div>
-                <label className="text-xs font-semibold text-gym-muted block mb-1">Puesto / Cargo Laboral</label>
-                <input
-                  type="text"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Ej. Entrenador de Piso / Líder de Mostrador"
-                  className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              {/* Turno y Teléfono */}
+              {/* Cargo / Puesto y Teléfono */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-gym-muted block mb-1">Turno</label>
-                  <select
-                    value={shift}
-                    onChange={(e) => setShift(e.target.value as Employee['shift'])}
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="Matutino (06:00 - 14:00)">Matutino (06:00 - 14:00)</option>
-                    <option value="Vespertino (14:00 - 22:00)">Vespertino (14:00 - 22:00)</option>
-                    <option value="Turno Completo">Turno Completo</option>
-                    <option value="Fines de Semana">Fines de Semana</option>
-                  </select>
+                  <label className="text-xs font-semibold text-gym-muted block mb-1">Puesto / Cargo Laboral</label>
+                  <input
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="Ej. Líder de Mostrador / Cajero"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
+                  />
                 </div>
 
                 <div>
@@ -781,10 +863,17 @@ export const EmployeesManager: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+52 55..."
-                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                   />
                 </div>
               </div>
+
+              {formError && (
+                <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-semibold flex items-center gap-2">
+                  <X className="w-4 h-4 text-red-400 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
 
               {/* Botones de acción */}
               <div className="flex justify-end gap-2 pt-3 border-t border-gym-border">
@@ -800,7 +889,7 @@ export const EmployeesManager: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold"
+                  className="px-6 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson"
                 >
                   {editingEmployee ? 'Guardar Cambios' : 'Guardar Empleado'}
                 </button>

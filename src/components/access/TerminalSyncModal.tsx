@@ -165,7 +165,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#151a24]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-full bg-crimson-500/15 border border-crimson-500/25 flex items-center justify-center text-crimson-400">
               <Cpu className="w-5 h-5" />
             </div>
             <div>
@@ -214,7 +214,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
             <div className="p-3.5 rounded-2xl bg-[#1b202b] border border-white/[0.08]">
               <span className="text-[11px] font-medium text-zinc-400 block mb-1">Socios en caché</span>
               <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-amber-400" />
+                <Database className="w-4 h-4 text-crimson-400" />
                 <span className="text-xs font-semibold text-white tabular-nums">{members.length} socios listos</span>
               </div>
             </div>
@@ -232,7 +232,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
 
           {/* Section: LAN Server Configuration */}
           <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-crimson-400 flex items-center gap-2">
               <Server className="w-4 h-4" />
               <span>Conexión con Equipo Principal (Sistema Central)</span>
             </h4>
@@ -248,13 +248,13 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                     value={formData.serverUrl}
                     onChange={(e) => setFormData({ ...formData, serverUrl: e.target.value })}
                     placeholder="Ej. http://192.168.1.50:5173 o http://localhost:5173"
-                    className="flex-1 px-3 py-2 bg-gym-bg rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-amber-400 transition-colors"
+                    className="flex-1 px-3 py-2 bg-gym-bg rounded-xl border border-gym-border text-sm text-white font-mono focus:outline-none focus:border-crimson-400 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={handleTestConnection}
                     disabled={isTesting}
-                    className="px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border border border-gym-border text-xs font-bold text-amber-400 transition-colors shrink-0 flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl bg-gym-surface hover:bg-gym-border border border-gym-border text-xs font-bold text-crimson-400 transition-colors shrink-0 flex items-center gap-1.5"
                   >
                     {isTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
                     <span>Probar Ping</span>
@@ -271,8 +271,8 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                     }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
                       formData.serverUrl === CLOUD_SERVER_URL
-                        ? 'bg-amber-500 text-black border-amber-400 shadow-sm'
-                        : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30'
+                        ? 'bg-crimson-500 text-white border-crimson-400 shadow-sm'
+                        : 'bg-crimson-500/10 hover:bg-crimson-500/20 text-crimson-400 border-crimson-500/30'
                     }`}
                   >
                     ☁️ Servidor Nube (Vercel)
@@ -316,7 +316,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                       onChange={(e) => setFormData({ ...formData, autoSync: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gym-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    <div className="w-9 h-5 bg-gym-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-crimson-500"></div>
                   </label>
                   <div>
                     <span className="text-xs font-bold text-white block">Auto-sincronización periódica</span>
@@ -329,7 +329,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   <select
                     value={formData.syncIntervalSeconds}
                     onChange={(e) => setFormData({ ...formData, syncIntervalSeconds: Number(e.target.value) })}
-                    className="bg-gym-bg border border-gym-border text-xs rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-amber-400"
+                    className="bg-gym-bg border border-gym-border text-xs rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-crimson-400"
                   >
                     <option value={15}>15 segundos</option>
                     <option value={30}>30 segundos</option>
@@ -344,9 +344,9 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   type="button"
                   onClick={() => onManualSync()}
                   disabled={isSyncing}
-                  className="w-full py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-2 px-3 rounded-xl bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 text-crimson-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-crimson-400' : ''}`} />
                   <span>{isSyncing ? 'Sincronizando socios y accesos...' : 'Sincronizar Ahora con Servidor Central'}</span>
                 </button>
               </div>
@@ -355,7 +355,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
 
           {/* Section: Relay & Hardware settings */}
           <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-crimson-400 flex items-center gap-2">
               <Cpu className="w-4 h-4" />
               <span>Ajustes de Acceso y Periféricos</span>
             </h4>
@@ -368,7 +368,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                 <select
                   value={formData.relayPulseDurationSeconds}
                   onChange={(e) => setFormData({ ...formData, relayPulseDurationSeconds: Number(e.target.value) })}
-                  className="w-full bg-gym-bg border border-gym-border text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-gym-bg border border-gym-border text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-crimson-400"
                 >
                   <option value={2}>2 segundos (Rápido)</option>
                   <option value={3}>3 segundos (Estándar)</option>
@@ -389,7 +389,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                   value={formData.terminalName}
                   onChange={(e) => setFormData({ ...formData, terminalName: e.target.value })}
                   placeholder="Ej. Terminal A - Entrada"
-                  className="w-full px-3 py-2 bg-gym-bg rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full px-3 py-2 bg-gym-bg rounded-xl border border-gym-border text-xs text-white focus:outline-none focus:border-crimson-400 transition-colors"
                 />
                 <p className="text-[11px] text-gym-muted mt-1">
                   Nombre asignado al punto de control para auditoría de accesos.
@@ -405,7 +405,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                       onChange={(e) => setFormData({ ...formData, voiceEnabled: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gym-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    <div className="w-9 h-5 bg-gym-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-crimson-500"></div>
                   </label>
                   <div>
                     <span className="text-xs font-bold text-white block">Voz de Bienvenida Sintetizada</span>
@@ -414,7 +414,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1.5 text-gym-muted">
-                  {formData.voiceEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4" />}
+                  {formData.voiceEnabled ? <Volume2 className="w-4 h-4 text-crimson-400" /> : <VolumeX className="w-4 h-4" />}
                 </div>
               </div>
             </div>
@@ -422,7 +422,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
 
           {/* Section: USB / Offline Backup Sync */}
           <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-crimson-400 flex items-center gap-2">
               <Database className="w-4 h-4" />
               <span>Sincronización por Memoria USB / Archivo (Sin Internet / Sin Red)</span>
             </h4>
@@ -433,8 +433,8 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="cursor-pointer p-3 rounded-xl bg-gym-bg hover:bg-gym-surface border border-dashed border-gym-border hover:border-amber-400/60 flex items-center gap-3 transition-colors">
-                  <Upload className="w-5 h-5 text-amber-400 shrink-0" />
+                <label className="cursor-pointer p-3 rounded-xl bg-gym-bg hover:bg-gym-surface border border-dashed border-gym-border hover:border-crimson-400/60 flex items-center gap-3 transition-colors">
+                  <Upload className="w-5 h-5 text-crimson-400 shrink-0" />
                   <div className="overflow-hidden">
                     <span className="text-xs font-bold text-white block">Importar Socios desde USB</span>
                     <span className="text-[11px] text-gym-muted block truncate">Cargar archivo .json con socios</span>
@@ -450,7 +450,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExportLogs}
-                  className="p-3 rounded-xl bg-gym-bg hover:bg-gym-surface border border-gym-border hover:border-amber-400/60 flex items-center gap-3 transition-colors text-left"
+                  className="p-3 rounded-xl bg-gym-bg hover:bg-gym-surface border border-gym-border hover:border-crimson-400/60 flex items-center gap-3 transition-colors text-left"
                 >
                   <Download className="w-5 h-5 text-emerald-400 shrink-0" />
                   <div>
@@ -461,7 +461,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
               </div>
 
               {importStatus && (
-                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium">
+                <div className="p-2.5 rounded-xl bg-crimson-500/10 border border-crimson-500/30 text-crimson-300 text-xs font-medium">
                   {importStatus}
                 </div>
               )}
@@ -485,7 +485,7 @@ export const TerminalSyncModal: React.FC<TerminalSyncModalProps> = ({
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-[#1a1200] text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm"
+              className="px-5 py-2 rounded-full bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-glow-crimson"
             >
               <Save className="w-3.5 h-3.5" />
               <span>Guardar configuración</span>

@@ -39,6 +39,7 @@ export const TurnstileTerminal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [scanHint, setScanHint] = useState('');
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+  const lastRandomScanIdRef = React.useRef<string | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [bgImage, setBgImage] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -103,16 +104,33 @@ export const TurnstileTerminal: React.FC = () => {
     }, 1100);
   };
 
-  // Direct sensor pad click: scan only when a member query/ID was explicitly entered
+  // Direct sensor pad click: validates search query if entered, or automatically scans a random profile
   const handleDirectPadClick = () => {
     const query = searchQuery.trim();
     if (query) {
       setScanHint('');
       executeScan(query);
-    } else {
-      setScanHint('Ingresa el nombre, ID o cédula del socio antes de validar acceso');
-      searchInputRef.current?.focus();
+      return;
     }
+
+    if (members.length === 0) {
+      setScanHint('No hay socios registrados todavía para escanear');
+      searchInputRef.current?.focus();
+      return;
+    }
+
+    const activePool = members.filter(
+      (m) => !(m.membership?.status === 'expired' || (m.membership?.daysRemaining ?? 0) < 0)
+    );
+    const basePool = activePool.length > 0 ? activePool : members;
+    const candidates =
+      basePool.length > 1 && lastRandomScanIdRef.current
+        ? basePool.filter((m) => m.id !== lastRandomScanIdRef.current)
+        : basePool;
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    lastRandomScanIdRef.current = chosen.id;
+    setScanHint('');
+    executeScan(chosen.id);
   };
 
   const toggleFullScreen = () => {
@@ -178,7 +196,7 @@ export const TurnstileTerminal: React.FC = () => {
             <h1 className="text-xl font-black text-white tracking-wide uppercase">
               Control de Acceso
             </h1>
-            <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+            <span className="text-xs bg-crimson-500/20 text-crimson-400 border border-crimson-500/30 px-2 py-0.5 rounded-md font-bold shadow-[0_0_10px_rgba(225,29,56,0.2)]">
               Lector Activo
             </span>
           </div>
@@ -212,7 +230,7 @@ export const TurnstileTerminal: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-xs font-bold text-gray-100 hover:text-white cursor-pointer transition-all shadow-md group"
             title="Cambiar fotografía de fondo del gimnasio"
           >
-            <Image className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+            <Image className="w-4 h-4 text-crimson-400 group-hover:scale-110 transition-transform" />
             <span>Cambiar Foto</span>
             <input
               type="file"
@@ -236,12 +254,12 @@ export const TurnstileTerminal: React.FC = () => {
 
           <button
             onClick={() => setIsHistoryModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 text-xs font-bold text-crimson-400 hover:text-crimson-300 transition-all shadow-sm group"
             title="Ver desglose detallado de accesos registrados"
           >
-            <Clock className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <Clock className="w-4 h-4 text-crimson-400 group-hover:rotate-12 transition-transform" />
             <span>Accesos</span>
-            <span className="bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border border-amber-500/40">
+            <span className="bg-crimson-500/25 text-crimson-300 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border border-crimson-500/40">
               {accessLogs.length}
             </span>
           </button>
@@ -254,10 +272,10 @@ export const TurnstileTerminal: React.FC = () => {
                 window.open('?mode=terminal', '_blank', 'width=1280,height=850');
               }
             }}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-xs font-black text-amber-300 transition-all shadow-glow-gold"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-crimson-500/20 hover:bg-crimson-500/30 border border-crimson-400/50 text-xs font-black text-crimson-300 transition-all shadow-glow-crimson"
             title="Abrir Kiosco de Autoservicio y Registro estilo Smart Fit"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-4 h-4 text-crimson-400" />
             <span>Kiosco Smart Fit</span>
           </button>
 
@@ -266,10 +284,10 @@ export const TurnstileTerminal: React.FC = () => {
             href="https://github.com/Cristiansairec94/legends-gym/releases/latest/download/ControlDeAccesoLegends-Windows-x64.zip"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 text-xs font-bold text-crimson-400 hover:text-crimson-300 transition-all shadow-sm"
             title="Descargar la aplicación de escritorio nativa para Windows (ControlDeAccesoLegends.exe)"
           >
-            <Download className="w-4 h-4 text-amber-400" />
+            <Download className="w-4 h-4 text-crimson-400" />
             <span>Descargar App Windows (.exe)</span>
           </a>
 
@@ -291,7 +309,7 @@ export const TurnstileTerminal: React.FC = () => {
           <div className="p-3 relative">
             <div className="flex items-center justify-between border-b border-gym-border pb-3 mb-2">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
+                <Zap className="w-4 h-4 text-crimson-400" />
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-200">
                   Sensor Biométrico Óptico USB
                 </span>
@@ -329,14 +347,14 @@ export const TurnstileTerminal: React.FC = () => {
                       if (scanHint) setScanHint('');
                     }}
                     onKeyDown={(e) => e.key === 'Enter' && searchQuery.trim() && executeScan(searchQuery.trim())}
-                    placeholder="Ej. Carlos Mendoza, MEM-001 o 45892011..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-zinc-300 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/40 transition-colors shadow-inner"
+                    placeholder="Ej. Juan Pérez, MEM-001 o 45892011..."
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/25 text-sm text-white placeholder-zinc-300 focus:outline-none focus:border-crimson-400 focus:ring-2 focus:ring-crimson-400/40 transition-colors shadow-inner"
                   />
                 </div>
                 <button
                   onClick={() => searchQuery.trim() && executeScan(searchQuery.trim())}
                   disabled={!searchQuery.trim() || scanStatus === 'scanning'}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-bold text-xs rounded-xl shadow-glow-gold transition-all"
+                  className="px-4 py-2 bg-crimson-500 hover:bg-crimson-400 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-glow-crimson transition-all"
                 >
                   Entrada
                 </button>
@@ -372,7 +390,7 @@ export const TurnstileTerminal: React.FC = () => {
               </span>
               <button
                 onClick={() => setIsHistoryModalOpen(true)}
-                className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all"
+                className="flex items-center gap-1.5 text-xs font-bold text-crimson-400 hover:text-crimson-300 bg-crimson-500/10 hover:bg-crimson-500/20 border border-crimson-500/30 px-3 py-1.5 rounded-xl transition-all"
               >
                 <Clock className="w-3.5 h-3.5" />
                 <span>Ver desglose completo &rarr;</span>
@@ -391,4 +409,4 @@ export const TurnstileTerminal: React.FC = () => {
 
     </div>
   );
-};
+}

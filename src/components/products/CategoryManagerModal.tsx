@@ -157,7 +157,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-gym-border flex items-center justify-between bg-gym-surface/40 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-crimson-500/20 border border-crimson-500/30 flex items-center justify-center text-crimson-400">
               <Layers className="w-5 h-5" />
             </div>
             <div>
@@ -165,7 +165,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                 <h3 className="font-bold text-base sm:text-lg text-white">
                   Editar y Gestionar Categorías
                 </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-crimson-500/20 text-crimson-400 border border-crimson-500/30 font-bold">
                   {categories.length} activas
                 </span>
               </div>
@@ -189,11 +189,11 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
           
           {/* 1. SECCIÓN: EDITAR CATEGORÍA SELECCIONADA */}
           {editingId && (
-            <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-4 space-y-3.5 animate-fade-in">
+            <div className="bg-crimson-500/10 border-2 border-crimson-500/40 rounded-2xl p-4 space-y-3.5 animate-fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Edit3 className="w-4 h-4 text-amber-400" />
-                  <span className="font-black text-xs uppercase tracking-wider text-amber-300">
+                  <Edit3 className="w-4 h-4 text-crimson-400" />
+                  <span className="font-black text-xs uppercase tracking-wider text-crimson-300">
                     Editando Categoría:
                   </span>
                   <span className="text-sm font-bold text-white">
@@ -220,7 +220,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                       required
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400 font-semibold"
+                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400 font-semibold"
                     />
                   </div>
 
@@ -247,7 +247,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         onClick={() => setEditIcon(emoji)}
                         className={`w-8 h-8 rounded-lg border text-sm flex items-center justify-center transition-all ${
                           editIcon === emoji
-                            ? 'bg-amber-500 text-black border-amber-400 font-bold scale-110 shadow-sm'
+                            ? 'bg-crimson-500 text-white border-crimson-400 font-bold scale-110 shadow-sm'
                             : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-white'
                         }`}
                       >
@@ -257,7 +257,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-amber-500/20">
+                <div className="flex justify-end gap-2 pt-2 border-t border-crimson-500/20">
                   <button
                     type="button"
                     onClick={cancelEditing}
@@ -267,7 +267,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs shadow-glow-gold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-5 py-1.5 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-extrabold text-xs shadow-glow-crimson transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                     <span>Guardar Cambios</span>
@@ -282,7 +282,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
             <div className="bg-gym-surface/50 border border-gym-border rounded-2xl p-4 space-y-3.5 animate-fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-amber-400" />
+                  <Plus className="w-4 h-4 text-crimson-400" />
                   <span className="font-black text-xs uppercase tracking-wider text-white">
                     Nueva Categoría
                   </span>
@@ -308,7 +308,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="Ej. Barras Energéticas & Snacks"
-                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 bg-gym-surface rounded-xl border border-gym-border text-sm text-white focus:outline-none focus:border-crimson-400"
                     />
                   </div>
 
@@ -335,7 +335,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         onClick={() => setNewIcon(emoji)}
                         className={`w-8 h-8 rounded-lg border text-sm flex items-center justify-center transition-all ${
                           newIcon === emoji
-                            ? 'bg-amber-500 text-black border-amber-400 font-bold scale-110 shadow-sm'
+                            ? 'bg-crimson-500 text-white border-crimson-400 font-bold scale-110 shadow-sm'
                             : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-white'
                         }`}
                       >
@@ -355,7 +355,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-glow-gold flex items-center gap-1.5"
+                    className="px-5 py-1.5 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs shadow-glow-crimson flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     <span>Crear Categoría</span>
@@ -376,7 +376,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCreatingNew(true)}
-                  className="px-3 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                  className="px-3 py-1 rounded-xl bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-xs font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>+ Agregar otra categoría</span>
@@ -394,7 +394,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                     key={cat.id}
                     className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                       isCurrentEditing
-                        ? 'bg-amber-500/15 border-amber-500 shadow-sm ring-1 ring-amber-500/30'
+                        ? 'bg-crimson-500/15 border-crimson-500 shadow-sm ring-1 ring-crimson-500/30'
                         : 'bg-gym-surface/40 hover:bg-gym-surface border-gym-border'
                     }`}
                   >
@@ -409,7 +409,7 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gym-muted">
                           <span className="font-mono text-gray-400">{cat.id}</span>
                           <span>•</span>
-                          <span className="text-amber-400 font-semibold font-mono">
+                          <span className="text-crimson-400 font-semibold font-mono">
                             {count} producto{count !== 1 ? 's' : ''}
                           </span>
                         </div>
@@ -423,8 +423,8 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         onClick={() => startEditing(cat)}
                         className={`p-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
                           isCurrentEditing
-                            ? 'bg-amber-500 text-black font-extrabold'
-                            : 'bg-gym-card hover:bg-amber-500/20 text-gym-muted hover:text-amber-400 border border-gym-border'
+                            ? 'bg-crimson-500 text-white font-extrabold'
+                            : 'bg-gym-card hover:bg-crimson-500/20 text-gym-muted hover:text-crimson-400 border border-gym-border'
                         }`}
                         title="Editar nombre e icono"
                       >

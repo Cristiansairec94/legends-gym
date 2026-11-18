@@ -135,7 +135,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
         <div className="p-4 sm:p-5 bg-[#0f1115] border-b border-gray-800 flex items-center justify-between shrink-0 print:hidden text-white">
           <div className="flex items-center gap-3">
             {/* Orange rounded printer badge */}
-            <div className="w-11 h-11 rounded-2xl bg-amber-500 flex items-center justify-center text-black shadow-md shadow-amber-500/20 shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-crimson-500 flex items-center justify-center text-white shadow-md shadow-crimson-500/20 shrink-0">
               <Printer className="w-6 h-6 stroke-[2.5]" />
             </div>
 
@@ -144,7 +144,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 <h3 className="font-bold text-base sm:text-lg text-white tracking-tight">
                   Imprimir Códigos de Barras
                 </h3>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-crimson-500/15 text-crimson-400 border border-crimson-500/30">
                   TODAS LAS CATEGORÍAS O POR SELECCIÓN
                 </span>
               </div>
@@ -168,14 +168,14 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
           {/* Category Dropdown */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-gray-800 flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-amber-500" />
+              <Layers className="w-4 h-4 text-crimson-500" />
               Categoría:
             </span>
 
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-white px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-800 shadow-sm focus:outline-none focus:border-amber-500 cursor-pointer min-w-[220px]"
+              className="bg-white px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-800 shadow-sm focus:outline-none focus:border-crimson-500 cursor-pointer min-w-[220px]"
             >
               <option value="all">
                 📦 Todas las Categorías ({products.length} productos)
@@ -195,7 +195,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Filtrar..."
-                className="w-full pl-8 pr-3 py-1.5 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                className="w-full pl-8 pr-3 py-1.5 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-crimson-500 focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -210,7 +210,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 onClick={() => setDesignMode('etiquetas_3col')}
                 className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                   designMode === 'etiquetas_3col'
-                    ? 'bg-amber-500 text-black shadow-sm'
+                    ? 'bg-crimson-500 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                 }`}
                 title="3 Columnas - Formato vertical estándar"
@@ -224,7 +224,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                 onClick={() => setDesignMode('etiquetas_4col')}
                 className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-all cursor-pointer ${
                   designMode === 'etiquetas_4col'
-                    ? 'bg-amber-500 text-black shadow-sm'
+                    ? 'bg-crimson-500 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                 }`}
                 title="4 Columnas - Ideal para horizontal / Brother"
@@ -246,7 +246,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
 
             <button
               onClick={toggleSelectAll}
-              className="text-[11px] text-amber-600 hover:text-amber-700 font-bold underline cursor-pointer"
+              className="text-[11px] text-crimson-600 hover:text-crimson-700 font-bold underline cursor-pointer"
             >
               {productsToPrint.length === filteredProducts.length
                 ? 'Deseleccionar todos'
@@ -254,7 +254,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
             </button>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-extrabold text-[11px] shadow-xs">
+          <span className="px-3 py-1 rounded-full bg-crimson-50 text-crimson-800 border border-crimson-300 font-extrabold text-[11px] shadow-xs">
             Formato Carta / A4 optimizado
           </span>
         </div>
@@ -268,7 +268,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
               <p className="text-sm font-semibold text-gray-600">No hay productos seleccionados para imprimir</p>
               <button
                 onClick={() => setSelectedIds(products.map((p) => p.id))}
-                className="text-xs text-amber-600 underline font-bold cursor-pointer"
+                className="text-xs text-crimson-600 underline font-bold cursor-pointer"
               >
                 Seleccionar todos los productos
               </button>
@@ -290,7 +290,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                   <div
                     key={product.id}
                     onClick={() => toggleProduct(product.id)}
-                    className={`barcode-label-card bg-white rounded-2xl border border-gray-200/90 shadow-sm p-4 hover:shadow-md hover:border-amber-400 transition-all flex flex-col items-center justify-between text-center select-none cursor-pointer relative ${
+                    className={`barcode-label-card bg-white rounded-2xl border border-gray-200/90 shadow-sm p-4 hover:shadow-md hover:border-crimson-400 transition-all flex flex-col items-center justify-between text-center select-none cursor-pointer relative ${
                       designMode === 'etiquetas_4col'
                         ? 'print:h-[42mm] print:p-2'
                         : 'print:h-[50mm] print:p-3'
@@ -311,7 +311,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
                     </h4>
 
                     {/* Product Price */}
-                    <div className="text-base font-black text-[#d97706] tracking-tight my-1">
+                    <div className="text-base font-black text-[#C8102E] tracking-tight my-1">
                       ${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                     </div>
 
@@ -347,7 +347,7 @@ export const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({
           <button
             onClick={handlePrint}
             disabled={productsToPrint.length === 0}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-md shadow-amber-500/20 flex items-center gap-2 uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-crimson-500 hover:bg-crimson-600 text-white font-extrabold text-xs shadow-md shadow-crimson-500/20 flex items-center gap-2 uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Printer className="w-4 h-4 stroke-[2.5]" />
             <span>IMPRIMIR {productsToPrint.length} CÓDIGOS</span>

@@ -100,7 +100,7 @@ function createWindow() {
     title: appMode === 'terminal'
       ? 'FITNESS LEGENDS - Terminal de Control de Acceso'
       : 'FITNESS LEGENDS GYM - Sistema de Gestión',
-    backgroundColor: '#09090b',
+    backgroundColor: '#0D0E11',
     icon: appIcon,
     autoHideMenuBar: true,
     show: false,

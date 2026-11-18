@@ -1,7 +1,7 @@
 {
   "name": "legends",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -16,7 +16,6 @@
     "package": "node scripts/package-app.cjs"
   },
   "dependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.13",
     "@types/canvas-confetti": "^1.9.0",
     "autoprefixer": "^10.6.1",
     "canvas-confetti": "^1.9.4",

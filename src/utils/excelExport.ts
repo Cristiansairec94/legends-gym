@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { getMembershipStatus, resolveSaleType } from './membershipUtils';
 import { CashRegisterSession, Expense, Sale, GymSettings } from '../types';
+import { getSaleItemLabel, toSafeNumber } from './saleNormalizer';
 
 export const exportShiftReportToExcel = (
   cashSession: CashRegisterSession,
@@ -138,8 +139,9 @@ export const exportShiftReportToExcel = (
   ];
 
   const salesRows = shiftSales.map(s => {
-    const itemsDescription = s.items && s.items.length > 0
-      ? s.items.map((it: any) => `${it.quantity || 1}x ${it.product?.name || it.name || s.planName || 'Cobro'}`).join(' | ')
+    const items = Array.isArray(s.items) ? s.items : [];
+    const itemsDescription = items.length > 0
+      ? items.map((it: any) => `${toSafeNumber(it?.quantity, 1)}x ${getSaleItemLabel(it, s.planName || 'Cobro')}`).join(' | ')
       : s.planName || 'Venta mostrador';
 
     const paymentLabel = s.paymentMethod === 'cash' 
@@ -158,13 +160,13 @@ export const exportShiftReportToExcel = (
 
     return [
       s.folio || s.id,
-      new Date(s.timestamp).toLocaleString('es-MX'),
+      s.timestamp ? new Date(s.timestamp).toLocaleString('es-MX') : '-',
       saleTypeLabel,
       s.clientName || 'Público en General',
       paymentLabel,
       itemsDescription,
-      s.subtotal || s.total,
-      s.total,
+      toSafeNumber(s.subtotal, toSafeNumber(s.total)),
+      toSafeNumber(s.total),
       s.cashierName || cashSession.openedBy
     ];
   });
@@ -248,19 +250,19 @@ export const exportIncomeReportToExcel = (
   const wb = XLSX.utils.book_new();
 
   const totalSalesCount = sales.length;
-  const grandTotal = sales.reduce((sum, s) => sum + s.total, 0);
-  const totalCash = sales.filter(s => s.paymentMethod === 'cash').reduce((sum, s) => sum + s.total, 0);
-  const totalCard = sales.filter(s => s.paymentMethod === 'card').reduce((sum, s) => sum + s.total, 0);
-  const totalTransfer = sales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + s.total, 0);
+  const grandTotal = sales.reduce((sum, s) => sum + toSafeNumber(s.total), 0);
+  const totalCash = sales.filter(s => s.paymentMethod === 'cash').reduce((sum, s) => sum + toSafeNumber(s.total), 0);
+  const totalCard = sales.filter(s => s.paymentMethod === 'card').reduce((sum, s) => sum + toSafeNumber(s.total), 0);
+  const totalTransfer = sales.filter(s => s.paymentMethod === 'transfer').reduce((sum, s) => sum + toSafeNumber(s.total), 0);
   const avgTicket = totalSalesCount > 0 ? Math.round(grandTotal / totalSalesCount) : 0;
 
   // Desglose por tipo de venta (Membresías, Pases de Visita y Punto de Venta separados)
   const membershipSales = sales.filter(s => resolveSaleType(s) === 'membership');
   const visitSales = sales.filter(s => resolveSaleType(s) === 'visit');
   const storeSales = sales.filter(s => resolveSaleType(s) === 'store');
-  const totalMemberships = membershipSales.reduce((sum, s) => sum + s.total, 0);
-  const totalVisits = visitSales.reduce((sum, s) => sum + s.total, 0);
-  const totalStore = storeSales.reduce((sum, s) => sum + s.total, 0);
+  const totalMemberships = membershipSales.reduce((sum, s) => sum + toSafeNumber(s.total), 0);
+  const totalVisits = visitSales.reduce((sum, s) => sum + toSafeNumber(s.total), 0);
+  const totalStore = storeSales.reduce((sum, s) => sum + toSafeNumber(s.total), 0);
 
   // Desglose por cajero
   const cashierMap: Record<string, { count: number; total: number }> = {};
@@ -268,7 +270,7 @@ export const exportIncomeReportToExcel = (
     const name = s.cashierName || 'Cajero';
     if (!cashierMap[name]) cashierMap[name] = { count: 0, total: 0 };
     cashierMap[name].count += 1;
-    cashierMap[name].total += s.total;
+    cashierMap[name].total += toSafeNumber(s.total);
   });
 
   // ==========================================
@@ -333,8 +335,9 @@ export const exportIncomeReportToExcel = (
   ];
 
   const detailRows = sales.map(s => {
-    const itemsDescription = s.items && s.items.length > 0
-      ? s.items.map(it => `${it.quantity}x ${it.product?.name || 'Producto'} ($${it.unitPrice})`).join(' | ')
+    const items = Array.isArray(s.items) ? s.items : [];
+    const itemsDescription = items.length > 0
+      ? items.map(it => `${toSafeNumber(it?.quantity, 1)}x ${getSaleItemLabel(it, 'Producto')} ($${toSafeNumber(it?.unitPrice ?? it?.product?.price)})`).join(' | ')
       : s.planName || 'Cobro membresía / pase';
 
     const paymentLabel = s.paymentMethod === 'cash'
@@ -353,16 +356,16 @@ export const exportIncomeReportToExcel = (
 
     return [
       s.folio || s.id,
-      new Date(s.timestamp).toLocaleString('es-MX'),
+      s.timestamp ? new Date(s.timestamp).toLocaleString('es-MX') : '-',
       typeLabel,
       s.clientName || 'Público en General',
       s.clientId || '-',
       itemsDescription,
       paymentLabel,
       s.cashierName || 'Administración',
-      s.subtotal || s.total,
-      s.tax || 0,
-      s.total
+      toSafeNumber(s.subtotal, toSafeNumber(s.total)),
+      toSafeNumber(s.tax),
+      toSafeNumber(s.total)
     ];
   });
 

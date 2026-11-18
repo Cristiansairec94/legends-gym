@@ -40,6 +40,7 @@ import gymBg4k from '../../assets/gym-background-4k.jpg';
 import { fetchMembersFromServer } from '../../services/syncService';
 import { getTerminalConfig } from './TerminalSyncModal';
 import { calculateMembershipDates } from '../../utils/membershipUtils';
+import { getGymAvatar } from '../../utils/genderAvatar';
 
 export interface SmartFitKioskProps {
   onOpenErp?: () => void;
@@ -1187,13 +1188,20 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
                 onScanClick={() => {
                   if (searchQuery.trim()) {
                     executeScanMember(searchQuery.trim());
+                  } else if (members.length > 0) {
+                    const activePool = members.filter(
+                      (m) => !(m.membership?.status === 'expired' || (m.membership?.daysRemaining ?? 0) < 0)
+                    );
+                    const basePool = activePool.length > 0 ? activePool : members;
+                    const chosen = basePool[Math.floor(Math.random() * basePool.length)];
+                    executeScanMember(chosen.id);
                   } else {
                     searchInputRef.current?.focus();
                   }
                 }}
                 clientName={verifiedMember?.fullName}
                 planName={verifiedMember?.membership?.planName}
-                clientPhoto={verifiedMember?.avatarUrl}
+                clientPhoto={verifiedMember ? getGymAvatar(verifiedMember.fullName, verifiedMember.avatarUrl, verifiedMember.gender) : undefined}
               />
             </div>
 
@@ -1273,7 +1281,7 @@ export const SmartFitKiosk: React.FC<SmartFitKioskProps> = ({ onOpenErp }) => {
 
               <div className="flex items-center gap-4">
                 <img
-                  src={createdMember.avatarUrl || '/logo.png'}
+                  src={getGymAvatar(createdMember.fullName, createdMember.avatarUrl, createdMember.gender)}
                   alt={createdMember.fullName}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md ring-2 ring-black"
                 />

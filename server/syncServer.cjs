@@ -4,11 +4,12 @@ const path = require('path');
 const os = require('os');
 
 const PORT = process.env.PORT || 3001;
+const ENV_DATA_DIR = process.env.LEGENDS_DATA_DIR ? path.resolve(process.env.LEGENDS_DATA_DIR) : '';
 const WORKSPACE_DATA_DIR = path.resolve(process.cwd(), 'data');
 const LOCAL_DATA_DIR = __dirname.includes('app.asar')
   ? path.resolve(path.dirname(process.execPath), 'data')
   : path.resolve(__dirname, '../data');
-const DATA_DIR = fs.existsSync(WORKSPACE_DATA_DIR) ? WORKSPACE_DATA_DIR : LOCAL_DATA_DIR;
+const DATA_DIR = ENV_DATA_DIR || (fs.existsSync(WORKSPACE_DATA_DIR) ? WORKSPACE_DATA_DIR : LOCAL_DATA_DIR);
 const DB_FILE = path.join(DATA_DIR, 'legends_database.json');
 
 // Ensure data directory exists
@@ -188,6 +189,11 @@ if (fs.existsSync(DB_FILE)) {
     const parsed = JSON.parse(raw);
     db = { ...db, ...parsed };
     if (!Array.isArray(db.deletedMemberIds)) db.deletedMemberIds = [];
+    if (!Array.isArray(db.deletedProductIds)) db.deletedProductIds = [];
+    if (!Array.isArray(db.deletedExpenseIds)) db.deletedExpenseIds = [];
+    if (!Array.isArray(db.deletedEmployeeIds)) db.deletedEmployeeIds = [];
+    if (!Array.isArray(db.roles)) db.roles = [];
+    if (!Array.isArray(db.branches)) db.branches = [];
     if (Array.isArray(db.catalogPlans)) {
       db.catalogPlans = db.catalogPlans.filter(p => !isLegacyRemovedPlan(p));
     }
@@ -309,7 +315,7 @@ function normalizeMemberAvatar(m) {
   return { ...m, gender };
 }
 
-function saveDbToDisk() {
+function saveDbToDisk(options = {}) {
   try {
     if (Array.isArray(db.members)) {
       db.members = db.members.map(m => normalizeMemberAvatar(m));
@@ -331,9 +337,212 @@ function saveDbToDisk() {
         try { fs.writeFileSync(DB_FILE, serialized, 'utf8'); } catch {}
       }, 250);
     }
+    if (!options.skipCloudPush) {
+      scheduleCloudMirrorPush();
+    }
   } catch (e) {
     console.error('[DB] Error guardando en disco:', e);
   }
+}
+
+const CLOUD_SYNC_URL = (process.env.CLOUD_SYNC_URL || 'https://legends-gym-gold.vercel.app').replace(/\/+$/, '');
+const IS_CLOUD_SYNC_DISABLED = process.env.DISABLE_CLOUD_SYNC === '1' || process.env.NODE_ENV === 'test';
+let cloudMirrorTimer = null;
+let cloudPollInterval = null;
+let lastPushedLocalVersion = 0;
+let lastCloudSeenVersion = 0;
+let lastCloudSyncAt = null;
+let isCloudSyncBusy = false;
+
+function mergeCloudRecordsById(localList, remoteList, deletedIds = []) {
+  const delSet = new Set(deletedIds || []);
+  const map = new Map();
+  let changed = false;
+  for (const item of localList || []) {
+    if (item && item.id && !delSet.has(item.id)) map.set(item.id, item);
+  }
+  for (const r of remoteList || []) {
+    if (!r || !r.id || delSet.has(r.id)) continue;
+    const cur = map.get(r.id);
+    if (!cur) {
+      map.set(r.id, r);
+      changed = true;
+    } else {
+      const curTs = cur.updatedAt ? new Date(cur.updatedAt).getTime() : 0;
+      const rTs = r.updatedAt ? new Date(r.updatedAt).getTime() : 0;
+      if (rTs > curTs) {
+        map.set(r.id, { ...cur, ...r });
+        changed = true;
+      }
+    }
+  }
+  return { list: Array.from(map.values()), changed };
+}
+
+async function mirrorPushToCloud() {
+  if (IS_CLOUD_SYNC_DISABLED || isCloudSyncBusy || typeof fetch !== 'function') return;
+  if (db.version <= lastPushedLocalVersion && lastPushedLocalVersion > 0) return;
+  isCloudSyncBusy = true;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${CLOUD_SYNC_URL}/api/sync/database`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'full_sync',
+        database: {
+          members: db.members,
+          products: db.products,
+          sales: db.sales,
+          expenses: db.expenses,
+          cashSession: db.cashSession,
+          employees: db.employees,
+          roles: db.roles,
+          settings: db.settings,
+          catalogPlans: db.catalogPlans,
+          branches: db.branches,
+          accessLogs: db.accessLogs,
+          terminalDesign: db.terminalDesign,
+          deletedMemberIds: db.deletedMemberIds,
+          deletedProductIds: db.deletedProductIds,
+          deletedExpenseIds: db.deletedExpenseIds,
+          deletedEmployeeIds: db.deletedEmployeeIds,
+        },
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (res.ok) {
+      const json = await res.json();
+      lastPushedLocalVersion = db.version;
+      if (json && json.version) lastCloudSeenVersion = Number(json.version);
+      lastCloudSyncAt = new Date().toISOString();
+    }
+  } catch {
+    // Non-blocking background sync: retry automatically on next tick
+  } finally {
+    isCloudSyncBusy = false;
+  }
+}
+
+async function mirrorPullFromCloud() {
+  if (IS_CLOUD_SYNC_DISABLED || isCloudSyncBusy || typeof fetch !== 'function') return;
+  isCloudSyncBusy = true;
+  let needsRehydratePush = false;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${CLOUD_SYNC_URL}/api/sync/database?sinceVersion=${lastCloudSeenVersion}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json || !json.success) return;
+    const remoteVer = Number(json.version || 0);
+    if (remoteVer === 0) return;
+
+    const remoteDb = json.database;
+    if (
+      remoteDb &&
+      remoteVer <= 1 &&
+      (!remoteDb.members || remoteDb.members.length === 0) &&
+      (!remoteDb.sales || remoteDb.sales.length === 0) &&
+      ((db.members && db.members.length > 0) || (db.sales && db.sales.length > 0))
+    ) {
+      needsRehydratePush = true;
+      lastPushedLocalVersion = 0;
+      return;
+    }
+
+    lastCloudSeenVersion = remoteVer;
+    if (!remoteDb) return;
+
+    let anyLocalChange = false;
+    for (const delKey of ['deletedMemberIds', 'deletedProductIds', 'deletedExpenseIds', 'deletedEmployeeIds']) {
+      if (Array.isArray(remoteDb[delKey])) {
+        const mergedSet = new Set([...(db[delKey] || []), ...remoteDb[delKey]]);
+        if (mergedSet.size > (db[delKey] || []).length) {
+          db[delKey] = Array.from(mergedSet);
+          anyLocalChange = true;
+        }
+      }
+    }
+
+    const mRes = mergeCloudRecordsById(db.members, remoteDb.members, db.deletedMemberIds);
+    if (mRes.changed) { db.members = mRes.list; anyLocalChange = true; }
+
+    const pRes = mergeCloudRecordsById(db.products, remoteDb.products, db.deletedProductIds);
+    if (pRes.changed) { db.products = pRes.list; anyLocalChange = true; }
+
+    const sRes = mergeCloudRecordsById(db.sales, (remoteDb.sales || []).map(normalizeServerSale), []);
+    if (sRes.changed) { db.sales = sRes.list; anyLocalChange = true; }
+
+    const eRes = mergeCloudRecordsById(db.expenses, remoteDb.expenses, db.deletedExpenseIds);
+    if (eRes.changed) { db.expenses = eRes.list; anyLocalChange = true; }
+
+    const empRes = mergeCloudRecordsById(db.employees, remoteDb.employees, db.deletedEmployeeIds);
+    if (empRes.changed) { db.employees = empRes.list; anyLocalChange = true; }
+
+    const cpRes = mergeCloudRecordsById(db.catalogPlans, (remoteDb.catalogPlans || []).filter(p => !isLegacyRemovedPlan(p)), []);
+    if (cpRes.changed) { db.catalogPlans = cpRes.list; anyLocalChange = true; }
+
+    const logRes = mergeCloudRecordsById(db.accessLogs, remoteDb.accessLogs, []);
+    if (logRes.changed) { db.accessLogs = logRes.list.slice(0, 1000); anyLocalChange = true; }
+
+    if (remoteDb.cashSession) {
+      const lTs = new Date(db.cashSession?.updatedAt || db.cashSession?.openedAt || 0).getTime();
+      const rTs = new Date(remoteDb.cashSession.updatedAt || remoteDb.cashSession.openedAt || 0).getTime();
+      if (!db.cashSession || rTs > lTs) {
+        db.cashSession = remoteDb.cashSession;
+        anyLocalChange = true;
+      }
+    }
+    if (remoteDb.terminalDesign) {
+      const lTs = new Date(db.terminalDesign?.updatedAt || 0).getTime();
+      const rTs = new Date(remoteDb.terminalDesign.updatedAt || 0).getTime();
+      if (!db.terminalDesign || rTs > lTs) {
+        db.terminalDesign = remoteDb.terminalDesign;
+        anyLocalChange = true;
+      }
+    }
+
+    if (Array.isArray(remoteDb.pendingVisitRequests)) {
+      const vr = mergeCloudRecordsById(db.pendingVisitRequests, remoteDb.pendingVisitRequests, []);
+      if (vr.changed) { db.pendingVisitRequests = vr.list; anyLocalChange = true; }
+    }
+    if (Array.isArray(remoteDb.pendingRegistrationRequests)) {
+      const rr = mergeCloudRecordsById(db.pendingRegistrationRequests, remoteDb.pendingRegistrationRequests, []);
+      if (rr.changed) { db.pendingRegistrationRequests = rr.list; anyLocalChange = true; }
+    }
+
+    lastCloudSyncAt = new Date().toISOString();
+    if (anyLocalChange) {
+      db.version += 1;
+      db.updatedAt = new Date().toISOString();
+      saveDbToDisk({ skipCloudPush: true });
+      broadcastSseEvent({ type: 'DATABASE_UPDATED', version: db.version, timestamp: Date.now() });
+    }
+  } catch {
+    // offline or unreachable cloud
+  } finally {
+    isCloudSyncBusy = false;
+    if (needsRehydratePush) {
+      mirrorPushToCloud().catch(() => {});
+    }
+  }
+}
+
+function scheduleCloudMirrorPush() {
+  if (IS_CLOUD_SYNC_DISABLED) return;
+  if (cloudMirrorTimer) clearTimeout(cloudMirrorTimer);
+  cloudMirrorTimer = setTimeout(() => {
+    cloudMirrorTimer = null;
+    mirrorPushToCloud().catch(() => {});
+  }, 1200);
 }
 
 function getLocalIpAddresses() {
@@ -453,6 +662,11 @@ const server = http.createServer(async (req, res) => {
         membersCount: db.members.length,
         logsCount: db.accessLogs.length,
         sseClientsCount: sseClients.size,
+        persistentStorage: true,
+        storageBackend: 'local-json',
+        cloudMirrorEnabled: !IS_CLOUD_SYNC_DISABLED,
+        cloudSyncUrl: IS_CLOUD_SYNC_DISABLED ? null : CLOUD_SYNC_URL,
+        lastCloudSyncAt,
         serverTime: new Date().toISOString()
       });
     }
@@ -1057,6 +1271,16 @@ const server = http.createServer(async (req, res) => {
           }
         } else if (entity === 'settings') {
           if (item) db.settings = { ...(db.settings || {}), ...item };
+        } else if (entity === 'roles') {
+          if (Array.isArray(item)) db.roles = item.filter(r => r && r.id !== 'trainer');
+        } else if (entity === 'branches') {
+          if (Array.isArray(item)) {
+            db.branches = item;
+          } else if (item && item.id) {
+            if (!Array.isArray(db.branches)) db.branches = [];
+            const exists = db.branches.some(b => b.id === item.id);
+            db.branches = exists ? db.branches.map(b => b.id === item.id ? { ...b, ...item } : b) : [item, ...db.branches];
+          }
         } else if (entity === 'terminalDesign') {
           if (item) db.terminalDesign = item;
         } else if (entity === 'catalogPlans') {
@@ -1083,6 +1307,18 @@ const server = http.createServer(async (req, res) => {
 
       if (body.action === 'full_sync' || body.database) {
         const incoming = body.database || body;
+        if (Array.isArray(incoming.deletedMemberIds)) {
+          db.deletedMemberIds = Array.from(new Set([...(db.deletedMemberIds || []), ...incoming.deletedMemberIds]));
+        }
+        if (Array.isArray(incoming.deletedProductIds)) {
+          db.deletedProductIds = Array.from(new Set([...(db.deletedProductIds || []), ...incoming.deletedProductIds]));
+        }
+        if (Array.isArray(incoming.deletedExpenseIds)) {
+          db.deletedExpenseIds = Array.from(new Set([...(db.deletedExpenseIds || []), ...incoming.deletedExpenseIds]));
+        }
+        if (Array.isArray(incoming.deletedEmployeeIds)) {
+          db.deletedEmployeeIds = Array.from(new Set([...(db.deletedEmployeeIds || []), ...incoming.deletedEmployeeIds.filter(id => id !== 'EMP-000')]));
+        }
         if (Array.isArray(incoming.members)) {
           const map = new Map();
           for (const m of db.members || []) if (m && m.id && !db.deletedMemberIds?.includes(m.id)) map.set(m.id, m);
@@ -1097,8 +1333,8 @@ const server = http.createServer(async (req, res) => {
         }
         if (Array.isArray(incoming.sales)) {
           const map = new Map();
-          for (const s of db.sales || []) if (s && s.id) map.set(s.id, s);
-          for (const s of incoming.sales) if (s && s.id) map.set(s.id, { ...(map.get(s.id) || {}), ...s });
+          for (const s of db.sales || []) if (s && s.id) map.set(s.id, normalizeServerSale(s));
+          for (const s of incoming.sales) if (s && s.id) map.set(s.id, { ...(map.get(s.id) || {}), ...normalizeServerSale(s) });
           db.sales = Array.from(map.values());
         }
         if (Array.isArray(incoming.expenses)) {
@@ -1107,12 +1343,39 @@ const server = http.createServer(async (req, res) => {
           for (const e of incoming.expenses) if (e && e.id && !db.deletedExpenseIds?.includes(e.id)) map.set(e.id, { ...(map.get(e.id) || {}), ...e });
           db.expenses = Array.from(map.values());
         }
-        if (incoming.cashSession) db.cashSession = incoming.cashSession;
+        if (incoming.cashSession) {
+          const lTs = new Date(db.cashSession?.updatedAt || db.cashSession?.openedAt || 0).getTime();
+          const rTs = new Date(incoming.cashSession.updatedAt || incoming.cashSession.openedAt || 0).getTime();
+          if (!db.cashSession || rTs >= lTs) db.cashSession = incoming.cashSession;
+        }
         if (Array.isArray(incoming.employees)) {
           const map = new Map();
-          for (const emp of db.employees || []) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, emp);
-          for (const emp of incoming.employees) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id)) map.set(emp.id, { ...(map.get(emp.id) || {}), ...emp });
+          for (const emp of db.employees || []) if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id) && emp.role !== 'trainer') map.set(emp.id, emp);
+          for (const emp of incoming.employees) {
+            if (emp && emp.id && !db.deletedEmployeeIds?.includes(emp.id) && !(emp.id === 'EMP-003' && emp.role === 'trainer')) {
+              const normEmp = emp.role === 'trainer' ? { ...emp, role: 'receptionist' } : emp;
+              const existing = map.get(normEmp.id);
+              if (!existing) {
+                map.set(normEmp.id, normEmp);
+              } else {
+                const exTs = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+                const incTs = normEmp.updatedAt ? new Date(normEmp.updatedAt).getTime() : 0;
+                if (incTs > exTs || (exTs === 0 && incTs === 0)) {
+                  map.set(normEmp.id, { ...existing, ...normEmp });
+                }
+              }
+            }
+          }
           db.employees = Array.from(map.values());
+        }
+        if (Array.isArray(incoming.roles) && incoming.roles.length > 0) {
+          db.roles = incoming.roles.filter(r => r && r.id !== 'trainer');
+        }
+        if (Array.isArray(incoming.branches) && incoming.branches.length > 0) {
+          const map = new Map();
+          for (const b of db.branches || []) if (b && b.id) map.set(b.id, b);
+          for (const b of incoming.branches) if (b && b.id) map.set(b.id, { ...(map.get(b.id) || {}), ...b });
+          db.branches = Array.from(map.values());
         }
         if (incoming.settings) db.settings = { ...(db.settings || {}), ...incoming.settings };
         if (incoming.terminalDesign) {
@@ -1163,7 +1426,7 @@ server.on('error', (err) => {
 
 function startServer(port = PORT) {
   server.listen(port, '0.0.0.0', () => {
-    saveDbToDisk();
+    saveDbToDisk({ skipCloudPush: true });
     if (!pingInterval) {
       pingInterval = setInterval(() => {
         for (const client of sseClients) {
@@ -1175,9 +1438,21 @@ function startServer(port = PORT) {
         }
       }, 15000);
     }
+    if (!IS_CLOUD_SYNC_DISABLED) {
+      setTimeout(() => {
+        mirrorPullFromCloud()
+          .then(() => mirrorPushToCloud())
+          .catch(() => {});
+      }, 1500);
+      if (!cloudPollInterval) {
+        cloudPollInterval = setInterval(() => {
+          mirrorPullFromCloud().catch(() => {});
+        }, 12000);
+      }
+    }
     const ips = getLocalIpAddresses();
     console.log('\n======================================================');
-    console.log('   FITNESS LEGENDS - SERVIDOR DE SINCRONIZACIÃ“N LAN');
+    console.log('   FITNESS LEGENDS - SERVIDOR DE SINCRONIZACIÓN LAN');
     console.log('======================================================');
     console.log(`[*] Puerto activo: ${port}`);
     console.log('[*] Direcciones IP disponibles para conectar la terminal:');

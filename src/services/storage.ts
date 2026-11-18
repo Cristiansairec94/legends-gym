@@ -24,6 +24,7 @@ import {
   filterLegacyCatalogPlans
 } from '../data/initialEmployees';
 import { INITIAL_BRANCHES } from '../data/initialBranches';
+import { normalizeSaleList } from '../utils/saleNormalizer';
 import { INITIAL_EXPENSES } from '../data/initialExpenses';
 import { getGymAvatar, serializeGymAvatar } from '../utils/genderAvatar';
 import { hashSecret, signSessionPayload, verifySessionSignature } from '../utils/securityCrypto';
@@ -39,6 +40,7 @@ const KEYS = {
   CASH_SESSION: 'legends_cash_session_v1',
   ACTIVE_ROLE: 'legends_active_role_v1',
   EMPLOYEES: 'legends_employees_v1',
+  DELETED_EMPLOYEE_IDS: 'legends_deleted_employee_ids_v1',
   ROLES: 'legends_roles_v1',
   SETTINGS: 'legends_settings_v1',
   CATALOG_PLANS: 'legends_catalog_plans_v1',
@@ -47,18 +49,78 @@ const KEYS = {
   EXPENSES: 'legends_expenses_v1',
   NOTIFICATIONS: 'legends_notifications_v1',
   LAST_SYNC: 'legends_last_sync_v1',
-  CURRENT_USER: 'legends_current_user_v1',
-  TAB_SESSION_USER: 'legends_tab_session_user_v1',
-  TAB_SESSION_TOKEN: 'legends_tab_session_token_v1',
-  ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v1',
-  SECURITY_ALERT: 'legends_security_alert_v1',
-  SECURITY_AUDIT: 'legends_security_audit_v1',
-  LOGIN_LOCKOUT: 'legends_login_lockout_v1',
+  CURRENT_USER: 'legends_current_user_v3',
+  TAB_SESSION_USER: 'legends_tab_session_user_v3',
+  TAB_SESSION_TOKEN: 'legends_tab_session_token_v3',
+  ACTIVE_SESSION_LOCK: 'legends_active_session_lock_v3',
+  SECURITY_ALERT: 'legends_security_alert_v3',
+  SECURITY_AUDIT: 'legends_security_audit_v3',
+  LOGIN_LOCKOUT: 'legends_login_lockout_v3',
   TERMINAL_DESIGN: 'legends_terminal_design_v1'
 };
 
+// Purge legacy session/alert keys so stale alerts never persist across updates
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('legends_security_alert_v1');
+    localStorage.removeItem('legends_security_alert_v2');
+    localStorage.removeItem('legends_security_alert_v3');
+    localStorage.removeItem('legends_active_session_lock_v1');
+    localStorage.removeItem('legends_active_session_lock_v2');
+    localStorage.removeItem('legends_current_user_v1');
+    localStorage.removeItem('legends_login_lockout_v1');
+    sessionStorage.removeItem('legends_tab_session_user_v1');
+    sessionStorage.removeItem('legends_tab_session_token_v1');
+  } catch {
+    // ignore
+  }
+}
+
+const isRemovedCoachEmployee = (emp: Employee): boolean =>
+  emp.email?.toLowerCase() === 'marcos.coach@legendsgym.com' ||
+  emp.username?.toLowerCase() === 'marcos.coach' ||
+  (emp.id === 'EMP-003' && (emp.role as string) === 'trainer');
+
+export const sanitizeEmployees = (list: Employee[], deletedIds: string[] = []): Employee[] =>
+  list
+    .filter((emp) => emp && !isRemovedCoachEmployee(emp) && !deletedIds.includes(emp.id))
+    .map((emp) => ({
+      ...emp,
+      role: (emp.role as string) === 'trainer' ? 'receptionist' : emp.role,
+      shift: 'Turno Completo' as const,
+    }));
+
+export const sanitizeRoles = (list: RoleDefinition[]): RoleDefinition[] =>
+  list.filter((r) => r && (r.id as string) !== 'trainer');
 
 export const storage = {
+  getDeletedEmployeeIds(): string[] {
+    try {
+      const raw = localStorage.getItem(KEYS.DELETED_EMPLOYEE_IDS);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addDeletedEmployeeId(id: string): void {
+    if (!id || id === 'EMP-000') return;
+    try {
+      const current = this.getDeletedEmployeeIds();
+      if (!current.includes(id)) {
+        localStorage.setItem(KEYS.DELETED_EMPLOYEE_IDS, JSON.stringify([...current, id]));
+      }
+    } catch {}
+  },
+
+  removeDeletedEmployeeId(id: string): void {
+    try {
+      const current = this.getDeletedEmployeeIds();
+      if (current.includes(id)) {
+        localStorage.setItem(KEYS.DELETED_EMPLOYEE_IDS, JSON.stringify(current.filter((x) => x !== id)));
+      }
+    } catch {}
+  },
   getDeletedMemberIds(): string[] {
     try {
       const raw = localStorage.getItem(KEYS.DELETED_MEMBER_IDS);
@@ -200,7 +262,7 @@ export const storage = {
   getSales(): Sale[] {
     try {
       const data = localStorage.getItem(KEYS.SALES);
-      return data ? JSON.parse(data) : [];
+      return data ? normalizeSaleList(JSON.parse(data)) : [];
     } catch {
       return [];
     }
@@ -208,7 +270,7 @@ export const storage = {
 
   saveSales(sales: Sale[]): void {
     try {
-      localStorage.setItem(KEYS.SALES, JSON.stringify(sales));
+      localStorage.setItem(KEYS.SALES, JSON.stringify(normalizeSaleList(sales)));
     } catch (e) {
       console.error('Error saving sales:', e);
     }
@@ -287,8 +349,8 @@ export const storage = {
 
   getActiveRole(): UserRole {
     try {
-      const r = localStorage.getItem(KEYS.ACTIVE_ROLE) as UserRole;
-      return (r === 'admin' || r === 'receptionist' || r === 'trainer') ? r : 'admin';
+      const r = localStorage.getItem(KEYS.ACTIVE_ROLE);
+      return (r === 'admin' || r === 'receptionist') ? r : 'admin';
     } catch {
       return 'admin';
     }
@@ -359,6 +421,17 @@ export const storage = {
         }
 
         const tabUser: Employee = JSON.parse(tabUserRaw!);
+        if (isRemovedCoachEmployee(tabUser)) {
+          localStorage.removeItem(KEYS.ACTIVE_SESSION_LOCK);
+          localStorage.removeItem(KEYS.CURRENT_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_USER);
+          sessionStorage.removeItem(KEYS.TAB_SESSION_TOKEN);
+          window.name = '';
+          return null;
+        }
+        const normalizedTabUser: Employee =
+          (tabUser.role as string) === 'trainer' ? { ...tabUser, role: 'receptionist' } : tabUser;
+
         const isSignatureValid = verifySessionSignature(
           tabUser.id,
           tabUser.role,
@@ -385,7 +458,7 @@ export const storage = {
           return null;
         }
 
-        return tabUser;
+        return normalizedTabUser;
       }
 
       // Clean any orphan tab storage if global lock was cleared
@@ -556,18 +629,22 @@ export const storage = {
   // Employees (with cryptographic hashing for stored passwords & PINs)
   getEmployees(): Employee[] {
     try {
+      const deletedIds = this.getDeletedEmployeeIds();
       const data = localStorage.getItem(KEYS.EMPLOYEES);
       if (!data) {
-        return INITIAL_EMPLOYEES.map((emp) => ({
+        return sanitizeEmployees(INITIAL_EMPLOYEES, deletedIds).map((emp) => ({
           ...emp,
           password: hashSecret(emp.password || '1234'),
           pin: hashSecret(emp.pin || '1234')
         }));
       }
       const parsed: Employee[] = JSON.parse(data);
-      return parsed.map((emp) => {
+      const mapped = parsed.map((emp) => {
         const initial = INITIAL_EMPLOYEES.find(
-          (ie) => ie.id === emp.id || ie.email.toLowerCase() === emp.email.toLowerCase()
+          (ie) =>
+            ie.id === emp.id ||
+            ie.email.toLowerCase() === emp.email.toLowerCase() ||
+            (emp.username && ie.username?.toLowerCase() === emp.username.toLowerCase())
         );
         return {
           ...emp,
@@ -576,21 +653,76 @@ export const storage = {
           username: emp.username || initial?.username || emp.email.split('@')[0],
         };
       });
+
+      // Ensure the master admin account (username: admin / password: admin) is ALWAYS present in the list
+      const hasAdminUser = mapped.some((e) => e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000');
+      if (!hasAdminUser) {
+        const adminFromInitial = INITIAL_EMPLOYEES.find((e) => e.username === 'admin') || INITIAL_EMPLOYEES[0];
+        mapped.unshift({
+          ...adminFromInitial,
+          username: adminFromInitial.username || 'admin',
+          password: hashSecret(adminFromInitial.password || 'admin'),
+          pin: hashSecret(adminFromInitial.pin || 'admin')
+        });
+      } else {
+        // Guarantee admin user active status & non-empty credentials
+        const adminIndex = mapped.findIndex((e) => e.username?.toLowerCase() === 'admin' || e.id === 'EMP-000');
+        if (adminIndex !== -1) {
+          mapped[adminIndex].role = 'admin';
+          mapped[adminIndex].status = 'active';
+          if (!mapped[adminIndex].password || mapped[adminIndex].password === '1234') {
+            mapped[adminIndex].password = hashSecret('admin');
+          }
+          if (!mapped[adminIndex].pin) {
+            mapped[adminIndex].pin = hashSecret('admin');
+          }
+        }
+      }
+
+      const cleaned = sanitizeEmployees(mapped, deletedIds);
+      if (
+        cleaned.length !== parsed.length ||
+        cleaned.some((emp, idx) => emp.role !== parsed[idx]?.role || emp.password !== parsed[idx]?.password || emp.shift !== parsed[idx]?.shift)
+      ) {
+        try {
+          localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(cleaned));
+        } catch {}
+      }
+
+      return cleaned;
     } catch {
-      return INITIAL_EMPLOYEES;
+      return INITIAL_EMPLOYEES.map((emp) => ({
+        ...emp,
+        password: hashSecret(emp.password || '1234'),
+        pin: hashSecret(emp.pin || '1234')
+      }));
     }
   },
 
-  saveEmployees(employees: Employee[]): void {
+  saveEmployees(employees: Employee[]): boolean {
+    const deletedIds = this.getDeletedEmployeeIds();
+    const hashedEmployees = sanitizeEmployees(employees, deletedIds).map((emp) => ({
+      ...emp,
+      password: emp.password ? hashSecret(emp.password) : undefined,
+      pin: emp.pin ? hashSecret(emp.pin) : undefined
+    }));
     try {
-      const hashedEmployees = employees.map((emp) => ({
-        ...emp,
-        password: emp.password ? hashSecret(emp.password) : undefined,
-        pin: emp.pin ? hashSecret(emp.pin) : undefined
-      }));
       localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(hashedEmployees));
+      return true;
     } catch (e) {
-      console.error('Error saving employees:', e);
+      // Fallback: if localStorage quota is tight due to large base64 avatar images, strip oversized avatars so profile + password still persist
+      try {
+        const compact = hashedEmployees.map((emp) =>
+          emp.avatarUrl && emp.avatarUrl.startsWith('data:image/') && emp.avatarUrl.length > 60000
+            ? { ...emp, avatarUrl: '' }
+            : emp
+        );
+        localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(compact));
+        return true;
+      } catch (innerErr) {
+        console.error('Error saving employees:', e, innerErr);
+        return false;
+      }
     }
   },
 
@@ -598,7 +730,15 @@ export const storage = {
   getRoles(): RoleDefinition[] {
     try {
       const data = localStorage.getItem(KEYS.ROLES);
-      return data ? JSON.parse(data) : INITIAL_ROLES;
+      if (!data) return INITIAL_ROLES;
+      const parsed: RoleDefinition[] = JSON.parse(data);
+      const cleaned = sanitizeRoles(parsed);
+      if (cleaned.length !== parsed.length) {
+        try {
+          localStorage.setItem(KEYS.ROLES, JSON.stringify(cleaned));
+        } catch {}
+      }
+      return cleaned.length > 0 ? cleaned : INITIAL_ROLES;
     } catch {
       return INITIAL_ROLES;
     }
@@ -606,7 +746,7 @@ export const storage = {
 
   saveRoles(roles: RoleDefinition[]): void {
     try {
-      localStorage.setItem(KEYS.ROLES, JSON.stringify(roles));
+      localStorage.setItem(KEYS.ROLES, JSON.stringify(sanitizeRoles(roles)));
     } catch (e) {
       console.error('Error saving roles:', e);
     }
@@ -800,11 +940,11 @@ export const storage = {
       const data = JSON.parse(jsonString);
       if (data.members) this.saveMembers(data.members);
       if (data.products) this.saveProducts(data.products);
-      if (data.sales) this.saveSales(data.sales);
+      if (data.sales) this.saveSales(normalizeSaleList(data.sales));
       if (data.accessLogs) this.saveAccessLogs(data.accessLogs);
       if (data.cashSession) this.saveCashSession(data.cashSession);
-      if (data.employees) this.saveEmployees(data.employees);
-      if (data.roles) this.saveRoles(data.roles);
+      if (data.employees) this.saveEmployees(sanitizeEmployees(data.employees));
+      if (data.roles) this.saveRoles(sanitizeRoles(data.roles));
       if (data.settings) this.saveSettings(data.settings);
       if (data.catalogPlans) this.saveCatalogPlans(data.catalogPlans);
       if (data.branches) this.saveBranches(data.branches);

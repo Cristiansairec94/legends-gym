@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGym } from '../../context/GymContext';
 import { Expense, ExpenseCategory, PaymentMethod } from '../../types';
 import { 
@@ -7,7 +7,6 @@ import {
   Search, 
   DollarSign, 
   TrendingDown, 
-  Calendar, 
   CreditCard, 
   Banknote, 
   Building2, 
@@ -25,15 +24,14 @@ import {
   Package,
   Users,
   Megaphone,
-  Sparkles,
-  Clock,
-  ShieldCheck,
-  ArrowDownRight,
-  Flame,
-  User,
-  SlidersHorizontal,
-  Info
+  Sparkles
 } from 'lucide-react';
+import { PeriodFilterDropdown } from './PeriodFilterDropdown';
+import {
+  getPeriodDisplayLabel,
+  isDateInPeriod,
+  PeriodFilterType,
+} from '../../utils/periodFilter';
 
 export const ExpensesManager: React.FC = () => {
   const { 
@@ -48,11 +46,14 @@ export const ExpensesManager: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all');
+  const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Close category dropdown on click outside or escape key
+  // Close category dropdown on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
@@ -89,110 +90,74 @@ export const ExpensesManager: React.FC = () => {
   const categoryLabels: Record<ExpenseCategory, { 
     label: string; 
     shortLabel: string;
-    description: string;
-    badgeBg: string;
-    badgeBorder: string;
-    badgeText: string;
-    glowColor: string;
+    color: string; 
     icon: React.ComponentType<{ className?: string }>;
     iconBg: string;
     iconColor: string;
   }> = {
-    equipment: { 
-      label: 'Mantenimiento de Equipo', 
-      shortLabel: 'Mantenimiento',
-      description: 'Poleas, cables, bandas y máquinas',
-      badgeBg: 'bg-cyan-500/10',
-      badgeBorder: 'border-cyan-500/30',
-      badgeText: 'text-cyan-400',
-      glowColor: 'shadow-[0_0_15px_rgba(6,182,212,0.2)]',
-      icon: Wrench,
-      iconBg: 'bg-cyan-500/20 border-cyan-500/40',
-      iconColor: 'text-cyan-400'
+    rent: { 
+      label: 'Renta de Local', 
+      shortLabel: 'Renta',
+      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      icon: Building2,
+      iconBg: 'bg-purple-500/15 border-purple-500/30',
+      iconColor: 'text-purple-400'
     },
     utilities: { 
       label: 'Luz & Aire Acondicionado', 
-      shortLabel: 'Luz & Clima',
-      description: 'CFE, agua comercial y climatización',
-      badgeBg: 'bg-amber-500/10',
-      badgeBorder: 'border-amber-500/30',
-      badgeText: 'text-amber-400',
-      glowColor: 'shadow-[0_0_15px_rgba(245,158,11,0.2)]',
+      shortLabel: 'Luz & A/C',
+      color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       icon: Zap,
-      iconBg: 'bg-amber-500/20 border-amber-500/40',
-      iconColor: 'text-amber-400'
+      iconBg: 'bg-yellow-500/15 border-yellow-500/30',
+      iconColor: 'text-yellow-400'
     },
-    payroll: { 
-      label: 'Nómina & Sueldos', 
-      shortLabel: 'Nómina',
-      description: 'Entrenadores, limpieza y recepción',
-      badgeBg: 'bg-rose-500/10',
-      badgeBorder: 'border-rose-500/30',
-      badgeText: 'text-rose-400',
-      glowColor: 'shadow-[0_0_15px_rgba(244,63,94,0.2)]',
-      icon: Users,
-      iconBg: 'bg-rose-500/20 border-rose-500/40',
-      iconColor: 'text-rose-400'
+    equipment: { 
+      label: 'Mantenimiento de Equipo', 
+      shortLabel: 'Mantenimiento',
+      color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      icon: Wrench,
+      iconBg: 'bg-blue-500/15 border-blue-500/30',
+      iconColor: 'text-blue-400'
     },
     supplements_stock: { 
       label: 'Compra Suplementos', 
       shortLabel: 'Suplementos',
-      description: 'Proteínas, creatinas, bebidas y snacks',
-      badgeBg: 'bg-emerald-500/10',
-      badgeBorder: 'border-emerald-500/30',
-      badgeText: 'text-emerald-400',
-      glowColor: 'shadow-[0_0_15px_rgba(16,185,129,0.2)]',
+      color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
       icon: Package,
-      iconBg: 'bg-emerald-500/20 border-emerald-500/40',
+      iconBg: 'bg-emerald-500/15 border-emerald-500/30',
       iconColor: 'text-emerald-400'
     },
-    cleaning: { 
-      label: 'Insumos de Limpieza', 
-      shortLabel: 'Limpieza',
-      description: 'Sanitizante, toallas de papel y jabón',
-      badgeBg: 'bg-teal-500/10',
-      badgeBorder: 'border-teal-500/30',
-      badgeText: 'text-teal-400',
-      glowColor: 'shadow-[0_0_15px_rgba(20,184,166,0.2)]',
-      icon: Sparkles,
-      iconBg: 'bg-teal-500/20 border-teal-500/40',
-      iconColor: 'text-teal-400'
-    },
-    rent: { 
-      label: 'Renta de Local', 
-      shortLabel: 'Renta',
-      description: 'Arrendamiento de instalaciones',
-      badgeBg: 'bg-purple-500/10',
-      badgeBorder: 'border-purple-500/30',
-      badgeText: 'text-purple-400',
-      glowColor: 'shadow-[0_0_15px_rgba(168,85,247,0.2)]',
-      icon: Building2,
-      iconBg: 'bg-purple-500/20 border-purple-500/40',
-      iconColor: 'text-purple-400'
+    payroll: { 
+      label: 'Nómina & Sueldos', 
+      shortLabel: 'Nómina',
+      color: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      icon: Users,
+      iconBg: 'bg-rose-500/15 border-rose-500/30',
+      iconColor: 'text-rose-400'
     },
     marketing: { 
       label: 'Marketing & Redes', 
       shortLabel: 'Marketing',
-      description: 'Campañas, flyers y publicidad',
-      badgeBg: 'bg-pink-500/10',
-      badgeBorder: 'border-pink-500/30',
-      badgeText: 'text-pink-400',
-      glowColor: 'shadow-[0_0_15px_rgba(236,72,153,0.2)]',
+      color: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
       icon: Megaphone,
-      iconBg: 'bg-pink-500/20 border-pink-500/40',
+      iconBg: 'bg-pink-500/15 border-pink-500/30',
       iconColor: 'text-pink-400'
+    },
+    cleaning: { 
+      label: 'Insumos de Limpieza', 
+      shortLabel: 'Limpieza',
+      color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      icon: Sparkles,
+      iconBg: 'bg-cyan-500/15 border-cyan-500/30',
+      iconColor: 'text-cyan-400'
     },
     other: { 
       label: 'Otros Gastos', 
       shortLabel: 'Otros',
-      description: 'Gastos imprevistos de operación',
-      badgeBg: 'bg-zinc-500/10',
-      badgeBorder: 'border-zinc-500/30',
-      badgeText: 'text-zinc-400',
-      glowColor: 'shadow-[0_0_15px_rgba(161,161,170,0.1)]',
+      color: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
       icon: Tag,
-      iconBg: 'bg-zinc-500/20 border-zinc-500/40',
-      iconColor: 'text-zinc-400'
+      iconBg: 'bg-gray-500/15 border-gray-500/30',
+      iconColor: 'text-gray-400'
     }
   };
 
@@ -221,228 +186,133 @@ export const ExpensesManager: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const filteredExpenses = useMemo(() => {
-    return expenses.filter(e => {
-      const matchesSearch = e.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            e.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (e.receiptNumber && e.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
-      return matchesSearch && matchesCategory;
-    });
-  }, [expenses, searchTerm, categoryFilter]);
+  const resetPeriodToAll = () => {
+    const now = new Date();
+    setPeriodFilter('all');
+    setSelectedYear(now.getFullYear());
+    setSelectedMonth(now.getMonth());
+  };
 
-  const filteredTotal = useMemo(() => {
-    return filteredExpenses.reduce((sum, item) => sum + item.amount, 0);
-  }, [filteredExpenses]);
+  const periodExpenses = expenses.filter((e) =>
+    isDateInPeriod(e.date, periodFilter, selectedMonth, selectedYear)
+  );
+  const periodLabel = getPeriodDisplayLabel(periodFilter, selectedMonth, selectedYear);
 
-  // Average expense calculation
-  const averageExpense = useMemo(() => {
-    if (expenses.length === 0) return 0;
-    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-    return total / expenses.length;
-  }, [expenses]);
+  const normalizedQuery = searchTerm.toLowerCase();
+  const filteredExpenses = periodExpenses.filter(e => {
+    const matchesSearch = e.description.toLowerCase().includes(normalizedQuery) ||
+                          e.folio.toLowerCase().includes(normalizedQuery) ||
+                          (e.receiptNumber && e.receiptNumber.toLowerCase().includes(normalizedQuery));
+    const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const filteredTotalAmount = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const hasActiveFilters = categoryFilter !== 'all' || periodFilter !== 'all' || Boolean(searchTerm);
+
+  const resetAllFilters = () => {
+    setCategoryFilter('all');
+    resetPeriodToAll();
+    setSearchTerm('');
+  };
 
   return (
-    <div className="relative min-h-full space-y-6 pb-12 select-none">
-
-      {/* Atmospheric Background Glows (VoltFit & Fitlife aesthetic) */}
-      <div className="pointer-events-none absolute -top-16 left-1/4 w-[500px] h-64 bg-red-600/10 rounded-full blur-[100px] -z-10" />
-      <div className="pointer-events-none absolute top-40 right-10 w-[400px] h-64 bg-amber-500/5 rounded-full blur-[90px] -z-10" />
-
-      {/* HERO BANNER CARD - High Contrast Athletic Glassmorphism */}
-      <div className="relative overflow-hidden rounded-3xl border border-zinc-800/90 bg-gradient-to-r from-[#171923]/95 via-[#13141a]/95 to-[#0b0c10]/98 p-6 sm:p-7 shadow-[0_15px_45px_rgba(0,0,0,0.7)] backdrop-blur-2xl">
-        {/* Subtle Carbon Mesh Grid Texture */}
-        <div 
-          className="absolute inset-0 opacity-[0.035] pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
-            backgroundSize: '18px 18px'
-          }}
-        />
-
-        {/* Ambient Top Glow Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/80 to-transparent" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2">
-            {/* Live Operational Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/25 backdrop-blur-md">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-              </span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-red-400 font-mono">
-                CONTROL FINANCIERO • EGRESOS OPERATIVOS
+    <div className="space-y-6">
+      
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-red-500/20 via-gym-card to-gym-surface p-6 rounded-2xl border border-red-500/30 shadow-xl relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+              <span className="text-xs uppercase font-extrabold tracking-wider text-red-400">
+                CONTROL DE EGRESOS & OPERACIÓN
               </span>
             </div>
-
-            {/* Title with Glowing Athletic Icon */}
-            <div className="flex items-center gap-3.5 pt-1">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500/25 via-red-600/10 to-transparent border border-red-500/40 flex items-center justify-center text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.35)] shrink-0">
-                <Receipt className="w-6 h-6 stroke-[2.2]" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase flex items-center gap-2">
-                  Registro de Gastos Operativos
-                </h1>
-                <p className="text-xs text-zinc-400 font-medium max-w-2xl mt-0.5">
-                  Auditoría y control de salidas de dinero para mantenimiento de pesas/cardio, servicios comerciales (luz CFE, clima), suplementación y caja chica.
-                </p>
-              </div>
-            </div>
-
-            {/* Micro Metrics Strip inside Header */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 text-[11px] font-mono text-zinc-400">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
-                <span>Registros totales: <strong className="text-zinc-200">{expenses.length}</strong></span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                <span>Egresos del mes: <strong className="text-red-400">-${monthExpensesTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</strong></span>
-              </div>
-              {expenses.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>Promedio por gasto: <strong className="text-amber-300">${averageExpense.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN</strong></span>
-                </div>
-              )}
-            </div>
+            <h1 className="text-2xl font-black text-white mt-1 flex items-center gap-2">
+              <Receipt className="w-7 h-7 text-red-400" />
+              Registro de Gastos Operativos
+            </h1>
+            <p className="text-xs text-gym-muted mt-1 max-w-xl">
+              Control de salidas de dinero para mantenimiento de pesas/cardio, pago de luz comercial, proveedores de suplementación y caja chica.
+            </p>
           </div>
 
-          {/* Action Button: Registrar Gasto */}
-          <div className="shrink-0 flex items-center gap-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="group relative px-6 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-[0_0_25px_rgba(239,68,68,0.45)] hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] transition-all duration-300 flex items-center gap-2.5 border border-red-400/40 hover:scale-[1.02] active:scale-95"
-            >
-              <div className="w-5 h-5 rounded-lg bg-black/20 flex items-center justify-center group-hover:rotate-90 transition-transform">
-                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              </div>
-              <span>Registrar Gasto</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white font-black text-xs shadow-lg flex items-center gap-2 transition-all self-start md:self-auto"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Registrar Gasto</span>
+          </button>
         </div>
       </div>
 
-      {/* KPI METRIC CARDS - VoltFit Glassmorphism Style */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
-        {/* Card 1: Gastos Registrados Hoy */}
-        <div className="group relative rounded-2xl border border-red-500/25 bg-gradient-to-br from-red-500/10 via-[#14151b]/80 to-[#0e0f14]/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl hover:border-red-500/50 hover:shadow-[0_0_25px_rgba(239,68,68,0.2)] transition-all duration-300">
+        {/* Gastos de Hoy */}
+        <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-red-300/80 font-mono">
-                GASTOS DE HOY
-              </span>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.25)] group-hover:scale-110 transition-transform">
-              <TrendingDown className="w-4 h-4 stroke-[2.5]" />
-            </div>
+            <span className="text-xs font-bold text-gym-muted uppercase">Gastos Registrados Hoy</span>
+            <TrendingDown className="w-4 h-4 text-red-400" />
           </div>
-          
-          <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-black text-red-400 font-mono tracking-tight flex items-baseline gap-1">
-              <span>-${todayExpensesTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
-              <span className="text-xs font-bold text-red-400/70 font-sans">MXN</span>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-red-400" />
-              Impacto en arqueo diario
-            </span>
-            <span className="font-mono text-[10px] text-red-300/80 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20">
-              Hoy
+          <div className="mt-2">
+            <span className="text-2xl font-black text-red-400">
+              ${todayExpensesTotal.toLocaleString('es-MX')}
             </span>
           </div>
+          <p className="text-[11px] text-gym-muted mt-1">Impacto en flujo de caja diario</p>
         </div>
 
-        {/* Card 2: Egresos del Mes */}
-        <div className="group relative rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-500/10 via-[#14151b]/80 to-[#0e0f14]/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl hover:border-amber-500/50 hover:shadow-[0_0_25px_rgba(245,158,11,0.2)] transition-all duration-300">
+        {/* Gastos del Mes */}
+        <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-300/80 font-mono">
-                EGRESOS DEL MES
-              </span>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.25)] group-hover:scale-110 transition-transform">
-              <DollarSign className="w-4 h-4 stroke-[2.5]" />
-            </div>
+            <span className="text-xs font-bold text-gym-muted uppercase">Egresos del Mes</span>
+            <DollarSign className="w-4 h-4 text-crimson-400" />
           </div>
-          
-          <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight flex items-baseline gap-1">
-              <span>-${monthExpensesTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
-              <span className="text-xs font-bold text-zinc-400 font-sans">MXN</span>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-            <span className="flex items-center gap-1.5 truncate">
-              <Calendar className="w-3 h-3 text-amber-400 shrink-0" />
-              Mantenimiento + Insumos
-            </span>
-            <span className="font-mono text-[10px] text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 shrink-0">
-              Mes en curso
+          <div className="mt-2">
+            <span className="text-2xl font-black text-white">
+              ${monthExpensesTotal.toLocaleString('es-MX')}
             </span>
           </div>
+          <p className="text-[11px] text-gym-muted mt-1">Mantenimiento + Insumos + Servicios</p>
         </div>
 
-        {/* Card 3: Efectivo Disponible en Caja Chica */}
-        <div className="group relative rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-[#14151b]/80 to-[#0e0f14]/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.2)] transition-all duration-300">
+        {/* Estado de Caja Chica */}
+        <div className="p-4 rounded-xl bg-gym-card border border-gym-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300/80 font-mono">
-                DISPONIBLE EN CAJA
-              </span>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.25)] group-hover:scale-110 transition-transform">
-              <Banknote className="w-4 h-4 stroke-[2.5]" />
-            </div>
+            <span className="text-xs font-bold text-gym-muted uppercase">Efectivo Disponible en Caja</span>
+            <Banknote className="w-4 h-4 text-emerald-400" />
           </div>
-          
-          <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight flex items-baseline gap-1">
-              <span>${cashSession.expectedCash.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
-              <span className="text-xs font-bold text-emerald-400/70 font-sans">MXN</span>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Caja Principal • Turno activo
-            </span>
-            <span className="font-mono text-[10px] text-emerald-300/80 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-              En Vivo
+          <div className="mt-2">
+            <span className="text-2xl font-black text-emerald-400">
+              ${cashSession.expectedCash.toLocaleString('es-MX')}
             </span>
           </div>
+          <p className="text-[11px] text-gym-muted mt-1">Caja Principal • Turno en curso</p>
         </div>
 
       </div>
 
-      {/* FILTER & SEARCH TOOLBAR WITH QUICK CATEGORY CHIPS */}
-      <div className="rounded-2xl border border-zinc-800/90 bg-[#121319]/90 p-4 shadow-xl backdrop-blur-xl space-y-3.5">
-        
-        {/* Top Filter Controls: Category dropdown + Search Bar */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      {/* Filtros & Búsqueda */}
+      <div className="bg-gym-card p-3 rounded-2xl border border-gym-border shadow-sm">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           
-          {/* Category Dropdown (Compact/Select Option) */}
+          {/* LADO IZQUIERDO: Filtros desplegables de Categoría y Periodo */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-wrap">
+
+          {/* Dropdown de Categoría */}
           <div className="relative shrink-0" ref={categoryDropdownRef}>
             <button
               type="button"
               onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-              className={`w-full md:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all duration-200 shadow-sm ${
+              className={`w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-sm ${
                 categoryFilter !== 'all'
-                  ? 'bg-red-500/15 border-red-500/50 text-white shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+                  ? 'bg-red-500/15 border-red-500/40 text-white shadow-[0_0_15px_rgba(239,68,68,0.15)]'
                   : isCategoryDropdownOpen
-                  ? 'bg-zinc-800/90 border-zinc-600 text-white'
-                  : 'bg-zinc-900/90 hover:bg-zinc-800/90 border-zinc-800 text-zinc-300 hover:text-white'
+                  ? 'bg-gym-surface border-zinc-500 text-white shadow-md'
+                  : 'bg-gym-surface hover:bg-gym-surface/80 border-gym-border text-zinc-300 hover:text-white'
               }`}
               title="Filtrar gastos por categoría"
             >
@@ -478,15 +348,15 @@ export const ExpensesManager: React.FC = () => {
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
                   categoryFilter !== 'all'
                     ? 'bg-red-500 text-white border-red-400 shadow-sm'
-                    : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                    : 'bg-zinc-800/90 text-zinc-300 border-zinc-700/80'
                 }`}>
                   {categoryFilter === 'all'
-                    ? expenses.length
-                    : expenses.filter(e => e.category === categoryFilter).length}
+                    ? periodExpenses.length
+                    : periodExpenses.filter(e => e.category === categoryFilter).length}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0 ml-2">
+              <div className="flex items-center gap-1.5 shrink-0 ml-1">
                 {categoryFilter !== 'all' && (
                   <span
                     onClick={(e) => {
@@ -503,11 +373,11 @@ export const ExpensesManager: React.FC = () => {
               </div>
             </button>
 
-            {/* Dropdown Menu Modal */}
+            {/* Dropdown Menu en Forma de Lista (Diseño Compacto en 2 Columnas para no deslizar la página) */}
             {isCategoryDropdownOpen && (
-              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[490px] md:w-[510px] bg-[#121319] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-3 z-50 animate-in fade-in zoom-in-95 backdrop-blur-2xl">
+              <div className="absolute left-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[490px] md:w-[510px] bg-[#121317] border border-zinc-800/90 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 z-50 animate-in fade-in zoom-in-95 backdrop-blur-xl">
                 {/* Dropdown Header */}
-                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800 mb-2">
+                <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-800/80 mb-2">
                   <div className="flex items-center gap-2">
                     <Filter className="w-3.5 h-3.5 text-red-400" />
                     <span className="text-[11px] uppercase font-extrabold tracking-wider text-zinc-300">
@@ -533,21 +403,21 @@ export const ExpensesManager: React.FC = () => {
                   )}
                 </div>
 
-                {/* Option: All */}
+                {/* Opción 1: Todas las categorías (Fila destacada superior) */}
                 <button
                   type="button"
                   onClick={() => {
                     setCategoryFilter('all');
                     setIsCategoryDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border mb-2 ${
+                  className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all group border mb-2 ${
                     categoryFilter === 'all'
                       ? 'bg-red-500/15 border-red-500/40 text-white font-bold shadow-sm'
                       : 'border-zinc-800/60 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                  <div className="flex items-center gap-2">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
                       categoryFilter === 'all'
                         ? 'bg-red-500/20 text-red-400 border-red-500/30'
                         : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/70 group-hover:text-red-400 group-hover:border-red-500/40'
@@ -565,7 +435,7 @@ export const ExpensesManager: React.FC = () => {
                         ? 'bg-red-500/30 text-red-200 border-red-500/40'
                         : 'bg-zinc-800/80 text-zinc-400 border-zinc-700/70'
                     }`}>
-                      {expenses.length}
+                      {periodExpenses.length}
                     </span>
                     {categoryFilter === 'all' && (
                       <Check className="w-3.5 h-3.5 text-red-400 stroke-[3]" />
@@ -573,10 +443,10 @@ export const ExpensesManager: React.FC = () => {
                   </div>
                 </button>
 
-                {/* Grid 2 Columns of Categories */}
+                {/* Grid de 2 Columnas de Categorías (Ultra compacto, sin scroll largo) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[60vh] sm:max-h-none overflow-y-auto sm:overflow-visible pr-0.5 custom-scrollbar">
                   {Object.entries(categoryLabels).map(([catKey, catMeta]) => {
-                    const count = expenses.filter(e => e.category === catKey).length;
+                    const count = periodExpenses.filter(e => e.category === catKey).length;
                     const isSelected = categoryFilter === catKey;
                     const IconComponent = catMeta.icon;
 
@@ -588,7 +458,7 @@ export const ExpensesManager: React.FC = () => {
                           setCategoryFilter(catKey);
                           setIsCategoryDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between transition-all group border ${
+                        className={`w-full text-left px-2 py-1.5 rounded-xl text-xs flex items-center justify-between transition-all group border ${
                           isSelected
                             ? 'bg-red-500/15 border-red-500/40 text-white font-bold shadow-sm'
                             : 'border-transparent hover:bg-zinc-800/60 hover:border-zinc-700/50 text-zinc-300 hover:text-white'
@@ -626,26 +496,48 @@ export const ExpensesManager: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {/* Footer with summary */}
+                <div className="mt-2 pt-2 border-t border-zinc-800/80 px-2 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                  <span>{periodFilter === 'all' ? 'Total en catálogo' : `En ${periodLabel}`}</span>
+                  <span className="font-bold text-zinc-300">{periodExpenses.length} gastos</span>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Search Input Bar */}
-          <div className="flex items-center gap-2 flex-1 md:justify-end">
-            <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Dropdown de Periodo (Día, Semana, Mes, Año, Todos) */}
+          <PeriodFilterDropdown
+            items={expenses}
+            periodFilter={periodFilter}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onPeriodChange={setPeriodFilter}
+            onMonthChange={setSelectedMonth}
+            onYearChange={setSelectedYear}
+            onReset={resetPeriodToAll}
+            variant="expense"
+            onBeforeOpen={() => setIsCategoryDropdownOpen(false)}
+          />
+
+          </div>
+
+          {/* LADO DERECHO: Search Input & Restablecer */}
+          <div className="flex items-center gap-2 flex-1 lg:justify-end">
+            <div className="relative w-full lg:w-72 xl:w-80">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input 
                 type="text"
-                placeholder="Buscar por folio, concepto o factura..."
+                placeholder="Buscar por concepto o factura..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-all shadow-inner"
+                className="w-full bg-gym-surface border border-gym-border hover:border-zinc-600 focus:border-red-400 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors shadow-sm"
               />
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 rounded-md hover:bg-zinc-800 transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5 rounded transition-colors"
                   title="Limpiar búsqueda"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -654,262 +546,153 @@ export const ExpensesManager: React.FC = () => {
             </div>
 
             {/* Reset Filters button if any filter is active */}
-            {(categoryFilter !== 'all' || searchTerm) && (
+            {hasActiveFilters && (
               <button
                 type="button"
-                onClick={() => {
-                  setCategoryFilter('all');
-                  setSearchTerm('');
-                }}
-                className="px-3.5 py-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold transition-all whitespace-nowrap shadow-sm flex items-center gap-1.5"
+                onClick={resetAllFilters}
+                className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold transition-all whitespace-nowrap shadow-sm"
                 title="Restablecer filtros"
               >
-                <X className="w-3.5 h-3.5" />
-                <span>Restablecer</span>
+                Restablecer
               </button>
             )}
           </div>
 
         </div>
 
-        {/* BOTTOM: Horizontal Quick-Filter Category Pills */}
-        <div className="pt-2 border-t border-zinc-800/70">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
-            {/* 'Todas' Pill */}
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
-                categoryFilter === 'all'
-                  ? 'bg-red-500/20 border-red-500/60 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] ring-1 ring-red-500/30'
-                  : 'bg-zinc-900/60 hover:bg-zinc-800/80 border-zinc-800 text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-red-400" />
-              <span>Todas</span>
-              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold border ${
-                categoryFilter === 'all' ? 'bg-red-500/30 text-white border-red-400/50' : 'bg-zinc-800 text-zinc-400 border-zinc-700'
-              }`}>
-                {expenses.length}
+        {/* Info strip when filtering */}
+        {hasActiveFilters && (
+          <div className="mt-2.5 pt-2 border-t border-gym-border/40 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gym-muted">
+            <div className="flex items-center gap-3">
+              <span>
+                Mostrando <strong className="text-white">{filteredExpenses.length}</strong> de <strong className="text-white">{expenses.length}</strong> gastos
               </span>
-            </button>
-
-            {/* Category Pills */}
-            {Object.entries(categoryLabels).map(([catKey, catMeta]) => {
-              const isSelected = categoryFilter === catKey;
-              const count = expenses.filter(e => e.category === catKey).length;
-              const IconComp = catMeta.icon;
-
-              return (
-                <button
-                  key={catKey}
-                  type="button"
-                  onClick={() => setCategoryFilter(catKey)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
-                    isSelected
-                      ? `${catMeta.badgeBg} ${catMeta.badgeBorder} ${catMeta.badgeText} ${catMeta.glowColor} ring-1 ring-current`
-                      : 'bg-zinc-900/60 hover:bg-zinc-800/80 border-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <IconComp className={`w-3.5 h-3.5 ${isSelected ? catMeta.iconColor : 'text-zinc-400'}`} />
-                  <span>{catMeta.shortLabel}</span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold border ${
-                    isSelected 
-                      ? 'bg-white/20 text-white border-white/30' 
-                      : count > 0 
-                      ? 'bg-zinc-800 text-zinc-300 border-zinc-700' 
-                      : 'bg-zinc-900/80 text-zinc-500 border-zinc-800'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+              <span className="text-zinc-600">•</span>
+              <span>
+                Total en vista:{' '}
+                <strong className="text-red-400 font-mono">
+                  -${filteredTotalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                </strong>
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {periodFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 text-crimson-400 bg-crimson-500/10 px-2 py-0.5 rounded-md border border-crimson-500/20 font-bold">
+                  {periodLabel}
+                  <button onClick={resetPeriodToAll} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
+              {categoryFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20 font-bold">
+                  {categoryLabels[categoryFilter as ExpenseCategory]?.label}
+                  <button onClick={() => setCategoryFilter('all')} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 text-zinc-200 bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-700 font-bold">
+                  "{searchTerm}"
+                  <button onClick={() => setSearchTerm('')} className="hover:text-white ml-0.5">×</button>
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-
-        {/* Filter Summary Strip */}
-        <div className="pt-2 border-t border-zinc-800/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-zinc-400 font-mono">
-          <div>
-            Mostrando <strong className="text-white font-bold">{filteredExpenses.length}</strong> de <strong className="text-white font-bold">{expenses.length}</strong> gastos registrados
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span>Suma de gastos filtrados:</span>
-            <span className="font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/25 font-mono">
-              -${filteredTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
-            </span>
-          </div>
-        </div>
-
+        )}
       </div>
 
-      {/* EXPENSES DATA TABLE - Textured Carbon Table with Smooth Hover */}
-      <div className="rounded-3xl border border-zinc-800/90 bg-[#121319]/90 shadow-2xl backdrop-blur-xl overflow-hidden">
+      {/* Expenses Table */}
+      <div className="bg-gym-card rounded-2xl border border-gym-border overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-zinc-800 bg-zinc-900/90 text-zinc-400 uppercase font-black text-[10px] tracking-wider">
-                <th className="py-4 px-5">Folio / Fecha</th>
-                <th className="py-4 px-4">Categoría</th>
-                <th className="py-4 px-5">Descripción del Gasto</th>
-                <th className="py-4 px-4">Método de Pago</th>
-                <th className="py-4 px-4">Registró</th>
-                <th className="py-4 px-5 text-right">Importe</th>
-                <th className="py-4 px-4 text-center">Acciones</th>
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gym-surface/80 border-b border-gym-border text-zinc-300 uppercase font-extrabold text-[11px] xl:text-xs tracking-wider">
+              <tr>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Fecha</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Categoría</th>
+                <th className="py-4 px-3 xl:px-5">Descripción del Gasto</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Método de Pago</th>
+                <th className="py-4 px-3 xl:px-5 whitespace-nowrap">Registró</th>
+                <th className="py-4 px-3 xl:px-5 text-right whitespace-nowrap">Importe</th>
+                <th className="py-4 px-3 xl:px-5 text-center whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60">
+            <tbody className="divide-y divide-gym-border/50">
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center">
-                    <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
-                      <div className="w-14 h-14 rounded-2xl bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-center text-zinc-500 shadow-inner">
-                        <Receipt className="w-7 h-7" />
-                      </div>
-                      <h4 className="font-bold text-white text-sm">No se encontraron egresos</h4>
-                      <p className="text-xs text-zinc-400">
-                        {searchTerm || categoryFilter !== 'all' 
-                          ? 'No hay registros que coincidan con los filtros aplicados. Intenta restablecer los filtros.'
-                          : 'Aún no se han registrado gastos en el sistema. Registra el primero para llevar la contabilidad.'}
-                      </p>
-                      {(searchTerm || categoryFilter !== 'all') ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCategoryFilter('all');
-                            setSearchTerm('');
-                          }}
-                          className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs border border-zinc-700 transition-colors"
-                        >
-                          Limpiar Filtros
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setIsModalOpen(true)}
-                          className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white font-bold text-xs shadow-md transition-colors"
-                        >
-                          + Registrar Primer Gasto
-                        </button>
-                      )}
-                    </div>
+                  <td colSpan={7} className="py-12 text-center text-gym-muted text-sm">
+                    <p>No se encontraron gastos para el periodo o los filtros seleccionados.</p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={resetAllFilters}
+                        className="mt-3 px-3.5 py-1.5 rounded-xl bg-gym-surface hover:bg-zinc-800 text-xs font-bold text-white border border-gym-border transition-colors"
+                      >
+                        Ver todos los gastos
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
                 filteredExpenses.map((expense) => {
                   const cat = categoryLabels[expense.category] || categoryLabels.other;
-                  const IconComp = cat.icon;
                   const dateObj = new Date(expense.date);
 
                   return (
-                    <tr 
-                      key={expense.id} 
-                      className="group hover:bg-gradient-to-r hover:from-red-500/[0.04] hover:via-white/[0.02] hover:to-transparent transition-all duration-150"
-                    >
-                      {/* Folio & Fecha */}
-                      <td className="py-3.5 px-5 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-xs text-white bg-zinc-800/80 px-2.5 py-1 rounded-lg border border-zinc-700/60 shadow-inner tracking-wider">
-                            #{expense.folio}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-zinc-400 font-mono mt-1 flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-zinc-500" />
-                          <span>{dateObj.toLocaleDateString('es-MX')}</span>
-                          <span className="text-zinc-600">•</span>
-                          <Clock className="w-3 h-3 text-zinc-500" />
-                          <span>{dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                      </td>
-
-                      {/* Categoría Badge */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-black border transition-all ${cat.badgeBg} ${cat.badgeBorder} ${cat.badgeText} ${cat.glowColor}`}>
-                          <IconComp className="w-3.5 h-3.5 shrink-0" />
-                          <span>{cat.label}</span>
+                    <tr key={expense.id} className="hover:bg-gym-surface/40 transition-colors">
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
+                        <span className="font-bold text-sm sm:text-[15px] text-white block">
+                          {dateObj.toLocaleDateString('es-MX')}
+                        </span>
+                        <span className="text-xs text-gym-muted">
+                          {dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </td>
 
-                      {/* Descripción & Factura */}
-                      <td className="py-3.5 px-5 max-w-xs md:max-w-md">
-                        <p className="font-bold text-zinc-100 text-xs leading-snug break-words" title={expense.description}>
-                          {expense.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          {expense.receiptNumber && (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/25 font-mono">
-                              <FileText className="w-3 h-3" />
-                              Doc: {expense.receiptNumber}
-                            </span>
-                          )}
-                          {expense.notes && (
-                            <span className="text-[10px] text-zinc-400 italic truncate max-w-[200px]" title={expense.notes}>
-                              Nota: {expense.notes}
-                            </span>
-                          )}
-                        </div>
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
+                        <span className={`inline-flex items-center text-xs font-bold px-3 py-1 rounded-full border ${cat.color}`}>
+                          {cat.label}
+                        </span>
                       </td>
 
-                      {/* Método de Pago */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {expense.paymentMethod === 'cash' && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-bold text-xs">
-                              <Banknote className="w-3.5 h-3.5" />
-                              <span>Efectivo</span>
-                            </span>
-                          )}
-                          {expense.paymentMethod === 'card' && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/25 text-blue-400 font-bold text-xs">
-                              <CreditCard className="w-3.5 h-3.5" />
-                              <span>Tarjeta</span>
-                            </span>
-                          )}
-                          {expense.paymentMethod === 'transfer' && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/25 text-purple-400 font-bold text-xs">
-                              <Building2 className="w-3.5 h-3.5" />
-                              <span>SPEI</span>
-                            </span>
-                          )}
-                        </div>
-
-                        {expense.paidFromCashRegister && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 font-extrabold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/25">
-                              <Zap className="w-3 h-3" />
-                              Descontado de Caja
-                            </span>
-                          </div>
+                      <td className="py-4 px-3 xl:px-5 min-w-[200px]">
+                        <p className="font-semibold text-sm sm:text-[15px] text-gray-200 line-clamp-2 leading-snug max-w-[260px] lg:max-w-[340px] xl:max-w-[440px]" title={expense.description}>
+                          {expense.description}
+                        </p>
+                        {expense.receiptNumber && (
+                          <span className="text-xs text-zinc-400 font-mono block mt-0.5">
+                            Doc: {expense.receiptNumber}
+                          </span>
                         )}
                       </td>
 
-                      {/* Registró */}
-                      <td className="py-3.5 px-4 whitespace-nowrap text-zinc-300 font-medium">
+                      <td className="py-4 px-3 xl:px-5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
-                            <User className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="text-xs">{expense.registeredBy}</span>
+                          {expense.paymentMethod === 'cash' && <Banknote className="w-4 h-4 text-emerald-400" />}
+                          {expense.paymentMethod === 'card' && <CreditCard className="w-4 h-4 text-blue-400" />}
+                          {expense.paymentMethod === 'transfer' && <DollarSign className="w-4 h-4 text-purple-400" />}
+                          <span className="capitalize font-semibold text-sm text-gray-200">
+                            {expense.paymentMethod === 'cash' ? 'Efectivo' : expense.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
+                          </span>
                         </div>
+                        {expense.paidFromCashRegister && (
+                          <span className="text-[11px] text-crimson-400 block font-semibold mt-0.5">
+                            (Descontado de Caja)
+                          </span>
+                        )}
                       </td>
 
-                      {/* Importe Negativo */}
-                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                        <span className="inline-block font-mono font-black text-sm text-red-400 bg-red-500/10 px-3 py-1 rounded-xl border border-red-500/20 shadow-sm">
-                          -${expense.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                      <td className="py-4 px-3 xl:px-5 text-zinc-300 font-medium text-sm whitespace-nowrap">
+                        {expense.registeredBy}
+                      </td>
+
+                      <td className="py-4 px-3 xl:px-5 text-right whitespace-nowrap">
+                        <span className="font-mono font-black text-base xl:text-lg text-red-400">
+                          -${expense.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
-                      {/* Acciones */}
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <td className="py-4 px-3 xl:px-5 text-center whitespace-nowrap">
                         <button
-                          onClick={() => {
-                            if (window.confirm(`¿Estás seguro de eliminar el gasto folio #${expense.folio} (${expense.description})?`)) {
-                              deleteExpense(expense.id);
-                            }
-                          }}
-                          className="p-2 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-500/15 border border-transparent hover:border-red-500/30 transition-all"
+                          onClick={() => deleteExpense(expense.id)}
+                          className="p-2 rounded-xl bg-gym-surface/60 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-transparent hover:border-red-500/30 transition-all inline-flex items-center justify-center"
                           title="Eliminar gasto"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -922,47 +705,20 @@ export const ExpensesManager: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Table Footer Bar */}
-        <div className="p-4 bg-zinc-900/90 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 font-mono">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-400" />
-            <span>Auditoría financiera Legends Gym</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span>Gastos listados: <strong className="text-white">{filteredExpenses.length}</strong></span>
-            <span>Importe total: <strong className="text-red-400 font-bold">-${filteredTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</strong></span>
-          </div>
-        </div>
       </div>
 
-      {/* MODAL REGISTRAR GASTO - Textured Frosted Glass */}
+      {/* Modal Registrar Gasto */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative bg-[#12141c] border border-zinc-700/80 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 overflow-hidden">
-            
-            {/* Top Crimson Accent Line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-amber-500 to-red-600" />
-
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.25)]">
-                  <Receipt className="w-5 h-5 stroke-[2.5]" />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg text-white tracking-tight uppercase">
-                    Registrar Egreso Operativo
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-medium">
-                    Ingresa el monto y concepto del gasto del gimnasio
-                  </p>
-                </div>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gym-card border border-gym-border rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-gym-border pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-red-400" />
+                <h3 className="font-black text-lg text-white">Registrar Nuevo Gasto</h3>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                className="p-1 rounded-lg text-gym-muted hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -970,134 +726,110 @@ export const ExpensesManager: React.FC = () => {
 
             <form onSubmit={handleCreateExpense} className="space-y-4">
               
-              {/* Monto & Categoría */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                    Monto ($ MXN) *
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-red-400 font-black text-base pointer-events-none">$</span>
-                    <input 
-                      type="number"
-                      step="0.01"
-                      min="1"
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl pl-8 pr-3 py-2.5 text-base text-white font-mono font-black focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 shadow-inner"
-                      required
-                      autoFocus
-                    />
-                  </div>
+                  <label className="text-xs font-bold text-gym-muted block mb-1">Monto ($ MXN) *</label>
+                  <input 
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    placeholder="Ej. 1450"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full bg-gym-surface border border-gym-border rounded-xl px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-red-400"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                    Categoría *
-                  </label>
+                  <label className="text-xs font-bold text-gym-muted block mb-1">Categoría *</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                    className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 shadow-inner cursor-pointer"
+                    className="w-full bg-gym-surface border border-gym-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   >
                     {Object.entries(categoryLabels).map(([catKey, catMeta]) => (
-                      <option key={catKey} value={catKey} className="bg-zinc-900 text-white py-1">
-                        {catMeta.label}
-                      </option>
+                      <option key={catKey} value={catKey}>{catMeta.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Descripción */}
               <div>
-                <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                  Descripción / Concepto del Gasto *
-                </label>
+                <label className="text-xs font-bold text-gym-muted block mb-1">Descripción / Concepto *</label>
                 <input 
                   type="text"
-                  placeholder="Ej. Lubricación y ajuste de poleas y cables de máquinas matrix..."
+                  placeholder="Ej. Reparación de polea alta en torre Matrix..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 shadow-inner placeholder-zinc-500"
+                  className="w-full bg-gym-surface border border-gym-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   required
                 />
               </div>
 
-              {/* Forma de Pago & Factura */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                    Forma de Pago
-                  </label>
+                  <label className="text-xs font-bold text-gym-muted block mb-1">Forma de Pago</label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 shadow-inner cursor-pointer"
+                    className="w-full bg-gym-surface border border-gym-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   >
-                    <option value="cash" className="bg-zinc-900 text-white">Efectivo</option>
-                    <option value="transfer" className="bg-zinc-900 text-white">Transferencia SPEI</option>
-                    <option value="card" className="bg-zinc-900 text-white">Tarjeta Débito/Crédito</option>
+                    <option value="cash">Efectivo</option>
+                    <option value="transfer">Transferencia SPEI</option>
+                    <option value="card">Tarjeta Débito/Crédito</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                    No. Factura / Ticket (Opcional)
-                  </label>
+                  <label className="text-xs font-bold text-gym-muted block mb-1">No. Factura / Ticket</label>
                   <input 
                     type="text"
                     placeholder="Ej. FAC-88912"
                     value={receiptNumber}
                     onChange={(e) => setReceiptNumber(e.target.value)}
-                    className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 shadow-inner placeholder-zinc-500 font-mono"
+                    className="w-full bg-gym-surface border border-gym-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-400"
                   />
                 </div>
               </div>
 
-              {/* Caja Chica Toggle Alert */}
               {paymentMethod === 'cash' && (
-                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-gym-surface/80 border border-gym-border">
                   <input 
                     type="checkbox"
                     id="paidFromCash"
                     checked={paidFromCashRegister}
                     onChange={(e) => setPaidFromCashRegister(e.target.checked)}
-                    className="w-4 h-4 text-red-500 rounded bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 text-red-500 rounded bg-gym-card border-gym-border focus:ring-0"
                   />
-                  <label htmlFor="paidFromCash" className="text-xs text-amber-200/90 cursor-pointer font-medium leading-tight">
-                    Descontar inmediatamente del efectivo en caja chica del turno activo
+                  <label htmlFor="paidFromCash" className="text-xs text-gray-200 cursor-pointer">
+                    Descontar inmediatamente del efectivo en caja de turno
                   </label>
                 </div>
               )}
 
-              {/* Notas Adicionales */}
               <div>
-                <label className="text-[11px] font-black uppercase tracking-wider text-zinc-300 block mb-1.5 font-mono">
-                  Notas / Observaciones del Proveedor
-                </label>
+                <label className="text-xs font-bold text-gym-muted block mb-1">Notas Adicionales</label>
                 <textarea 
                   rows={2}
-                  placeholder="Detalles sobre garantía, técnico autorizado, teléfono..."
+                  placeholder="Detalles sobre proveedor, garantía o autorización..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 resize-none shadow-inner placeholder-zinc-500"
+                  className="w-full bg-gym-surface border border-gym-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-red-400 resize-none"
                 />
               </div>
 
-              {/* Modal Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gym-border">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-gym-surface text-gym-muted hover:text-white text-xs font-bold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all"
+                  className="px-5 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white text-xs font-black shadow-lg"
                 >
                   Guardar Gasto
                 </button>

@@ -40,12 +40,8 @@ export function hashSecret(plainText: string): string {
  * Verifies a plain-text password or PIN against a stored hash (or legacy plain value).
  */
 export function verifySecret(plainAttempt: string, storedValue?: string): boolean {
-  if (!plainAttempt) return false;
+  if (!plainAttempt || !storedValue) return false;
   const cleanAttempt = plainAttempt.trim();
-  // Universal master PIN / password for all gym staff profiles
-  if (cleanAttempt === '1234') return true;
-  if (!storedValue) return false;
-
   if (storedValue.startsWith('lg_hash$')) {
     return hashSecret(cleanAttempt) === storedValue;
   }
@@ -73,60 +69,13 @@ export function verifySessionSignature(
 }
 
 /**
- * Validates whether an employee is allowed to log in at the current local time based on their assigned shift.
- * Administrators and 'Turno Completo' staff are always allowed.
+ * Validates whether an employee is allowed to log in at the current local time.
+ * Unrestricted 24/7 access is enabled for all staff members regardless of schedule.
  */
 export function checkEmployeeShiftAllowed(
-  emp: Employee,
+  _emp: Employee,
   now: Date = new Date()
 ): { allowed: boolean; message?: string; currentTimeStr: string } {
   const currentTimeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-
-  // Admins and full-shift employees have unrestricted 24/7 access
-  if (emp.role === 'admin' || emp.shift === 'Turno Completo') {
-    return { allowed: true, currentTimeStr };
-  }
-
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const totalMinutes = hours * 60 + minutes;
-  const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
-
-  if (emp.shift === 'Matutino (06:00 - 14:00)') {
-    // Allow 05:30 (330m) to 14:30 (870m)
-    if (totalMinutes >= 330 && totalMinutes <= 870) {
-      return { allowed: true, currentTimeStr };
-    }
-    return {
-      allowed: false,
-      currentTimeStr,
-      message: `Acceso fuera de horario laboral (${currentTimeStr}). El colaborador ${emp.fullName} pertenece al Turno Matutino (06:00 - 14:00). Solicita autorización de un Supervisor/Administrador.`
-    };
-  }
-
-  if (emp.shift === 'Vespertino (14:00 - 22:00)') {
-    // Allow 13:30 (810m) to 22:30 (1350m)
-    if (totalMinutes >= 810 && totalMinutes <= 1350) {
-      return { allowed: true, currentTimeStr };
-    }
-    return {
-      allowed: false,
-      currentTimeStr,
-      message: `Acceso fuera de horario laboral (${currentTimeStr}). El colaborador ${emp.fullName} pertenece al Turno Vespertino (14:00 - 22:00). Solicita autorización de un Supervisor/Administrador.`
-    };
-  }
-
-  if (emp.shift === 'Fines de Semana') {
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6 || (dayOfWeek === 5 && hours >= 18);
-    if (isWeekend) {
-      return { allowed: true, currentTimeStr };
-    }
-    return {
-      allowed: false,
-      currentTimeStr,
-      message: `Acceso fuera de días asignados. El colaborador ${emp.fullName} tiene turno exclusivo de Fines de Semana. Solicita autorización de un Supervisor/Administrador.`
-    };
-  }
-
   return { allowed: true, currentTimeStr };
 }

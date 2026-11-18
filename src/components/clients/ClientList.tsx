@@ -15,6 +15,7 @@ import { ClientCredentialModal } from './ClientCredentialModal';
 
 import { 
   Users, 
+  UserPlus,
   Search, 
   Fingerprint, 
   RefreshCw, 
@@ -55,6 +56,7 @@ export const ClientList: React.FC = () => {
     members, 
     deleteMember, 
     currentRole, 
+    activePermissions,
     verifyBiometricAccess,
     todayCheckInsCount,
     activeBranch,
@@ -241,7 +243,7 @@ export const ClientList: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-zinc-800">
         <div>
           <h1 className="text-2xl font-black text-white tracking-wide uppercase flex items-center gap-2">
-            <Users className="w-6 h-6 text-amber-400" />
+            <Users className="w-6 h-6 text-crimson-400" />
             <span>Clientes</span>
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
@@ -277,8 +279,16 @@ export const ClientList: React.FC = () => {
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#181924] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs font-bold transition-all"
             title="Actualizar socios en vivo"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-crimson-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Actualizar</span>
+          </button>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-extrabold shadow-glow-crimson transition-all"
+          >
+            <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Nuevo Cliente</span>
           </button>
         </div>
       </div>
@@ -293,7 +303,7 @@ export const ClientList: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, teléfono o ID..."
-            className="w-full pl-9 pr-8 py-2 bg-[#181924] rounded-xl border border-zinc-700 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-8 py-2 bg-[#181924] rounded-xl border border-zinc-700 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-crimson-400"
           />
           {search && (
             <button 
@@ -318,13 +328,13 @@ export const ClientList: React.FC = () => {
               onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 statusFilter === tab.id
-                  ? 'bg-amber-500 text-black shadow-md'
+                  ? 'bg-crimson-500 text-white shadow-md'
                   : 'bg-[#181924] text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
               }`}
             >
               <span>{tab.label}</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                statusFilter === tab.id ? 'bg-black/30 text-black font-black' : 'bg-black/50 text-zinc-400'
+                statusFilter === tab.id ? 'bg-black/30 text-white font-black' : 'bg-black/50 text-zinc-400'
               }`}>
                 {tab.count}
               </span>
@@ -413,7 +423,7 @@ export const ClientList: React.FC = () => {
                     >
                       {/* ID */}
                       <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-xs text-amber-400/90">
+                        <span className="font-mono font-bold text-xs text-crimson-400/90">
                           {member.id}
                         </span>
                       </td>
@@ -433,7 +443,7 @@ export const ClientList: React.FC = () => {
                             className="w-9 h-9 rounded-full object-cover border border-zinc-700 shrink-0"
                           />
                           <div className="min-w-0">
-                            <span className="font-bold text-white group-hover/item:text-amber-400 text-sm block truncate">
+                            <span className="font-bold text-white group-hover/item:text-crimson-400 text-sm block truncate">
                               {member.fullName}
                             </span>
                             {member.gender && (
@@ -467,7 +477,7 @@ export const ClientList: React.FC = () => {
                           <span className="text-sm font-semibold text-white block">
                             {member.membership.planName}
                           </span>
-                          <span className="text-xs text-amber-400 font-mono">
+                          <span className="text-xs text-crimson-400 font-mono">
                             ${member.membership.price.toLocaleString()} MXN
                           </span>
                         </div>
@@ -519,7 +529,7 @@ export const ClientList: React.FC = () => {
                           </button>
                           <button
                             onClick={() => setSelectedClientForRenew(member)}
-                            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-bold transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-crimson-500/20 hover:bg-crimson-500/30 text-crimson-400 border border-crimson-500/30 text-xs font-bold transition-colors"
                             title="Renovar plan"
                           >
                             Renovar
@@ -554,7 +564,7 @@ export const ClientList: React.FC = () => {
           onClose={() => setShowAddModal(false)}
           onClientCreated={(newClient, wantsEnrollment) => {
             setShowAddModal(false);
-            if (wantsEnrollment) {
+            if (wantsEnrollment && activePermissions.enrollBiometrics) {
               setSelectedClientForEnroll(newClient);
             }
           }}
@@ -583,11 +593,15 @@ export const ClientList: React.FC = () => {
             setSelectedClientForDetail(null);
             setSelectedClientForEdit(client);
           }}
-          onEnrollBiometric={() => {
-            const client = selectedClientForDetail;
-            setSelectedClientForDetail(null);
-            setSelectedClientForEnroll(client);
-          }}
+          onEnrollBiometric={
+            activePermissions.enrollBiometrics
+              ? () => {
+                  const client = selectedClientForDetail;
+                  setSelectedClientForDetail(null);
+                  setSelectedClientForEnroll(client);
+                }
+              : undefined
+          }
           onRenewMembership={() => {
             const client = selectedClientForDetail;
             setSelectedClientForDetail(null);
@@ -597,7 +611,7 @@ export const ClientList: React.FC = () => {
       )}
 
       {/* 4. Biometric Fingerprint Capture Wizard */}
-      {selectedClientForEnroll && (
+      {selectedClientForEnroll && activePermissions.enrollBiometrics && (
         <BiometricEnrollModal
           client={selectedClientForEnroll}
           onClose={() => setSelectedClientForEnroll(null)}

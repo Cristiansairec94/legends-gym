@@ -205,7 +205,7 @@ export const TerminalEntryCanvas: React.FC<TerminalEntryCanvasProps> = ({
         </div>
 
         {customOverlay ? (
-          <div className="relative z-10 w-full h-full flex flex-col">
+          <div className="relative z-10 w-full h-full min-h-0 flex flex-col">
             {customOverlay}
           </div>
         ) : (
@@ -221,7 +221,7 @@ export const TerminalEntryCanvas: React.FC<TerminalEntryCanvasProps> = ({
             style={{ height: '100%' }}
           >
             <div
-              className={`w-full ${
+              className={`w-full shrink-0 ${
                 placement === 'floating-pill'
                   ? 'w-auto mx-auto px-3.5 py-1.5 rounded-full text-center'
                   : compactText
@@ -355,8 +355,8 @@ export const TerminalEntryCanvas: React.FC<TerminalEntryCanvasProps> = ({
               ? '0 14px 36px rgba(0, 0, 0, 0.55)'
               : glowShadow,
         }}
-        className={`group relative w-full h-full ${customOverlay ? 'overflow-visible' : 'overflow-hidden'} flex flex-col justify-end ${
-          compactText ? 'p-1.5' : 'p-2 sm:p-2.5 lg:p-3'
+        className={`group relative w-full h-full min-h-0 ${customOverlay ? 'overflow-visible' : 'overflow-hidden'} flex flex-col justify-end ${
+          compactText ? 'p-1.5' : customOverlay ? 'p-1.5 sm:p-2' : 'p-2 sm:p-2.5 lg:p-3'
         } select-none ${
           isEditing ? (design.layout.mode === 'free' ? 'cursor-move' : 'cursor-pointer') : 'cursor-pointer'
         } ${!isEditing && !customOverlay && design.shape.hoverScale ? 'transform hover:-translate-y-1 transition-all duration-300' : 'transition-all duration-200'}`}
@@ -427,10 +427,11 @@ export const TerminalEntryCanvas: React.FC<TerminalEntryCanvasProps> = ({
     if (arr === 'hero-center') {
       return (
         <div
-          className="grid w-full h-full items-center"
+          className="grid w-full h-full min-h-0 items-center"
           style={{
             gap: `${gap}px`,
             gridTemplateColumns: orderedCards.length === 3 ? '0.88fr 1.38fr 0.88fr' : `repeat(${orderedCards.length || 1}, minmax(0, 1fr))`,
+            gridTemplateRows: 'minmax(0, 1fr)',
           }}
         >
           {orderedCards.map((c, idx) => {
@@ -440,9 +441,9 @@ export const TerminalEntryCanvas: React.FC<TerminalEntryCanvasProps> = ({
                 key={c.id}
                 className={
                   isCenterHero
-                    ? 'relative z-20 w-full h-full'
-                    : `relative z-10 w-full h-[74%] scale-[0.95] opacity-85 brightness-[0.84] transition-all duration-300 ${
-                        !isEditing ? 'hover:opacity-100 hover:brightness-100 hover:scale-[0.98] hover:z-30' : ''
+                    ? 'relative z-20 w-full h-full min-h-0'
+                    : `relative z-10 w-full h-[76%] min-h-0 scale-[0.96] opacity-95 brightness-95 transition-all duration-300 ${
+                        !isEditing ? 'hover:opacity-100 hover:brightness-100 hover:scale-[0.99] hover:z-30' : ''
                       }`
                 }
               >

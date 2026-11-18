@@ -43,7 +43,6 @@ import {
   Check,
   Dumbbell,
   BicepsFlexed,
-  RotateCw,
   UserPlus,
   Users,
   Ticket,
@@ -165,7 +164,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(false);
   const [showBiometricDashboard, setShowBiometricDashboard] = useState(false);
   const [biometricScanState, setBiometricScanState] = useState<'idle' | 'scanning' | 'completed'>('idle');
-  const [selectedFinger, setSelectedFinger] = useState('Pulgar Derecho');
+  const [selectedFinger, setSelectedFinger] = useState('Índice Derecho');
   const [groupCompanions, setGroupCompanions] = useState<GroupCompanionDraft[]>([]);
   const [showGroupCompanionsModal, setShowGroupCompanionsModal] = useState(false);
   const [activeBiometricSlot, setActiveBiometricSlot] = useState<number>(0);
@@ -326,23 +325,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   };
   const [searchQuery, setSearchQuery] = useState('');
   const [directAccessError, setDirectAccessError] = useState('');
-  const [padReaderMode, setPadReaderMode] = useState<'idle' | 'reading' | 'picking'>('idle');
-  const padReaderModeRef = useRef<'idle' | 'reading' | 'picking'>('idle');
-  padReaderModeRef.current = padReaderMode;
-  const padReadTimerRef = useRef<number | null>(null);
+  const lastAutoScannedIdRef = useRef<string | null>(null);
   const directAccessInputRef = useRef<HTMLInputElement | null>(null);
   const executeScanRef = useRef<(identifier: string) => void>(() => {});
   const scanStatusRef = useRef(scanStatus);
   scanStatusRef.current = scanStatus;
-
-  const clearPadReadTimer = () => {
-    if (padReadTimerRef.current !== null) {
-      window.clearTimeout(padReadTimerRef.current);
-      padReadTimerRef.current = null;
-    }
-  };
-
-  useEffect(() => () => clearPadReadTimer(), []);
   const [isDesignEditorOpen, setIsDesignEditorOpen] = useState(false);
   const [designDraft, setDesignDraft] = useState<TerminalEntryDesignConfig | null>(null);
   const [selectedDesignCardId, setSelectedDesignCardId] = useState<TerminalCardId>('new');
@@ -884,7 +871,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         birthDate: compBirth,
         phone: comp.phone.trim() || rawPhoneTrimmed || '+52 55 0000 0000',
         biometricEnrolled: Boolean(comp.fingerprintEnrolled),
-        selectedFinger: comp.selectedFinger || 'Pulgar Derecho',
+        selectedFinger: comp.selectedFinger || 'Índice Derecho',
       };
     });
 
@@ -1222,99 +1209,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     );
   };
 
-  const formatFingerLabel = (template?: string): string => {
-    const raw = (template || '').toLowerCase();
-    if (raw.includes('thumb') || raw.includes('pulgar')) return 'Pulgar Derecho';
-    if (raw.includes('index') || raw.includes('indice') || raw.includes('índice')) return 'Índice Derecho';
-    return 'Huella registrada';
-  };
-
-  const renderEnrolledMemberPicker = (compact: boolean) => (
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className={`w-full flex flex-col gap-1.5 rounded-2xl bg-[#070b11]/95 border border-[#22c55e]/35 p-2 shadow-inner overflow-hidden ${
-        compact ? 'flex-1 min-h-0' : 'h-48 sm:h-52'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2 shrink-0 px-1">
-        <span className="text-[11px] font-bold text-[#4ade80] truncate">
-          Huella leída • Toca tu nombre
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            clearPadReadTimer();
-            setPadReaderMode('idle');
-            setDirectAccessError('');
-          }}
-          className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] hover:bg-white/[0.16] text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer shrink-0 flex items-center gap-1"
-        >
-          <RotateCw className="w-2.5 h-2.5" />
-          <span>Volver</span>
-        </button>
-      </div>
-
-      {enrolledPadMembers.length > 0 ? (
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-0.5">
-          {enrolledPadMembers.map((m) => {
-            const daysLeft = m.membership?.daysRemaining ?? 0;
-            const isExpired = m.membership?.status === 'expired' || daysLeft < 0;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => handleDirectAccessSubmit(m.id)}
-                className="w-full px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-[#22c55e]/15 border border-white/[0.07] hover:border-[#22c55e]/50 flex items-center justify-between gap-2 text-left transition-all cursor-pointer group/item"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <img
-                    src={getGymAvatar(m.fullName, m.avatarUrl, m.gender)}
-                    alt={m.fullName}
-                    className="w-7 h-7 rounded-full object-contain bg-white p-0.5 shrink-0 ring-1 ring-white/15"
-                  />
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-white truncate capitalize">
-                      {m.fullName}
-                    </div>
-                    <div className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
-                      <span className="text-[#4ade80]/90 font-medium">
-                        {formatFingerLabel(m.biometricTemplate)}
-                      </span>
-                      <span>•</span>
-                      <span className="truncate">{m.membership?.planName || 'Membresía'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <span
-                  className={`text-[10px] font-black px-2 py-1 rounded-lg shrink-0 transition-colors ${
-                    isExpired
-                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/35'
-                      : 'bg-[#22c55e]/20 text-[#4ade80] group-hover/item:bg-[#22c55e] group-hover/item:text-black border border-[#22c55e]/40'
-                  }`}
-                >
-                  {isExpired ? 'Vencida' : 'Entrar →'}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-3 gap-1">
-          <Fingerprint className="w-7 h-7 text-zinc-500" />
-          <p className="text-xs font-semibold text-zinc-300">
-            {searchQuery.trim()
-              ? `No se encontró ningún socio para "${searchQuery.trim()}"`
-              : 'No hay socios con huella registrada todavía'}
-          </p>
-          <p className="text-[10px] text-zinc-400">
-            Registra un nuevo socio en Cliente Nuevo o limpia la búsqueda
-          </p>
-        </div>
-      )}
-    </div>
-  );
-
   const directAccessMatches = React.useMemo(() => {
     const q = normalizeMemberQuery(searchQuery);
     if (q.length < 2) return [];
@@ -1331,23 +1225,19 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         Boolean(m.biometricTemplate)
     );
     const baseList = bioPool.length > 0 ? bioPool : members;
-    const q = normalizeMemberQuery(searchQuery);
-    const filtered = !q ? baseList : baseList.filter((m) => matchesMemberQuery(m, q));
 
-    return [...filtered].sort((a, b) => {
+    return [...baseList].sort((a, b) => {
       const aExpired = a.membership?.status === 'expired' || (a.membership?.daysRemaining ?? 0) < 0;
       const bExpired = b.membership?.status === 'expired' || (b.membership?.daysRemaining ?? 0) < 0;
       if (aExpired !== bExpired) return aExpired ? 1 : -1;
       return (a.fullName || '').localeCompare(b.fullName || '', 'es');
     });
-  }, [members, searchQuery]);
+  }, [members]);
 
   const handleDirectAccessSubmit = (explicitIdentifier?: string) => {
     const targetQuery = (explicitIdentifier ?? searchQuery).trim();
-    clearPadReadTimer();
-    setPadReaderMode('idle');
     if (!targetQuery) {
-      setDirectAccessError('Toca la huella para leer o escribe tu nombre/ID');
+      setDirectAccessError('Toca la huella para escanear o escribe tu nombre/ID');
       directAccessInputRef.current?.focus({ preventScroll: true });
       return;
     }
@@ -1357,9 +1247,9 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     executeScan(targetQuery);
   };
 
-  // Interactive biometric pad click: reads immediately if query matches, or animates scan & displays enrolled fingerprints
+  // Automatic biometric pad click: validates search match if entered, or automatically scans an enrolled profile
   const handleDirectPadClick = () => {
-    if (scanStatus === 'scanning' || padReaderMode === 'reading') return;
+    if (scanStatus === 'scanning') return;
 
     if (directAccessMatches.length === 1) {
       handleDirectAccessSubmit(directAccessMatches[0].id);
@@ -1370,19 +1260,26 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
       return;
     }
 
-    clearPadReadTimer();
-    setDirectAccessError('');
-    if (!isMuted) {
-      sounds.unlock();
-      sounds.playScanBlip();
-    }
-    setPadReaderMode('reading');
-    syncWithServer().catch(() => {});
+    const pool = enrolledPadMembers.length > 0 ? enrolledPadMembers : members;
+    const validPool = pool.filter(
+      (m) => !(m.membership?.status === 'expired' || (m.membership?.daysRemaining ?? 0) < 0)
+    );
+    const activeCandidates = validPool.length > 0 ? validPool : pool;
 
-    padReadTimerRef.current = window.setTimeout(() => {
-      padReadTimerRef.current = null;
-      setPadReaderMode('picking');
-    }, 650);
+    if (activeCandidates.length === 0) {
+      setDirectAccessError('No hay socios registrados aún — registra uno primero');
+      directAccessInputRef.current?.focus({ preventScroll: true });
+      return;
+    }
+
+    const randomPool =
+      activeCandidates.length > 1 && lastAutoScannedIdRef.current
+        ? activeCandidates.filter((m) => m.id !== lastAutoScannedIdRef.current)
+        : activeCandidates;
+    const chosenIdx = Math.floor(Math.random() * randomPool.length);
+    const chosenMember = randomPool[chosenIdx];
+    lastAutoScannedIdRef.current = chosenMember.id;
+    handleDirectAccessSubmit(chosenMember.id);
   };
 
   const shouldKeepDirectInputActive = !(
@@ -1395,8 +1292,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     showGroupCompanionsModal ||
     showBiometricDashboard ||
     isDesignEditorOpen ||
-    scanStatus === 'scanning' ||
-    padReaderMode !== 'idle'
+    scanStatus === 'scanning'
   );
 
   // Keep search / USB scanner input continuously active & focused on the idle entry screen
@@ -1452,13 +1348,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         clearKeyBuffer();
-        if (padReaderModeRef.current !== 'idle') {
-          clearPadReadTimer();
-          setPadReaderMode('idle');
-          setDirectAccessError('');
-          setSearchQuery('');
-          return;
-        }
         if (hasEscapeClosableModalRef.current) {
           if (showVisitModalRef.current) {
             cancelOrCloseVisitModal(true);
@@ -1618,8 +1507,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   };
 
   const handleOpenDesignEditor = () => {
-    clearPadReadTimer();
-    setPadReaderMode('idle');
     setDesignDraft(terminalDesign);
     setSelectedDesignCardId('new');
     setIsDesignEditorOpen(true);
@@ -1775,7 +1662,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             return (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full h-full flex flex-col items-center justify-between gap-2 p-1.5 sm:p-2.5 text-white relative"
+                className="w-full h-full min-h-0 flex flex-col items-center justify-between gap-1.5 sm:gap-2 p-1.5 sm:p-2 text-white relative"
               >
                 {/* Encabezado: YA TENGO MEMBRESÍA + estado en vivo */}
                 <div className="w-full flex items-center justify-between gap-2 shrink-0">
@@ -1787,9 +1674,9 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   </div>
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 flex items-center gap-1 ${
-                      scanStatus === 'scanning' || padReaderMode === 'reading'
+                      scanStatus === 'scanning'
                         ? 'bg-amber-500/20 border-amber-400/50 text-amber-300'
-                        : scanStatus === 'granted' || padReaderMode === 'picking'
+                        : scanStatus === 'granted'
                           ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
                           : scanStatus === 'denied'
                             ? 'bg-rose-500/20 border-rose-400/50 text-rose-300'
@@ -1798,79 +1685,71 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        scanStatus === 'scanning' || padReaderMode === 'reading'
+                        scanStatus === 'scanning'
                           ? 'bg-amber-400 animate-ping'
-                          : scanStatus === 'granted' || padReaderMode === 'picking'
+                          : scanStatus === 'granted'
                             ? 'bg-emerald-400'
                             : scanStatus === 'denied'
                               ? 'bg-rose-400'
                               : 'bg-[#22c55e] animate-pulse'
                       }`}
                     />
-                    {padReaderMode === 'reading'
-                      ? 'Leyendo huella...'
-                      : scanStatus === 'scanning'
-                        ? 'Validando...'
-                        : scanStatus === 'granted'
-                          ? 'Acceso libre'
-                          : scanStatus === 'denied'
-                            ? 'Denegado'
-                            : padReaderMode === 'picking'
-                              ? 'Huella leída'
-                              : 'Huella lista'}
+                    {scanStatus === 'scanning'
+                      ? 'Validando...'
+                      : scanStatus === 'granted'
+                        ? 'Acceso libre'
+                        : scanStatus === 'denied'
+                          ? 'Denegado'
+                          : 'Huella lista'}
                   </span>
                 </div>
 
-                {/* Escáner biométrico SIEMPRE ABIERTO interactivo al clic */}
-                {padReaderMode === 'picking' ? (
-                  renderEnrolledMemberPicker(true)
-                ) : (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDirectPadClick();
-                    }}
-                    title={
-                      searchQuery.trim()
-                        ? `Validar acceso para "${searchQuery.trim()}"`
-                        : 'Toca aquí para leer la huella y acceder'
-                    }
-                    className="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center gap-1 cursor-pointer group bg-transparent border-0 transition-transform duration-300 hover:scale-[1.03]"
+                {/* Escáner biométrico SIEMPRE ABIERTO automático al clic */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDirectPadClick();
+                  }}
+                  title={
+                    searchQuery.trim()
+                      ? `Validar acceso para "${searchQuery.trim()}"`
+                      : 'Toca aquí para leer huella y dar acceso'
+                  }
+                  className="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center gap-1 cursor-pointer group bg-transparent border-0 transition-transform duration-300 hover:scale-[1.03]"
+                >
+                  <div className="relative aspect-square h-[82%] max-h-[165px] sm:max-h-[190px] flex items-center justify-center">
+                    <BiometricFingerprintSvg
+                      className="w-full h-full"
+                      variant="monster"
+                      isScanning={scanStatus === 'scanning'}
+                      isSuccess={scanStatus === 'granted'}
+                    />
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold tracking-wide shrink-0 transition-colors ${
+                      scanStatus === 'scanning'
+                        ? 'text-amber-300 animate-pulse'
+                        : scanStatus === 'granted'
+                          ? 'text-emerald-300'
+                          : scanStatus === 'denied'
+                            ? 'text-rose-300'
+                            : 'text-zinc-400 group-hover:text-[#4ade80]'
+                    }`}
                   >
-                    <div className="relative aspect-square h-[84%] max-h-[165px] sm:max-h-[195px] flex items-center justify-center">
-                      <BiometricFingerprintSvg
-                        className="w-full h-full"
-                        variant="monster"
-                        isScanning={scanStatus === 'scanning' || padReaderMode === 'reading'}
-                        isSuccess={scanStatus === 'granted'}
-                      />
-                    </div>
-                    <span
-                      className={`text-[10px] font-semibold tracking-wide shrink-0 transition-colors ${
-                        padReaderMode === 'reading'
-                          ? 'text-amber-300 animate-pulse'
-                          : scanStatus === 'scanning'
-                            ? 'text-amber-300'
-                            : scanStatus === 'granted'
-                              ? 'text-emerald-300'
-                              : 'text-zinc-400 group-hover:text-[#4ade80]'
-                      }`}
-                    >
-                      {padReaderMode === 'reading'
-                        ? 'Leyendo huella...'
-                        : scanStatus === 'scanning'
-                          ? 'Verificando acceso...'
-                          : scanStatus === 'granted'
-                            ? '¡Acceso autorizado!'
-                            : 'Toca la huella para escanear'}
-                    </span>
-                  </button>
-                )}
+                    {scanStatus === 'scanning'
+                      ? 'Leyendo huella y verificando...'
+                      : scanStatus === 'granted'
+                        ? '¡Acceso autorizado!'
+                        : scanStatus === 'denied'
+                          ? 'Acceso denegado'
+                          : 'Toca la huella para escanear'}
+                  </span>
+                </button>
 
                 {/* Barra rápida de búsqueda / lector automático */}
                 <div className="w-full relative shrink-0 space-y-1">
-                  {padReaderMode !== 'picking' && directAccessMatches.length > 0 && (
+                  {directAccessMatches.length > 0 && (
                     <div className="absolute bottom-full left-0 right-0 mb-1.5 max-h-40 overflow-y-auto rounded-2xl bg-[#090d13]/98 backdrop-blur-xl border border-[#22c55e]/40 shadow-2xl divide-y divide-white/[0.06] z-40">
                       {directAccessMatches.map((m) => (
                         <button
@@ -1959,15 +1838,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           }}
           onCardClick={(id) => {
             if (id === 'new') {
-              clearPadReadTimer();
-              setPadReaderMode('idle');
               setNewMemberStep(1);
               setStepError('');
               setNewClientPaymentMethod('');
               setShowNewMemberModal(true);
             } else if (id === 'visit') {
-              clearPadReadTimer();
-              setPadReaderMode('idle');
               clearVisitTimers();
               isVisitSubmittingRef.current = false;
               pendingVisitRequestIdRef.current = null;
@@ -2741,8 +2616,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
                         <div className="space-y-1">
                           <span className="text-[11px] text-zinc-400 block">Dedo a registrar:</span>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {['Pulgar Derecho', 'Índice Derecho'].map((finger) => (
+                          <div className="flex items-center">
+                            {['Índice Derecho'].map((finger) => (
                               <button
                                 key={finger}
                                 type="button"
@@ -2761,11 +2636,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                                     );
                                   }
                                 }}
-                                className={`py-1.5 px-2.5 rounded-full text-xs font-semibold transition-all border text-center cursor-pointer ${
-                                  slotFinger === finger
-                                    ? 'bg-amber-400 text-[#1a1200] border-amber-300 shadow-sm'
-                                    : 'bg-white/[0.04] text-zinc-300 border-white/10 hover:bg-white/[0.09] hover:text-white'
-                                }`}
+                                className="py-1.5 px-5 rounded-full text-xs font-semibold transition-all border text-center cursor-pointer bg-amber-400 text-[#1a1200] border-amber-300 shadow-sm"
                               >
                                 {finger}
                               </button>
@@ -2794,7 +2665,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                           type="button"
                           onClick={handleEnrollFingerprintAction}
                           aria-label={`Capturar huella obligatoria (${slotFinger})`}
-                          className={`relative w-24 h-24 sm:w-[114px] sm:h-[114px] rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden group ${
+                          className={`relative w-28 h-28 sm:w-[144px] sm:h-[144px] rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden group ${
                             slotEnrolled
                               ? 'bg-[#0c1a13] border-2 border-emerald-400/70 shadow-[0_0_24px_rgba(16,185,129,0.28)]'
                               : biometricScanState === 'scanning'
@@ -2802,7 +2673,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                                 : 'bg-[#10141c] border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02]'
                           }`}
                         >
-                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                          <div className="relative w-24 h-24 sm:w-[124px] sm:h-[124px] flex items-center justify-center">
                             <BiometricFingerprintSvg
                               className="w-full h-full"
                               variant={slotEnrolled ? 'emerald' : 'monster'}
@@ -3036,25 +2907,20 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               </div>
             )}
 
-            {/* Selector of Finger: Únicamente Pulgar Derecho e Índice Derecho */}
+            {/* Dedo único a registrar: Índice Derecho */}
             <div className="relative z-10 mb-3">
               <label className="text-xs font-medium text-zinc-300 block mb-1.5">
-                Selecciona el dedo para registrar:
+                Dedo a registrar:
               </label>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex justify-center">
                 {[
-                  { name: 'Pulgar Derecho', icon: '👍' },
                   { name: 'Índice Derecho', icon: '☝️' }
                 ].map((item) => (
                   <button
                     key={item.name}
                     type="button"
                     onClick={() => setSelectedFinger(item.name)}
-                    className={`py-2.5 px-4 rounded-2xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
-                      selectedFinger === item.name
-                        ? 'bg-amber-400 text-[#1a1200] border-amber-300 shadow-sm'
-                        : 'bg-[#1b202b] text-zinc-200 border-white/10 hover:bg-[#222836] hover:text-white'
-                    }`}
+                    className="w-full max-w-[260px] py-2.5 px-5 rounded-2xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 cursor-pointer bg-amber-400 text-[#1a1200] border-amber-300 shadow-sm"
                   >
                     <span className="text-base">{item.icon}</span>
                     <span>{item.name}</span>
@@ -3071,7 +2937,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     handleEnrollFingerprintAction();
                   }
                 }}
-                className="relative w-52 h-52 sm:w-60 sm:h-60 rounded-3xl bg-[#0c1017] border border-amber-500/35 hover:border-amber-400/80 flex items-center justify-center cursor-pointer group shadow-lg transition-all duration-300 overflow-hidden my-1"
+                className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-3xl bg-[#0c1017] border border-amber-500/35 hover:border-amber-400/80 flex items-center justify-center cursor-pointer group shadow-lg transition-all duration-300 overflow-hidden my-1"
                 title="Haz clic para registrar tu huella"
               >
                 <div className={`absolute inset-4 rounded-full blur-2xl transition-all duration-500 pointer-events-none ${
@@ -3082,7 +2948,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                     : 'bg-amber-500/10 group-hover:bg-amber-400/20'
                 }`} />
 
-                <div className="relative w-40 h-40 sm:w-44 sm:h-44 flex items-center justify-center rounded-3xl overflow-hidden p-2 group-hover:scale-105 transition-transform duration-300">
+                <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center rounded-3xl overflow-hidden p-2 group-hover:scale-105 transition-transform duration-300">
                   <BiometricFingerprintSvg
                     className="w-full h-full"
                     isScanning={biometricScanState === 'scanning'}
@@ -3365,8 +3231,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         <div 
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              clearPadReadTimer();
-              setPadReaderMode('idle');
               setDirectAccessError('');
               setSearchQuery('');
               setShowDirectAccessModal(false);
@@ -3390,8 +3254,6 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               <button 
                 type="button"
                 onClick={() => {
-                  clearPadReadTimer();
-                  setPadReaderMode('idle');
                   setDirectAccessError('');
                   setSearchQuery('');
                   setShowDirectAccessModal(false);
@@ -3403,7 +3265,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               </button>
             </div>
 
-            {/* Explicit member / barcode / RFID input — prevents accidental anonymous scans */}
+            {/* Explicit member / barcode / RFID input */}
             <div className="w-full mb-3">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -3447,7 +3309,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
                 </p>
               )}
 
-              {padReaderMode !== 'picking' && directAccessMatches.length > 0 && (
+              {directAccessMatches.length > 0 && (
                 <div className="mt-2 max-h-40 overflow-y-auto rounded-2xl bg-[#090d11] border border-white/10 divide-y divide-white/[0.06]">
                   {directAccessMatches.map((m) => (
                     <button
@@ -3478,28 +3340,25 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
               )}
             </div>
 
-            {padReaderMode === 'picking' ? (
-              renderEnrolledMemberPicker(false)
-            ) : (
-              <div 
-                onClick={handleDirectPadClick}
-                title={searchQuery.trim() ? `Validar acceso para "${searchQuery.trim()}"` : 'Toca para leer huella'}
-                className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-3xl bg-[#090d11] border border-[#22c55e]/35 hover:border-[#22c55e]/80 flex items-center justify-center cursor-pointer group shadow-lg transition-all duration-300 overflow-hidden"
-              >
-                <div className="absolute inset-4 rounded-full bg-[#16a34a]/10 blur-2xl group-hover:bg-[#22c55e]/20 transition-all duration-500 pointer-events-none" />
+            {/* Automatic biometric scanner pad */}
+            <div 
+              onClick={handleDirectPadClick}
+              title={searchQuery.trim() ? `Validar acceso para "${searchQuery.trim()}"` : 'Toca para leer huella y dar acceso'}
+              className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-3xl bg-[#090d11] border border-[#22c55e]/35 hover:border-[#22c55e]/80 flex items-center justify-center cursor-pointer group shadow-lg transition-all duration-300 overflow-hidden"
+            >
+              <div className="absolute inset-4 rounded-full bg-[#16a34a]/10 blur-2xl group-hover:bg-[#22c55e]/20 transition-all duration-500 pointer-events-none" />
 
-                <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
-                  <BiometricFingerprintSvg
-                    className="w-full h-full"
-                    variant="monster"
-                    isScanning={scanStatus === 'scanning' || padReaderMode === 'reading'}
-                    isSuccess={scanStatus === 'granted'}
-                  />
-                </div>
-
-                <div className="absolute w-32 h-32 rounded-full border border-[#22c55e]/25 animate-ping pointer-events-none opacity-20" />
+              <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
+                <BiometricFingerprintSvg
+                  className="w-full h-full"
+                  variant="monster"
+                  isScanning={scanStatus === 'scanning'}
+                  isSuccess={scanStatus === 'granted'}
+                />
               </div>
-            )}
+
+              <div className="absolute w-32 h-32 rounded-full border border-[#22c55e]/25 animate-ping pointer-events-none opacity-20" />
+            </div>
 
           </div>
         </div>

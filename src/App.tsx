@@ -1,5 +1,4 @@
-import { Users, Zap } from 'lucide-react';
-﻿import React, { useState } from 'react';
+import React, { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { GymProvider, useGym } from './context/GymContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -25,6 +24,56 @@ import { IndependentTerminalApp } from './components/access/IndependentTerminalA
 import { VisitAuthorizationBanner } from './components/access/VisitAuthorizationBanner';
 import { BorderlessFullscreenControl } from './components/layout/BorderlessFullscreenControl';
 import gymDumbbellBg from './assets/gym-dumbbell-background.jpg';
+import { Lock, AlertTriangle, RotateCcw } from 'lucide-react';
+
+interface ModuleErrorBoundaryProps {
+  moduleName: string;
+  children: ReactNode;
+}
+
+interface ModuleErrorBoundaryState {
+  hasError: boolean;
+  errorMessage: string;
+}
+
+class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, ModuleErrorBoundaryState> {
+  state: ModuleErrorBoundaryState = { hasError: false, errorMessage: '' };
+
+  static getDerivedStateFromError(error: Error): ModuleErrorBoundaryState {
+    return {
+      hasError: true,
+      errorMessage: error?.message || 'Error inesperado al renderizar el módulo.',
+    };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`[ModuleErrorBoundary:${this.props.moduleName}]`, error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 sm:p-10 bg-gym-card rounded-2xl border border-red-500/30 text-center max-w-lg mx-auto my-10 shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/35 flex items-center justify-center mx-auto mb-4 text-red-400">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-black text-white">No se pudo cargar este apartado</h2>
+          <p className="text-xs text-gym-muted mt-2 break-words">{this.state.errorMessage}</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, errorMessage: '' })}
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-extrabold transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export const isClientsMode = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -65,127 +114,185 @@ const getInitialTab = (): string => {
   return 'dashboard';
 };
 
+const getLoadedBundleScript = (): string | null => {
+  if (typeof document === 'undefined') return null;
+  const scriptEl = document.querySelector<HTMLScriptElement>('script[type="module"][src*="index-"]');
+  const src = scriptEl?.getAttribute('src') || '';
+  const match = src.match(/index-[A-Za-z0-9_-]+\.js/);
+  return match ? match[0] : null;
+};
+
+const checkAndReloadIfNewBuild = async (hasActiveInteraction = false): Promise<void> => {
+  if (!import.meta.env.PROD || typeof window === 'undefined' || hasActiveInteraction) return;
+  if (!window.location.protocol.startsWith('http')) return;
+  const currentScript = getLoadedBundleScript();
+  if (!currentScript) return;
+
+  try {
+    const res = await fetch(`/index.html?_v=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (!res.ok) return;
+    const html = await res.text();
+    const remoteMatch = html.match(/index-[A-Za-z0-9_-]+\.js/);
+    if (remoteMatch && remoteMatch[0] !== currentScript) {
+      window.location.reload();
+    }
+  } catch {
+    // Ignore transient offline/network errors
+  }
+};
+
 const MainLayout: React.FC = () => {
-  const { currentRole } = useGym();
+  const { isAdmin, activePermissions, canAccessTab, firstAllowedTab, cart } = useGym();
   const [activeTab, setActiveTab] = useState<string>(() => getInitialTab()); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
-  // Role permissions fallback
-  React.useEffect(() => {
-    if (currentRole === 'trainer' && (
-      activeTab === 'pos' || 
-      activeTab === 'cash' || 
-      activeTab === 'inventory' || 
-      activeTab === 'catalog' || 
-      activeTab === 'expenses' ||
-      activeTab === 'incomes' ||
-      activeTab.startsWith('config_')
-    )) {
-      setActiveTab('access');
+  const canManageRequests = isAdmin || activePermissions.manageClients || activePermissions.accessTurnstile;
+  const effectiveTab = canAccessTab(activeTab) ? activeTab : firstAllowedTab;
+  const hasTabAccess = effectiveTab !== 'none' && canAccessTab(effectiveTab);
+
+  const handleSafeSetActiveTab = (tab: string) => {
+    void checkAndReloadIfNewBuild(cart.length > 0);
+    if (canAccessTab(tab)) {
+      setActiveTab(tab);
     }
-  }, [currentRole, activeTab]);
+  };
 
   return (
     <div className="min-h-screen bg-[#07080b] text-gym-text flex flex-col font-sans select-none sm:select-auto relative overflow-hidden">
-      {/* Background Layer: Gym Dumbbells Texture & Ambient Lighting (OpciÃ³n 1) */}
+      {/* Background Layer: Gym Dumbbells Texture & Ambient Lighting */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <img
           src={gymDumbbellBg}
           alt="Gym Dumbbell Background"
           className="w-full h-full object-cover filter brightness-[0.38] contrast-[1.12] saturate-[0.85]"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,rgba(245,158,11,0.08)_0%,rgba(0,0,0,0.65)_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,rgba(225,29,56,0.08)_0%,rgba(0,0,0,0.68)_70%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/70" />
       </div>
       
-      {/* Top Navbar matching Panadería Brito */}
+      {/* Top Navbar */}
       <Navbar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(prev => !prev)}
-        onOpenSync={() => setIsSyncModalOpen(true)}
+        activeTab={effectiveTab} 
+        setActiveTab={handleSafeSetActiveTab} 
+        onOpenCart={activePermissions.posSales ? () => setIsCartOpen(true) : undefined}
+        onOpenNotifications={canManageRequests ? () => setIsNotificationsOpen(prev => !prev) : undefined}
+        onOpenSync={activePermissions.manageSettings ? () => setIsSyncModalOpen(true) : undefined}
       />
 
       {/* Floating Real-Time Visit Pass / Registration Waiting Notice */}
-      <VisitAuthorizationBanner
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-        isHidden={isNotificationsOpen}
-      />
+      {canManageRequests && (
+        <VisitAuthorizationBanner
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
+          isHidden={isNotificationsOpen}
+        />
+      )}
 
       <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Navigation Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar activeTab={effectiveTab} setActiveTab={handleSafeSetActiveTab} />
 
         {/* Dynamic Main Workspace View */}
-        <main className={`flex-1 ${
-          activeTab === 'pos' 
-            ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col h-[calc(100vh-61px)]' 
+        <main className={`flex-1 relative ${
+          hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
+            ? 'p-2 sm:p-2.5 overflow-hidden flex flex-col min-h-0 h-[calc(100vh-61px)]' 
+            : hasTabAccess && (effectiveTab === 'incomes' || effectiveTab === 'expenses')
+            ? 'overflow-y-auto p-3 sm:p-4 lg:p-5'
             : 'overflow-y-auto p-4 sm:p-6 lg:p-8'
         } bg-black/25 backdrop-blur-[0.5px]`}>
-          <div className={activeTab === 'pos' ? 'w-full h-full flex flex-col max-w-[1800px] mx-auto' : 'max-w-7xl mx-auto'}>
-            {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
-            {activeTab === 'access' && <TurnstileTerminal />}
-            {activeTab === 'pos' && (
-              <PosTerminal 
-                isCartOpen={isCartOpen} 
-                setIsCartOpen={setIsCartOpen} 
-                onNavigateToCash={() => setActiveTab('cash')}
-              />
-            )}
-            {activeTab === 'clients' && <ClientList />}
-            {activeTab === 'catalog' && <ProductsCatalog />}
-            {activeTab === 'inventory' && <InventoryManager />}
-            {activeTab === 'incomes' && <IncomeHistoryView />}
-            {activeTab === 'expenses' && <ExpensesManager />}
-            {activeTab === 'cash' && <CashRegisterView />}
-            
-            {/* Configuración Módulos */}
-            {activeTab === 'config_catalogs' && <SystemCatalogs section="plans" />}
-            {activeTab === 'config_gym_tickets' && <SystemCatalogs section="gym" />}
-            {activeTab === 'config_biometrics' && <SystemCatalogs section="turnstile" />}
-            {activeTab === 'config_terminal_design' && <TerminalDesignStudio />}
-            {activeTab === 'config_roles' && <RolesManager />}
-            {activeTab === 'config_employees' && <EmployeesManager />}
-            {activeTab === 'config_sync' && (
-              <div className="space-y-4">
-                <div className="p-6 bg-gym-card rounded-2xl border border-gym-border">
-                  <h2 className="text-xl font-black text-white">Sincronización & Base de Datos</h2>
-                  <p className="text-xs text-gym-muted mt-1">Configuración del motor de datos offline y respaldos en la nube.</p>
-                  <button 
-                    onClick={() => setIsSyncModalOpen(true)}
-                    className="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-xl"
-                  >
-                    Abrir Centro de Sincronización y Backup
-                  </button>
+          <div className={
+            hasTabAccess && (effectiveTab === 'pos' || effectiveTab === 'inventory' || effectiveTab === 'cash')
+              ? 'w-full h-full min-h-0 flex flex-col max-w-[1800px] mx-auto'
+              : hasTabAccess && (effectiveTab === 'incomes' || effectiveTab === 'expenses')
+              ? 'max-w-[1800px] mx-auto'
+              : 'max-w-7xl mx-auto'
+          }>
+            {!hasTabAccess ? (
+              <div className="p-8 sm:p-12 bg-gym-card rounded-2xl border border-crimson-500/30 text-center max-w-lg mx-auto my-12 shadow-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-crimson-500/15 border border-crimson-500/40 flex items-center justify-center mx-auto mb-4 text-crimson-400">
+                  <Lock className="w-7 h-7" />
                 </div>
+                <h2 className="text-lg font-black text-white uppercase tracking-wide">
+                  Acceso Restringido al Módulo
+                </h2>
+                <p className="text-xs text-gym-muted mt-2 leading-relaxed">
+                  Tu rol actual no cuenta con los permisos necesarios para visualizar este apartado. Solicita al Administrador General habilitar el permiso correspondiente en Roles & Permisos.
+                </p>
               </div>
+            ) : (
+              <ModuleErrorBoundary key={effectiveTab} moduleName={effectiveTab}>
+                {effectiveTab === 'dashboard' && <Dashboard setActiveTab={handleSafeSetActiveTab} />}
+                {effectiveTab === 'access' && <TurnstileTerminal />}
+                {effectiveTab === 'pos' && (
+                  <PosTerminal 
+                    isCartOpen={isCartOpen && activePermissions.posSales} 
+                    setIsCartOpen={setIsCartOpen} 
+                    onNavigateToCash={canAccessTab('cash') ? () => handleSafeSetActiveTab('cash') : undefined}
+                  />
+                )}
+                {effectiveTab === 'clients' && <ClientList />}
+                {effectiveTab === 'catalog' && <ProductsCatalog />}
+                {effectiveTab === 'inventory' && <InventoryManager />}
+                {effectiveTab === 'incomes' && <IncomeHistoryView />}
+                {effectiveTab === 'expenses' && <ExpensesManager />}
+                {effectiveTab === 'cash' && <CashRegisterView />}
+                
+                {/* Configuración Módulos */}
+                {effectiveTab === 'config_catalogs' && <SystemCatalogs section="plans" />}
+                {effectiveTab === 'config_gym_tickets' && <SystemCatalogs section="gym" />}
+                {effectiveTab === 'config_biometrics' && <SystemCatalogs section="turnstile" />}
+                {effectiveTab === 'config_terminal_design' && <TerminalDesignStudio />}
+                {effectiveTab === 'config_roles' && <RolesManager />}
+                {effectiveTab === 'config_employees' && <EmployeesManager />}
+                {effectiveTab === 'config_sync' && (
+                  <div className="space-y-4">
+                    <div className="p-6 bg-gym-card rounded-2xl border border-gym-border">
+                      <h2 className="text-xl font-black text-white">Sincronización & Base de Datos</h2>
+                      <p className="text-xs text-gym-muted mt-1">Configuración del motor de datos offline y respaldos en la nube.</p>
+                      <button 
+                        onClick={() => setIsSyncModalOpen(true)}
+                        className="mt-4 px-4 py-2 bg-crimson-500 hover:bg-crimson-400 text-white text-xs font-bold rounded-xl shadow-glow-crimson transition-all"
+                      >
+                        Abrir Centro de Sincronización y Backup
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </ModuleErrorBoundary>
             )}
           </div>
         </main>
       </div>
 
       {/* Global Quick Cart Drawer */}
-      <CartDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        onSaleCompleted={() => setIsCartOpen(false)} 
-      />
+      {activePermissions.posSales && (
+        <CartDrawer 
+          isOpen={isCartOpen && activePermissions.posSales} 
+          onClose={() => setIsCartOpen(false)} 
+          onSaleCompleted={() => setIsCartOpen(false)} 
+        />
+      )}
 
-      {/* Global Notifications Drawer */}
-      <NotificationsDrawer 
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-      />
+      {/* Global Notifications Drawer (Admin + Recepción para autorizaciones) */}
+      {canManageRequests && (
+        <NotificationsDrawer 
+          isOpen={isNotificationsOpen && canManageRequests}
+          onClose={() => setIsNotificationsOpen(false)}
+          onNavigateTab={(tab) => handleSafeSetActiveTab(tab)}
+        />
+      )}
 
       {/* Global Cloud Sync & Database Backup Modal */}
-      <DataSyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-      />
+      {activePermissions.manageSettings && (
+        <DataSyncModal
+          isOpen={isSyncModalOpen && activePermissions.manageSettings}
+          onClose={() => setIsSyncModalOpen(false)}
+        />
+      )}
 
       {/* Global Supervisor PIN Authorization Modal for Critical Operations */}
       <SupervisorPinModal />
@@ -195,9 +302,34 @@ const MainLayout: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useGym();
+  const { isAuthenticated, cart } = useGym();
   const [terminalMode] = useState<boolean>(() => isTerminalMode());
-  const [terminalView, setTerminalView] = useState<'terminal' | 'clients'>('terminal');
+
+  useEffect(() => {
+    const isBusy = () =>
+      cart.length > 0 ||
+      Boolean(terminalMode && typeof document !== 'undefined' && document.querySelector('[role="dialog"]'));
+    const handlePreloadError = () => window.location.reload();
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        void checkAndReloadIfNewBuild(isBusy());
+      }
+    };
+
+    window.addEventListener('vite:preloadError', handlePreloadError);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    const intervalId = window.setInterval(() => {
+      void checkAndReloadIfNewBuild(isBusy());
+    }, 45000);
+
+    return () => {
+      window.removeEventListener('vite:preloadError', handlePreloadError);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.clearInterval(intervalId);
+    };
+  }, [cart.length, terminalMode]);
 
   // Independent Turnstile terminal mode for separate computer
   if (terminalMode) {

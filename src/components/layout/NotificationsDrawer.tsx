@@ -38,7 +38,9 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
   onClose,
   onNavigateTab,
 }) => {
-  if (!isOpen) return null;
+  const { isAdmin, activePermissions } = useGym();
+  const canViewNotifications = isAdmin || activePermissions.manageClients || activePermissions.accessTurnstile;
+  if (!isOpen || !canViewNotifications) return null;
   return <NotificationsPanel onClose={onClose} onNavigateTab={onNavigateTab} />;
 };
 
@@ -47,6 +49,7 @@ const NotificationsPanel: React.FC<Omit<NotificationsDrawerProps, 'isOpen'>> = (
   onNavigateTab,
 }) => {
   const {
+    isAdmin,
     notifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
@@ -81,11 +84,18 @@ const NotificationsPanel: React.FC<Omit<NotificationsDrawerProps, 'isOpen'>> = (
     [pendingVisitRequests]
   );
 
+  const visiblePool = useMemo(() => {
+    if (isAdmin) return notifications;
+    return notifications.filter(
+      (n) => n.requestKind === 'visit' || n.requestKind === 'registration'
+    );
+  }, [notifications, isAdmin]);
+
   const { newNotifications, seenNotifications } = useMemo(() => {
     const nuevos: typeof notifications = [];
     const vistos: typeof notifications = [];
 
-    for (const notif of notifications) {
+    for (const notif of visiblePool) {
       const hasPendingReg =
         notif.requestKind === 'registration' &&
         Boolean(notif.requestId) &&
@@ -105,7 +115,7 @@ const NotificationsPanel: React.FC<Omit<NotificationsDrawerProps, 'isOpen'>> = (
     }
 
     return { newNotifications: nuevos, seenNotifications: vistos };
-  }, [notifications, pendingRegById, pendingVisitById]);
+  }, [visiblePool, pendingRegById, pendingVisitById]);
 
   const visibleNotifications =
     activeTab === 'nuevos' ? newNotifications : seenNotifications;
@@ -212,8 +222,8 @@ const NotificationsPanel: React.FC<Omit<NotificationsDrawerProps, 'isOpen'>> = (
         {/* Compact Header */}
         <div className="px-3 py-2.5 border-b border-white/10 flex items-center justify-between bg-white/[0.03]">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
-              <Bell className="w-3.5 h-3.5 text-amber-400" />
+            <div className="w-7 h-7 rounded-lg bg-crimson-500/20 border border-crimson-500/40 flex items-center justify-center shrink-0">
+              <Bell className="w-3.5 h-3.5 text-crimson-400" />
             </div>
             <div className="min-w-0">
               <h2 className="font-black text-xs text-white leading-tight truncate">
@@ -230,7 +240,7 @@ const NotificationsPanel: React.FC<Omit<NotificationsDrawerProps, 'isOpen'>> = (
               <button
                 type="button"
                 onClick={markAllNotificationsAsRead}
-                className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-300 hover:bg-amber-500/15 border border-amber-500/25 flex items-center gap-1 transition-colors cursor-pointer"
+                className="px-2 py-1 rounded-lg text-[10px] font-bold text-crimson-300 hover:bg-crimson-500/15 border border-crimson-500/25 flex items-center gap-1 transition-colors cursor-pointer"
                 title="Pasar avisos informativos a Mensajes vistos"
               >
                 <CheckCheck className="w-3 h-3" />

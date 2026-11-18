@@ -484,7 +484,7 @@ export function createEmptyGroupCompanion(): GroupCompanionDraft {
     age: '',
     phone: '',
     fingerprintEnrolled: false,
-    selectedFinger: 'Pulgar Derecho',
+    selectedFinger: 'Índice Derecho',
   };
 }
 

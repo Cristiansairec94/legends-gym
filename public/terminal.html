@@ -456,6 +456,7 @@
       const isModalBlockingScanRef = useRef(false);
       const hasEscapeClosableModalRef = useRef(false);
       const scanStatusRef = useRef('idle');
+      const lastRandomScanIdRef = useRef('');
       const [isMuted, setIsMuted] = useState(false);
       const [isFullScreen, setIsFullScreen] = useState(false);
       const [relaySeconds, setRelaySeconds] = useState(0);
@@ -1206,39 +1207,34 @@
         scanStatus === 'scanning'
       );
 
-      const directAccessMatches = (() => {
-        const q = String(searchQuery || '')
-          .normalize('NFD')
-          .replace(/[̀-ͯ]/g, '')
-          .toLowerCase()
-          .trim();
-        if (q.length < 2) return [];
-        const qDigits = q.replace(/[^0-9]/g, '');
-        return (members || []).filter((m) => {
-          const nameNorm = String(m.fullName || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-          const idNorm = String(m.id || '').toLowerCase();
-          const docNorm = String(m.documentId || '').toLowerCase();
-          const phoneDigits = String(m.phone || '').replace(/[^0-9]/g, '');
-          return (
-            idNorm.includes(q) ||
-            docNorm.includes(q) ||
-            nameNorm.includes(q) ||
-            (qDigits.length >= 4 && phoneDigits.includes(qDigits))
-          );
-        }).slice(0, 5);
-      })();
-
       const handleDirectAccessSubmit = (explicitId) => {
         const targetQuery = String(explicitId !== undefined ? explicitId : searchQuery).trim();
-        if (!targetQuery) {
-          setDirectAccessError('Ingresa tu nombre, ID o escanea tu credencial antes de validar');
-          if (directAccessInputRef.current) directAccessInputRef.current.focus();
+        if (targetQuery) {
+          setDirectAccessError('');
+          setSearchQuery('');
+          setShowDirectAccessModal(false);
+          executeScan(targetQuery);
           return;
         }
-        setDirectAccessError('');
-        setSearchQuery('');
-        setShowDirectAccessModal(false);
-        executeScan(targetQuery);
+        const pool = Array.isArray(members) ? members : [];
+        if (pool.length === 0) {
+          setDirectAccessError('No hay socios registrados en el sistema todavía.');
+          return;
+        }
+        const activePool = pool.filter((m) => m && (!m.membership || m.membership.status !== 'expired'));
+        const candidates = activePool.length > 0 ? activePool : pool;
+        const withoutLast = candidates.length > 1 && lastRandomScanIdRef.current
+          ? candidates.filter((m) => m.id !== lastRandomScanIdRef.current)
+          : candidates;
+        const pickFrom = withoutLast.length > 0 ? withoutLast : candidates;
+        const chosen = pickFrom[Math.floor(Math.random() * pickFrom.length)];
+        if (chosen && chosen.id) {
+          lastRandomScanIdRef.current = chosen.id;
+          setDirectAccessError('');
+          setSearchQuery('');
+          setShowDirectAccessModal(false);
+          executeScan(chosen.id);
+        }
       };
 
       // Clear buffered wedge keys whenever any modal opens or closes
@@ -2991,19 +2987,15 @@
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          if (directAccessMatches.length === 1) {
-                            handleDirectAccessSubmit(directAccessMatches[0].id);
-                          } else {
-                            handleDirectAccessSubmit();
-                          }
+                          handleDirectAccessSubmit();
                         }
                       }}
-                      placeholder="Nombre, ID, teléfono o escanea código..."
+                      placeholder="Escanea credencial o toca el lector abajo..."
                       className="flex-1 px-3.5 py-2.5 bg-[#090d11] border border-white/15 focus:border-emerald-400 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
                     />
                     <button
                       type="button"
-                      disabled={!searchQuery.trim() || scanStatus === 'scanning'}
+                      disabled={scanStatus === 'scanning'}
                       onClick={() => handleDirectAccessSubmit()}
                       className="px-4 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold text-xs transition-colors cursor-pointer shrink-0"
                     >
@@ -3017,28 +3009,9 @@
                     </p>
                   )}
 
-                  {directAccessMatches.length > 0 && (
-                    <div className="mt-2 max-h-40 overflow-y-auto rounded-2xl bg-[#090d11] border border-white/10 divide-y divide-white/[0.06]">
-                      {directAccessMatches.map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => handleDirectAccessSubmit(m.id)}
-                          className="w-full px-3 py-2 flex items-center justify-between gap-2.5 text-left hover:bg-white/[0.06] transition-colors cursor-pointer"
-                        >
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-white truncate">{m.fullName}</div>
-                            <div className="text-[10px] text-zinc-400 truncate">
-                              {m.id} • {m.membership && m.membership.planName ? m.membership.planName : 'Membresia'}
-                            </div>
-                          </div>
-                          <span className="text-[11px] font-semibold text-emerald-400 shrink-0">
-                            Entrar &rarr;
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <p className="mt-2.5 text-[11px] text-emerald-300/85 text-center font-medium">
+                    Coloca tu huella en el sensor verde • Lectura automática instantánea
+                  </p>
                 </div>
 
                 <div className="flex flex-col items-center justify-center py-1 select-none">

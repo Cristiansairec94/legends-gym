@@ -29,7 +29,7 @@ import {
 interface ClientDetailModalProps {
   client: Client;
   onClose: () => void;
-  onEnrollBiometric: () => void;
+  onEnrollBiometric?: () => void;
   onRenewMembership: () => void;
   onEdit?: () => void;
   initialTab?: 'dossier' | 'payments';
@@ -65,9 +65,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
       <div className="bg-[#12131c] rounded-3xl border border-zinc-800 w-full max-w-3xl overflow-hidden shadow-2xl relative my-6 text-white">
         
         {/* Header Banner */}
-        <div className="h-28 bg-gradient-to-r from-amber-600/35 via-zinc-900 to-[#12131c] p-4 sm:p-6 relative border-b border-zinc-800/80 flex items-start justify-between">
+        <div className="h-28 bg-gradient-to-r from-crimson-600/35 via-zinc-900 to-[#12131c] p-4 sm:p-6 relative border-b border-zinc-800/80 flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] uppercase font-black px-2.5 py-0.5 rounded-full bg-black/60 text-amber-400 border border-amber-500/40 tracking-wider">
+            <span className="text-[11px] uppercase font-black px-2.5 py-0.5 rounded-full bg-black/60 text-crimson-400 border border-crimson-500/40 tracking-wider">
               {activeTab === 'dossier' ? 'Expediente de Socio' : 'Historial de Pagos & Cuotas'}
             </span>
             <span className="text-xs font-mono font-bold text-gray-300 bg-black/50 px-2.5 py-0.5 rounded-full border border-white/10">
@@ -135,7 +135,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               )}
               <button
                 onClick={onRenewMembership}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-glow-gold transition-all"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-crimson-500 to-crimson-600 hover:from-crimson-400 hover:to-crimson-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-glow-crimson transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Cobrar / Renovar</span>
@@ -149,7 +149,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               onClick={() => setActiveTab('dossier')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'dossier'
-                  ? 'bg-amber-500 text-black shadow-glow-gold font-black'
+                  ? 'bg-crimson-500 text-white shadow-glow-crimson font-black'
                   : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
@@ -161,7 +161,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               onClick={() => setActiveTab('payments')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all relative ${
                 activeTab === 'payments'
-                  ? 'bg-amber-500 text-black shadow-glow-gold font-black'
+                  ? 'bg-crimson-500 text-white shadow-glow-crimson font-black'
                   : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
@@ -169,7 +169,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
               <span>Consultar Pagos & Cuotas</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ml-1 ${
                 activeTab === 'payments'
-                  ? 'bg-black text-amber-400'
+                  ? 'bg-black/30 text-white'
                   : 'bg-zinc-700 text-zinc-200'
               }`}>
                 {clientSales.length}
@@ -218,7 +218,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                     </div>
                     <div className="flex justify-between">
                       <span>Precio cuota:</span>
-                      <span className="text-amber-400 font-bold">${client.membership.price?.toLocaleString('es-MX')} MXN</span>
+                      <span className="text-crimson-400 font-bold">${client.membership.price?.toLocaleString('es-MX')} MXN</span>
                     </div>
                   </div>
                 </div>
@@ -247,10 +247,10 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                     </p>
                   </div>
 
-                  {!client.biometricRegistered && (
+                  {!client.biometricRegistered && onEnrollBiometric && (
                     <button
                       onClick={onEnrollBiometric}
-                      className="mt-3 w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                      className="mt-3 w-full py-2 bg-crimson-500/10 hover:bg-crimson-500/20 text-crimson-400 border border-crimson-500/30 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Fingerprint className="w-4 h-4" />
                       <span>Enrolar Huella en Terminal</span>
@@ -269,9 +269,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                 </div>
 
                 <div className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-center">
-                  <ShoppingBag className="w-4 h-4 mx-auto text-amber-400 mb-1" />
+                  <ShoppingBag className="w-4 h-4 mx-auto text-crimson-400 mb-1" />
                   <span className="text-[11px] text-zinc-400 block font-medium">Gasto Total</span>
-                  <span className="text-lg font-black text-amber-400">${(totalSpentAll || client.totalSpentInStore || 0).toLocaleString('es-MX')}</span>
+                  <span className="text-lg font-black text-crimson-400">${(totalSpentAll || client.totalSpentInStore || 0).toLocaleString('es-MX')}</span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-center">
@@ -314,7 +314,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
 
                 {client.medicalNotes && (
                   <div className="p-2.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 text-xs text-zinc-400">
-                    <span className="font-bold text-amber-400 block mb-0.5">Notas Médicas & Observaciones:</span>
+                    <span className="font-bold text-crimson-400 block mb-0.5">Notas Médicas & Observaciones:</span>
                     <p>{client.medicalNotes}</p>
                   </div>
                 )}
@@ -332,7 +332,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                 <div className="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800">
                   <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">Total Pagado</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-black text-amber-400">${totalSpentAll.toLocaleString('es-MX')}</span>
+                    <span className="text-xl sm:text-2xl font-black text-crimson-400">${totalSpentAll.toLocaleString('es-MX')}</span>
                     <span className="text-[10px] text-zinc-500 font-mono">MXN</span>
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                     </div>
                     <button
                       onClick={onRenewMembership}
-                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs inline-flex items-center gap-1.5 transition-all shadow-glow-gold"
+                      className="px-4 py-2 rounded-xl bg-crimson-500 hover:bg-crimson-400 text-white font-extrabold text-xs inline-flex items-center gap-1.5 transition-all shadow-glow-crimson"
                     >
                       <DollarSign className="w-4 h-4" />
                       <span>Registrar Primer Cobro / Cuota</span>
@@ -400,7 +400,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
                           <div className="flex items-start gap-3 min-w-0">
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
                               resolveSaleType(sale) === 'membership'
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                                ? 'bg-crimson-500/10 border-crimson-500/30 text-crimson-400'
                                 : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
                             }`}>
                               {resolveSaleType(sale) === 'membership' ? <Receipt className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
@@ -408,7 +408,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
 
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                <span className="font-mono text-xs font-bold text-crimson-400 bg-crimson-500/10 px-2 py-0.5 rounded border border-crimson-500/20">
                                   {sale.folio || sale.id}
                                 </span>
                                 <span className="text-xs font-bold text-white truncate">

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'receptionist' | 'trainer';
+export type UserRole = 'admin' | 'receptionist';
 
 export type MembershipPlanType = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annual' | 'vip' | 'group';
 
@@ -83,6 +83,14 @@ export interface CartItem {
   subtotal: number;
 }
 
+export interface RefundedItemRecord {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
 export interface Sale {
   id: string;
   folio: string;
@@ -102,6 +110,12 @@ export interface Sale {
   saleType?: 'store' | 'membership' | 'visit';
   planName?: string;
   planType?: MembershipPlanType;
+  status?: 'completed' | 'partial_refund' | 'voided';
+  voidedAt?: string;
+  voidedBy?: string;
+  voidReason?: string;
+  refundedAmount?: number;
+  refundedItems?: RefundedItemRecord[];
 }
 
 export interface AccessLog {
@@ -160,6 +174,7 @@ export interface Employee {
   status: 'active' | 'inactive';
   hireDate: string;
   salaryMonthly: number;
+  updatedAt?: string;
 }
 
 export interface RolePermissions {

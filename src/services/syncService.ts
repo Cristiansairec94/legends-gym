@@ -37,8 +37,10 @@ export interface SyncMessage {
     | 'MEMBER_REGISTRATION_REQUESTED'
     | 'MEMBER_REGISTRATION_AUTHORIZED'
     | 'MEMBER_REGISTRATION_REJECTED'
-    | 'TERMINAL_DESIGN_UPDATED';
+    | 'TERMINAL_DESIGN_UPDATED'
+    | 'ROLES_UPDATED';
   terminalDesign?: TerminalEntryDesignConfig;
+  roles?: RoleDefinition[];
   member?: Client;
   memberId?: string;
   members?: Client[];
@@ -603,10 +605,41 @@ export interface SyncedDatabase {
   pendingVisitRequests?: any[];
   pendingRegistrationRequests?: any[];
   terminalDesign?: TerminalEntryDesignConfig;
+  deletedMemberIds?: string[];
+  deletedProductIds?: string[];
+  deletedExpenseIds?: string[];
+  deletedEmployeeIds?: string[];
+}
+
+const perServerVersionMap = new Map<string, number>();
+
+function mergeSyncedArrayById<T extends { id?: string }>(
+  lists: Array<T[] | undefined>,
+  deletedIds: Set<string> = new Set()
+): T[] {
+  const map = new Map<string, T>();
+  for (const list of lists) {
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      if (!item || !item.id || deletedIds.has(item.id)) continue;
+      const existing = map.get(item.id);
+      if (!existing) {
+        map.set(item.id, item);
+      } else {
+        const existingTs = (existing as any).updatedAt ? new Date((existing as any).updatedAt).getTime() : 0;
+        const incomingTs = (item as any).updatedAt ? new Date((item as any).updatedAt).getTime() : 0;
+        if (incomingTs >= existingTs) {
+          map.set(item.id, { ...existing, ...item });
+        }
+      }
+    }
+  }
+  return Array.from(map.values());
 }
 
 /**
  * Fetch full gym database from all available servers (Local + Cloud)
+ * and merge across servers so zero records are lost between local and Vercel cloud.
  */
 export async function fetchFullDatabaseFromServer(
   serverUrl?: string,
@@ -617,13 +650,17 @@ export async function fetchFullDatabaseFromServer(
   version: number;
   hasChanges: boolean;
 }> {
+  if (sinceVersion === 0) {
+    perServerVersionMap.clear();
+  }
   const targets = getSyncTargets(serverUrl);
   const responses = await Promise.all(
     targets.map(async (base) => {
       try {
+        const targetSince = sinceVersion === 0 ? 0 : (perServerVersionMap.get(base) ?? 0);
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch(`${base}/api/sync/database?sinceVersion=${sinceVersion}`, {
+        const res = await fetch(`${base}/api/sync/database?sinceVersion=${targetSince}`, {
           method: 'GET',
           headers: { Accept: 'application/json' },
           signal: controller.signal,
@@ -632,11 +669,14 @@ export async function fetchFullDatabaseFromServer(
         if (res.ok) {
           const json = await res.json();
           if (json.success) {
+            const remoteVer = Number(json.version || 0);
+            perServerVersionMap.set(base, remoteVer);
             return {
+              base,
               success: true,
-              version: Number(json.version || 0),
-              database: json.database as SyncedDatabase,
-              hasChanges: json.hasChanges !== undefined ? json.hasChanges : (Number(json.version || 0) > sinceVersion)
+              version: remoteVer,
+              database: json.database as SyncedDatabase | undefined,
+              hasChanges: json.hasChanges !== undefined ? Boolean(json.hasChanges) : (remoteVer > targetSince)
             };
           }
         }
@@ -650,15 +690,56 @@ export async function fetchFullDatabaseFromServer(
     return { success: false, version: sinceVersion, hasChanges: false };
   }
 
-  // Pick the response with the highest version
-  valid.sort((a, b) => b.version - a.version);
-  const best = valid[0];
+  const maxVersion = valid.reduce((max, r) => Math.max(max, r.version), sinceVersion);
+  const changedWithDb = valid.filter((r) => r.hasChanges && r.database);
+  if (changedWithDb.length === 0) {
+    return {
+      success: true,
+      version: maxVersion,
+      hasChanges: false,
+    };
+  }
+
+  // Sort ascending by version so newer-version entries merge on top while keeping every server's items
+  changedWithDb.sort((a, b) => a.version - b.version);
+  const dbs = changedWithDb.map((r) => r.database!);
+
+  const deletedMemberIds = Array.from(new Set(dbs.flatMap((d) => d.deletedMemberIds || [])));
+  const deletedProductIds = Array.from(new Set(dbs.flatMap((d) => d.deletedProductIds || [])));
+  const deletedExpenseIds = Array.from(new Set(dbs.flatMap((d) => d.deletedExpenseIds || [])));
+  const deletedEmployeeIds = Array.from(new Set(dbs.flatMap((d) => d.deletedEmployeeIds || [])));
+
+  const mergedDatabase: SyncedDatabase = {
+    version: maxVersion,
+    updatedAt: dbs.map((d) => d.updatedAt).filter(Boolean).pop() || new Date().toISOString(),
+    members: mergeSyncedArrayById(dbs.map((d) => d.members), new Set(deletedMemberIds)),
+    products: mergeSyncedArrayById(dbs.map((d) => d.products), new Set(deletedProductIds)),
+    sales: mergeSyncedArrayById(dbs.map((d) => d.sales)),
+    expenses: mergeSyncedArrayById(dbs.map((d) => d.expenses), new Set(deletedExpenseIds)),
+    employees: mergeSyncedArrayById(dbs.map((d) => d.employees), new Set(deletedEmployeeIds)),
+    roles: dbs.map((d) => d.roles).filter((r) => Array.isArray(r) && r.length > 0).pop(),
+    catalogPlans: mergeSyncedArrayById(dbs.map((d) => d.catalogPlans)),
+    branches: mergeSyncedArrayById(dbs.map((d) => d.branches)),
+    accessLogs: mergeSyncedArrayById(dbs.map((d) => d.accessLogs)),
+    cashSession: dbs.map((d) => d.cashSession).filter(Boolean).pop() ?? null,
+    settings: dbs.map((d) => d.settings).filter(Boolean).pop() ?? null,
+    pendingVisitRequests: mergeSyncedArrayById(dbs.map((d) => d.pendingVisitRequests)),
+    pendingRegistrationRequests: mergeSyncedArrayById(dbs.map((d) => d.pendingRegistrationRequests)),
+    terminalDesign: dbs
+      .map((d) => d.terminalDesign)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b?.updatedAt || 0).getTime() - new Date(a?.updatedAt || 0).getTime())[0],
+    deletedMemberIds,
+    deletedProductIds,
+    deletedExpenseIds,
+    deletedEmployeeIds,
+  };
 
   return {
     success: true,
-    database: best.database,
-    version: best.version,
-    hasChanges: best.hasChanges !== undefined ? best.hasChanges : (best.version > sinceVersion),
+    database: mergedDatabase,
+    version: maxVersion,
+    hasChanges: true,
   };
 }
 
@@ -700,7 +781,7 @@ export async function pushFullDatabaseToServer(
  * to all sync servers so all devices update in real time
  */
 export async function pushEntityChangeToServer(
-  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'settings' | 'catalogPlans' | 'members' | 'accessLogs' | 'terminalDesign',
+  entity: 'products' | 'sales' | 'expenses' | 'cashSession' | 'employees' | 'roles' | 'settings' | 'catalogPlans' | 'branches' | 'members' | 'accessLogs' | 'terminalDesign',
   changeType: 'add' | 'update' | 'delete',
   item: any,
   itemId?: string,
@@ -834,19 +915,28 @@ export async function fetchPendingVisitRequestsFromServer(
   serverUrl?: string
 ): Promise<Array<{ id: string; clientName: string; cost: number; timestamp: number }>> {
   const targets = getSyncTargets(serverUrl);
-  for (const base of targets) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2500);
-      const res = await fetch(`${base}/api/sync/visit-requests`, { signal: controller.signal });
-      clearTimeout(timer);
-      if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json.requests)) return json.requests;
-      }
-    } catch {}
+  const all = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${base}/api/sync/visit-requests`, { signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.requests)) return json.requests;
+        }
+      } catch {}
+      return [];
+    })
+  );
+  const byId = new Map<string, { id: string; clientName: string; cost: number; timestamp: number }>();
+  for (const list of all) {
+    for (const r of list) {
+      if (r && r.id && !byId.has(r.id)) byId.set(r.id, r);
+    }
   }
-  return [];
+  return Array.from(byId.values());
 }
 
 /**
@@ -858,31 +948,40 @@ export async function fetchVisitRequestStatusFromServer(
 ): Promise<{ status: 'pending' | 'authorized' | 'rejected' | 'unknown'; clientName?: string }> {
   if (!requestId) return { status: 'unknown' };
   const targets = getSyncTargets(serverUrl);
-  for (const base of targets) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(
-        `${base}/api/sync/visit-requests?id=${encodeURIComponent(requestId)}`,
-        { signal: controller.signal }
-      );
-      clearTimeout(timer);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.statusEntry && json.statusEntry.status) {
-          return {
-            status: json.statusEntry.status,
-            clientName: json.statusEntry.clientName,
-          };
+  const results = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(
+          `${base}/api/sync/visit-requests?id=${encodeURIComponent(requestId)}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.statusEntry && json.statusEntry.status) {
+            return {
+              status: json.statusEntry.status as 'pending' | 'authorized' | 'rejected',
+              clientName: json.statusEntry.clientName as string | undefined,
+            };
+          }
+          if (Array.isArray(json.requests)) {
+            const found = json.requests.find((r: any) => r && r.id === requestId);
+            if (found) return { status: 'pending' as const, clientName: found.clientName as string | undefined };
+          }
         }
-        if (Array.isArray(json.requests)) {
-          const found = json.requests.find((r: any) => r && r.id === requestId);
-          if (found) return { status: 'pending', clientName: found.clientName };
-        }
-      }
-    } catch {}
-  }
-  return { status: 'unknown' };
+      } catch {}
+      return null;
+    })
+  );
+  const valid = results.filter((r): r is NonNullable<typeof r> => r !== null);
+  return (
+    valid.find((r) => r.status === 'authorized') ||
+    valid.find((r) => r.status === 'rejected') ||
+    valid.find((r) => r.status === 'pending') ||
+    { status: 'unknown' }
+  );
 }
 
 /**
@@ -1012,17 +1111,26 @@ export async function fetchPendingRegistrationRequestsFromServer(
   serverUrl?: string
 ): Promise<Array<{ id: string; memberData: any; paymentMethod: PaymentMethod; timestamp: number }>> {
   const targets = getSyncTargets(serverUrl);
-  for (const base of targets) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2500);
-      const res = await fetch(`${base}/api/sync/registration-requests`, { signal: controller.signal });
-      clearTimeout(timer);
-      if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json.requests)) return json.requests;
-      }
-    } catch {}
+  const all = await Promise.all(
+    targets.map(async (base) => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${base}/api/sync/registration-requests`, { signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.requests)) return json.requests;
+        }
+      } catch {}
+      return [];
+    })
+  );
+  const byId = new Map<string, { id: string; memberData: any; paymentMethod: PaymentMethod; timestamp: number }>();
+  for (const list of all) {
+    for (const r of list) {
+      if (r && r.id && !byId.has(r.id)) byId.set(r.id, r);
+    }
   }
-  return [];
+  return Array.from(byId.values());
 }

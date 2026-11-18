@@ -64,7 +64,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#151a24]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-full bg-crimson-500/15 border border-crimson-500/25 flex items-center justify-center text-crimson-400">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -72,7 +72,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
                 <h3 className="font-semibold text-base sm:text-lg text-white tracking-tight">
                   Registro de accesos
                 </h3>
-                <span className="text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/25 px-2.5 py-0.5 rounded-full tabular-nums">
+                <span className="text-xs font-medium bg-crimson-500/15 text-crimson-300 border border-crimson-500/25 px-2.5 py-0.5 rounded-full tabular-nums">
                   {totalEvents} eventos
                 </span>
               </div>
@@ -119,7 +119,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por socio, plan o motivo..."
-              className="w-full pl-10 pr-4 py-2 bg-[#1b202b] rounded-full border border-white/12 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-[#1b202b] rounded-full border border-white/12 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-crimson-400 transition-colors"
             />
           </div>
 
@@ -129,7 +129,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
               onClick={() => setStatusFilter('all')}
               className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 statusFilter === 'all'
-                  ? 'bg-amber-400 text-[#1a1200] font-semibold'
+                  ? 'bg-crimson-500 text-white font-semibold'
                   : 'text-zinc-300 hover:text-white'
               }`}
             >
@@ -174,7 +174,7 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
         <div className="flex-1 overflow-y-auto divide-y divide-gym-border/50 p-2 sm:p-4 space-y-2">
           {filteredLogs.length === 0 ? (
             <div className="py-12 text-center text-gym-muted">
-              <Clock className="w-10 h-10 mx-auto mb-3 opacity-30 text-amber-400" />
+              <Clock className="w-10 h-10 mx-auto mb-3 opacity-30 text-crimson-400" />
               <p className="text-sm font-semibold text-gray-300">No se encontraron eventos</p>
               <p className="text-xs text-gym-muted mt-1">
                 {searchQuery || statusFilter !== 'all' 
@@ -256,11 +256,11 @@ export const AccessHistory: React.FC<AccessHistoryProps> = ({ isOpen, onClose })
                         {log.planName && (
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[11px] text-gym-muted">
-                              Plan: <strong className="text-amber-400 font-semibold">{log.planName}</strong>
+                              Plan: <strong className="text-crimson-400 font-semibold">{log.planName}</strong>
                             </span>
                             <span className="text-gym-border">•</span>
                             <span className="text-[10px] text-gym-muted uppercase font-mono flex items-center gap-1">
-                              <Fingerprint className="w-3 h-3 text-amber-400" />
+                              <Fingerprint className="w-3 h-3 text-crimson-400" />
                               Biométrico
                             </span>
                           </div>
