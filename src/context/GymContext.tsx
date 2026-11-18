@@ -24,6 +24,7 @@ import { storage, sanitizeEmployees, sanitizeRoles } from '../services/storage';
 import { INITIAL_EMPLOYEES, INITIAL_ROLES, filterLegacyCatalogPlans } from '../data/initialEmployees';
 import { TerminalEntryDesignConfig, mergeWithDefaultTerminalDesign } from '../utils/terminalDesign';
 import { sounds } from '../services/audio';
+import { isTerminalMode } from '../utils/appMode';
 import { getGymAvatar, detectGender } from '../utils/genderAvatar';
 import { hashSecret, verifySecret } from '../utils/securityCrypto';
 import {
@@ -170,7 +171,7 @@ interface GymContextType {
 
   // Biometric & Access Control
   accessLogs: AccessLog[];
-  verifyBiometricAccess: (biometricQuery: string) => { granted: boolean; client?: Client; reason: string; log: AccessLog };
+  verifyBiometricAccess: (biometricQuery: string, options?: { silent?: boolean }) => { granted: boolean; client?: Client; reason: string; log: AccessLog };
   registerExit: (clientId?: string) => void;
   clearAccessLogs: () => void;
 
@@ -614,7 +615,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return [newNotif, ...prev];
     });
 
-    if (isFirstNotice) {
+    // Never emit RP notification chimes inside standalone CONTROL_DE_ACCESO kiosk windows
+    if (isFirstNotice && !isTerminalMode()) {
       try { sounds.playNotification(); } catch {}
     }
   }, []);
@@ -1364,15 +1366,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Security Guard: Single-Tab Session Binding & Anti-Copy/Paste URL Hijacking
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const searchParams = new URLSearchParams(window.location.search);
-    const isTerm =
-      searchParams.get('mode') === 'terminal' ||
-      searchParams.get('terminal') === 'true' ||
-      window.location.hash.includes('terminal') ||
-      localStorage.getItem('legends_device_mode') === 'terminal';
-
-    if (isTerm) return;
+    if (typeof window === 'undefined' || isTerminalMode()) return;
 
     const isDesktopAppEnv = typeof (window as any).electronAPI !== 'undefined' || window.location.protocol === 'file:';
 
@@ -1492,9 +1486,9 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     onAuthorized: () => void;
   } | null>(null);
 
-  // Security Guard: Continuous Session Signature & DevTools (F12) Tamper Verification
+  // Security Guard: Continuous Session Signature & DevTools (F12) Tamper Verification (ERP only)
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || isTerminalMode()) return;
 
     const integrityInterval = setInterval(() => {
       const validated = storage.validateOrKillTabSession();
@@ -2505,12 +2499,16 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // Biometric Turnstile Access
-  const verifyBiometricAccess = (biometricQuery: string): { 
-    granted: boolean; 
-    client?: Client; 
-    reason: string; 
-    log: AccessLog 
+  const verifyBiometricAccess = (
+    biometricQuery: string,
+    options?: { silent?: boolean }
+  ): {
+    granted: boolean;
+    client?: Client;
+    reason: string;
+    log: AccessLog;
   } => {
+    const shouldPlaySound = !options?.silent && !isTerminalMode();
     const normalizeText = (val?: string) =>
       (val || '')
         .normalize('NFD')
@@ -2553,7 +2551,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const now = new Date().toISOString();
 
     if (!matched) {
-      sounds.playAccessDenied();
+      if (shouldPlaySound) sounds.playAccessDenied();
       const failLog: AccessLog = {
         id: `LOG-${Date.now()}`,
         timestamp: now,
@@ -2571,7 +2569,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const statusInfo = getMembershipStatus(matched.membership);
 
     if (statusInfo.isExpired || matched.membership.status === 'expired') {
-      sounds.playAccessDenied();
+      if (shouldPlaySound) sounds.playAccessDenied();
       const expiredDays = Math.abs(statusInfo.daysRemaining);
       const failLog: AccessLog = {
         id: `LOG-${Date.now()}`,
@@ -2591,7 +2589,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return { granted: false, client: matched, reason: failLog.reason, log: failLog };
     }
 
-    sounds.playAccessGranted();
+    if (shouldPlaySound) sounds.playAccessGranted();
     const successReason = statusInfo.isExpiring
       ? `Acceso Autorizado • ¡Atención: Vence hoy/pronto (${statusInfo.daysRemaining} d)!`
       : `Acceso Autorizado - ${matched.membership.planName}`;

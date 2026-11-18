@@ -25,6 +25,9 @@ import { VisitAuthorizationBanner } from './components/access/VisitAuthorization
 import { BorderlessFullscreenControl } from './components/layout/BorderlessFullscreenControl';
 import gymDumbbellBg from './assets/gym-dumbbell-background.jpg';
 import { Lock, AlertTriangle, RotateCcw } from 'lucide-react';
+import { isClientsMode, isTerminalMode } from './utils/appMode';
+
+export { isClientsMode, isTerminalMode };
 
 interface ModuleErrorBoundaryProps {
   moduleName: string;
@@ -74,30 +77,6 @@ class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, ModuleErro
     return this.props.children;
   }
 }
-
-export const isClientsMode = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get('mode') === 'clients' || searchParams.get('tab') === 'clients') return true;
-  return false;
-};
-
-export const isTerminalMode = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const searchParams = new URLSearchParams(window.location.search);
-  const queryMode = searchParams.get('mode');
-  if (queryMode === 'main' || queryMode === 'pos' || searchParams.get('tab') === 'pos') return false;
-  if (queryMode === 'terminal' || searchParams.get('terminal') === 'true') return true;
-  const electronAppMode = (window as any).electronAPI?.appMode;
-  if (electronAppMode === 'main') return false;
-  if (electronAppMode === 'terminal') return true;
-  const fileName = window.location.pathname.split('/').pop()?.toLowerCase() || '';
-  if (fileName.includes('terminal')) return true;
-  if (window.location.hash.includes('terminal')) return true;
-  if (localStorage.getItem('legends_device_mode') === 'main' || localStorage.getItem('legends_device_mode') === 'pos') return false;
-  if (localStorage.getItem('legends_device_mode') === 'terminal') return true;
-  return false;
-};
 
 const getInitialTab = (): string => {
   if (typeof window === 'undefined') return 'dashboard';

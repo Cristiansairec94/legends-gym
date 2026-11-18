@@ -163,6 +163,15 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [newClientPhone, setNewClientPhone] = useState('');
   const [newClientFingerprintEnrolled, setNewClientFingerprintEnrolled] = useState(false);
   const [showBiometricDashboard, setShowBiometricDashboard] = useState(false);
+  const showBiometricDashboardRef = useRef(false);
+  showBiometricDashboardRef.current = showBiometricDashboard;
+  const enrollTimerRef = useRef<number | null>(null);
+  const clearEnrollTimer = () => {
+    if (enrollTimerRef.current !== null) {
+      window.clearTimeout(enrollTimerRef.current);
+      enrollTimerRef.current = null;
+    }
+  };
   const [biometricScanState, setBiometricScanState] = useState<'idle' | 'scanning' | 'completed'>('idle');
   const [selectedFinger, setSelectedFinger] = useState('Índice Derecho');
   const [groupCompanions, setGroupCompanions] = useState<GroupCompanionDraft[]>([]);
@@ -214,7 +223,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     }
   };
 
-  useEffect(() => () => clearAutoSendTimer(), []);
+  useEffect(() => () => {
+    clearAutoSendTimer();
+    clearEnrollTimer();
+  }, []);
 
   const handleNextStep1 = (e?: React.MouseEvent | React.FormEvent) => {
     if (e) e.preventDefault();
@@ -356,6 +368,27 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const [showEscHint, setShowEscHint] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [bgToast, setBgToast] = useState<string | null>(null);
+
+  // Enforce strict idle silence while Terminal Kiosk sits unused (blocks all background/phantom sounds)
+  useEffect(() => {
+    sounds.setExplicitTerminalGate(true);
+    return () => {
+      sounds.clearTerminalSoundWindow();
+      sounds.setExplicitTerminalGate(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    sounds.setMuted(isMuted);
+    if (isMuted) {
+      sounds.clearTerminalSoundWindow();
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch {}
+    }
+  }, [isMuted]);
 
   // Standalone terminal configuration
   const [config, setConfig] = useState<TerminalConfig>(() => getTerminalConfig());
@@ -620,9 +653,13 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
   const handleEnrollFingerprintAction = () => {
     if (biometricScanState === 'scanning') return;
     clearAutoSendTimer();
+    clearEnrollTimer();
     setStepError('');
     setBiometricScanState('scanning');
-    sounds.playScanBlip();
+    if (!isMuted) {
+      sounds.allowTerminalSoundWindow(3500);
+      sounds.playScanBlip();
+    }
 
     const targetSlot = activeBiometricSlot;
     const fingerUsed =
@@ -642,7 +679,12 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           return pendingIdx >= 0 ? pendingIdx + 1 : null;
         })();
 
-    setTimeout(() => {
+    enrollTimerRef.current = window.setTimeout(() => {
+      enrollTimerRef.current = null;
+      if (!showBiometricDashboardRef.current && !showNewMemberModalRef.current) {
+        setBiometricScanState('idle');
+        return;
+      }
       setBiometricScanState('completed');
       if (targetSlot === 0) {
         setNewClientFingerprintEnrolled(true);
@@ -656,7 +698,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           )
         );
       }
-      sounds.playAccessGranted();
+      if (!isMuted) {
+        sounds.allowTerminalSoundWindow(2500);
+        sounds.playAccessGranted();
+      }
       try {
         confetti({
           particleCount: 50,
@@ -716,7 +761,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
     // Trigger turnstile relay
     triggerTurnstileRelay(config.relayPulseDurationSeconds || 5);
-    if (!isMuted) sounds.playAccessGranted();
+    if (!isMuted) {
+      sounds.allowTerminalSoundWindow(3000);
+      sounds.playAccessGranted();
+    }
     try {
       confetti({
         particleCount: 75,
@@ -929,6 +977,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
   const cancelPendingRegistration = (targetStep: 1 | 2 | 3 = 3, closeModal = false) => {
     clearAutoSendTimer();
+    clearEnrollTimer();
+    sounds.clearTerminalSoundWindow();
     const activeId = pendingNewMemberRequestIdRef.current;
     if (activeId && (newMemberStep as number) === 4) {
       pushRegistrationRejectToServer(activeId, config.serverUrl).catch(() => {});
@@ -989,7 +1039,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
     });
 
     triggerTurnstileRelay(5);
-    if (!isMuted) sounds.playAccessGranted();
+    if (!isMuted) {
+      sounds.allowTerminalSoundWindow(3000);
+      sounds.playAccessGranted();
+    }
     confetti({ particleCount: 85, spread: 65, origin: { y: 0.6 } });
 
     // Emisión del mensaje de voz solicitado: "Esperamos cumplir tus expectativas en rutina"
@@ -1029,6 +1082,7 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
   const cancelOrCloseVisitModal = (closeModal: boolean) => {
     clearVisitTimers();
+    sounds.clearTerminalSoundWindow();
     isVisitSubmittingRef.current = false;
     const activeId = pendingVisitRequestIdRef.current;
     if (activeId && visitModalState === 'waiting_approval') {
@@ -1087,9 +1141,11 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
 
   // Main scan execution
   const executeScan = (identifier: string) => {
-    if (scanStatus === 'scanning') return;
+    const trimmed = (identifier || '').trim();
+    if (!trimmed || scanStatus === 'scanning') return;
     
     if (!isMuted) {
+      sounds.allowTerminalSoundWindow(3500);
       sounds.unlock();
       sounds.playScanBlip();
     }
@@ -1104,10 +1160,13 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
         syncPromise,
         new Promise(resolve => setTimeout(resolve, 600))
       ]);
-      const result = verifyBiometricAccess(identifier);
+      const result = verifyBiometricAccess(trimmed, { silent: true });
       
       if (result.granted) {
-        if (!isMuted) sounds.playAccessGranted();
+        if (!isMuted) {
+          sounds.allowTerminalSoundWindow(2500);
+          sounds.playAccessGranted();
+        }
         const quote = getRandomMotivationalQuote(currentQuote);
         setCurrentQuote(quote);
         
@@ -1154,7 +1213,10 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
           // ignore
         }
       } else {
-        if (!isMuted) sounds.playAccessDenied();
+        if (!isMuted) {
+          sounds.allowTerminalSoundWindow(2500);
+          sounds.playAccessDenied();
+        }
         if (result.client) {
           announceAccess(result.client.fullName, false);
           setLastVerifiedClient({
@@ -1353,6 +1415,8 @@ export const IndependentTerminalApp: React.FC<IndependentTerminalAppProps> = ({
             cancelOrCloseVisitModal(true);
           }
           clearVisitTimers();
+          clearEnrollTimer();
+          sounds.clearTerminalSoundWindow();
           setShowNewMemberModal(false);
           setShowVisitModal(false);
           setShowDirectAccessModal(false);

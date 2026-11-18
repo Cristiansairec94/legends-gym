@@ -121,7 +121,13 @@ export const AccessWelcomeDashboardModal: React.FC<AccessWelcomeDashboardModalPr
   useEffect(() => {
     if (!isOpen || !data) {
       spokenOpenKeyRef.current = null;
-      return;
+      return () => {
+        try {
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
+        } catch {}
+      };
     }
 
     const openSpeechKey = `${data.memberId || ''}::${data.clientName}::${isBirthday ? '1' : '0'}`;
